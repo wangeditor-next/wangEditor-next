@@ -1,5 +1,19 @@
 # Change Log
 
+## 5.6.33
+
+### Patch Changes
+
+- 71397d4: feat: enhance upload configuration with additional Uppy and XHRUpload options
+- Updated dependencies [71397d4]
+  - @wangeditor-next/core@1.7.33
+  - @wangeditor-next/basic-modules@1.5.33
+  - @wangeditor-next/code-highlight@1.3.30
+  - @wangeditor-next/list-module@1.1.39
+  - @wangeditor-next/table-module@1.6.43
+  - @wangeditor-next/upload-image-module@1.1.36
+  - @wangeditor-next/video-module@1.3.39
+
 ## 5.6.32
 
 ### Patch Changes

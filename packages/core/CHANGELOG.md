@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.7.33
+
+### Patch Changes
+
+- 71397d4: feat: enhance upload configuration with additional Uppy and XHRUpload options
+
 ## 1.7.32
 
 ### Patch Changes
