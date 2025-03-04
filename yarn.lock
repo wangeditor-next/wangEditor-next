@@ -3494,14 +3494,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@wangeditor-next/basic-modules@npm:~1.5.32, @wangeditor-next/basic-modules@workspace:packages/basic-modules":
+"@wangeditor-next/basic-modules@npm:~1.5.33, @wangeditor-next/basic-modules@workspace:packages/basic-modules":
   version: 0.0.0-use.local
   resolution: "@wangeditor-next/basic-modules@workspace:packages/basic-modules"
   dependencies:
     "@types/is-url": "npm:^1.2.29"
     is-url: "npm:^1.2.4"
   peerDependencies:
-    "@wangeditor-next/core": 1.7.32
+    "@wangeditor-next/core": 1.7.33
     dom7: ^3.0.0 || ^4.0.0
     lodash.throttle: ^4.1.1
     nanoid: ^5.0.0
@@ -3510,21 +3510,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@wangeditor-next/code-highlight@npm:~1.3.29, @wangeditor-next/code-highlight@workspace:packages/code-highlight":
+"@wangeditor-next/code-highlight@npm:~1.3.30, @wangeditor-next/code-highlight@workspace:packages/code-highlight":
   version: 0.0.0-use.local
   resolution: "@wangeditor-next/code-highlight@workspace:packages/code-highlight"
   dependencies:
     "@types/prismjs": "npm:^1.16.5"
     prismjs: "npm:^1.23.0"
   peerDependencies:
-    "@wangeditor-next/core": 1.7.32
+    "@wangeditor-next/core": 1.7.33
     dom7: ^3.0.0 || ^4.0.0
     slate: ^0.72.0
     snabbdom: ^3.6.0
   languageName: unknown
   linkType: soft
 
-"@wangeditor-next/core@npm:~1.7.32, @wangeditor-next/core@workspace:packages/core":
+"@wangeditor-next/core@npm:~1.7.33, @wangeditor-next/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@wangeditor-next/core@workspace:packages/core"
   dependencies:
@@ -3573,13 +3573,13 @@ __metadata:
   dependencies:
     "@uppy/core": "npm:^2.1.1"
     "@uppy/xhr-upload": "npm:^2.0.3"
-    "@wangeditor-next/basic-modules": "npm:~1.5.32"
-    "@wangeditor-next/code-highlight": "npm:~1.3.29"
-    "@wangeditor-next/core": "npm:~1.7.32"
-    "@wangeditor-next/list-module": "npm:~1.1.38"
-    "@wangeditor-next/table-module": "npm:~1.6.42"
-    "@wangeditor-next/upload-image-module": "npm:~1.1.35"
-    "@wangeditor-next/video-module": "npm:~1.3.38"
+    "@wangeditor-next/basic-modules": "npm:~1.5.33"
+    "@wangeditor-next/code-highlight": "npm:~1.3.30"
+    "@wangeditor-next/core": "npm:~1.7.33"
+    "@wangeditor-next/list-module": "npm:~1.1.39"
+    "@wangeditor-next/table-module": "npm:~1.6.43"
+    "@wangeditor-next/upload-image-module": "npm:~1.1.36"
+    "@wangeditor-next/video-module": "npm:~1.3.39"
     dom7: "npm:^4.0.0"
     is-hotkey: "npm:^0.2.0"
     lodash.camelcase: "npm:^4.3.0"
@@ -3595,11 +3595,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@wangeditor-next/list-module@npm:~1.1.38, @wangeditor-next/list-module@workspace:packages/list-module":
+"@wangeditor-next/list-module@npm:~1.1.39, @wangeditor-next/list-module@workspace:packages/list-module":
   version: 0.0.0-use.local
   resolution: "@wangeditor-next/list-module@workspace:packages/list-module"
   peerDependencies:
-    "@wangeditor-next/core": 1.7.32
+    "@wangeditor-next/core": 1.7.33
     dom7: ^3.0.0 || ^4.0.0
     slate: ^0.72.0
     snabbdom: ^3.6.0
@@ -3610,7 +3610,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@wangeditor-next/plugin-float-image@workspace:packages/plugin-float-image"
   peerDependencies:
-    "@wangeditor-next/editor": 5.6.32
+    "@wangeditor-next/editor": 5.6.33
     dom7: ^3.0.0 || ^4.0.0
     slate: ^0.72.0
     snabbdom: ^3.6.0
@@ -3625,7 +3625,7 @@ __metadata:
     katex: "npm:^0.16.0"
     nanoid: "npm:^5.0.0"
   peerDependencies:
-    "@wangeditor-next/editor": 5.6.32
+    "@wangeditor-next/editor": 5.6.33
     katex: ^0.16.0
     snabbdom: ^3.6.0
   languageName: unknown
@@ -3635,7 +3635,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@wangeditor-next/plugin-link-card@workspace:packages/plugin-link-card"
   peerDependencies:
-    "@wangeditor-next/editor": 5.6.32
+    "@wangeditor-next/editor": 5.6.33
     dom7: ^3.0.0 || ^4.0.0
     slate: ^0.72.0
     snabbdom: ^3.6.0
@@ -3646,7 +3646,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@wangeditor-next/plugin-markdown@workspace:packages/plugin-markdown"
   peerDependencies:
-    "@wangeditor-next/editor": 5.6.32
+    "@wangeditor-next/editor": 5.6.33
     dom7: ^3.0.0 || ^4.0.0
     slate: ^0.72.0
     snabbdom: ^3.6.0
@@ -3657,16 +3657,16 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@wangeditor-next/plugin-mention@workspace:packages/plugin-mention"
   peerDependencies:
-    "@wangeditor-next/editor": 5.6.32
+    "@wangeditor-next/editor": 5.6.33
     snabbdom: ^3.6.0
   languageName: unknown
   linkType: soft
 
-"@wangeditor-next/table-module@npm:~1.6.42, @wangeditor-next/table-module@workspace:packages/table-module":
+"@wangeditor-next/table-module@npm:~1.6.43, @wangeditor-next/table-module@workspace:packages/table-module":
   version: 0.0.0-use.local
   resolution: "@wangeditor-next/table-module@workspace:packages/table-module"
   peerDependencies:
-    "@wangeditor-next/core": 1.7.32
+    "@wangeditor-next/core": 1.7.33
     dom7: ^3.0.0 || ^4.0.0
     lodash.debounce: ^4.0.8
     lodash.isequal: ^4.5.0
@@ -3677,14 +3677,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@wangeditor-next/upload-image-module@npm:~1.1.35, @wangeditor-next/upload-image-module@workspace:packages/upload-image-module":
+"@wangeditor-next/upload-image-module@npm:~1.1.36, @wangeditor-next/upload-image-module@workspace:packages/upload-image-module":
   version: 0.0.0-use.local
   resolution: "@wangeditor-next/upload-image-module@workspace:packages/upload-image-module"
   peerDependencies:
     "@uppy/core": ^2.0.3
     "@uppy/xhr-upload": ^2.0.3
-    "@wangeditor-next/basic-modules": 1.5.32
-    "@wangeditor-next/core": 1.7.32
+    "@wangeditor-next/basic-modules": 1.5.33
+    "@wangeditor-next/core": 1.7.33
     dom7: ^3.0.0 || ^4.0.0
     lodash.foreach: ^4.5.0
     slate: ^0.72.0
@@ -3692,13 +3692,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@wangeditor-next/video-module@npm:~1.3.38, @wangeditor-next/video-module@workspace:packages/video-module":
+"@wangeditor-next/video-module@npm:~1.3.39, @wangeditor-next/video-module@workspace:packages/video-module":
   version: 0.0.0-use.local
   resolution: "@wangeditor-next/video-module@workspace:packages/video-module"
   peerDependencies:
     "@uppy/core": ^2.1.4
     "@uppy/xhr-upload": ^2.0.7
-    "@wangeditor-next/core": 1.7.32
+    "@wangeditor-next/core": 1.7.33
     dom7: ^3.0.0 || ^4.0.0
     nanoid: ^5.0.0
     slate: ^0.72.0
@@ -3790,8 +3790,8 @@ __metadata:
     use-sync-external-store: "npm:^1.2.0"
     y-protocols: "npm:^1.0.5"
   peerDependencies:
-    "@wangeditor-next/editor": 5.6.32
-    "@wangeditor-next/yjs": ^0.1.30
+    "@wangeditor-next/editor": 5.6.33
+    "@wangeditor-next/yjs": ^0.1.31
     react: ">=17.0.2"
     slate: ^0.72.0
     yjs: ^13.5.29
@@ -3807,7 +3807,7 @@ __metadata:
     y-protocols: "npm:^1.0.5"
     yjs: "npm:^13.5.29"
   peerDependencies:
-    "@wangeditor-next/core": 1.7.32
+    "@wangeditor-next/core": 1.7.33
     slate: ^0.72.0
     yjs: ^13.5.29
   languageName: unknown
