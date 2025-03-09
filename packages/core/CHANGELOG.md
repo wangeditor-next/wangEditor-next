@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.7.34
+
+### Patch Changes
+
+- 1450d35: update slate version && modify core content plugin
+
 ## 1.7.33
 
 ### Patch Changes

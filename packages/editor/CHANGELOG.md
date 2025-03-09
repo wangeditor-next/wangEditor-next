@@ -1,5 +1,19 @@
 # Change Log
 
+## 5.6.34
+
+### Patch Changes
+
+- 1450d35: update slate version && modify core content plugin
+- Updated dependencies [1450d35]
+  - @wangeditor-next/core@1.7.34
+  - @wangeditor-next/basic-modules@1.5.34
+  - @wangeditor-next/code-highlight@1.3.31
+  - @wangeditor-next/list-module@1.1.40
+  - @wangeditor-next/table-module@1.6.44
+  - @wangeditor-next/upload-image-module@1.1.37
+  - @wangeditor-next/video-module@1.3.40
+
 ## 5.6.33
 
 ### Patch Changes
