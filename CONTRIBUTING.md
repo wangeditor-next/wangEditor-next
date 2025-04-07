@@ -43,7 +43,7 @@
 
    dragging img elements from the page into the editor converts them to links
 
-   https://github.com/wangeditor-next/wangEditor-next/issues/52
+   https://github.com/wangeditor-team/wangeditor/issues/52
    ```
 - **Pull Request**：将您的分支推送到远程仓库，并在GitHub上发起Pull Request。
 

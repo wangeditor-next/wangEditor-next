@@ -3596,39 +3596,39 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wangeditor-next/basic-modules@npm:~1.5.33":
-  version: 1.5.33
-  resolution: "@wangeditor-next/basic-modules@npm:1.5.33"
+"@wangeditor-next/basic-modules@npm:~1.5.34":
+  version: 1.5.34
+  resolution: "@wangeditor-next/basic-modules@npm:1.5.34"
   dependencies:
     is-url: "npm:^1.2.4"
   peerDependencies:
-    "@wangeditor-next/core": 1.7.33
+    "@wangeditor-next/core": 1.7.34
     dom7: ^3.0.0 || ^4.0.0
     lodash.throttle: ^4.1.1
     nanoid: ^5.0.0
-    slate: ^0.72.0
+    slate: ^0.82.0
     snabbdom: ^3.6.0
-  checksum: 10c0/99c8d3c7fab59dd688e29badf90bac1698df65575545defc484eec890084a600b85bcad7cb15e81c3cbe41a25c1eab5dfbc532887ea176a3c1c5441818cc0c9c
+  checksum: 10c0/2f8d06259d35535e507d9b113cbc76f6789f93db2e094b91c3f013297372f465e6096bb164549811a1efb756ee176edf19a5dbd964db20a3edd89bf9975561a2
   languageName: node
   linkType: hard
 
-"@wangeditor-next/code-highlight@npm:~1.3.30":
-  version: 1.3.30
-  resolution: "@wangeditor-next/code-highlight@npm:1.3.30"
+"@wangeditor-next/code-highlight@npm:~1.3.31":
+  version: 1.3.31
+  resolution: "@wangeditor-next/code-highlight@npm:1.3.31"
   dependencies:
     prismjs: "npm:^1.23.0"
   peerDependencies:
-    "@wangeditor-next/core": 1.7.33
+    "@wangeditor-next/core": 1.7.34
     dom7: ^3.0.0 || ^4.0.0
-    slate: ^0.72.0
+    slate: ^0.82.0
     snabbdom: ^3.6.0
-  checksum: 10c0/2823b42cf4d12a996382b5ab1e81eb45d2bd95b1a1cfa2dedd9f5f8ddc0ba5846bc85f45243c1c46f5670b000c3c5f5e1631f5489d0d49a5ba5a08cc192f71cd
+  checksum: 10c0/9fcdf759205a42f81a7173b1488d0777d1471fab4fc002c38dbe9e77b0935c92b644e7de93eae8be4880630ce1b694100231712ef0061f4776771c0ba5fe72e8
   languageName: node
   linkType: hard
 
-"@wangeditor-next/core@npm:~1.7.33":
-  version: 1.7.33
-  resolution: "@wangeditor-next/core@npm:1.7.33"
+"@wangeditor-next/core@npm:~1.7.34":
+  version: 1.7.34
+  resolution: "@wangeditor-next/core@npm:1.7.34"
   dependencies:
     "@types/event-emitter": "npm:^0.3.3"
     event-emitter: "npm:^0.3.5"
@@ -3649,9 +3649,9 @@ __metadata:
     lodash.throttle: ^4.1.1
     lodash.toarray: ^4.4.0
     nanoid: ^5.0.0
-    slate: ^0.72.0
+    slate: ^0.82.0
     snabbdom: ^3.6.0
-  checksum: 10c0/d922c6e6659389817fd40b1af162e4675bd22add804525bca20d14af60c3528641d4735d4c1f731c3b5900af184c28ef7a79f897db6c050301a64e8727ecea38
+  checksum: 10c0/1967b924bdfc741f3aaed6f3c1242e25313b0bc7aa1c52839f7ec3d9a0fca86e210d0037c0834f9f3002775bd1bfbf2cc1707c20a1b686db9eb826675505ca5d
   languageName: node
   linkType: hard
 
@@ -3668,18 +3668,18 @@ __metadata:
   linkType: hard
 
 "@wangeditor-next/editor@npm:latest":
-  version: 5.6.33
-  resolution: "@wangeditor-next/editor@npm:5.6.33"
+  version: 5.6.34
+  resolution: "@wangeditor-next/editor@npm:5.6.34"
   dependencies:
     "@uppy/core": "npm:^2.1.1"
     "@uppy/xhr-upload": "npm:^2.0.3"
-    "@wangeditor-next/basic-modules": "npm:~1.5.33"
-    "@wangeditor-next/code-highlight": "npm:~1.3.30"
-    "@wangeditor-next/core": "npm:~1.7.33"
-    "@wangeditor-next/list-module": "npm:~1.1.39"
-    "@wangeditor-next/table-module": "npm:~1.6.43"
-    "@wangeditor-next/upload-image-module": "npm:~1.1.36"
-    "@wangeditor-next/video-module": "npm:~1.3.39"
+    "@wangeditor-next/basic-modules": "npm:~1.5.34"
+    "@wangeditor-next/code-highlight": "npm:~1.3.31"
+    "@wangeditor-next/core": "npm:~1.7.34"
+    "@wangeditor-next/list-module": "npm:~1.1.40"
+    "@wangeditor-next/table-module": "npm:~1.6.44"
+    "@wangeditor-next/upload-image-module": "npm:~1.1.37"
+    "@wangeditor-next/video-module": "npm:~1.3.40"
     dom7: "npm:^4.0.0"
     is-hotkey: "npm:^0.2.0"
     lodash.camelcase: "npm:^4.3.0"
@@ -3690,68 +3690,68 @@ __metadata:
     lodash.throttle: "npm:^4.1.1"
     lodash.toarray: "npm:^4.4.0"
     nanoid: "npm:^5.0.0"
-    slate: "npm:^0.72.0"
+    slate: "npm:^0.82.0"
     snabbdom: "npm:^3.6.0"
-  checksum: 10c0/a6a81633b93eb8ea3c7ca6718d29634d73f14bbb5e65a6609ce0da712a9faa86d58c5ea958789ce0a88c3d76d8d52afb2a30d67a6d9135e0e9eb65ff7b4efe82
+  checksum: 10c0/868d5af71d9935631854e7294cd62cd705a3b0c7ace3d7d9d6ac247369d2ff690a0f705df6607705ec653066f6eca73344c9cd7dd40584833c8881a8abe19849
   languageName: node
   linkType: hard
 
-"@wangeditor-next/list-module@npm:~1.1.39":
-  version: 1.1.39
-  resolution: "@wangeditor-next/list-module@npm:1.1.39"
+"@wangeditor-next/list-module@npm:~1.1.40":
+  version: 1.1.40
+  resolution: "@wangeditor-next/list-module@npm:1.1.40"
   peerDependencies:
-    "@wangeditor-next/core": 1.7.33
+    "@wangeditor-next/core": 1.7.34
     dom7: ^3.0.0 || ^4.0.0
-    slate: ^0.72.0
+    slate: ^0.82.0
     snabbdom: ^3.6.0
-  checksum: 10c0/0d4e26e2cea0ec41b545d5ed041533b5993b831f3a2f226fad8751b90a4ba919a33c655bf1f63a5bb81f7a7084ee263d8c081896481c1ece6ebe263170e9abac
+  checksum: 10c0/6e3f144e09dbeb906330b534388308f6e197984615a5fe8b53e5fa0827cd4da90a4204525fc9c1ee6ed21709ed3edf7aa3ed47be9d35fca88880457704f829f1
   languageName: node
   linkType: hard
 
-"@wangeditor-next/table-module@npm:~1.6.43":
-  version: 1.6.43
-  resolution: "@wangeditor-next/table-module@npm:1.6.43"
+"@wangeditor-next/table-module@npm:~1.6.44":
+  version: 1.6.44
+  resolution: "@wangeditor-next/table-module@npm:1.6.44"
   peerDependencies:
-    "@wangeditor-next/core": 1.7.33
+    "@wangeditor-next/core": 1.7.34
     dom7: ^3.0.0 || ^4.0.0
     lodash.debounce: ^4.0.8
     lodash.isequal: ^4.5.0
     lodash.throttle: ^4.1.1
     nanoid: ^5.0.0
-    slate: ^0.72.0
+    slate: ^0.82.0
     snabbdom: ^3.6.0
-  checksum: 10c0/8f24c76f52acb70091c043f2c1564d8c62204ac9234f371e54a3e1db97ee1b6fc0763f2327027b0e9cba6f187a05c05d2f641751933926b42252ccdc332768b1
+  checksum: 10c0/9f610637175a868456ba75e2c00253fc303c8022581d668f5cd2a577e3988b7bcbc199cd4322e970ddd70a243b13867c9f5c3589739d87780c3d7bdb952a7e0c
   languageName: node
   linkType: hard
 
-"@wangeditor-next/upload-image-module@npm:~1.1.36":
-  version: 1.1.36
-  resolution: "@wangeditor-next/upload-image-module@npm:1.1.36"
+"@wangeditor-next/upload-image-module@npm:~1.1.37":
+  version: 1.1.37
+  resolution: "@wangeditor-next/upload-image-module@npm:1.1.37"
   peerDependencies:
     "@uppy/core": ^2.0.3
     "@uppy/xhr-upload": ^2.0.3
-    "@wangeditor-next/basic-modules": 1.5.33
-    "@wangeditor-next/core": 1.7.33
+    "@wangeditor-next/basic-modules": 1.5.34
+    "@wangeditor-next/core": 1.7.34
     dom7: ^3.0.0 || ^4.0.0
     lodash.foreach: ^4.5.0
-    slate: ^0.72.0
+    slate: ^0.82.0
     snabbdom: ^3.6.0
-  checksum: 10c0/d4691d9b4628b85b02839b7d88735acefbe1ebc2be211adb3cd9bfe08161bb4ebd466aad367f061174fd7679b5abf39c8347c984d1d410c6a439bc64558ded01
+  checksum: 10c0/0ccae15c3e3f5be037be7349eb6c64c4c863f6cb593ca26cec21e81026a8b7701d57294afd366e7110fb8a66562292d75ecaf9558c6cfa9df4fd1ac0a3177f60
   languageName: node
   linkType: hard
 
-"@wangeditor-next/video-module@npm:~1.3.39":
-  version: 1.3.39
-  resolution: "@wangeditor-next/video-module@npm:1.3.39"
+"@wangeditor-next/video-module@npm:~1.3.40":
+  version: 1.3.40
+  resolution: "@wangeditor-next/video-module@npm:1.3.40"
   peerDependencies:
     "@uppy/core": ^2.1.4
     "@uppy/xhr-upload": ^2.0.7
-    "@wangeditor-next/core": 1.7.33
+    "@wangeditor-next/core": 1.7.34
     dom7: ^3.0.0 || ^4.0.0
     nanoid: ^5.0.0
-    slate: ^0.72.0
+    slate: ^0.82.0
     snabbdom: ^3.6.0
-  checksum: 10c0/412d3e97e5cbcdda9407816b8e68334d14c6aa01983aca663edbb4e05ecb23317a582ffb41ea1ef7f81e0e1aa0ac67918c9b929a2fc4a5337e0de42a6cc8c988
+  checksum: 10c0/64335a22bfeca1a4f79cb85f0906755ac9e3667869c03656f2ea0d12470afa94013ec77afa9fe793efe3b226f6313dfb4c6e34fcf49b1141569b615ed3ab575e
   languageName: node
   linkType: hard
 
@@ -12765,14 +12765,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"slate@npm:^0.72.0":
-  version: 0.72.8
-  resolution: "slate@npm:0.72.8"
+"slate@npm:^0.82.0":
+  version: 0.82.1
+  resolution: "slate@npm:0.82.1"
   dependencies:
     immer: "npm:^9.0.6"
     is-plain-object: "npm:^5.0.0"
     tiny-warning: "npm:^1.0.3"
-  checksum: 10c0/589d3bd94a4f7ae7dec180fa8148d5f2fff6b9569d7b3f1a81150e1e53555b394e50e99a28b925890759d7d08ee539fcaf0b8101e0fdfa4cd6cd9d5a63815af2
+  checksum: 10c0/f0d64467c66f4399de147c16c6232ea4e4defea1f9ae0e0e6adedb910fa3af5005af94f1f852a68cefc3145651e1c1227dd455ca81b00b8681188fcba18216b6
   languageName: node
   linkType: hard
 
