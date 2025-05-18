@@ -1,5 +1,11 @@
 # @wangeditor-next/plugin-formula
 
+## 1.0.20
+
+### Patch Changes
+
+- 8516327: fix: fix the way to get the original HTMLElement to ensure compatibility in the qiankun environment
+
 ## 1.0.19
 
 ### Patch Changes
