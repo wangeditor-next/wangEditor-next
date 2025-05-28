@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.7.36
+
+### Patch Changes
+
+- 54e958e: 抛出一个允许节点跳过缓存的配置项，默认屏蔽list不走缓存
+
 ## 1.7.35
 
 ### Patch Changes
