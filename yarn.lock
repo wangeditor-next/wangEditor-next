@@ -3501,7 +3501,7 @@ __metadata:
     "@types/is-url": "npm:^1.2.29"
     is-url: "npm:^1.2.4"
   peerDependencies:
-    "@wangeditor-next/core": 1.7.35
+    "@wangeditor-next/core": 1.7.36
     dom7: ^3.0.0 || ^4.0.0
     lodash.throttle: ^4.1.1
     nanoid: ^5.0.0
@@ -3517,7 +3517,7 @@ __metadata:
     "@types/prismjs": "npm:^1.16.5"
     prismjs: "npm:^1.23.0"
   peerDependencies:
-    "@wangeditor-next/core": 1.7.35
+    "@wangeditor-next/core": 1.7.36
     dom7: ^3.0.0 || ^4.0.0
     slate: ^0.82.0
     snabbdom: ^3.6.0
@@ -3599,7 +3599,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@wangeditor-next/list-module@workspace:packages/list-module"
   peerDependencies:
-    "@wangeditor-next/core": 1.7.35
+    "@wangeditor-next/core": 1.7.36
     dom7: ^3.0.0 || ^4.0.0
     slate: ^0.82.0
     snabbdom: ^3.6.0
@@ -3666,7 +3666,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@wangeditor-next/table-module@workspace:packages/table-module"
   peerDependencies:
-    "@wangeditor-next/core": 1.7.35
+    "@wangeditor-next/core": 1.7.36
     dom7: ^3.0.0 || ^4.0.0
     lodash.debounce: ^4.0.8
     lodash.isequal: ^4.5.0
@@ -3683,8 +3683,8 @@ __metadata:
   peerDependencies:
     "@uppy/core": ^2.0.3
     "@uppy/xhr-upload": ^2.0.3
-    "@wangeditor-next/basic-modules": 1.5.35
-    "@wangeditor-next/core": 1.7.35
+    "@wangeditor-next/basic-modules": 1.5.36
+    "@wangeditor-next/core": 1.7.36
     dom7: ^3.0.0 || ^4.0.0
     lodash.foreach: ^4.5.0
     slate: ^0.82.0
@@ -3698,7 +3698,7 @@ __metadata:
   peerDependencies:
     "@uppy/core": ^2.1.4
     "@uppy/xhr-upload": ^2.0.7
-    "@wangeditor-next/core": 1.7.35
+    "@wangeditor-next/core": 1.7.36
     dom7: ^3.0.0 || ^4.0.0
     nanoid: ^5.0.0
     slate: ^0.82.0
@@ -3807,7 +3807,7 @@ __metadata:
     y-protocols: "npm:^1.0.5"
     yjs: "npm:^13.5.29"
   peerDependencies:
-    "@wangeditor-next/core": 1.7.35
+    "@wangeditor-next/core": 1.7.36
     slate: ^0.82.0
     yjs: ^13.5.29
   languageName: unknown
