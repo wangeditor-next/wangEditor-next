@@ -20,6 +20,7 @@ import {
 } from 'slate'
 
 import { withSelection } from './with-selection'
+import { EDITOR_TO_SELECTION } from './weak-maps'
 
 // table cell 内部的删除处理
 function deleteHandler(newEditor: IDomEditor): boolean {
@@ -406,6 +407,97 @@ function withTable<T extends IDomEditor>(editor: T): T {
    * 光标选区行为新增
    */
   withSelection(newEditor)
+
+  /**
+   * 添加获取表格批量选择的方法
+   */
+  newEditor.getTableSelection = () => {
+    return EDITOR_TO_SELECTION.get(newEditor) || null
+  }
+
+  /**
+   * 重写mark和node操作方法以支持表格批量选择
+   */
+  const { addMark: originalAddMark, removeMark: originalRemoveMark } = newEditor
+  const originalTransforms = { ...Transforms }
+
+  newEditor.addMark = (key: string, value: any) => {
+    const tableSelection = EDITOR_TO_SELECTION.get(newEditor)
+
+    if (tableSelection && tableSelection.length > 0) {
+      // 表格批量选择：对所有选中的单元格内的文本应用mark
+      tableSelection.forEach(row => {
+        row.forEach(cell => {
+          const [, cellPath] = cell[0]
+          // 对单元格内的所有文本节点应用mark
+          const textNodes = Array.from(Editor.nodes(newEditor, {
+            at: cellPath,
+            match: n => Text.isText(n),
+          }))
+
+          textNodes.forEach(([, textPath]) => {
+            Transforms.setNodes(newEditor, { [key]: value }, { at: textPath })
+          })
+        })
+      })
+    } else {
+      // 常规选择：使用原有逻辑
+      originalAddMark(key, value)
+    }
+  }
+
+  newEditor.removeMark = (key: string) => {
+    const tableSelection = EDITOR_TO_SELECTION.get(newEditor)
+
+    if (tableSelection && tableSelection.length > 0) {
+      // 表格批量选择：对所有选中的单元格内的文本移除mark
+      tableSelection.forEach(row => {
+        row.forEach(cell => {
+          const [, cellPath] = cell[0]
+          // 对单元格内的所有文本节点移除mark
+          const textNodes = Array.from(Editor.nodes(newEditor, {
+            at: cellPath,
+            match: n => Text.isText(n),
+          }))
+
+          textNodes.forEach(([, textPath]) => {
+            Transforms.unsetNodes(newEditor, [key], { at: textPath })
+          })
+        })
+      })
+    } else {
+      // 常规选择：使用原有逻辑
+      originalRemoveMark(key)
+    }
+  }
+
+  /**
+   * 重写Transforms.setNodes以支持表格批量选择（如对齐功能）
+   */
+  Transforms.setNodes = (targetEditor, props, options = {}) => {
+    // 只有当传入的editor是当前newEditor且有表格选择时才特殊处理
+    if (targetEditor === newEditor) {
+      const tableSelection = EDITOR_TO_SELECTION.get(newEditor)
+
+      if (tableSelection && tableSelection.length > 0) {
+        // 表格批量选择：对所有选中的单元格应用属性
+        tableSelection.forEach(row => {
+          row.forEach(cell => {
+            const [, cellPath] = cell[0]
+
+            originalTransforms.setNodes(targetEditor, props, {
+              ...options,
+              at: cellPath,
+            })
+          })
+        })
+        return
+      }
+    }
+
+    // 常规情况：使用原有逻辑
+    originalTransforms.setNodes(targetEditor, props, options)
+  }
 
   // 可继续修改其他 newEditor API ...
 
