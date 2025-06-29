@@ -425,21 +425,30 @@ function withTable<T extends IDomEditor>(editor: T): T {
     const tableSelection = EDITOR_TO_SELECTION.get(newEditor)
 
     if (tableSelection && tableSelection.length > 0) {
-      // 表格批量选择：对所有选中的单元格内的文本应用mark
+      // 表格批量选择：对每个选中的单元格应用mark
+      // 保存当前选择状态
+      const originalSelection = newEditor.selection
+
       tableSelection.forEach(row => {
         row.forEach(cell => {
           const [, cellPath] = cell[0]
-          // 对单元格内的所有文本节点应用mark
-          const textNodes = Array.from(Editor.nodes(newEditor, {
-            at: cellPath,
-            match: n => Text.isText(n),
-          }))
 
-          textNodes.forEach(([, textPath]) => {
-            Transforms.setNodes(newEditor, { [key]: value }, { at: textPath })
-          })
+          // 为每个单元格设置选择范围（选中整个单元格的内容）
+          const start = Editor.start(newEditor, cellPath)
+          const end = Editor.end(newEditor, cellPath)
+
+          // 设置选择范围到当前单元格
+          Transforms.select(newEditor, { anchor: start, focus: end })
+
+          // 在当前单元格范围内应用原始的 addMark 方法
+          originalAddMark(key, value)
         })
       })
+
+      // 恢复原始选择状态
+      if (originalSelection) {
+        Transforms.select(newEditor, originalSelection)
+      }
     } else {
       // 常规选择：使用原有逻辑
       originalAddMark(key, value)
@@ -450,21 +459,30 @@ function withTable<T extends IDomEditor>(editor: T): T {
     const tableSelection = EDITOR_TO_SELECTION.get(newEditor)
 
     if (tableSelection && tableSelection.length > 0) {
-      // 表格批量选择：对所有选中的单元格内的文本移除mark
+      // 表格批量选择：对每个选中的单元格移除mark
+      // 保存当前选择状态
+      const originalSelection = newEditor.selection
+
       tableSelection.forEach(row => {
         row.forEach(cell => {
           const [, cellPath] = cell[0]
-          // 对单元格内的所有文本节点移除mark
-          const textNodes = Array.from(Editor.nodes(newEditor, {
-            at: cellPath,
-            match: n => Text.isText(n),
-          }))
 
-          textNodes.forEach(([, textPath]) => {
-            Transforms.unsetNodes(newEditor, [key], { at: textPath })
-          })
+          // 为每个单元格设置选择范围（选中整个单元格的内容）
+          const start = Editor.start(newEditor, cellPath)
+          const end = Editor.end(newEditor, cellPath)
+
+          // 设置选择范围到当前单元格
+          Transforms.select(newEditor, { anchor: start, focus: end })
+
+          // 在当前单元格范围内应用原始的 removeMark 方法
+          originalRemoveMark(key)
         })
       })
+
+      // 恢复原始选择状态
+      if (originalSelection) {
+        Transforms.select(newEditor, originalSelection)
+      }
     } else {
       // 常规选择：使用原有逻辑
       originalRemoveMark(key)

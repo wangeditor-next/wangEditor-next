@@ -26,13 +26,22 @@ const mockTableSelection = [
 const createEditorWithTableSelection = () => {
   const editor = createEditor()
 
-  // Set up a proper table structure in the editor
+  // Set up a proper 3x3 table structure in the editor
   const tableNode = {
     type: 'table',
     children: [
       {
         type: 'tr',
         children: [
+          { type: 'td', children: [{ text: 'Cell 0,0' }] },
+          { type: 'td', children: [{ text: 'Cell 0,1' }] },
+          { type: 'td', children: [{ text: 'Cell 0,2' }] },
+        ],
+      },
+      {
+        type: 'tr',
+        children: [
+          { type: 'td', children: [{ text: 'Cell 1,0' }] },
           { type: 'td', children: [{ text: 'Cell 1,1' }] },
           { type: 'td', children: [{ text: 'Cell 1,2' }] },
         ],
@@ -40,6 +49,7 @@ const createEditorWithTableSelection = () => {
       {
         type: 'tr',
         children: [
+          { type: 'td', children: [{ text: 'Cell 2,0' }] },
           { type: 'td', children: [{ text: 'Cell 2,1' }] },
           { type: 'td', children: [{ text: 'Cell 2,2' }] },
         ],
@@ -53,29 +63,51 @@ const createEditorWithTableSelection = () => {
   // Mock the getTableSelection method that would be added by withTable plugin
   editor.getTableSelection = vi.fn().mockReturnValue(mockTableSelection)
 
-  // Mock addMark and removeMark to simulate table batch selection behavior
+  // Mock addMark and removeMark to simulate the new table batch selection behavior
   const originalAddMark = editor.addMark.bind(editor)
   const originalRemoveMark = editor.removeMark.bind(editor)
 
   // Store spies to be accessible in tests
-  let setNodesSpy: any
-  let unsetNodesSpy: any
+  let selectSpy: any
+  let addMarkSpy: any
+  let removeMarkSpy: any
 
   editor.addMark = vi.fn((key: string, value: any) => {
     const tableSelection = editor.getTableSelection?.()
 
     if (tableSelection && tableSelection.length > 0) {
-      // Create spy if not exists
-      if (!setNodesSpy) {
-        setNodesSpy = vi.spyOn(Transforms, 'setNodes').mockImplementation(() => {})
+      // Create spies if not exist
+      if (!selectSpy) {
+        selectSpy = vi.spyOn(Transforms, 'select').mockImplementation(() => {})
+      }
+      if (!addMarkSpy) {
+        addMarkSpy = vi.fn(originalAddMark)
       }
 
-      // Simulate calling setNodes for each selected cell
+      // Save original selection
+      const originalSelection = editor.selection
+
+      // Simulate the new behavior: set selection range and call original addMark
       tableSelection.forEach((row: any) => {
-        row.forEach(() => {
-          setNodesSpy(editor, { [key]: value }, { at: [0, 0, 0] })
+        row.forEach((cell: any) => {
+          const [, cellPath] = cell[0]
+
+          // Mock Editor.start and Editor.end
+          const start = { path: [...cellPath, 0], offset: 0 }
+          const end = { path: [...cellPath, 0], offset: 10 }
+
+          // Simulate setting selection to cell
+          selectSpy({ anchor: start, focus: end })
+
+          // Call original addMark
+          addMarkSpy(key, value)
         })
       })
+
+      // Restore original selection
+      if (originalSelection) {
+        selectSpy(originalSelection)
+      }
     } else {
       originalAddMark(key, value)
     }
@@ -85,25 +117,47 @@ const createEditorWithTableSelection = () => {
     const tableSelection = editor.getTableSelection?.()
 
     if (tableSelection && tableSelection.length > 0) {
-      // Create spy if not exists
-      if (!unsetNodesSpy) {
-        unsetNodesSpy = vi.spyOn(Transforms, 'unsetNodes').mockImplementation(() => {})
+      // Create spies if not exist
+      if (!selectSpy) {
+        selectSpy = vi.spyOn(Transforms, 'select').mockImplementation(() => {})
+      }
+      if (!removeMarkSpy) {
+        removeMarkSpy = vi.fn(originalRemoveMark)
       }
 
-      // Simulate calling unsetNodes for each selected cell
+      // Save original selection
+      const originalSelection = editor.selection
+
+      // Simulate the new behavior: set selection range and call original removeMark
       tableSelection.forEach((row: any) => {
-        row.forEach(() => {
-          unsetNodesSpy(editor, [key], { at: [0, 0, 0] })
+        row.forEach((cell: any) => {
+          const [, cellPath] = cell[0]
+
+          // Mock Editor.start and Editor.end
+          const start = { path: [...cellPath, 0], offset: 0 }
+          const end = { path: [...cellPath, 0], offset: 10 }
+
+          // Simulate setting selection to cell
+          selectSpy({ anchor: start, focus: end })
+
+          // Call original removeMark
+          removeMarkSpy(key)
         })
       })
+
+      // Restore original selection
+      if (originalSelection) {
+        selectSpy(originalSelection)
+      }
     } else {
       originalRemoveMark(key)
     }
   });
 
   // Store spies on editor for test access
-  (editor as any).getSetNodesSpy = () => setNodesSpy;
-  (editor as any).getUnsetNodesSpy = () => unsetNodesSpy
+  (editor as any).getSelectSpy = () => selectSpy;
+  (editor as any).getAddMarkSpy = () => addMarkSpy;
+  (editor as any).getRemoveMarkSpy = () => removeMarkSpy
 
   return editor
 }
@@ -124,9 +178,9 @@ describe('Basic Modules - Table Batch Selection Integration', () => {
         // Simulate color menu execution
         editor.addMark('color', '#ff0000')
 
-        const setNodesSpy = (editor as any).getSetNodesSpy()
+        const selectSpy = (editor as any).getSelectSpy()
 
-        expect(setNodesSpy).toHaveBeenCalled()
+        expect(selectSpy).toHaveBeenCalled()
         expect(editor.addMark).toHaveBeenCalledWith('color', '#ff0000')
       })
 
@@ -135,9 +189,9 @@ describe('Basic Modules - Table Batch Selection Integration', () => {
 
         editor.removeMark('color')
 
-        const unsetNodesSpy = (editor as any).getUnsetNodesSpy()
+        const selectSpy = (editor as any).getSelectSpy()
 
-        expect(unsetNodesSpy).toHaveBeenCalled()
+        expect(selectSpy).toHaveBeenCalled()
         expect(editor.removeMark).toHaveBeenCalledWith('color')
       })
     })
@@ -148,9 +202,9 @@ describe('Basic Modules - Table Batch Selection Integration', () => {
 
         editor.addMark('bgColor', '#00ff00')
 
-        const setNodesSpy = (editor as any).getSetNodesSpy()
+        const selectSpy = (editor as any).getSelectSpy()
 
-        expect(setNodesSpy).toHaveBeenCalled()
+        expect(selectSpy).toHaveBeenCalled()
         expect(editor.addMark).toHaveBeenCalledWith('bgColor', '#00ff00')
       })
     })
@@ -163,9 +217,9 @@ describe('Basic Modules - Table Batch Selection Integration', () => {
 
         editor.addMark('bold', true)
 
-        const setNodesSpy = (editor as any).getSetNodesSpy()
+        const selectSpy = (editor as any).getSelectSpy()
 
-        expect(setNodesSpy).toHaveBeenCalled()
+        expect(selectSpy).toHaveBeenCalled()
         expect(editor.addMark).toHaveBeenCalledWith('bold', true)
       })
 
@@ -174,9 +228,9 @@ describe('Basic Modules - Table Batch Selection Integration', () => {
 
         editor.removeMark('bold')
 
-        const unsetNodesSpy = (editor as any).getUnsetNodesSpy()
+        const selectSpy = (editor as any).getSelectSpy()
 
-        expect(unsetNodesSpy).toHaveBeenCalled()
+        expect(selectSpy).toHaveBeenCalled()
         expect(editor.removeMark).toHaveBeenCalledWith('bold')
       })
     })
@@ -187,9 +241,9 @@ describe('Basic Modules - Table Batch Selection Integration', () => {
 
         editor.addMark('italic', true)
 
-        const setNodesSpy = (editor as any).getSetNodesSpy()
+        const selectSpy = (editor as any).getSelectSpy()
 
-        expect(setNodesSpy).toHaveBeenCalled()
+        expect(selectSpy).toHaveBeenCalled()
       })
     })
   })
@@ -200,9 +254,9 @@ describe('Basic Modules - Table Batch Selection Integration', () => {
 
       editor.addMark('fontSize', '18px')
 
-      const setNodesSpy = (editor as any).getSetNodesSpy()
+      const selectSpy = (editor as any).getSelectSpy()
 
-      expect(setNodesSpy).toHaveBeenCalled()
+      expect(selectSpy).toHaveBeenCalled()
       expect(editor.addMark).toHaveBeenCalledWith('fontSize', '18px')
     })
   })
@@ -380,9 +434,9 @@ describe('Basic Modules - Table Batch Selection Integration', () => {
       editor.addMark('fontSize', '16px')
       editor.addMark('bold', true)
 
-      const setNodesSpy = (editor as any).getSetNodesSpy()
+      const selectSpy = (editor as any).getSelectSpy()
 
-      expect(setNodesSpy).toHaveBeenCalledTimes(12) // 4 cells × 3 marks
+      expect(selectSpy).toHaveBeenCalledTimes(12) // 4 cells × 3 marks
     })
 
     test('should handle mixed mark and node operations', () => {
