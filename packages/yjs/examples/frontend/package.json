@@ -6,7 +6,7 @@
         "dev": "vite",
         "build": "APP_ENV=production vite build",
         "serve": "vite preview",
-        "deploy": "yarn netlify deploy --prod --dir ./dist"
+        "deploy": "pnpm netlify deploy --prod --dir ./dist"
     },
     "dependencies": {
         "@faker-js/faker": "^7.5.0",

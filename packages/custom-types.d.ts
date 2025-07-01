@@ -2,6 +2,7 @@
  * @description 自定义扩展 slate 接口属性
  * @author wangfupeng
  */
+/// <reference types="slate" />
 import { BlockQuoteElement } from './basic-modules/src/modules/blockquote/custom-types'
 import { CodeElement, PreElement } from './basic-modules/src/modules/code-block/custom-types'
 import { ColorText } from './basic-modules/src/modules/color/custom-types'
@@ -102,3 +103,5 @@ declare module 'slate' {
     Element: CustomElement
   }
 }
+
+export { BaseElement, CustomElement, ElementType }

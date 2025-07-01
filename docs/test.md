@@ -7,15 +7,15 @@
 ### 运行单元测试
 目前单元测试的运行已经集成在 CI 流程中，如果本地开发后，需要自动执行单元测试，运行如下 `scripts` 命令：
 ```bash
-yarn run test
+pnpm run test
 ```
 查看单元测试的覆盖率：
 ```bash
-yarn run test-c
+pnpm run test-c
 ```
 
 ### 注意事项
-- **因为各个模块依赖了 `core`，如果修改了 `core` 的代码，增加了 `API`，需要运行 `yarn build` 命令，使得各个模块能读到最新的代码**。
+- **因为各个模块依赖了 `core`，如果修改了 `core` 的代码，增加了 `API`，需要运行 `pnpm build` 命令，使得各个模块能读到最新的代码**。
 
 ## E2E 测试
 目前我们的项目 `E2E` 测试基于 [Cypress](https://docs.cypress.io/)，对于编辑器这种强依赖用户交互运作的产品，通过 `E2E` 保证编辑器交互更加稳定。
@@ -27,7 +27,7 @@ yarn run test-c
 ### 运行 E2E 测试
 目前 E2E 测试的同样集成到了 CI 流程中，如果本地开发后，需要编写 E2E 测试，运行如下 `scripts` 命令：
 ```bash
-yarn e2e:dev
+pnpm e2e:dev
 ```
 该命令首先会启动 `packages/editor` 下面的 `example` 服务，然后再启动 Cypress 的命令， Cypress 会在本地调起 UI 界面：
 
@@ -39,6 +39,6 @@ yarn e2e:dev
 
 如果不是为了开发新的测试用例，只是想要本地运行所有的 E2E 测试，则执行：
 ```bash
-yarn e2e
+pnpm e2e
 ```
 Cypress 则会自己后台运行所有测试，并不会打开 UI 界面和浏览器。

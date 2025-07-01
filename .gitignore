@@ -65,7 +65,7 @@ typings/
 # Output of 'npm pack'
 *.tgz
 
-# Yarn Integrity file
+# Package manager files
 .yarn-integrity
 .pnp.*
 .yarn/*
@@ -74,6 +74,10 @@ typings/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# pnpm
+pnpm-lock.yaml
+.pnpm-debug.log*
 
 # dotenv environment variables file
 .env

@@ -41,13 +41,11 @@ jobs:
           node-version: 18.x
           registry-url: https://registry.npmjs.com
 
-      # 启用 Corepack 以支持 Yarn 4
-      - name: Enable Corepack
-        run: corepack enable
-
-      # 准备 Yarn 4.x
-      - name: Prepare Yarn
-        run: corepack prepare yarn@4.4.1 --activate
+      # 安装 pnpm
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
 
       # 加载依赖缓存
       - name: Load cached dependencies
@@ -58,16 +56,17 @@ jobs:
             **/node_modules
             **/.turbo
             /home/runner/.cache/Cypress
-          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+            ~/.pnpm-store
+          key: ${{ runner.os }}-node-18-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       # 安装依赖
       - name: Install dependencies
-        run: yarn install
+        run: pnpm install
 
       # 构建项目
       - name: Build packages
-        run: yarn build
+        run: pnpm build
 
       # 运行单元测试
       - name: Unit test
-        run: yarn run test
+        run: pnpm run test
