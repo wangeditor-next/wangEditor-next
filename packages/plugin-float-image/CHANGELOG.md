@@ -1,5 +1,12 @@
 # @wangeditor-next/plugin-float-image
 
+## 1.0.20
+
+### Patch Changes
+
+- Updated dependencies [09fa830]
+  - @wangeditor-next/editor@5.6.35
+
 ## 1.0.19
 
 ### Patch Changes

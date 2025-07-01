@@ -1,11 +1,18 @@
 # Change Log
 
+## 1.5.38
+
+### Patch Changes
+
+- 5e7bfdf: 修复表格批量选择时使用选择范围+标准API替代直接节点操作，解决工具栏状态和格式延续问题
+- Updated dependencies [5e7bfdf]
+  - @wangeditor-next/core@1.7.38
+
 ## 1.5.37
 
 ### Patch Changes
 
 - 8c91da0: 修复表格批量选择功能中的样式和变换操作
-
   - 修复了表格批量选择时 addMark 和 removeMark 方法的处理逻辑
   - 修复了 Transforms.setNodes 在表格批量选择场景下的行为
   - 改进了基础模块（颜色、对齐、行高等）与表格批量选择的集成

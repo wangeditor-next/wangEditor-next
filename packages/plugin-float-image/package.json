@@ -1,6 +1,6 @@
 {
   "name": "@wangeditor-next/plugin-float-image",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "wangEditor float image plugin",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",
@@ -41,7 +41,7 @@
     "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
   },
   "peerDependencies": {
-    "@wangeditor-next/editor": "5.6.34",
+    "@wangeditor-next/editor": "5.6.35",
     "dom7": "^3.0.0 || ^4.0.0",
     "slate": "^0.82.0",
     "snabbdom": "^3.6.0"

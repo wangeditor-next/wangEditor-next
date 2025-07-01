@@ -1,5 +1,19 @@
 # Change Log
 
+## 5.6.35
+
+### Patch Changes
+
+- 09fa830: 切换 yarn 为 pnpm
+- Updated dependencies [5e7bfdf]
+  - @wangeditor-next/basic-modules@1.5.38
+  - @wangeditor-next/core@1.7.38
+  - @wangeditor-next/table-module@1.6.48
+  - @wangeditor-next/upload-image-module@1.1.41
+  - @wangeditor-next/code-highlight@1.3.35
+  - @wangeditor-next/list-module@1.1.44
+  - @wangeditor-next/video-module@1.3.44
+
 ## 5.6.34
 
 ### Patch Changes
