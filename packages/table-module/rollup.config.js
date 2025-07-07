@@ -1,6 +1,6 @@
 import { createRollupConfig } from '@wangeditor-next-shared/rollup-config'
 
-import pkg from './package.json' assert { type: 'json' }
+import pkg from './package.json' with { type: 'json' }
 
 const name = 'WangEditorTableModule'
 
