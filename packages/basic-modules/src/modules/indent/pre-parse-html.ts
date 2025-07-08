@@ -13,13 +13,12 @@ function preParse(elem: DOMElement): DOMElement {
   const $elem = $(elem)
   const paddingLeft = getStyleValue($elem, 'padding-left')
 
-  if (/\dem/.test(paddingLeft)) {
+  if (/^[1-9]\d*em$/.test(paddingLeft)) {
     // 如 '2em' ，V4 格式
     $elem.css('text-indent', '2em')
   }
 
-  if (/\dpx/.test(paddingLeft)) {
-    // px 单位
+  if (/^[1-9]\d*px$/.test(paddingLeft)) {
     const num = parseInt(paddingLeft, 10)
 
     if (num % 32 === 0) {
