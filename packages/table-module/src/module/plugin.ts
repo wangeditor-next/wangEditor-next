@@ -19,8 +19,8 @@ import {
   Transforms,
 } from 'slate'
 
-import { withSelection } from './with-selection'
 import { EDITOR_TO_SELECTION } from './weak-maps'
+import { withSelection } from './with-selection'
 
 // table cell 内部的删除处理
 function deleteHandler(newEditor: IDomEditor): boolean {
@@ -498,6 +498,11 @@ function withTable<T extends IDomEditor>(editor: T): T {
       const tableSelection = EDITOR_TO_SELECTION.get(newEditor)
 
       if (tableSelection && tableSelection.length > 0) {
+        // 排除合并单元格操作
+        if ((props as any).hidden || (props as any).rowSpan || (props as any).colSpan) {
+          originalTransforms.setNodes(targetEditor, props, options)
+          return
+        }
         // 表格批量选择：对所有选中的单元格应用属性
         tableSelection.forEach(row => {
           row.forEach(cell => {
