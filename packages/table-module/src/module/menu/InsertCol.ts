@@ -130,9 +130,18 @@ class InsertCol implements IButtonMenu {
         const { columnWidths = [] } = elemNode as TableElement
         const adjustColumnWidths = [...columnWidths]
 
+        // 获取当前列的宽度，如果没有设置则使用默认宽度
         const { minWidth = 60 } = editor.getMenuConfig('insertTable')
+        const currentColWidth = columnWidths[tdIndex] || parseInt(minWidth, 10) || 60
 
-        adjustColumnWidths.splice(tdIndex, 0, parseInt(minWidth, 10) || 60)
+        // 将当前列宽度一分为二
+        const halfWidth = Math.floor(currentColWidth / 2)
+        const remainingWidth = currentColWidth - halfWidth
+
+        // 在当前位置插入新列（左侧），使用一半宽度
+        adjustColumnWidths.splice(tdIndex, 0, halfWidth)
+        // 更新原列宽度为剩余的一半
+        adjustColumnWidths[tdIndex + 1] = remainingWidth
 
         Transforms.setNodes(editor, { columnWidths: adjustColumnWidths } as TableElement, {
           at: tablePath,
