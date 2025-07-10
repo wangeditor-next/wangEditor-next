@@ -1,5 +1,11 @@
 # Change Log
 
+## 5.6.36
+
+### Patch Changes
+
+- 6c7e34d: fix table、indent、video error
+
 ## 5.6.35
 
 ### Patch Changes

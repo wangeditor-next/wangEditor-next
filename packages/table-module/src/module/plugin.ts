@@ -499,7 +499,7 @@ function withTable<T extends IDomEditor>(editor: T): T {
 
       if (tableSelection && tableSelection.length > 0) {
         // 排除合并单元格操作
-        if ((props as any).hidden || (props as any).rowSpan || (props as any).colSpan) {
+        if ('hidden' in props || 'rowSpan' in props || 'colSpan' in props) {
           originalTransforms.setNodes(targetEditor, props, options)
           return
         }

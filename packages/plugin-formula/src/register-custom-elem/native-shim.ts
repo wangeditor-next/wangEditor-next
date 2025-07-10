@@ -27,15 +27,10 @@
     // The webcomponentsjs custom elements polyfill doesn't require
     // ES2015-compatible construction (`super()` or `Reflect.construct`).
     || window.customElements.polyfillWrapFlushCallback
-    /* eslint-disable-next-line */
-    || window.__POWERED_BY_QIANKUN__ // qiankun environment check
   ) {
     return
   }
-
-  // get the original HTMLElement
-  const BuiltInHTMLElement = Object.getPrototypeOf(window).HTMLElement
-
+  const BuiltInHTMLElement = HTMLElement
   /**
    * With jscompiler's RECOMMENDED_FLAGS the function name will be optimized away.
    * However, if we declare the function as a property on an object literal, and

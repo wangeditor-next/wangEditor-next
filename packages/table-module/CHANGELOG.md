@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.6.49
+
+### Patch Changes
+
+- 68bc0e0: 修复:setNodes批量操作时排除合并单元格的场景，避免误批量操作导致合并单元格异常
+
 ## 1.6.48
 
 ### Patch Changes

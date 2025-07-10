@@ -113,9 +113,9 @@ interface IInsertVideoConfig {
   parseVideoSrc: (url: string) => string
 }
 
-export interface IUploadVideoConfig extends IUploadConfig { }
+export type IUploadVideoConfig = IUploadConfig
 
-export interface IUploadImageConfig extends IUploadConfig {
+export type IUploadImageConfig = IUploadConfig & {
   // base64 限制（单位 kb） - 小于 xxx 就插入 base64 格式
   base64LimitSize: number
 }
