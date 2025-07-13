@@ -3,7 +3,7 @@ import {
 } from 'slate'
 
 import {
-  filledMatrix, hasCommon, isOfType, NodeEntryWithContext, Point,
+  filledMatrix, hasCommon, NodeEntryWithContext, Point,
 } from '../utils'
 import { TableCursor } from './table-cursor'
 import { EDITOR_TO_SELECTION, EDITOR_TO_SELECTION_SET } from './weak-maps'
@@ -29,13 +29,27 @@ export function withSelection<T extends Editor>(editor: T) {
     }
 
     const [fromEntry] = Editor.nodes(editor, {
-      match: isOfType(editor, 'th', 'td'),
+      match: n => {
+        // 更健壮的单元格匹配逻辑
+        return Element.isElement(n)
+               && (n.type === 'table-cell'
+                || n.type === 'th'
+                || n.type === 'td')
+      },
       at: Range.start(selection),
+      mode: 'lowest', // 确保找到最低层的匹配节点
     })
 
     const [toEntry] = Editor.nodes(editor, {
-      match: isOfType(editor, 'th', 'td'),
+      match: n => {
+        // 更健壮的单元格匹配逻辑
+        return Element.isElement(n)
+               && (n.type === 'table-cell'
+                || n.type === 'th'
+                || n.type === 'td')
+      },
       at: Range.end(selection),
+      mode: 'lowest', // 确保找到最低层的匹配节点
     })
 
     if (!fromEntry || !toEntry) {
@@ -52,76 +66,135 @@ export function withSelection<T extends Editor>(editor: T) {
     }
 
     // TODO: perf: could be improved by passing a Span [fromPath, toPath]
-    const filled = filledMatrix(editor, { at: fromPath })
+    try {
+      const filled = filledMatrix(editor, { at: fromPath })
 
-    // find initial bounds
-    const from = Point.valueOf(0, 0)
-    const to = Point.valueOf(0, 0)
+      // 基本的有效性检查
+      if (!filled || filled.length === 0) {
+        TableCursor.unselect(editor)
+        return apply(op)
+      }
 
-    for (let x = 0; x < filled.length; x += 1) {
-      for (let y = 0; y < filled[x].length; y += 1) {
-        const [[, path]] = filled[x][y]
+      // 添加调试信息
+      console.log('=== 表格选择调试 ===')
+      console.log('fromPath:', fromPath.join(','))
+      console.log('toPath:', toPath.join(','))
+      console.log('矩阵大小:', filled.length, 'x', filled[0]?.length || 0)
 
-        if (Path.equals(fromPath, path)) {
-          from.x = x
-          from.y = y
+      // find initial bounds
+      const from = Point.valueOf(0, 0)
+      const to = Point.valueOf(0, 0)
+      let fromFound = false
+      let toFound = false
+
+      for (let x = 0; x < filled.length; x += 1) {
+        if (!filled[x]) { continue } // 跳过空行
+
+        for (let y = 0; y < filled[x].length; y += 1) {
+          if (!filled[x][y]) { continue } // 跳过空单元格
+
+          const [[, path]] = filled[x][y]
+
+          if (Path.equals(fromPath, path)) {
+            from.x = x
+            from.y = y
+            fromFound = true
+            console.log('找到起始位置:', x, y)
+          }
+
+          if (Path.equals(toPath, path)) {
+            to.x = x
+            to.y = y
+            toFound = true
+            console.log('找到结束位置:', x, y)
+          }
+        }
+      }
+
+      // 如果找不到位置，可能是选择了被删除的单元格区域
+      if (!fromFound || !toFound) {
+        console.warn('无法找到选择位置，可能选择了已删除的单元格区域')
+        TableCursor.unselect(editor)
+        return apply(op)
+      }
+
+      let start = Point.valueOf(Math.min(from.x, to.x), Math.min(from.y, to.y))
+      let end = Point.valueOf(Math.max(from.x, to.x), Math.max(from.y, to.y))
+
+      console.log('初始选择范围:', start, 'to', end)
+
+      // expand the selection based on rowspan and colspan
+      for (;;) {
+        const nextStart = Point.valueOf(start.x, start.y)
+        const nextEnd = Point.valueOf(end.x, end.y)
+
+        for (let x = nextStart.x; x <= nextEnd.x && x < filled.length; x += 1) {
+          if (!filled[x]) { continue }
+
+          for (let y = nextStart.y; y <= nextEnd.y && y < filled[x].length; y += 1) {
+            if (!filled[x][y]) { continue }
+
+            const [, context] = filled[x][y]
+
+            if (!context) { continue }
+
+            const {
+              rtl, ltr, btt, ttb,
+            } = context
+
+            nextStart.x = Math.min(nextStart.x, x - (ttb - 1))
+            nextStart.y = Math.min(nextStart.y, y - (rtl - 1))
+
+            nextEnd.x = Math.max(nextEnd.x, x + (btt - 1))
+            nextEnd.y = Math.max(nextEnd.y, y + (ltr - 1))
+          }
         }
 
-        if (Path.equals(toPath, path)) {
-          to.x = x
-          to.y = y
+        if (Point.equals(start, nextStart) && Point.equals(end, nextEnd)) {
           break
         }
+
+        start = nextStart
+        end = nextEnd
       }
-    }
 
-    let start = Point.valueOf(Math.min(from.x, to.x), Math.min(from.y, to.y))
-    let end = Point.valueOf(Math.max(from.x, to.x), Math.max(from.y, to.y))
+      console.log('扩展后选择范围:', start, 'to', end)
 
-    // expand the selection based on rowspan and colspan
-    for (;;) {
-      const nextStart = Point.valueOf(start.x, start.y)
-      const nextEnd = Point.valueOf(end.x, end.y)
+      const selected: NodeEntryWithContext[][] = []
+      const selectedSet = new WeakSet<Element>()
 
-      for (let x = nextStart.x; x <= nextEnd.x; x += 1) {
-        for (let y = nextStart.y; y <= nextEnd.y; y += 1) {
-          const [, {
-            rtl, ltr, btt, ttb,
-          }] = filled[x][y]
+      for (let x = start.x; x <= end.x && x < filled.length; x += 1) {
+        if (!filled[x]) { continue }
 
-          nextStart.x = Math.min(nextStart.x, x - (ttb - 1))
-          nextStart.y = Math.min(nextStart.y, y - (rtl - 1))
+        const cells: NodeEntryWithContext[] = []
 
-          nextEnd.x = Math.max(nextEnd.x, x + (btt - 1))
-          nextEnd.y = Math.max(nextEnd.y, y + (ltr - 1))
+        for (let y = start.y; y <= end.y && y < filled[x].length; y += 1) {
+          if (!filled[x][y]) { continue }
+
+          const [[element]] = filled[x][y]
+
+          if (!element) { continue }
+
+          selectedSet.add(element)
+          cells.push(filled[x][y])
+        }
+
+        if (cells.length > 0) {
+          selected.push(cells)
         }
       }
 
-      if (Point.equals(start, nextStart) && Point.equals(end, nextEnd)) {
-        break
-      }
+      console.log('最终选择的单元格数量:', selected.length, 'x', selected[0]?.length || 0)
+      console.log('=== 调试结束 ===')
 
-      start = nextStart
-      end = nextEnd
+      EDITOR_TO_SELECTION.set(editor, selected)
+      EDITOR_TO_SELECTION_SET.set(editor, selectedSet)
+
+    } catch (error) {
+      console.error('表格选择出错:', error)
+      TableCursor.unselect(editor)
+      return apply(op)
     }
-
-    const selected: NodeEntryWithContext[][] = []
-    const selectedSet = new WeakSet<Element>()
-
-    for (let x = start.x; x <= end.x; x += 1) {
-      const cells: NodeEntryWithContext[] = []
-
-      for (let y = start.y; y <= end.y; y += 1) {
-        const [[element]] = filled[x][y]
-
-        selectedSet.add(element)
-        cells.push(filled[x][y])
-      }
-      selected.push(cells)
-    }
-
-    EDITOR_TO_SELECTION.set(editor, selected)
-    EDITOR_TO_SELECTION_SET.set(editor, selectedSet)
 
     apply(op)
   }

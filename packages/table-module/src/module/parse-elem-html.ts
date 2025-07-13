@@ -63,30 +63,13 @@ function parseRowHtml(
     // 确保是 table-cell 类型
     if (DomEditor.getNodeType(child) === 'table-cell') {
       const tableCell = child as TableCellElement
-      const colSpan = tableCell.colSpan || 1
 
-      tableCellChildren.push(tableCell) // 先添加当前单元格
-
-      // 如果 colSpan > 1，检查是否存在足够的隐藏 table-cell
-      for (let j = 1; j < colSpan; j += 1) {
-        const nextChild = children[i + j]
-
-        if (
-          nextChild
-          && DomEditor.getNodeType(nextChild) === 'table-cell'
-          && (nextChild as TableCellElement).hidden
-        ) {
-          // 已有隐藏的 table-cell，无需补充
-          continue
-        } else {
-          // 补齐缺少的隐藏 table-cell
-          tableCellChildren.push({
-            type: 'table-cell',
-            children: [{ text: '' }],
-            hidden: true,
-          })
-        }
+      // 如果是隐藏的单元格，则跳过（删除）
+      if (tableCell.hidden) {
+        continue
       }
+
+      tableCellChildren.push(tableCell) // 只添加非隐藏的单元格
     }
   }
 

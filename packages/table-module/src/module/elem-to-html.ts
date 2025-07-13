@@ -32,10 +32,15 @@ function tableCellToHtml(cellNode: Element, childrenHtml: string): string {
     width = 'auto',
     hidden = false,
   } = cellNode as TableCellElement
-  const tag = isHeader ? 'th' : 'td'
-  const style = hidden ? 'display:none' : ''
 
-  return `<${tag} colSpan="${colSpan}" rowSpan="${rowSpan}" width="${width}" style="${style}">${childrenHtml}</${tag}>`
+  // 如果单元格被隐藏，直接返回空字符串，不生成 HTML 元素
+  if (hidden) {
+    return ''
+  }
+
+  const tag = isHeader ? 'th' : 'td'
+
+  return `<${tag} colSpan="${colSpan}" rowSpan="${rowSpan}" width="${width}">${childrenHtml}</${tag}>`
 }
 
 export const tableToHtmlConf = {
