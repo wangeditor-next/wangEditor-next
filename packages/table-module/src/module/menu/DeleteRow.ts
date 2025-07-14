@@ -154,6 +154,17 @@ class DeleteRow implements IButtonMenu {
                 { at: path },
               )
             }
+          } else {
+            // 处理其他跨行单元格的情况：非隐藏且非左上角原始位置
+            // 这种情况下也需要减少原始单元格的 rowSpan
+            Transforms.setNodes<TableCellElement>(
+              editor,
+              {
+                rowSpan: Math.max(rowSpan - 1, 1),
+                colSpan,
+              },
+              { at: path },
+            )
           }
         }
       }

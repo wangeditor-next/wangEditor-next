@@ -44,6 +44,55 @@ class InsertCol implements IButtonMenu {
       // 选区未处于 table cell node ，则禁用
       return true
     }
+
+    // 检查当前单元格的宽度是否小于20px
+    try {
+      const [cellEntry] = Editor.nodes(editor, {
+        match: n => DomEditor.checkNodeType(n, 'table-cell'),
+        universal: true,
+      })
+
+      if (!cellEntry) {
+        return true
+      }
+
+      const [, selectedCellPath] = cellEntry
+      const matrix = filledMatrix(editor)
+      let tdIndex = -1
+
+      // 找到当前单元格在矩阵中的列索引
+      for (let x = 0; x < matrix.length; x += 1) {
+        for (let y = 0; y < matrix[x].length; y += 1) {
+          const [[, path]] = matrix[x][y]
+
+          if (Path.equals(selectedCellPath, path)) {
+            tdIndex = y
+            break
+          }
+        }
+        if (tdIndex !== -1) { break }
+      }
+
+      if (tdIndex === -1) {
+        return true
+      }
+
+      // 获取表格的列宽信息
+      const tableElement = tableNode as TableElement
+      const { columnWidths = [] } = tableElement
+
+      // 检查当前列的宽度 - 如果小于20px则禁用插入列功能
+      const currentColWidth = columnWidths[tdIndex]
+
+      if (currentColWidth && currentColWidth < 20) {
+        return true // 宽度限制：当前列宽度小于20px时禁用插入列功能
+      }
+
+    } catch (error) {
+      // 如果检查过程中出现错误，为安全起见禁用功能
+      return true
+    }
+
     return false
   }
 
@@ -78,48 +127,78 @@ class InsertCol implements IButtonMenu {
     }
 
     Editor.withoutNormalizing(editor, () => {
-      const exitMerge: number[] = []
+      // 记录已处理的合并单元格和需要跳过插入的行
+      const processedMergedCells = new Set<string>()
+      const skipInsertForRows = new Set<number>()
 
+      // 遍历每一行的第 tdIndex 列，处理合并单元格
       for (let x = 0; x < matrix.length; x += 1) {
-        const [, { ltr, rtl }] = matrix[x][tdIndex]
+        if (!matrix[x] || !matrix[x][tdIndex]) {
+          continue
+        }
 
-        // 向左找到 1 元素为止
-        if (ltr > 1 || rtl > 1) {
-          if (rtl === 1) { continue }
+        const [[,], { rtl, ltr }] = matrix[x][tdIndex]
 
-          const [[element, path]] = matrix[x][tdIndex - (rtl - 1)]
-          const colSpan = element.colSpan || 1
+        // 判断是否是合并单元格
+        if (rtl > 1 || ltr > 1) {
+          // 这是合并单元格的一部分
+          // 找到真实单元格的位置（最左边的位置）
+          const realCellCol = tdIndex - (rtl - 1)
+          const [[realCellElement, realCellPath]] = matrix[x][realCellCol]
+          const realCellPathKey = realCellPath.join(',')
 
-          exitMerge.push(x)
-          if (!element.hidden) {
-            Transforms.setNodes<TableCellElement>(
-              editor,
-              {
-                colSpan: colSpan + 1,
-              },
-              { at: path },
-            )
+          // 避免重复处理同一个合并单元格
+          if (!processedMergedCells.has(realCellPathKey)) {
+            processedMergedCells.add(realCellPathKey)
+
+            const { rowSpan = 1, colSpan = 1 } = realCellElement
+            const newColSpan = colSpan + 1
+
+            // 更新真实单元格的 colSpan
+            if (!realCellElement.hidden) {
+              Transforms.setNodes<TableCellElement>(
+                editor,
+                {
+                  colSpan: newColSpan,
+                },
+                { at: realCellPath },
+              )
+            }
+
+            // 标记所有被这个合并单元格影响的行，这些行不需要插入新的单元格
+            for (let r = 0; r < rowSpan; r += 1) {
+              skipInsertForRows.add(x + r)
+            }
+          } else {
+            // 如果已经处理过这个合并单元格，当前行也不需要插入新单元格
+            skipInsertForRows.add(x)
           }
         }
       }
 
-      // 遍历所有 rows ，挨个添加 cell
+      // 遍历所有行，为需要插入的行添加新单元格
       for (let x = 0; x < matrix.length; x += 1) {
+        // 如果这一行被合并单元格覆盖，则不插入新单元格
+        if (skipInsertForRows.has(x)) {
+          continue
+        }
+
         const newCell: TableCellElement = {
           type: 'table-cell',
-          hidden: exitMerge.includes(x),
           children: [{ text: '' }],
         }
 
+        // 如果是第一行且表格有标题，设置为标题单元格
         if (x === 0 && isTableWithHeader(tableNode)) {
           newCell.isHeader = true
         }
+
         const [[, insertPath]] = matrix[x][tdIndex]
 
         Transforms.insertNodes(editor, newCell, { at: insertPath })
       }
 
-      // 需要调整 columnWidths
+      // 调整 columnWidths
       const [tableEntry] = Editor.nodes(editor, {
         match: n => DomEditor.checkNodeType(n, 'table'),
         universal: true,

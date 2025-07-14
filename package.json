@@ -124,5 +124,22 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.14.6"
-  }
+  },
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jilexin/wangEditor-next.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jilexin/wangEditor-next/issues"
+  },
+  "homepage": "https://github.com/jilexin/wangEditor-next#readme"
 }
