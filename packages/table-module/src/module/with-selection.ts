@@ -75,12 +75,6 @@ export function withSelection<T extends Editor>(editor: T) {
         return apply(op)
       }
 
-      // 添加调试信息
-      console.log('=== 表格选择调试 ===')
-      console.log('fromPath:', fromPath.join(','))
-      console.log('toPath:', toPath.join(','))
-      console.log('矩阵大小:', filled.length, 'x', filled[0]?.length || 0)
-
       // find initial bounds
       const from = Point.valueOf(0, 0)
       const to = Point.valueOf(0, 0)
@@ -99,29 +93,24 @@ export function withSelection<T extends Editor>(editor: T) {
             from.x = x
             from.y = y
             fromFound = true
-            console.log('找到起始位置:', x, y)
           }
 
           if (Path.equals(toPath, path)) {
             to.x = x
             to.y = y
             toFound = true
-            console.log('找到结束位置:', x, y)
           }
         }
       }
 
       // 如果找不到位置，可能是选择了被删除的单元格区域
       if (!fromFound || !toFound) {
-        console.warn('无法找到选择位置，可能选择了已删除的单元格区域')
         TableCursor.unselect(editor)
         return apply(op)
       }
 
       let start = Point.valueOf(Math.min(from.x, to.x), Math.min(from.y, to.y))
       let end = Point.valueOf(Math.max(from.x, to.x), Math.max(from.y, to.y))
-
-      console.log('初始选择范围:', start, 'to', end)
 
       // expand the selection based on rowspan and colspan
       for (;;) {
@@ -158,8 +147,6 @@ export function withSelection<T extends Editor>(editor: T) {
         end = nextEnd
       }
 
-      console.log('扩展后选择范围:', start, 'to', end)
-
       const selected: NodeEntryWithContext[][] = []
       const selectedSet = new WeakSet<Element>()
 
@@ -184,14 +171,10 @@ export function withSelection<T extends Editor>(editor: T) {
         }
       }
 
-      console.log('最终选择的单元格数量:', selected.length, 'x', selected[0]?.length || 0)
-      console.log('=== 调试结束 ===')
-
       EDITOR_TO_SELECTION.set(editor, selected)
       EDITOR_TO_SELECTION_SET.set(editor, selectedSet)
 
     } catch (error) {
-      console.error('表格选择出错:', error)
       TableCursor.unselect(editor)
       return apply(op)
     }

@@ -29,7 +29,6 @@ function preParse(tableElem: DOMElement): DOMElement {
   // 删除带有 style="display:none" 的单元格（通常来自复制的隐藏内容）
   const $allCells = $table.find('td, th')
 
-  console.log('remove cell1')
   for (let i = 0; i < $allCells.length; i += 1) {
     const cell = $allCells[i]
     const $cell = $(cell)
@@ -38,12 +37,9 @@ function preParse(tableElem: DOMElement): DOMElement {
     // 检查style属性是否包含display:none或display: none
     if (styleAttr) {
       // 使用正则表达式匹配display:none，支持空格变化
-      console.log('remove cell2', styleAttr)
       const displayNoneRegex = /display\s*:\s*none/i
 
       if (displayNoneRegex.test(styleAttr)) {
-        console.log('remove cell3')
-        console.log('remove cell', $cell)
         $cell.remove()
       }
     }
@@ -55,39 +51,26 @@ function preParse(tableElem: DOMElement): DOMElement {
   for (let i = 0; i < $cells.length; i += 1) {
     const cell = $cells[i]
     const $cell = $(cell)
-    const $paragraphs = $cell.find('p')
 
-    if ($paragraphs.length > 0) {
-      // 如果单元格只包含一个p标签，直接用p标签的内容替换
-      if ($paragraphs.length === 1 && $cell.children().length === 1) {
-        const $p = $($paragraphs[0])
-        let content = $p.html() || ''
+    // 直接处理单元格中的所有 <p> 标签
+    let cellHtml = $cell.html() || ''
 
-        // 处理空内容或只包含空白字符的情况
-        if (!content.trim() || content.trim() === '&nbsp;') {
-          content = ''
-        }
+    // 先清理Word特殊标签
+    cellHtml = cellHtml.replace(/<o:p[^>]*>[\s\S]*?<\/o:p>/gi, '') // 删除 <o:p> 标签
+    cellHtml = cellHtml.replace(/<\/o:p>/gi, '') // 删除可能的自闭合标签
 
-        $cell.html(content)
-      } else {
-        // 如果有多个p标签，将它们用<br>分隔合并
-        const contents: string[] = []
+    // 一次性处理所有p标签
+    cellHtml = cellHtml.replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, (match, content) => {
+      // 处理空内容或只包含空白字符的情况
+      const trimmedContent = content.trim()
 
-        for (let j = 0; j < $paragraphs.length; j += 1) {
-          const p = $paragraphs[j]
-          const $p = $(p)
-          const content = $p.html() || ''
-
-          // 跳过空的p标签或只包含空白字符的p标签
-          if (content.trim() && content.trim() !== '&nbsp;') {
-            contents.push(content)
-          }
-        }
-
-        // 如果没有有效内容，保持空字符串
-        $cell.html(contents.length > 0 ? contents.join('<br>') : '')
+      if (!trimmedContent || trimmedContent === '&nbsp;') {
+        return '' // 删除空的p标签
       }
-    }
+      return content // 返回p标签的内容
+    })
+
+    $cell.html(cellHtml)
   }
 
   return $table[0]
