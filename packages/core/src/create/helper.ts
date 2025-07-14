@@ -111,10 +111,10 @@ export function initializeContent(editor: IDomEditor, options: { html?: string, 
   if (html != null) {
     // 传入 html ，转换为 JSON content
     editor.children = htmlToContent(editor, html)
-  }
-  if (content && content.length) {
+  } else if (content && content.length) {
     editor.children = content // 传入 JSON content
   }
+
   if (editor.children.length === 0) {
     editor.children = genDefaultContent() // 默认内容
   }
