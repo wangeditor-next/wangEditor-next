@@ -97,15 +97,27 @@ class DeleteCol implements IButtonMenu {
           continue
         }
 
-        const [[, cellPath], { rtl, ltr }] = matrix[x][tdIndex]
+        const [[, cellPath], {
+          rtl, ltr, ttb, btt,
+        }] = matrix[x][tdIndex]
         const cellPathKey = cellPath.join(',')
 
         // 判断是否是合并单元格
-        if (rtl > 1 || ltr > 1) {
+        if (rtl > 1 || ltr > 1 || ttb > 1 || btt > 1) {
           // 这是合并单元格的一部分
-          // 找到真实单元格的位置（最左边的位置）
+          // 找到真实单元格的位置（左上角的位置）
+          // rtl表示从右到左的距离，所以真实单元格列 = 当前列 - (rtl - 1)
+          // ttb表示从上到下的距离，所以真实单元格行 = 当前行 - (ttb - 1)
+          const realCellRow = x - (ttb - 1)
           const realCellCol = tdIndex - (rtl - 1)
-          const [[realCellElement, realCellPath]] = matrix[x][realCellCol]
+
+          // 安全检查：确保真实单元格位置存在
+          if (realCellRow < 0 || realCellRow >= matrix.length
+              || !matrix[realCellRow] || !matrix[realCellRow][realCellCol]) {
+            continue
+          }
+
+          const [[realCellElement, realCellPath]] = matrix[realCellRow][realCellCol]
           const realCellPathKey = realCellPath.join(',')
 
           // 避免重复处理同一个合并单元格
@@ -126,7 +138,7 @@ class DeleteCol implements IButtonMenu {
             )
           }
         } else {
-          // rtl = 1 且 ltr = 1，说明这是独立的单元格，直接删除
+          // rtl = 1 且 ltr = 1 且 ttb = 1 且 btt = 1，说明这是独立的单元格，直接删除
           cellsToDelete.add(cellPathKey)
         }
       }

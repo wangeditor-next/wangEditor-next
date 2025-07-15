@@ -90,7 +90,14 @@ class InsertRow implements IButtonMenu {
 
         // 向上找到 1 元素为止
         if (ttb > 1 || btt > 1) {
-          const [[element, path]] = matrix[trIndex - (ttb - 1)][y]
+          const originalRowIndex = trIndex - (ttb - 1)
+
+          // 安全检查：确保目标行和列都存在
+          if (originalRowIndex < 0 || originalRowIndex >= matrix.length || !matrix[originalRowIndex] || !matrix[originalRowIndex][y]) {
+            continue
+          }
+
+          const [[element, path]] = matrix[originalRowIndex][y]
           const rowSpan = element.rowSpan || 1
 
           exitMerge.push(y)

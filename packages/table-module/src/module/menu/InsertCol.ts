@@ -133,18 +133,31 @@ class InsertCol implements IButtonMenu {
 
       // 遍历每一行的第 tdIndex 列，处理合并单元格
       for (let x = 0; x < matrix.length; x += 1) {
+        // 安全检查：确保行和列都存在
         if (!matrix[x] || !matrix[x][tdIndex]) {
           continue
         }
 
-        const [[,], { rtl, ltr }] = matrix[x][tdIndex]
+        const [[,], {
+          rtl, ltr, ttb, btt,
+        }] = matrix[x][tdIndex]
 
         // 判断是否是合并单元格
-        if (rtl > 1 || ltr > 1) {
+        if (rtl > 1 || ltr > 1 || ttb > 1 || btt > 1) {
           // 这是合并单元格的一部分
-          // 找到真实单元格的位置（最左边的位置）
+          // 找到真实单元格的位置（左上角的位置）
+          // rtl表示从右到左的距离，所以真实单元格列 = 当前列 - (rtl - 1)
+          // ttb表示从上到下的距离，所以真实单元格行 = 当前行 - (ttb - 1)
+          const realCellRow = x - (ttb - 1)
           const realCellCol = tdIndex - (rtl - 1)
-          const [[realCellElement, realCellPath]] = matrix[x][realCellCol]
+
+          // 安全检查：确保真实单元格位置存在
+          if (realCellRow < 0 || realCellRow >= matrix.length
+              || !matrix[realCellRow] || !matrix[realCellRow][realCellCol]) {
+            continue
+          }
+
+          const [[realCellElement, realCellPath]] = matrix[realCellRow][realCellCol]
           const realCellPathKey = realCellPath.join(',')
 
           // 避免重复处理同一个合并单元格
@@ -166,8 +179,9 @@ class InsertCol implements IButtonMenu {
             }
 
             // 标记所有被这个合并单元格影响的行，这些行不需要插入新的单元格
+            // 从真实单元格的行开始，标记rowSpan行
             for (let r = 0; r < rowSpan; r += 1) {
-              skipInsertForRows.add(x + r)
+              skipInsertForRows.add(realCellRow + r)
             }
           } else {
             // 如果已经处理过这个合并单元格，当前行也不需要插入新单元格
@@ -180,6 +194,11 @@ class InsertCol implements IButtonMenu {
       for (let x = 0; x < matrix.length; x += 1) {
         // 如果这一行被合并单元格覆盖，则不插入新单元格
         if (skipInsertForRows.has(x)) {
+          continue
+        }
+
+        // 安全检查：确保矩阵位置存在
+        if (!matrix[x] || !matrix[x][tdIndex]) {
           continue
         }
 

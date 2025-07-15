@@ -100,7 +100,14 @@ class DeleteRow implements IButtonMenu {
         // 寻找跨行行为
         if (ttb > 1 || btt > 1) {
           // 找到显示中 rowSpan 节点
-          const [[originalCell, path]] = matrix[trIndex - (ttb - 1)][y]
+          const originalRowIndex = trIndex - (ttb - 1)
+
+          // 安全检查：确保目标行和列都存在
+          if (originalRowIndex < 0 || originalRowIndex >= matrix.length || !matrix[originalRowIndex] || !matrix[originalRowIndex][y]) {
+            continue
+          }
+
+          const [[originalCell, path]] = matrix[originalRowIndex][y]
           const typedOriginalCell = originalCell as TableCellElement
           const { rowSpan = 1, colSpan = 1 } = typedOriginalCell
 
@@ -143,7 +150,7 @@ class DeleteRow implements IButtonMenu {
                 cell: newCell,
                 columnIndex: y,
               })
-            } else if (rowSpan > 1) {
+            } else {
               // 如果没有下一行，直接减少原始单元格的 rowSpan
               Transforms.setNodes<TableCellElement>(
                 editor,
