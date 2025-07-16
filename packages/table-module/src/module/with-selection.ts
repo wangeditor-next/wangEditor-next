@@ -28,26 +28,21 @@ export function withSelection<T extends Editor>(editor: T) {
       return apply(op)
     }
 
+    const isTableCell = (n: unknown) => {
+      return Element.isElement(n)
+    && (n.type === 'table-cell'
+     || n.type === 'th'
+     || n.type === 'td')
+    }
+
     const [fromEntry] = Editor.nodes(editor, {
-      match: n => {
-        // 更健壮的单元格匹配逻辑
-        return Element.isElement(n)
-               && (n.type === 'table-cell'
-                || n.type === 'th'
-                || n.type === 'td')
-      },
+      match: isTableCell,
       at: Range.start(selection),
       mode: 'lowest', // 确保找到最低层的匹配节点
     })
 
     const [toEntry] = Editor.nodes(editor, {
-      match: n => {
-        // 更健壮的单元格匹配逻辑
-        return Element.isElement(n)
-               && (n.type === 'table-cell'
-                || n.type === 'th'
-                || n.type === 'td')
-      },
+      match: isTableCell,
       at: Range.end(selection),
       mode: 'lowest', // 确保找到最低层的匹配节点
     })
