@@ -134,12 +134,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jilexin/wangEditor-next.git"
+    "url": "git+https://github.com/wangEditor-next/wangEditor-next.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/jilexin/wangEditor-next/issues"
+    "url": "https://github.com/wangEditor-next/wangEditor-next/issues"
   },
-  "homepage": "https://github.com/jilexin/wangEditor-next#readme"
+  "homepage": "https://github.com/wangEditor-next/wangEditor-next#readme"
 }
