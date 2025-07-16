@@ -65,7 +65,7 @@ describe('TableModule module', () => {
 
       const res = tableCellToHtmlConf.elemToHtml(element, '<span>123</span>')
 
-      expect(res).toBe('<td colSpan="1" rowSpan="1" width="auto" style=""><span>123</span></td>')
+      expect(res).toBe('<td colSpan="1" rowSpan="1" width="auto"><span>123</span></td>')
     })
 
     test('tableRowToHtmlConf should return object that include "type" and "elemToHtml" property', () => {
