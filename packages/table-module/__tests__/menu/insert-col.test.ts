@@ -85,6 +85,30 @@ describe('Table Module Insert Col Menu', () => {
     vi.spyOn(slate.Range, 'isCollapsed').mockImplementation(() => true)
     vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockImplementation(() => ({}) as any)
 
+    // Mock Editor.nodes to return a valid cell entry
+    const cellEntryFn = function* () {
+      yield [
+        { type: 'table-cell', children: [{ text: '' }] } as slate.Element,
+        [0, 0, 0],
+      ] as slate.NodeEntry<slate.Element>
+    }
+
+    vi.spyOn(slate.Editor, 'nodes').mockReturnValue(cellEntryFn())
+
+    // Mock filledMatrix to return a valid matrix structure
+    mockedUtils.filledMatrix.mockImplementation(() => {
+      return [
+        [
+          [
+            [{ type: 'table-cell', children: [{ text: '' }] }, [0, 0, 0]],
+            {
+              rtl: 1, ltr: 1, ttb: 1, btt: 1,
+            },
+          ],
+        ],
+      ]
+    })
+
     expect(insertColMenu.isDisabled(editor)).toBeFalsy()
   })
 
@@ -235,7 +259,7 @@ describe('Table Module Insert Col Menu', () => {
 
     expect(insertNodesFn).toBeCalledWith(
       editor,
-      { type: 'table-cell', children: [{ text: '' }], hidden: false },
+      { type: 'table-cell', children: [{ text: '' }] },
       { at: [0, 0, 0] },
     )
   })
