@@ -1,62 +1,124 @@
-/**
- * @description table full width menu
- * @author wangfupeng
- */
+import * as core from '@wangeditor-next/core'
+import * as slate from 'slate'
 
-import {
-  DomEditor, IButtonMenu, IDomEditor, t,
-} from '@wangeditor-next/core'
-import { Range, Transforms } from 'slate'
+import createEditor from '../../../../tests/utils/create-editor'
+import { FULL_WIDTH_SVG } from '../../src/constants/svg'
+import locale from '../../src/locale/zh-CN'
+import FullWidth from '../../src/module/menu/FullWidth'
 
-import { FULL_WIDTH_SVG } from '../../constants/svg'
-import { TableElement } from '../custom-types'
-
-class TableFullWidth implements IButtonMenu {
-  readonly title = t('tableModule.widthAuto')
-
-  readonly iconSvg = FULL_WIDTH_SVG
-
-  readonly tag = 'button'
-
-  getValue(editor: IDomEditor): string | boolean {
-    const tableNode = DomEditor.getSelectedNodeByType(editor, 'table') as TableElement
-
-    if (!tableNode) {
-      return false
-    }
-
-    // 检查表格是否已经是全宽（width为100%或auto）
-    return tableNode.width === '100%' || tableNode.width === 'auto'
-  }
-
-  isActive(editor: IDomEditor): boolean {
-    return !!this.getValue(editor)
-  }
-
-  isDisabled(editor: IDomEditor): boolean {
-    const { selection } = editor
-
-    if (selection == null) { return true }
-    if (!Range.isCollapsed(selection)) { return true }
-
-    const tableNode = DomEditor.getSelectedNodeByType(editor, 'table')
-
-    if (tableNode == null) {
-      // 选区未处于 table node ，则禁用
-      return true
-    }
-    return false
-  }
-
-  exec(editor: IDomEditor, value: string | boolean) {
-    if (this.isDisabled(editor)) { return }
-
-    const props: Partial<TableElement> = {
-      width: value ? 'auto' : '100%', // 切换 'auto' 和 '100%'
-    }
-
-    Transforms.setNodes(editor, props, { mode: 'highest' })
-  }
+function setEditorSelection(
+  editor: core.IDomEditor,
+  selection: slate.Selection = {
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 0 },
+  },
+) {
+  editor.selection = selection
 }
+describe('Table Module Full Width Menu', () => {
+  test('it should create FullWidth object', () => {
+    const fullWidthMenu = new FullWidth()
 
-export default TableFullWidth
+    expect(typeof fullWidthMenu).toBe('object')
+    expect(fullWidthMenu.tag).toBe('button')
+    expect(fullWidthMenu.iconSvg).toBe(FULL_WIDTH_SVG)
+    expect(fullWidthMenu.title).toBe(locale.tableModule.widthAuto)
+  })
+
+  test('getValue should get falsy value if editor selected node is not table', () => {
+    const fullWidthMenu = new FullWidth()
+    const editor = createEditor()
+
+    vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockImplementation(() => null)
+    expect(fullWidthMenu.getValue(editor)).toBeFalsy()
+  })
+
+  test('getValue should get truthy value if editor selected table\'s width is 100%', () => {
+    const fullWidthMenu = new FullWidth()
+    const editor = createEditor()
+
+    vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockImplementation(
+      () => ({ width: '100%' }) as any,
+    )
+    expect(fullWidthMenu.getValue(editor)).toBeTruthy()
+  })
+
+  test('isActive should get falsy value if editor selected node is not table', () => {
+    const fullWidthMenu = new FullWidth()
+    const editor = createEditor()
+
+    vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockImplementation(() => null)
+
+    expect(fullWidthMenu.isActive(editor)).toBeFalsy()
+  })
+
+  test('isDisabled should get truthy value if editor selection is null', () => {
+    const fullWidthMenu = new FullWidth()
+    const editor = createEditor()
+
+    editor.selection = null
+    expect(fullWidthMenu.isDisabled(editor)).toBeTruthy()
+  })
+
+  test('isDisabled should get truthy value if editor selection is collapsed', () => {
+    const fullWidthMenu = new FullWidth()
+    const editor = createEditor()
+
+    setEditorSelection(editor)
+
+    vi.spyOn(slate.Range, 'isCollapsed').mockImplementation(() => false)
+
+    expect(fullWidthMenu.isDisabled(editor)).toBeTruthy()
+  })
+
+  test('isDisabled should get truthy value if editor current selected node is not table cell', () => {
+    const fullWidthMenu = new FullWidth()
+    const editor = createEditor()
+
+    setEditorSelection(editor)
+
+    vi.spyOn(slate.Range, 'isCollapsed').mockImplementation(() => true)
+    vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockImplementation(() => null)
+
+    expect(fullWidthMenu.isDisabled(editor)).toBeTruthy()
+  })
+
+  test('isDisabled should get falsy value if editor current selected node is table cell', () => {
+    const fullWidthMenu = new FullWidth()
+    const editor = createEditor()
+
+    setEditorSelection(editor)
+
+    vi.spyOn(slate.Range, 'isCollapsed').mockImplementation(() => true)
+    vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockImplementation(() => ({}) as any)
+
+    expect(fullWidthMenu.isDisabled(editor)).toBeFalsy()
+  })
+
+  test('exec should return directly if menu is disabled', () => {
+    const fullWidthMenu = new FullWidth()
+    const editor = createEditor()
+
+    setEditorSelection(editor, null)
+
+    expect(fullWidthMenu.exec(editor, '')).toBeUndefined()
+  })
+
+  test('exec should invoke setNodes with props if menu is not disabled', () => {
+    const fullWidthMenu = new FullWidth()
+    const editor = createEditor()
+
+    setEditorSelection(editor)
+
+    vi.spyOn(slate.Range, 'isCollapsed').mockImplementation(() => true)
+    vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockImplementation(() => ({}) as any)
+
+    const fn = vi.fn()
+
+    vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(fn)
+
+    fullWidthMenu.exec(editor, true)
+
+    expect(fn).toBeCalled()
+  })
+})
