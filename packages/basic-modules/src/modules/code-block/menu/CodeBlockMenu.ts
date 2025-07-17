@@ -13,6 +13,8 @@ import {
 import { CODE_BLOCK_SVG } from '../../../constants/icon-svg'
 import { CodeElement } from '../custom-types'
 
+interface CodeSelectLangItem { text: string; value: string; selected?: boolean }
+
 class CodeBlockMenu implements IButtonMenu {
   readonly title = t('codeBlock.title')
 
@@ -39,7 +41,12 @@ class CodeBlockMenu implements IButtonMenu {
   getValue(editor: IDomEditor): string | boolean {
     const elem = this.getSelectCodeElem(editor)
 
-    if (elem == null) { return '' }
+    if (elem == null) {
+      const { codeLangs = [] } = editor.getMenuConfig('codeSelectLang')
+      const selectItem = (codeLangs as CodeSelectLangItem[]).find(item => item.selected)
+
+      return selectItem?.value || ''
+    }
     return elem.language || ''
   }
 
