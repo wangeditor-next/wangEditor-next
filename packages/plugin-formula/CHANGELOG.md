@@ -1,5 +1,13 @@
 # @wangeditor-next/plugin-formula
 
+## 1.0.23
+
+### Patch Changes
+
+- 2b8635e: revert native-shime 乾坤适配
+- Updated dependencies [2b8635e]
+  - @wangeditor-next/editor@5.6.37
+
 ## 1.0.22
 
 ### Patch Changes

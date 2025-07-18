@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.7.39
+
+### Patch Changes
+
+- 2b8635e: avoid repeated execution of HTML/content (#635)
+
 ## 1.7.38
 
 ### Patch Changes
