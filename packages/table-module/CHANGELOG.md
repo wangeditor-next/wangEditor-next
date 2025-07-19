@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.6.51
+
+### Patch Changes
+
+- a28a86f: revert: 回退 table module fullwidth 更改
+
 ## 1.6.50
 
 ### Patch Changes

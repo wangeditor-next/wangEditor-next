@@ -1,6 +1,6 @@
 {
   "name": "@wangeditor-next/plugin-mention",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "wangEditor mention plugin",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",
@@ -41,7 +41,7 @@
     "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
   },
   "peerDependencies": {
-    "@wangeditor-next/editor": "5.6.37",
+    "@wangeditor-next/editor": "5.6.38",
     "snabbdom": "^3.6.0"
   }
 }

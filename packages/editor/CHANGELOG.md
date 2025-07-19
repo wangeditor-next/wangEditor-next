@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.6.38
+
+### Patch Changes
+
+- a28a86f: revert: 回退 table module fullwidth 更改
+- Updated dependencies [a28a86f]
+  - @wangeditor-next/table-module@1.6.51
+
 ## 5.6.37
 
 ### Patch Changes
