@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.6.52
+
+### Patch Changes
+
+- b557818: 表格自适应功能优化、表格样式统一、codelang 类型纠正
+- Updated dependencies [d000e3f]
+  - @wangeditor-next/core@1.7.40
+
 ## 1.6.51
 
 ### Patch Changes

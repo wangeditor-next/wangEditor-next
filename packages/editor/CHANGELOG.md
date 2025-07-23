@@ -1,5 +1,20 @@
 # Change Log
 
+## 5.6.39
+
+### Patch Changes
+
+- b557818: 表格自适应功能优化、表格样式统一、codelang 类型纠正
+- Updated dependencies [b557818]
+- Updated dependencies [d000e3f]
+  - @wangeditor-next/table-module@1.6.52
+  - @wangeditor-next/core@1.7.40
+  - @wangeditor-next/basic-modules@1.5.40
+  - @wangeditor-next/code-highlight@1.3.37
+  - @wangeditor-next/list-module@1.1.46
+  - @wangeditor-next/upload-image-module@1.1.43
+  - @wangeditor-next/video-module@1.3.46
+
 ## 5.6.38
 
 ### Patch Changes

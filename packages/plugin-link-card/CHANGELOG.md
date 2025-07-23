@@ -1,5 +1,12 @@
 # @wangeditor-next/plugin-link-card
 
+## 1.0.24
+
+### Patch Changes
+
+- Updated dependencies [b557818]
+  - @wangeditor-next/editor@5.6.39
+
 ## 1.0.23
 
 ### Patch Changes

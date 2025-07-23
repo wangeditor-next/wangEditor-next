@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.7.40
+
+### Patch Changes
+
+- d000e3f: Update interface.ts
+
 ## 1.7.39
 
 ### Patch Changes
