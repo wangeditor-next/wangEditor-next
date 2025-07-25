@@ -1,9 +1,12 @@
-import { IButtonMenu, IDomEditor, t } from '@wangeditor-next/core'
+import {
+  DomEditor, IButtonMenu, IDomEditor, t,
+} from '@wangeditor-next/core'
 import { Editor, Path, Transforms } from 'slate'
 
 import { SPLIT_CELL_SVG } from '../../constants/svg'
-import { CellElement, filledMatrix, isOfType } from '../../utils'
-import { EDITOR_TO_SELECTION } from '../weak-maps'
+import { CellElement, isOfType } from '../../utils'
+import { TableCellElement, TableElement } from '../custom-types'
+import { isTableWithHeader } from '../helpers'
 // import { DEFAULT_WITH_TABLE_OPTIONS } from "../../utils/options";
 
 class SplitCell implements IButtonMenu {
@@ -24,12 +27,20 @@ class SplitCell implements IButtonMenu {
   }
 
   isDisabled(editor: IDomEditor): boolean {
-    const [td] = Editor.nodes(editor, {
-      match: isOfType(editor, 'td'),
+    // 查找当前选中的单元格，支持td和th两种类型
+    const [cell] = Editor.nodes(editor, {
+      match: n => {
+        return DomEditor.checkNodeType(n, 'table-cell')
+      },
     })
 
-    const [{ rowSpan = 1, colSpan = 1 }] = td as CellElement[]
+    if (!cell) {
+      return true // 如果没有找到单元格，则禁用拆分功能
+    }
 
+    const [{ rowSpan = 1, colSpan = 1 }] = cell as CellElement[]
+
+    // 只有当rowSpan或colSpan大于1时才能拆分
     if (rowSpan > 1 || colSpan > 1) {
       return false
     }
@@ -62,88 +73,112 @@ class SplitCell implements IButtonMenu {
       return
     }
 
-    const selection = EDITOR_TO_SELECTION.get(editor) || []
-    // @ts-ignore
-    const matrix = filledMatrix(editor, { at: options.at })
+    const [tableNode] = table as [TableElement, Path]
+    const hasHeader = isTableWithHeader(tableNode)
 
-    // const { blocks } = DEFAULT_WITH_TABLE_OPTIONS;
+    // 获取当前选中的单元格
+    const [selectedCell, selectedCellPath] = td as [CellElement, Path]
+    const { rowSpan = 1, colSpan = 1 } = selectedCell
+
+    // 如果单元格未合并，无需拆分
+    if (rowSpan === 1 && colSpan === 1) {
+      return
+    }
 
     Editor.withoutNormalizing(editor, () => {
-      for (let x = matrix.length - 1; x >= 0; x -= 1) {
-        for (let y = matrix[x].length - 1; y >= 0; y -= 1) {
-          const [[, path], context] = matrix[x][y]
-          const {
-            ltr: colSpan, rtl, btt: rowSpan, ttb,
-          } = context
+      // 1. 重置当前单元格的rowSpan和colSpan
+      Transforms.setNodes<CellElement>(editor, { rowSpan: 1, colSpan: 1 }, { at: selectedCellPath })
 
-          if (rtl > 1) {
-            // get to the start of the colspan
-            y -= rtl - 2
+      // 2. 处理同行的其他列（colSpan > 1的情况）
+      // 在当前单元格后面插入 colSpan-1 个新单元格
+      for (let c = 1; c < colSpan; c += 1) {
+        const newCell: TableCellElement = {
+          type: 'table-cell',
+          children: [{ text: '' }],
+        }
+
+        // 如果在第一行且表格有表头，设置isHeader
+        const currentRowIndex = selectedCellPath[selectedCellPath.length - 2]
+
+        if (currentRowIndex === 0 && hasHeader) {
+          newCell.isHeader = true
+        }
+
+        // 在当前行的当前位置之后插入
+        const currentRowPath = selectedCellPath.slice(0, -1)
+        const insertIndex = selectedCellPath[selectedCellPath.length - 1] + c
+        const insertPath = [...currentRowPath, insertIndex]
+
+        try {
+          Transforms.insertNodes(editor, newCell, { at: insertPath })
+        } catch (error) {
+          // 如果指定位置插入失败，在行末尾插入
+          try {
+            const [currentRow] = Editor.node(editor, currentRowPath)
+            const cellsCount = (currentRow as any).children.length
+            const fallbackPath = [...currentRowPath, cellsCount]
+
+            Transforms.insertNodes(editor, newCell, { at: fallbackPath })
+          } catch (fallbackError) {
+            console.warn(`插入同行单元格失败: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`)
+          }
+        }
+      }
+
+      // 3. 处理其他行（rowSpan > 1的情况）
+      // 在下面的每一行都插入相应数量的单元格
+      for (let r = 1; r < rowSpan; r += 1) {
+        // 计算目标行路径
+        const targetRowIndex = selectedCellPath[selectedCellPath.length - 2] + r
+        const targetRowPath = [...selectedCellPath.slice(0, -2), targetRowIndex]
+
+        try {
+          // 检查目标行是否存在
+          const [targetRow] = Editor.node(editor, targetRowPath)
+
+          if (!targetRow) {
+            console.warn(`目标行 ${targetRowIndex} 不存在`)
             continue
           }
 
-          if (ttb > 1) {
-            continue
-          }
+          // 在目标行中插入colSpan个新单元格
+          for (let c = 0; c < colSpan; c += 1) {
+            const newCell: TableCellElement = {
+              type: 'table-cell',
+              children: [{ text: '' }],
+            }
 
-          if (rowSpan === 1 && colSpan === 1) {
-            continue
-          }
+            // 计算插入位置
+            const originalColumnIndex = selectedCellPath[selectedCellPath.length - 1]
+            const insertIndex = originalColumnIndex + c
+            const insertPath = [...targetRowPath, insertIndex]
 
-          let found = !!options.all
+            try {
+              // 获取目标行当前的单元格数量
+              const currentCellsCount = (targetRow as any).children.length
 
-          if (selection.length) {
-            // eslint-disable-next-line no-labels
-            outer: for (let i = 0; !options.all && i < selection.length; i += 1) {
-              for (let j = 0; j < selection[i].length; j += 1) {
-                const [[, tdPath]] = selection[i][j]
+              // 如果插入位置超出当前行的范围，在行末尾插入
+              if (insertIndex >= currentCellsCount) {
+                const endPath = [...targetRowPath, currentCellsCount]
 
-                if (Path.equals(tdPath, path)) {
-                  found = true
-                  // eslint-disable-next-line no-labels
-                  break outer
-                }
+                Transforms.insertNodes(editor, newCell, { at: endPath })
+              } else {
+                Transforms.insertNodes(editor, newCell, { at: insertPath })
+              }
+            } catch (insertError) {
+              // 最后的备用方案：在行末尾插入
+              try {
+                const updatedCellsCount = (targetRow as any).children.length
+                const fallbackPath = [...targetRowPath, updatedCellsCount]
+
+                Transforms.insertNodes(editor, newCell, { at: fallbackPath })
+              } catch (finalError) {
+                console.warn(`插入单元格到第${r}行失败: ${finalError instanceof Error ? finalError.message : String(finalError)}`)
               }
             }
-          } else {
-            const [, tdPath] = td
-
-            if (Path.equals(tdPath, path)) {
-              found = true
-            }
           }
-
-          if (!found) {
-            continue
-          }
-
-          // eslint-disable-next-line no-labels
-          out: for (let r = 1; r < rowSpan; r += 1) {
-            for (let i = y; i >= 0; i -= 1) {
-              // eslint-disable-next-line @typescript-eslint/no-shadow
-              const [, { ttb }] = matrix[x + r][i]
-
-              if (ttb === 1) {
-                continue
-              }
-
-              for (let c = 0; c < colSpan; c += 1) {
-                const [[, nextPath]] = matrix[x + r][i + c]
-
-                Transforms.unsetNodes(editor, ['hidden', 'colSpan', 'rowSpan'], { at: nextPath })
-              }
-              // eslint-disable-next-line no-labels
-              continue out
-            }
-          }
-
-          for (let c = 1; c < colSpan; c += 1) {
-            const [[, nextPath]] = matrix[x][y + c]
-
-            Transforms.unsetNodes(editor, ['hidden', 'colSpan', 'rowSpan'], { at: nextPath })
-          }
-
-          Transforms.setNodes<CellElement>(editor, { rowSpan: 1, colSpan: 1 }, { at: path })
+        } catch (rowError) {
+          console.warn(`处理第${r}行时出错: ${rowError instanceof Error ? rowError.message : String(rowError)}`)
         }
       }
     })

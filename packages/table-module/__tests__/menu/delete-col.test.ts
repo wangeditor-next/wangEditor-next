@@ -156,7 +156,6 @@ describe('Table Module Delete Col Menu', () => {
     }
 
     vi.spyOn(slate.Editor, 'nodes').mockReturnValue(fn())
-    vi.spyOn(core.DomEditor, 'findPath').mockImplementation(() => [0, 1] as slate.Path)
 
     mockedUtils.filledMatrix.mockImplementation(() => {
       return [
@@ -190,6 +189,8 @@ describe('Table Module Delete Col Menu', () => {
         ],
       ]
     })
+
+    vi.spyOn(slate.Editor, 'hasPath').mockReturnValue(true)
     const removeNodesFn = vi.fn()
 
     vi.spyOn(slate.Transforms, 'removeNodes').mockImplementation(removeNodesFn)

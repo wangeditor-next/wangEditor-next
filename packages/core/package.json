@@ -1,6 +1,6 @@
 {
   "name": "@wangeditor-next/core",
-  "version": "1.7.38",
+  "version": "1.7.40",
   "description": "wangEditor core",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",
@@ -68,6 +68,7 @@
     "slate-history": "^0.109.0"
   },
   "devDependencies": {
-    "@types/is-hotkey": "^0.1.2"
+    "@types/is-hotkey": "^0.1.2",
+    "@wangeditor-next-shared/rollup-config": "workspace:^"
   }
 }

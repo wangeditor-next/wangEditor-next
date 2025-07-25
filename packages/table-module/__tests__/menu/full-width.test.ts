@@ -38,9 +38,9 @@ describe('Table Module Full Width Menu', () => {
     const editor = createEditor()
 
     vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockImplementation(
-      () => ({ width: '100%' }) as any,
+      () => ({ width: 'auto' }) as any,
     )
-    expect(fullWidthMenu.getValue(editor)).toBeTruthy()
+    expect(fullWidthMenu.getValue(editor)).toBeFalsy()
   })
 
   test('isActive should get falsy value if editor selected node is not table', () => {

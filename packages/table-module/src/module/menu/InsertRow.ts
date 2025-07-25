@@ -53,13 +53,7 @@ class InsertRow implements IButtonMenu {
       match: n => DomEditor.checkNodeType(n, 'table-cell'),
       universal: true,
     })
-    const [cellNode, cellPath] = cellEntry
-
-    // 获取 cell length ，即多少列
-    const rowNode = DomEditor.getParentNode(editor, cellNode)
-    const cellsLength = rowNode?.children.length || 0
-
-    if (cellsLength === 0) { return }
+    const [, cellPath] = cellEntry
 
     const matrix = filledMatrix(editor)
     // 向下插入行为，先找到
@@ -79,7 +73,11 @@ class InsertRow implements IButtonMenu {
         break outer
       }
     }
-    /* eslint-disable no-labels */
+
+    // 获取表格的真实列数（使用matrix的列数，而不是当前行的physical cell数量）
+    const cellsLength = matrix[trIndex]?.length || 0
+
+    if (cellsLength === 0) { return }
 
     Editor.withoutNormalizing(editor, () => {
       // 向下添加 tr 索引
@@ -92,8 +90,14 @@ class InsertRow implements IButtonMenu {
 
         // 向上找到 1 元素为止
         if (ttb > 1 || btt > 1) {
-          if (btt === 1) { continue }
-          const [[element, path]] = matrix[trIndex - (ttb - 1)][y]
+          const originalRowIndex = trIndex - (ttb - 1)
+
+          // 安全检查：确保目标行和列都存在
+          if (originalRowIndex < 0 || originalRowIndex >= matrix.length || !matrix[originalRowIndex] || !matrix[originalRowIndex][y]) {
+            continue
+          }
+
+          const [[element, path]] = matrix[originalRowIndex][y]
           const rowSpan = element.rowSpan || 1
 
           exitMerge.push(y)
@@ -112,10 +116,15 @@ class InsertRow implements IButtonMenu {
       // 拼接新的 row
       const newRow: TableRowElement = { type: 'table-row', children: [] }
 
+      // 只为不被合并单元格覆盖的位置创建td元素
       for (let i = 0; i < cellsLength; i += 1) {
+        // 如果当前位置被合并单元格覆盖，则跳过（不创建td）
+        if (exitMerge.includes(i)) {
+          continue
+        }
+
         const cell: TableCellElement = {
           type: 'table-cell',
-          hidden: exitMerge.includes(i),
           children: [{ text: '' }],
         }
 

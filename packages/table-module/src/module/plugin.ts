@@ -155,6 +155,31 @@ function isTableLocation(editor: IDomEditor, location: Location): boolean {
   return hasTable
 }
 
+/**
+ * 检查当前选中的节点是否是受保护的节点类型（不应该被删除的节点）
+ * @param editor editor
+ * @returns 是否是受保护的节点
+ */
+function isProtectedNode(editor: IDomEditor): boolean {
+  // 检查是否是受保护的节点类型
+  const protectedTypes = [
+    'paragraph',
+    'header1', 'header2', 'header3', 'header4', 'header5', 'header6',
+    'blockquote',
+    'list-item',
+    'todo',
+    'divider',
+  ]
+
+  for (const type of protectedTypes) {
+    if (DomEditor.getSelectedNodeByType(editor, type)) {
+      return true
+    }
+  }
+
+  return false
+}
+
 function withTable<T extends IDomEditor>(editor: T): T {
   const {
     insertBreak,
@@ -205,7 +230,8 @@ function withTable<T extends IDomEditor>(editor: T): T {
         // 如果前面是 table, 当前是 paragraph ，则不执行删除。否则会删除 table 最后一个 cell
         // 兼容了 table 嵌套 p标签元素 selection数组五层的情况 - issues/342
 
-        if (!tableCell && isTableOnBeforeLocation && DomEditor.getSelectedNodeByType(newEditor, 'paragraph')) {
+        // 如果前面是 table, 当前是受保护的节点类型，则不执行删除
+        if (!tableCell && isTableOnBeforeLocation && isProtectedNode(newEditor)) {
           return
         }
       }
@@ -275,7 +301,8 @@ function withTable<T extends IDomEditor>(editor: T): T {
         const isTableOnAfterLocation = isTableLocation(newEditor, after) // after 是否是 table
         // 如果后面是 table, 当前是 paragraph，则不执行删除
 
-        if (!tableCell && isTableOnAfterLocation && DomEditor.getSelectedNodeByType(newEditor, 'paragraph')) {
+        // 如果后面是 table, 当前是受保护的节点类型，则不执行删除
+        if (!tableCell && isTableOnAfterLocation && isProtectedNode(newEditor)) {
           return
         }
       }

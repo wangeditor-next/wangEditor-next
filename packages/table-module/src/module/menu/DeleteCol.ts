@@ -7,7 +7,7 @@ import {
   DomEditor, IButtonMenu, IDomEditor, t,
 } from '@wangeditor-next/core'
 import {
-  Editor, Node, Path, Range, Transforms,
+  Editor, Path, Range, Transforms,
 } from 'slate'
 
 import { DEL_COL_SVG } from '../../constants/svg'
@@ -87,53 +87,92 @@ class DeleteCol implements IButtonMenu {
     }
 
     Editor.withoutNormalizing(editor, () => {
+      // 记录需要删除的单元格路径和已处理的合并单元格
+      const cellsToDelete = new Set<string>()
+      const processedMergedCells = new Set<string>()
+
+      // 遍历每一行的第 tdIndex 列
       for (let x = 0; x < matrix.length; x += 1) {
-        const [[{ hidden }], { rtl, ltr }] = matrix[x][tdIndex]
+        if (!matrix[x] || !matrix[x][tdIndex]) {
+          continue
+        }
 
-        if (rtl > 1 || ltr > 1) {
-          // 找到显示中 colSpan 节点
-          const [[{ rowSpan = 1, colSpan = 1 }, path]] = matrix[x][tdIndex - (rtl - 1)]
+        const [[, cellPath], {
+          rtl, ltr, ttb, btt,
+        }] = matrix[x][tdIndex]
+        const cellPathKey = cellPath.join(',')
 
-          if (hidden) {
-            Transforms.setNodes<TableCellElement>(
-              editor,
-              {
-                rowSpan,
-                colSpan: Math.max(colSpan - 1, 1),
-              },
-              { at: path },
-            )
-          } else {
-            const [[, rightPath]] = matrix[x][tdIndex + 1]
+        // 判断是否是合并单元格
+        if (rtl > 1 || ltr > 1 || ttb > 1 || btt > 1) {
+          // 这是合并单元格的一部分
+          // 找到真实单元格的位置（左上角的位置）
+          // rtl表示从右到左的距离，所以真实单元格列 = 当前列 - (rtl - 1)
+          // ttb表示从上到下的距离，所以真实单元格行 = 当前行 - (ttb - 1)
+          const realCellRow = x - (ttb - 1)
+          const realCellCol = tdIndex - (rtl - 1)
 
-            Transforms.setNodes<TableCellElement>(
-              editor,
-              {
-                rowSpan,
-                colSpan: colSpan - 1,
-                hidden: false,
-              },
-              { at: rightPath },
-            )
-            // 移动单元格 文本、图片等元素
-            for (const [, childPath] of Node.children(editor, path, { reverse: true })) {
-              Transforms.moveNodes(editor, {
-                to: [...rightPath, 0],
-                at: childPath,
-              })
-            }
+          // 安全检查：确保真实单元格位置存在
+          if (realCellRow < 0 || realCellRow >= matrix.length
+              || !matrix[realCellRow] || !matrix[realCellRow][realCellCol]) {
+            continue
           }
+
+          const [[realCellElement, realCellPath]] = matrix[realCellRow][realCellCol]
+          const realCellPathKey = realCellPath.join(',')
+
+          // 避免重复处理同一个合并单元格
+          if (!processedMergedCells.has(realCellPathKey)) {
+            processedMergedCells.add(realCellPathKey)
+
+            const { rowSpan = 1, colSpan = 1 } = realCellElement
+            const newColSpan = Math.max(colSpan - 1, 1)
+
+            // 更新真实单元格的 colSpan
+            Transforms.setNodes<TableCellElement>(
+              editor,
+              {
+                rowSpan,
+                colSpan: newColSpan,
+              },
+              { at: realCellPath },
+            )
+          }
+        } else {
+          // rtl = 1 且 ltr = 1 且 ttb = 1 且 btt = 1，说明这是独立的单元格，直接删除
+          cellsToDelete.add(cellPathKey)
         }
       }
 
-      // 挨个删除 cell
-      for (let x = 0; x < matrix.length; x += 1) {
-        const [[, path]] = matrix[x][tdIndex]
+      // 删除独立的单元格
+      const cellsToDeleteArray = Array.from(cellsToDelete)
 
-        Transforms.removeNodes(editor, { at: path })
+      // 按路径深度降序排序，确保从深层到浅层删除，避免路径失效
+      cellsToDeleteArray.sort((a, b) => {
+        const pathA = a.split(',').map(Number)
+        const pathB = b.split(',').map(Number)
+
+        // 按行降序排序
+        if (pathA[pathA.length - 2] !== pathB[pathB.length - 2]) {
+          return pathB[pathB.length - 2] - pathA[pathA.length - 2]
+        }
+
+        // 同行内按列降序排序
+        return pathB[pathB.length - 1] - pathA[pathA.length - 1]
+      })
+
+      for (const pathKey of cellsToDeleteArray) {
+        const path = pathKey.split(',').map(Number)
+
+        try {
+          if (Editor.hasPath(editor, path)) {
+            Transforms.removeNodes(editor, { at: path })
+          }
+        } catch (error) {
+          console.warn('删除单元格失败:', path, error)
+        }
       }
 
-      // 需要调整 columnWidths
+      // 调整表格的 columnWidths
       const [tableEntry] = Editor.nodes(editor, {
         match: n => DomEditor.checkNodeType(n, 'table'),
         universal: true,
@@ -144,6 +183,7 @@ class DeleteCol implements IButtonMenu {
         const { columnWidths = [] } = elemNode as TableElement
         const adjustColumnWidths = [...columnWidths]
 
+        // 删除对应列的宽度
         adjustColumnWidths.splice(tdIndex, 1)
 
         Transforms.setNodes(editor, { columnWidths: adjustColumnWidths } as TableElement, {

@@ -3,7 +3,7 @@ import {
 } from 'slate'
 
 import {
-  filledMatrix, hasCommon, isOfType, NodeEntryWithContext, Point,
+  filledMatrix, hasCommon, NodeEntryWithContext, Point,
 } from '../utils'
 import { TableCursor } from './table-cursor'
 import { EDITOR_TO_SELECTION, EDITOR_TO_SELECTION_SET } from './weak-maps'
@@ -28,14 +28,23 @@ export function withSelection<T extends Editor>(editor: T) {
       return apply(op)
     }
 
+    const isTableCell = (n: unknown) => {
+      return Element.isElement(n)
+    && (n.type === 'table-cell'
+     || n.type === 'th'
+     || n.type === 'td')
+    }
+
     const [fromEntry] = Editor.nodes(editor, {
-      match: isOfType(editor, 'th', 'td'),
+      match: isTableCell,
       at: Range.start(selection),
+      mode: 'lowest', // 确保找到最低层的匹配节点
     })
 
     const [toEntry] = Editor.nodes(editor, {
-      match: isOfType(editor, 'th', 'td'),
+      match: isTableCell,
       at: Range.end(selection),
+      mode: 'lowest', // 确保找到最低层的匹配节点
     })
 
     if (!fromEntry || !toEntry) {
@@ -52,76 +61,118 @@ export function withSelection<T extends Editor>(editor: T) {
     }
 
     // TODO: perf: could be improved by passing a Span [fromPath, toPath]
-    const filled = filledMatrix(editor, { at: fromPath })
+    try {
+      const filled = filledMatrix(editor, { at: fromPath })
 
-    // find initial bounds
-    const from = Point.valueOf(0, 0)
-    const to = Point.valueOf(0, 0)
+      // 基本的有效性检查
+      if (!filled || filled.length === 0) {
+        TableCursor.unselect(editor)
+        return apply(op)
+      }
 
-    for (let x = 0; x < filled.length; x += 1) {
-      for (let y = 0; y < filled[x].length; y += 1) {
-        const [[, path]] = filled[x][y]
+      // find initial bounds
+      const from = Point.valueOf(0, 0)
+      const to = Point.valueOf(0, 0)
+      let fromFound = false
+      let toFound = false
 
-        if (Path.equals(fromPath, path)) {
-          from.x = x
-          from.y = y
+      for (let x = 0; x < filled.length; x += 1) {
+        if (!filled[x]) { continue } // 跳过空行
+
+        for (let y = 0; y < filled[x].length; y += 1) {
+          if (!filled[x][y]) { continue } // 跳过空单元格
+
+          const [[, path]] = filled[x][y]
+
+          if (Path.equals(fromPath, path)) {
+            from.x = x
+            from.y = y
+            fromFound = true
+          }
+
+          if (Path.equals(toPath, path)) {
+            to.x = x
+            to.y = y
+            toFound = true
+          }
+        }
+      }
+
+      // 如果找不到位置，可能是选择了被删除的单元格区域
+      if (!fromFound || !toFound) {
+        TableCursor.unselect(editor)
+        return apply(op)
+      }
+
+      let start = Point.valueOf(Math.min(from.x, to.x), Math.min(from.y, to.y))
+      let end = Point.valueOf(Math.max(from.x, to.x), Math.max(from.y, to.y))
+
+      // expand the selection based on rowspan and colspan
+      for (;;) {
+        const nextStart = Point.valueOf(start.x, start.y)
+        const nextEnd = Point.valueOf(end.x, end.y)
+
+        for (let x = nextStart.x; x <= nextEnd.x && x < filled.length; x += 1) {
+          if (!filled[x]) { continue }
+
+          for (let y = nextStart.y; y <= nextEnd.y && y < filled[x].length; y += 1) {
+            if (!filled[x][y]) { continue }
+
+            const [, context] = filled[x][y]
+
+            if (!context) { continue }
+
+            const {
+              rtl, ltr, btt, ttb,
+            } = context
+
+            nextStart.x = Math.min(nextStart.x, x - (ttb - 1))
+            nextStart.y = Math.min(nextStart.y, y - (rtl - 1))
+
+            nextEnd.x = Math.max(nextEnd.x, x + (btt - 1))
+            nextEnd.y = Math.max(nextEnd.y, y + (ltr - 1))
+          }
         }
 
-        if (Path.equals(toPath, path)) {
-          to.x = x
-          to.y = y
+        if (Point.equals(start, nextStart) && Point.equals(end, nextEnd)) {
           break
         }
+
+        start = nextStart
+        end = nextEnd
       }
-    }
 
-    let start = Point.valueOf(Math.min(from.x, to.x), Math.min(from.y, to.y))
-    let end = Point.valueOf(Math.max(from.x, to.x), Math.max(from.y, to.y))
+      const selected: NodeEntryWithContext[][] = []
+      const selectedSet = new WeakSet<Element>()
 
-    // expand the selection based on rowspan and colspan
-    for (;;) {
-      const nextStart = Point.valueOf(start.x, start.y)
-      const nextEnd = Point.valueOf(end.x, end.y)
+      for (let x = start.x; x <= end.x && x < filled.length; x += 1) {
+        if (!filled[x]) { continue }
 
-      for (let x = nextStart.x; x <= nextEnd.x; x += 1) {
-        for (let y = nextStart.y; y <= nextEnd.y; y += 1) {
-          const [, {
-            rtl, ltr, btt, ttb,
-          }] = filled[x][y]
+        const cells: NodeEntryWithContext[] = []
 
-          nextStart.x = Math.min(nextStart.x, x - (ttb - 1))
-          nextStart.y = Math.min(nextStart.y, y - (rtl - 1))
+        for (let y = start.y; y <= end.y && y < filled[x].length; y += 1) {
+          if (!filled[x][y]) { continue }
 
-          nextEnd.x = Math.max(nextEnd.x, x + (btt - 1))
-          nextEnd.y = Math.max(nextEnd.y, y + (ltr - 1))
+          const [[element]] = filled[x][y]
+
+          if (!element) { continue }
+
+          selectedSet.add(element)
+          cells.push(filled[x][y])
+        }
+
+        if (cells.length > 0) {
+          selected.push(cells)
         }
       }
 
-      if (Point.equals(start, nextStart) && Point.equals(end, nextEnd)) {
-        break
-      }
+      EDITOR_TO_SELECTION.set(editor, selected)
+      EDITOR_TO_SELECTION_SET.set(editor, selectedSet)
 
-      start = nextStart
-      end = nextEnd
+    } catch (error) {
+      TableCursor.unselect(editor)
+      return apply(op)
     }
-
-    const selected: NodeEntryWithContext[][] = []
-    const selectedSet = new WeakSet<Element>()
-
-    for (let x = start.x; x <= end.x; x += 1) {
-      const cells: NodeEntryWithContext[] = []
-
-      for (let y = start.y; y <= end.y; y += 1) {
-        const [[element]] = filled[x][y]
-
-        selectedSet.add(element)
-        cells.push(filled[x][y])
-      }
-      selected.push(cells)
-    }
-
-    EDITOR_TO_SELECTION.set(editor, selected)
-    EDITOR_TO_SELECTION_SET.set(editor, selectedSet)
 
     apply(op)
   }

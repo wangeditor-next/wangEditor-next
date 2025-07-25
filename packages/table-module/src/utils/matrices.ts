@@ -52,27 +52,56 @@ export function filledMatrix(
   for (const matrix of matrices(editor, { at: options.at })) {
     const filledSection: NodeEntryWithContext[][] = []
 
+    // 首先，找出最大的列数来确定矩阵的宽度
+    let maxCols = 0
+
+    for (let x = 0; x < matrix.length; x += 1) {
+      if (matrix[x]) {
+        maxCols = Math.max(maxCols, matrix[x].length)
+      }
+    }
+
     for (let x = 0; x < matrix.length; x += 1) {
       if (!filledSection[x]) {
         filledSection[x] = []
       }
 
+      if (!matrix[x]) {
+        continue
+      }
+
       for (let y = 0; y < matrix[x].length; y += 1) {
+        if (!matrix[x][y] || !matrix[x][y][0]) {
+          continue
+        }
+
         const [{ rowSpan = 1, colSpan = 1 }] = matrix[x][y]
 
-        for (let c = 0, occupied = 0; c < colSpan + occupied; c += 1) {
+        // 找到下一个可用的位置
+        let startCol = y
+
+        while (filledSection[x] && filledSection[x][startCol]) {
+          startCol += 1
+        }
+
+        for (let c = 0; c < colSpan; c += 1) {
           for (let r = 0; r < rowSpan; r += 1) {
-            if (!filledSection[x + r]) {
-              filledSection[x + r] = []
+            const targetX = x + r
+            const targetY = startCol + c
+
+            if (!filledSection[targetX]) {
+              filledSection[targetX] = []
             }
-            if (filledSection[x + r][y + c]) {
+
+            if (filledSection[targetX][targetY]) {
               continue
             }
-            filledSection[x + r][y + c] = [
-              matrix[x + r][y + c],
+
+            filledSection[targetX][targetY] = [
+              matrix[x][y],
               {
-                rtl: c - occupied + 1,
-                ltr: colSpan - c + occupied,
+                rtl: c + 1,
+                ltr: colSpan - c,
                 ttb: r + 1,
                 btt: rowSpan - r,
               },

@@ -1,5 +1,20 @@
 # Change Log
 
+## 1.5.40
+
+### Patch Changes
+
+- Updated dependencies [d000e3f]
+  - @wangeditor-next/core@1.7.40
+
+## 1.5.39
+
+### Patch Changes
+
+- 9e5955e: 修复在SelectLangMenu提供了selected能力，而在code-block没处理导致选中了其他语言，但是代码块代码没高亮的问题
+- Updated dependencies [2b8635e]
+  - @wangeditor-next/core@1.7.39
+
 ## 1.5.38
 
 ### Patch Changes

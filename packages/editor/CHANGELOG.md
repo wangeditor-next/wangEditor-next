@@ -1,5 +1,44 @@
 # Change Log
 
+## 5.6.39
+
+### Patch Changes
+
+- b557818: 表格自适应功能优化、表格样式统一、codelang 类型纠正
+- Updated dependencies [b557818]
+- Updated dependencies [d000e3f]
+  - @wangeditor-next/table-module@1.6.52
+  - @wangeditor-next/core@1.7.40
+  - @wangeditor-next/basic-modules@1.5.40
+  - @wangeditor-next/code-highlight@1.3.37
+  - @wangeditor-next/list-module@1.1.46
+  - @wangeditor-next/upload-image-module@1.1.43
+  - @wangeditor-next/video-module@1.3.46
+
+## 5.6.38
+
+### Patch Changes
+
+- a28a86f: revert: 回退 table module fullwidth 更改
+- Updated dependencies [a28a86f]
+  - @wangeditor-next/table-module@1.6.51
+
+## 5.6.37
+
+### Patch Changes
+
+- 2b8635e: 修复若干 bug、优化表格使用
+- Updated dependencies [22548a3]
+- Updated dependencies [9e5955e]
+- Updated dependencies [2b8635e]
+  - @wangeditor-next/table-module@1.6.50
+  - @wangeditor-next/basic-modules@1.5.39
+  - @wangeditor-next/core@1.7.39
+  - @wangeditor-next/upload-image-module@1.1.42
+  - @wangeditor-next/code-highlight@1.3.36
+  - @wangeditor-next/list-module@1.1.45
+  - @wangeditor-next/video-module@1.3.45
+
 ## 5.6.36
 
 ### Patch Changes

@@ -1,5 +1,27 @@
 # Change Log
 
+## 1.6.52
+
+### Patch Changes
+
+- b557818: 表格自适应功能优化、表格样式统一、codelang 类型纠正
+- Updated dependencies [d000e3f]
+  - @wangeditor-next/core@1.7.40
+
+## 1.6.51
+
+### Patch Changes
+
+- a28a86f: revert: 回退 table module fullwidth 更改
+
+## 1.6.50
+
+### Patch Changes
+
+- 22548a3: fix(table-moudle): 优化单元格和表格拖拽调整宽度逻辑，兼容word2019，2021表格，调整合并单元省略隐藏td符合html格式，提升整体使用体验
+- Updated dependencies [2b8635e]
+  - @wangeditor-next/core@1.7.39
+
 ## 1.6.49
 
 ### Patch Changes

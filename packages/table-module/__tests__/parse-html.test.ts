@@ -23,7 +23,7 @@ describe('table - pre parse html', () => {
     // pre parse
     const res = preParseTableHtmlConf.preParseHtml($table[0])
 
-    expect(res.outerHTML).toBe('<table><tr><td>hello</td></tr></table>')
+    expect(res.outerHTML).toBe('<table><tr><td width="auto">hello</td></tr></table>')
   })
 
   it('it should return fake element if pass fake table element', () => {
@@ -41,7 +41,7 @@ describe('table - pre parse html', () => {
     // pre parse
     const res = preParseTableHtmlConf.preParseHtml(table[0])
 
-    expect(res.outerHTML).toBe('<table><tr><td>hello</td></tr></table>')
+    expect(res.outerHTML).toBe('<table><tr><td width="auto">hello</td></tr></table>')
   })
 })
 

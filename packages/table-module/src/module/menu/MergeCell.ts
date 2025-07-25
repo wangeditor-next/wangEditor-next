@@ -5,9 +5,8 @@ import {
 
 import { MERGE_CELL_SVG } from '../../constants/svg'
 import {
-  CellElement, hasCommon, isOfType,
+  CellElement, hasCommon,
 } from '../../utils'
-import { TableCellElement } from '../custom-types'
 import { TableCursor } from '../table-cursor'
 import { EDITOR_TO_SELECTION } from '../weak-maps'
 
@@ -17,17 +16,6 @@ class MergeCell implements IButtonMenu {
   readonly iconSvg = MERGE_CELL_SVG
 
   readonly tag = 'button'
-
-  private needKeepCell(editor: Editor, trPath: Path): boolean {
-    // 检查同行是否有其他单元格
-    const [, rowSibling] = Node.children(editor, trPath)
-
-    // 检查同列是否有其他单元格
-    const parentTable = Editor.parent(editor, trPath)
-    const hasOtherRows = parentTable[0].children.length > 1
-
-    return !!rowSibling || hasOtherRows
-  }
 
   getValue(_editor: IDomEditor): string | boolean {
     // 无需获取 val
@@ -96,20 +84,79 @@ class MergeCell implements IButtonMenu {
     const [[, lastPath]] = Node.children(editor, basePath, { reverse: true })
 
     Editor.withoutNormalizing(editor, () => {
-      let rowSpan = 0
-      let colSpan = 0
+      // 收集所有真实的单元格（避免重复计算虚拟位置）
+      const realCells = new Map<string, { path: Path; x: number; y: number; element: CellElement }>()
+      const cellsToDelete: Path[] = []
 
-      for (let x = selection.length - 1; x >= 0; x -= 1, rowSpan += 1) {
-        colSpan = 0
-        for (let y = selection[x].length - 1; y >= 0; y -= 1, colSpan += 1) {
-          const [[, path], { ttb }] = selection[x][y]
+      // 计算实际的边界范围（考虑单元格的实际跨度）
+      let minRow = Infinity
+      let maxRow = -Infinity
+      let minCol = Infinity
+      let maxCol = -Infinity
 
-          // skip first cell and "fake" cells which belong to a cell with a `rowspan`
-          if (Path.equals(basePath, path) || ttb > 1) {
+      // 第一阶段：收集所有真实单元格并计算其实际占用的范围
+      for (let x = 0; x < selection.length; x += 1) {
+        for (let y = 0; y < selection[x].length; y += 1) {
+          const [[element, path], { ttb }] = selection[x][y]
+          const pathKey = path.join(',')
+
+          // 只处理真实单元格（ttb === 1 表示单元格的实际位置，不是虚拟扩展）
+          if (ttb === 1 && !realCells.has(pathKey)) {
+            realCells.set(pathKey, {
+              path, x, y, element,
+            })
+
+            // 获取当前单元格的跨度
+            const { rowSpan = 1, colSpan = 1 } = element
+
+            // 计算该单元格实际占用的范围
+            const cellMinRow = x
+            const cellMaxRow = x + rowSpan - 1
+            const cellMinCol = y
+            const cellMaxCol = y + colSpan - 1
+
+            // 更新整体边界
+            minRow = Math.min(minRow, cellMinRow)
+            maxRow = Math.max(maxRow, cellMaxRow)
+            minCol = Math.min(minCol, cellMinCol)
+            maxCol = Math.max(maxCol, cellMaxCol)
+          }
+        }
+      }
+
+      // 计算正确的rowSpan和colSpan（基于实际占用的行列范围）
+      const finalRowSpan = maxRow - minRow + 1
+      const finalColSpan = maxCol - minCol + 1
+
+      // 第二阶段：确定要删除的单元格
+      for (const [, { path }] of realCells) {
+        // 跳过基础单元格（第一个单元格作为合并后的目标）
+        if (Path.equals(basePath, path)) {
+          continue
+        }
+
+        cellsToDelete.push(path)
+      }
+
+      // 第三阶段：按路径降序排序并删除单元格
+      cellsToDelete.sort((a, b) => {
+        for (let i = 0; i < Math.min(a.length, b.length); i += 1) {
+          if (a[i] !== b[i]) {
+            return b[i] - a[i] // 降序
+          }
+        }
+        return b.length - a.length
+      })
+
+      // 删除单元格并移动内容
+      for (const path of cellsToDelete) {
+        try {
+          // 检查节点是否仍然存在
+          if (!Editor.hasPath(editor, path)) {
             continue
           }
 
-          // prettier-ignore
+          // 移动单元格内容到基础单元格
           for (const [, childPath] of Node.children(editor, path, { reverse: true })) {
             Transforms.moveNodes(editor, {
               to: Path.next(lastPath),
@@ -117,19 +164,15 @@ class MergeCell implements IButtonMenu {
             })
           }
 
-          const [[, trPath]] = Editor.nodes(editor, {
-            match: isOfType(editor, 'tr'),
-            at: path,
-          })
-
-          if (this.needKeepCell(editor, trPath)) {
-            Transforms.setNodes(editor, { hidden: true } as TableCellElement, { at: path })
-            continue
-          }
+          // 删除单元格
+          Transforms.removeNodes(editor, { at: path })
+        } catch (error) {
+          // 静默处理删除失败的情况
         }
       }
 
-      Transforms.setNodes<CellElement>(editor, { rowSpan, colSpan }, { at: basePath })
+      // 为基础单元格设置正确的rowSpan和colSpan属性
+      Transforms.setNodes<CellElement>(editor, { rowSpan: finalRowSpan, colSpan: finalColSpan }, { at: basePath })
     })
   }
 }

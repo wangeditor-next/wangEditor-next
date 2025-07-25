@@ -121,7 +121,7 @@ export type IUploadImageConfig = IUploadConfig & {
 }
 
 interface ICodeLangConfig {
-  codeLangs: { text: string; value: string }[];
+  codeLangs: { text: string; value: string; selected?: boolean }[];
 }
 
 export interface IMenuConfig {

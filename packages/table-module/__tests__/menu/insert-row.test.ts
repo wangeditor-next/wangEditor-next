@@ -5,6 +5,12 @@ import createEditor from '../../../../tests/utils/create-editor'
 import { ADD_ROW_SVG } from '../../src/constants/svg'
 import locale from '../../src/locale/zh-CN'
 import InsertRow from '../../src/module/menu/InsertRow'
+import * as utils from '../../src/utils'
+
+vi.mock('../../src/utils', () => ({
+  filledMatrix: vi.fn(),
+}))
+const mockedUtils = utils as vi.Mocked<typeof utils>
 
 function setEditorSelection(
   editor: core.IDomEditor,
@@ -115,11 +121,32 @@ describe('Table Module Insert Row Menu', () => {
           type: 'table-cell',
           children: [],
         } as slate.Element,
-        [0, 1],
+        [0, 0, 0],
       ] as slate.NodeEntry<slate.Element>
     }
 
     vi.spyOn(slate.Editor, 'nodes').mockReturnValue(fn())
+
+    // Mock filledMatrix to return a valid matrix structure
+    mockedUtils.filledMatrix.mockImplementation(() => {
+      return [
+        [
+          [
+            [{ type: 'table-cell', children: [{ text: '' }] }, [0, 0, 0]],
+            {
+              rtl: 1, ltr: 1, ttb: 1, btt: 1,
+            },
+          ],
+          [
+            [{ type: 'table-cell', children: [{ text: '' }] }, [0, 0, 1]],
+            {
+              rtl: 1, ltr: 1, ttb: 1, btt: 1,
+            },
+          ],
+        ],
+      ]
+    })
+
     const insertNodesFn = vi.fn()
 
     vi.spyOn(slate.Transforms, 'insertNodes').mockImplementation(insertNodesFn)
@@ -143,11 +170,17 @@ describe('Table Module Insert Row Menu', () => {
           type: 'table-cell',
           children: [],
         } as slate.Element,
-        [0, 1],
+        [0, 0, 0],
       ] as slate.NodeEntry<slate.Element>
     }
 
     vi.spyOn(slate.Editor, 'nodes').mockReturnValue(fn())
+
+    // Mock filledMatrix to return empty matrix
+    mockedUtils.filledMatrix.mockImplementation(() => {
+      return [[]]
+    })
+
     const insertNodesFn = vi.fn()
 
     vi.spyOn(slate.Transforms, 'insertNodes').mockImplementation(insertNodesFn)

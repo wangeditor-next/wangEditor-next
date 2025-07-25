@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "engines": {
-    "node": "^18.0.0"
+    "node": "^22.13.0"
   },
   "browserslist": [
     "defaults",
@@ -48,8 +48,8 @@
     "@babel/preset-typescript": "^7.14.5",
     "@babel/runtime-corejs3": "^7.14.7",
     "@changesets/cli": "^2.27.7",
-    "@commitlint/cli": "^19.5.0",
-    "@commitlint/config-conventional": "^19.5.0",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@rollup/plugin-babel": "^6.0.0",
     "@rollup/plugin-commonjs": "^28.0.0",
     "@rollup/plugin-json": "^6.0.0",
@@ -70,7 +70,7 @@
     "cssnano": "^7.0.0",
     "cypress": "^13.0.0",
     "cz-conventional-changelog": "^3.3.0",
-    "eslint": "^8.57.0",
+    "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-cypress": "^3.0.0",
@@ -81,16 +81,16 @@
     "eslint-plugin-simple-import-sort": "^12.0.0",
     "eslint-plugin-vue": "^9.27.0",
     "http-server": "^14.0.0",
-    "husky": "^9.1.6",
+    "husky": "^9.1.7",
     "jest-environment-jsdom": "^29.0.0",
     "less": "^4.0.0",
-    "lint-staged": "^15.2.10",
+    "lint-staged": "^15.5.2",
     "lodash": "^4.17.21",
     "minimist": "^1.2.8",
     "nock": "^13.2.4",
     "patch-package": "^8.0.0",
     "postcss": "^8.2.15",
-    "prettier": "^3.3.3",
+    "prettier": "^3.6.2",
     "rollup": "^4.0.0",
     "rollup-plugin-cleanup": "^3.2.1",
     "rollup-plugin-copy": "^3.4.0",
@@ -124,5 +124,22 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.14.6"
-  }
+  },
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wangEditor-next/wangEditor-next.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wangEditor-next/wangEditor-next/issues"
+  },
+  "homepage": "https://github.com/wangEditor-next/wangEditor-next#readme"
 }
