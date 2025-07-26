@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.7.41
+
+### Patch Changes
+
+- a4b6fd8: chore: add rollup package link
+
 ## 1.7.40
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@wangeditor-next/yjs",
-  "version": "0.1.38",
+  "version": "0.1.39",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",
   "description": "Yjs binding for wangeditor-next.",
@@ -48,7 +48,7 @@
     "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
   },
   "peerDependencies": {
-    "@wangeditor-next/core": "1.7.40",
+    "@wangeditor-next/core": "1.7.41",
     "slate": "^0.82.0",
     "yjs": "^13.5.29"
   },

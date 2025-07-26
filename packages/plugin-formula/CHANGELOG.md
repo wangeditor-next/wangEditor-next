@@ -1,5 +1,14 @@
 # @wangeditor-next/plugin-formula
 
+## 1.0.26
+
+### Patch Changes
+
+- a4b6fd8: chore: add rollup package link
+- Updated dependencies [e204312]
+- Updated dependencies [a4b6fd8]
+  - @wangeditor-next/editor@5.6.40
+
 ## 1.0.25
 
 ### Patch Changes

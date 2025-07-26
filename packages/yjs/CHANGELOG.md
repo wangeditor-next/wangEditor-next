@@ -1,5 +1,13 @@
 # @wangeditor-next/yjs
 
+## 0.1.39
+
+### Patch Changes
+
+- a4b6fd8: chore: add rollup package link
+- Updated dependencies [a4b6fd8]
+  - @wangeditor-next/core@1.7.41
+
 ## 0.1.38
 
 ### Patch Changes
