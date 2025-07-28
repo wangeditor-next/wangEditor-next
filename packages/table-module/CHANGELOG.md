@@ -1,5 +1,14 @@
 # Change Log
 
+## 1.6.53
+
+### Patch Changes
+
+- e204312: fix: 宽度自适应获取当前选中的表格容器宽度，防止文档多表格时获取到其它表格容器元素和兼容高版本node.js
+- a4b6fd8: chore: add rollup package link
+- Updated dependencies [a4b6fd8]
+  - @wangeditor-next/core@1.7.41
+
 ## 1.6.52
 
 ### Patch Changes
