@@ -52,12 +52,12 @@ class TableFullWidth implements IButtonMenu {
 
     const { columnWidths = [] } = tableNode
 
-    // 获取表格容器元素 - 简化逻辑
-    // 由于当前选中的表格就是我们要操作的表格，直接查找包含table的table-container
-    const containerElement = document.querySelector('.table-container')
+    // 获取当前选中的表格的DOM元素,再查找table-container容器元素，防止文档多表格时，获取到其他表格的容器元素
+    const tableDom = DomEditor.toDOMNode(editor, tableNode)
+    const containerElement = tableDom.querySelector('.table-container')
 
     if (!containerElement || columnWidths.length === 0) {
-      // 如果找不到容器或没有列宽信息，则使用原来的逻辑
+      // 如果找不到容器或没有列宽信息，则使用原来的逻辑，先使用auto预留以后实现按比例实现缩放功能
       const props: Partial<TableElement> = {
         width: 'auto',
       }

@@ -1,5 +1,14 @@
 # Change Log
 
+## 1.1.44
+
+### Patch Changes
+
+- a4b6fd8: chore: add rollup package link
+- Updated dependencies [a4b6fd8]
+  - @wangeditor-next/basic-modules@1.5.41
+  - @wangeditor-next/core@1.7.41
+
 ## 1.1.43
 
 ### Patch Changes

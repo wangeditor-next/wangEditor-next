@@ -1,5 +1,15 @@
 # @wangeditor-next/yjs-for-react
 
+## 0.1.51
+
+### Patch Changes
+
+- a4b6fd8: chore: add rollup package link
+- Updated dependencies [e204312]
+- Updated dependencies [a4b6fd8]
+  - @wangeditor-next/editor@5.6.40
+  - @wangeditor-next/yjs@0.1.39
+
 ## 0.1.50
 
 ### Patch Changes

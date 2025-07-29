@@ -6,10 +6,13 @@ import { DataTransfer } from './DataTransfer'
 import { ResizeObserver } from './ResizeObserver'
 
 // @ts-ignore
-global.crypto = {
-  getRandomValues(buffer: any) {
-    return nodeCrypto.randomFillSync(buffer)
-  },
+if (!global.crypto) {
+  // @ts-ignore
+  global.crypto = {
+    getRandomValues(buffer: any) {
+      return nodeCrypto.randomFillSync(buffer)
+    },
+  }
 }
 
 vi.spyOn(global.console, 'warn').mockImplementation(() => vi.fn())
