@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.6.41
+
+### Patch Changes
+
+- cc355f3: fix: 宽度拖拽调整获取当前选中的表格或容器宽度
+- Updated dependencies [cc355f3]
+  - @wangeditor-next/table-module@1.6.54
+
 ## 5.6.40
 
 ### Patch Changes

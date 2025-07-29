@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.6.54
+
+### Patch Changes
+
+- cc355f3: fix: 宽度拖拽调整获取当前选中的表格或容器宽度
+
 ## 1.6.53
 
 ### Patch Changes
