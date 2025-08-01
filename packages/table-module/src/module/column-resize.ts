@@ -1,4 +1,4 @@
-import { IDomEditor, isHTMLElememt } from '@wangeditor-next/core'
+import { DomEditor, IDomEditor, isHTMLElememt } from '@wangeditor-next/core'
 import throttle from 'lodash.throttle'
 import { Editor, Element as SlateElement, Transforms } from 'slate'
 
@@ -277,6 +277,8 @@ const onMouseMove = throttle((event: Event) => {
   const { columnWidths = [], resizingIndex = -1 } = elemNode as TableElement
 
   let adjustColumnWidths: number[]
+  const tableNode = DomEditor.getSelectedNodeByType(editorWhenMouseDown, 'table') as TableElement
+  const tableDom = DomEditor.toDOMNode(editorWhenMouseDown, tableNode)
 
   // 判断是否为最右侧列
   const isRightmostColumn = resizingIndex === columnWidths.length - 1
@@ -288,7 +290,7 @@ const onMouseMove = throttle((event: Event) => {
     adjustColumnWidths = calculateProportionalWidths(columnWidths, resizingIndex, newRightmostWidth)
   } else {
     // 中间列：计算边界的绝对位置
-    const tableElement = document.querySelector('.table')
+    const tableElement = tableDom.querySelector('.table')
 
     if (tableElement) {
       const tableRect = tableElement.getBoundingClientRect()
@@ -308,7 +310,7 @@ const onMouseMove = throttle((event: Event) => {
 
   // 检查容器宽度限制（仅对最右侧列生效）
   if (isRightmostColumn) {
-    const containerElement = document.querySelector('.table-container')
+    const containerElement = tableDom.querySelector('.table-container')
 
     if (containerElement) {
       const newTotalWidth = adjustColumnWidths.reduce((a, b) => a + b, 0)
