@@ -7,7 +7,7 @@ import $, { Dom7Array } from 'dom7'
 import { Descendant } from 'slate'
 
 import { IDomEditor } from '../editor/interface'
-import { PRE_PARSE_HTML_CONF_LIST, TEXT_TAGS } from '../index'
+import { PRE_PARSE_HTML_CONF_LIST, SPAN_WITH_SPECIAL_TAGS, TEXT_TAGS } from '../index'
 import {
   getTagName, isDOMComment, isDOMElement, isDOMText,
 } from '../utils/dom'
@@ -20,6 +20,9 @@ function parseChildNode($childElem, parentStyle, editor) {
   if (isDOMElement(childNode)) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     const elem = parseElemHtml($childElem, editor)
+
+    // Element 节点不应该继承传入的 { text: '' } 默认值，该值会导致slate识别错误
+    delete parentStyle.text
 
     return Array.isArray(elem)
       ? elem.map(v => ({ ...parentStyle, ...v }))
@@ -58,6 +61,14 @@ function parseElemHtml($elem: Dom7Array, editor: IDomEditor): Descendant | Desce
     if ($elem.attr('data-w-e-type')) {
       return parseCommonElemHtml($elem, editor)
     }
+
+    // 兼容粘贴其他编辑器 html 代码时，<span> 标签包含 img、a、video、iframe 标签进行处理，其他 inline 标签暂不支持
+    const matchSpecialTag = SPAN_WITH_SPECIAL_TAGS.find(elemTag => $elem.find(elemTag).length > 0)
+
+    if (matchSpecialTag) {
+      return parseCommonElemHtml($elem, editor)
+    }
+
     if ($elem[0].childNodes.length > 1) {
       const childNodes = $elem[0].childNodes
       const parentStyle = parseTextElemHtmlToStyle($($elem[0]), editor)
@@ -71,7 +82,6 @@ function parseElemHtml($elem: Dom7Array, editor: IDomEditor): Descendant | Desce
     }
 
     return parseTextElemHtml($elem, editor)
-
   }
 
   // <code> 特殊处理
@@ -89,7 +99,7 @@ function parseElemHtml($elem: Dom7Array, editor: IDomEditor): Descendant | Desce
 
   // 非 <code> ，正常处理
   if (TEXT_TAGS.includes(tagName)) {
-    if ($elem[0].childNodes.length > 0 && $elem[0].childNodes[0].nodeType !== 3) {
+    if ($elem[0].childNodes.length > 0 && $elem[0].childNodes[0].nodeType !== Node.TEXT_NODE) {
       const childNodes = $elem[0].childNodes
 
       return { ...parseElemHtml($(childNodes[0]), editor), ...parseTextElemHtml($elem, editor) }
