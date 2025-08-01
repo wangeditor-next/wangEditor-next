@@ -92,7 +92,7 @@ function parseElemHtml($elem: Dom7Array, editor: IDomEditor): Descendant | Desce
 
   // 非 <code> ，正常处理
   if (TEXT_TAGS.includes(tagName)) {
-    if ($elem[0].childNodes.length > 0 && $elem[0].childNodes[0].nodeType !== 3) {
+    if ($elem[0].childNodes.length > 0 && $elem[0].childNodes[0].nodeType !== Node.TEXT_NODE) {
       const childNodes = $elem[0].childNodes
 
       return { ...parseElemHtml($(childNodes[0]), editor), ...parseTextElemHtml($elem, editor) }
