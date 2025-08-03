@@ -1,5 +1,20 @@
 # Change Log
 
+## 5.6.42
+
+### Patch Changes
+
+- a37ae4b: fix: 特定场景下死循环问题；style: 魔法字符串；fix: 继承已有子节点；fix：#645
+- Updated dependencies [a37ae4b]
+- Updated dependencies [a37ae4b]
+  - @wangeditor-next/basic-modules@1.5.42
+  - @wangeditor-next/core@1.7.42
+  - @wangeditor-next/upload-image-module@1.1.45
+  - @wangeditor-next/code-highlight@1.3.39
+  - @wangeditor-next/list-module@1.1.48
+  - @wangeditor-next/table-module@1.6.55
+  - @wangeditor-next/video-module@1.3.48
+
 ## 5.6.41
 
 ### Patch Changes

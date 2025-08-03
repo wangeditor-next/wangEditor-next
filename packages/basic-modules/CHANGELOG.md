@@ -1,5 +1,14 @@
 # Change Log
 
+## 1.5.42
+
+### Patch Changes
+
+- a37ae4b: fix: 特定场景下死循环问题；style: 魔法字符串；fix: 继承已有子节点；fix：#645
+- a37ae4b: 修复在SelectLangMenu提供了selected能力，而在code-block没处理导致选中了其他语言，但是代码块代码没高亮的问题
+- Updated dependencies [a37ae4b]
+  - @wangeditor-next/core@1.7.42
+
 ## 1.5.41
 
 ### Patch Changes
