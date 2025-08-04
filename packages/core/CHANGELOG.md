@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.7.42
+
+### Patch Changes
+
+- a37ae4b: fix: 特定场景下死循环问题；style: 魔法字符串；fix: 继承已有子节点；fix：#645
+
 ## 1.7.41
 
 ### Patch Changes
