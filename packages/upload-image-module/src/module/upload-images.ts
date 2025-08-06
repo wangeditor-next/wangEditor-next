@@ -161,7 +161,7 @@ export default async function (editor: IDomEditor, files: FileList | null) {
       await insertBase64(editor, file)
     } else if (customUpload) {
       // 自定义上传
-      await customUpload(file, (src, alt, href) => insertImageNode(editor, src, alt, href))
+      await customUpload(file, (src, alt, href) => insertImageNode(editor, src, alt, href), editor)
     } else {
       // 默认上传
       uploadFileList.push(file)

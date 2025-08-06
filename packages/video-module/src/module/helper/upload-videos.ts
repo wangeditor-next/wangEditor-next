@@ -118,7 +118,7 @@ export default async function (editor: IDomEditor, files: FileList | null) {
     // 上传
     if (customUpload) {
       // 自定义上传
-      await customUpload(file, (src, poster) => insertVideo(editor, src, poster))
+      await customUpload(file, (src, poster) => insertVideo(editor, src, poster), editor)
     } else {
       uploadFileList.push(file)
     }
