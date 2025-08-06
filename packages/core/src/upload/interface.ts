@@ -5,6 +5,8 @@
 
 import { UppyFile } from '@uppy/core'
 
+import { IDomEditor } from '../editor/interface'
+
 type FilesType = { [key: string]: UppyFile<{}, {}> }
 type InsertFn = (
   src: string,
@@ -35,7 +37,7 @@ interface IBaseUploadConfig {
   // 用户自定义插入视频
   customInsert?: (res: any, insertFn: InsertFn) => void
   // 用户自定义上传视频
-  customUpload?: (files: File, insertFn: InsertFn) => void
+  customUpload?: (files: File, insertFn: InsertFn, editor: IDomEditor) => void
   // 自定义选择视频，如图床
   customBrowseAndUpload?: (insertFn: InsertFn) => void
   // 支持传入更多 Uppy 配置项
@@ -47,7 +49,7 @@ interface IBaseUploadConfig {
 // 有自定义上传时的配置（server可选）
 interface IUploadConfigWithCustomUpload extends IBaseUploadConfig {
   server?: string
-  customUpload: (files: File, insertFn: InsertFn) => void
+  customUpload: (files: File, insertFn: InsertFn, editor: IDomEditor) => void
 }
 
 // 没有自定义上传时的配置（server必需）
