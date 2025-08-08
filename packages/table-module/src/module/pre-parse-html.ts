@@ -41,9 +41,6 @@ function preParse(tableElem: DOMElement): DOMElement {
 
       if (displayNoneRegex.test(styleAttr)) {
         $cell.remove()
-      } else {
-        // 删除style属性（保留单元格，只删除样式）
-        $cell.removeAttr('style')
       }
     }
     // 设置width属性为auto
