@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.6.56
+
+### Patch Changes
+
+- fbf1afc: fix(table-module/per-parse-html): 修复执行setHtml命令时，丢失td样式的问题(#665)
+- ad751aa: chore: 移除多个包中的lodash.isequal依赖
+- ad751aa: chore: 移除多个包中的lodash.isequal依赖
+- Updated dependencies [06ebf22]
+- Updated dependencies [ad751aa]
+- Updated dependencies [ad751aa]
+  - @wangeditor-next/core@1.7.43
+
 ## 1.6.55
 
 ### Patch Changes

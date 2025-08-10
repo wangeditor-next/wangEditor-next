@@ -1,5 +1,14 @@
 # @wangeditor-next/yjs
 
+## 0.1.41
+
+### Patch Changes
+
+- Updated dependencies [06ebf22]
+- Updated dependencies [ad751aa]
+- Updated dependencies [ad751aa]
+  - @wangeditor-next/core@1.7.43
+
 ## 0.1.40
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.7.43
+
+### Patch Changes
+
+- 06ebf22: feat(video-module、upload-image-module): customUpload添加eidtor实例为第三个参数（兼容），便于用户在使用customUpload时调用上传进度条
+- ad751aa: chore: 移除多个包中的lodash.isequal依赖
+- ad751aa: chore: 移除多个包中的lodash.isequal依赖
+
 ## 1.7.42
 
 ### Patch Changes

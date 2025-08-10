@@ -1,5 +1,23 @@
 # Change Log
 
+## 5.6.43
+
+### Patch Changes
+
+- ad751aa: chore: 移除多个包中的lodash.isequal依赖
+- ad751aa: chore: 移除多个包中的lodash.isequal依赖
+- Updated dependencies [06ebf22]
+- Updated dependencies [fbf1afc]
+- Updated dependencies [ad751aa]
+- Updated dependencies [ad751aa]
+  - @wangeditor-next/core@1.7.43
+  - @wangeditor-next/upload-image-module@1.1.46
+  - @wangeditor-next/video-module@1.3.49
+  - @wangeditor-next/table-module@1.6.56
+  - @wangeditor-next/basic-modules@1.5.43
+  - @wangeditor-next/code-highlight@1.3.40
+  - @wangeditor-next/list-module@1.1.49
+
 ## 5.6.42
 
 ### Patch Changes

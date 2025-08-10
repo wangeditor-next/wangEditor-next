@@ -1,5 +1,16 @@
 # Change Log
 
+## 1.1.46
+
+### Patch Changes
+
+- 06ebf22: feat(video-module、upload-image-module): customUpload添加eidtor实例为第三个参数（兼容），便于用户在使用customUpload时调用上传进度条
+- Updated dependencies [06ebf22]
+- Updated dependencies [ad751aa]
+- Updated dependencies [ad751aa]
+  - @wangeditor-next/core@1.7.43
+  - @wangeditor-next/basic-modules@1.5.43
+
 ## 1.1.45
 
 ### Patch Changes
