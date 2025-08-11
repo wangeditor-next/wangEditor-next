@@ -28,7 +28,7 @@ jobs:
     steps:
       # 检出代码库
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 

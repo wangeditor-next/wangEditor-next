@@ -31,7 +31,7 @@ jobs:
       image: cypress/browsers:latest
       options: --user 1001
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # 设置 Node.js 版本
       - name: Use Node.js 18
