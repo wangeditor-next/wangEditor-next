@@ -6,7 +6,7 @@
 import clonedeep from 'lodash.clonedeep'
 import debounce from 'lodash.debounce'
 
-import { EditorEvents, IToolbarConfig } from '../../config/interface'
+import { EditorEvents, IInsertKeysConfig, IToolbarConfig } from '../../config/interface'
 import { IDomEditor } from '../../editor/interface'
 import { i18nListenLanguage } from '../../i18n'
 import $, { Dom7Array, DOMElement } from '../../utils/dom'
@@ -99,15 +99,38 @@ class Toolbar {
     // 新插入菜单
     const toolbarKeysWithInsertedKeys = clonedeep(toolbarKeys)
 
-    if (insertKeys.keys.length > 0) {
-      if (typeof insertKeys.keys === 'string') {
-        insertKeys.keys = [insertKeys.keys]
+    let insertKeysArr: IInsertKeysConfig[] = []
+
+    if (!Array.isArray(insertKeys)) { /** 兼容旧版本，旧版本 insertKeys 是个对象 */
+      insertKeysArr = [insertKeys as IInsertKeysConfig]
+    } else {
+      insertKeysArr = insertKeys
+    }
+
+    insertKeysArr.forEach(menu => {
+      if (!toolbarKeysWithInsertedKeys[menu.index]) {
+        throw new Error('The inserted menu does not exist')
       }
 
-      insertKeys.keys.forEach((k, i) => {
-        toolbarKeysWithInsertedKeys.splice(insertKeys.index + i, 0, k)
-      })
-    }
+      if (menu.replaceFn) {
+        const callbackKeys: string | IMenuGroup = menu.replaceFn(toolbarKeysWithInsertedKeys[menu.index])
+
+        if (!callbackKeys) {
+          throw new Error('This function needs to return the menu configuration：string | IMenuGroup')
+        }
+        toolbarKeysWithInsertedKeys[menu.index] = callbackKeys
+      }
+
+      if (menu.keys.length > 0) {
+        if (typeof menu.keys === 'string') { /** 之前的兼容逻辑 */
+          menu.keys = [menu.keys]
+        }
+
+        menu.keys.forEach((k, i) => {
+          toolbarKeysWithInsertedKeys.splice(menu.index + i, 0, k)
+        })
+      }
+    })
 
     // 排除某些菜单
     const filteredKeys = toolbarKeysWithInsertedKeys.filter(key => {

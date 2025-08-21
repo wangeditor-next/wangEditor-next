@@ -240,12 +240,18 @@ export interface IEditorConfig {
   skipCacheTypes?: string[]
 }
 
+export interface IInsertKeysConfig {
+  index: number
+  keys: string | Array<string | IMenuGroup>
+  replaceFn?: (config: string | IMenuGroup) => string | IMenuGroup
+}
+
 /**
  * toolbar config
  */
 export interface IToolbarConfig {
   toolbarKeys: Array<string | IMenuGroup>
-  insertKeys: { index: number; keys: string | Array<string | IMenuGroup> }
+  insertKeys: IInsertKeysConfig | Array<IInsertKeysConfig>
   excludeKeys: Array<string> // 排除哪些菜单
   modalAppendToBody: boolean // modal append 到 body ，而非 $textAreaContainer 内
 }
