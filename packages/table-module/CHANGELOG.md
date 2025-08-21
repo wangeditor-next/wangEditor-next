@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.6.57
+
+### Patch Changes
+
+- acff6e3: 修改宽度拖拽逻辑
+
 ## 1.6.56
 
 ### Patch Changes
