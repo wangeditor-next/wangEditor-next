@@ -30,7 +30,7 @@ export default {
     deleteCol: 'Delete column',
     deleteRow: 'Delete row',
     deleteTable: 'Delete table',
-    widthAuto: 'Width auto',
+    widthAuto: 'Fit width',
     insertCol: 'Insert column',
     insertRow: 'Insert row',
     insertTable: 'Insert table',
