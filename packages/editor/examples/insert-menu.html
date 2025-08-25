@@ -55,6 +55,9 @@
             index: 21,
             keys: [],
             replaceFn: (m)=> {
+              if(typeof m ==="string") {
+                return m;
+              }
               return {...m, menuKeys: [...m.menuKeys, 'uploadVideo']}
             }
           },
