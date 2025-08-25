@@ -124,13 +124,10 @@ describe('editor config', () => {
 
     editor.select(getStartLocation(editor))
 
-    // 避免选区干扰
-    setTimeout(() => {
-      editor.insertText('123')
-    }, 50)
-    setTimeout(() => {
-      expect(fn).toHaveBeenCalledTimes(2)
-    }, 80)
+    await 1
+    editor.insertText('123')
+    await 1
+    expect(fn).toHaveBeenCalledTimes(2)
   })
 
   it('if set onDestroyed option, it will be called when destroy editor', async () => {

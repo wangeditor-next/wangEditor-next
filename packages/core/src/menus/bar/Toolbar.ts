@@ -112,11 +112,7 @@ class Toolbar {
     insertKeysArr.forEach(menu => {
       const adjustedIndex = menu.index + cumulativeOffset
 
-      if (!toolbarKeysWithInsertedKeys[adjustedIndex]) {
-        throw new Error(`Cannot insert menu at index ${menu.index}: index out of bounds (toolbar has ${toolbarKeysWithInsertedKeys.length} items)`)
-      }
-
-      if (menu.replaceFn) {
+      if (menu.replaceFn && toolbarKeysWithInsertedKeys[adjustedIndex]) {
         const callbackKeys: string | IMenuGroup = menu.replaceFn(toolbarKeysWithInsertedKeys[adjustedIndex])
 
         if (!callbackKeys) {
