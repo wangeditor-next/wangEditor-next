@@ -41,7 +41,7 @@ export const EditorEvents = {
   DESTROYED: 'destroyed',
   CHANGE: 'change',
   SCROLL: 'scroll',
-  FULLSCREEN: 'fullScreen',
+  FULLSCREEN: 'fullscreen',
   UNFULLSCREEN: 'unFullScreen',
   MODALORPANELSHOW: 'modalOrPanelShow',
   MODALORPANELHIDE: 'modalOrPanelHide',
