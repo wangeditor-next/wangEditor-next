@@ -107,18 +107,22 @@ class Toolbar {
       insertKeysArr = insertKeys
     }
 
+    let cumulativeOffset = 0
+
     insertKeysArr.forEach(menu => {
-      if (!toolbarKeysWithInsertedKeys[menu.index]) {
-        throw new Error('The inserted menu does not exist')
+      const adjustedIndex = menu.index + cumulativeOffset
+
+      if (!toolbarKeysWithInsertedKeys[adjustedIndex]) {
+        throw new Error(`Cannot insert menu at index ${menu.index}: index out of bounds (toolbar has ${toolbarKeysWithInsertedKeys.length} items)`)
       }
 
       if (menu.replaceFn) {
-        const callbackKeys: string | IMenuGroup = menu.replaceFn(toolbarKeysWithInsertedKeys[menu.index])
+        const callbackKeys: string | IMenuGroup = menu.replaceFn(toolbarKeysWithInsertedKeys[adjustedIndex])
 
         if (!callbackKeys) {
           throw new Error('This function needs to return the menu configuration：string | IMenuGroup')
         }
-        toolbarKeysWithInsertedKeys[menu.index] = callbackKeys
+        toolbarKeysWithInsertedKeys[adjustedIndex] = callbackKeys
       }
 
       if (menu.keys.length > 0) {
@@ -127,8 +131,9 @@ class Toolbar {
         }
 
         menu.keys.forEach((k, i) => {
-          toolbarKeysWithInsertedKeys.splice(menu.index + i, 0, k)
+          toolbarKeysWithInsertedKeys.splice(adjustedIndex + i, 0, k)
         })
+        cumulativeOffset += menu.keys.length
       }
     })
 
