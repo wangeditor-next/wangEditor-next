@@ -8,6 +8,7 @@ import {
 } from 'slate'
 
 import { IDomEditor } from '../..'
+import { EditorEvents } from '../../config/interface'
 import { IGNORE_TAGS } from '../../constants'
 import { htmlToContent } from '../../create/helper'
 import { PARSE_ELEM_HTML_CONF, TEXT_TAGS } from '../../parse-html/index'
@@ -171,7 +172,7 @@ export const withContent = <T extends Editor>(editor: T) => {
     }
 
     // 触发配置的 change 事件
-    e.emit('change')
+    e.emit(EditorEvents.CHANGE)
 
     onChange()
   }

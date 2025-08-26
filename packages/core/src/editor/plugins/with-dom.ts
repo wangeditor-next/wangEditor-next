@@ -6,6 +6,7 @@
 import { Editor, Node, Transforms } from 'slate'
 
 import { IDomEditor } from '../..'
+import { EditorEvents } from '../../config/interface'
 import $, { Dom7Array } from '../../utils/dom'
 import {
   EDITOR_TO_HOVER_BAR,
@@ -28,7 +29,8 @@ let ID = 1
 export const withDOM = <T extends Editor>(editor: T) => {
   const e = editor as T & IDomEditor
 
-  e.id = `wangEditor-${ID++}`
+  e.id = `wangEditor-${ID}`
+  ID += 1
 
   e.isDestroyed = false
 
@@ -84,11 +86,15 @@ export const withDOM = <T extends Editor>(editor: T) => {
 
     const toolbar = DomEditor.getToolbar(e)
 
-    toolbar && toolbar.changeToolbarState()
+    if (toolbar) {
+      toolbar.changeToolbarState()
+    }
 
     const hoverbar = DomEditor.getHoverbar(e)
 
-    hoverbar && hoverbar.changeHoverbarState()
+    if (hoverbar) {
+      hoverbar.changeHoverbarState()
+    }
   }
 
   // destroy
@@ -122,7 +128,7 @@ export const withDOM = <T extends Editor>(editor: T) => {
     e.isDestroyed = true
 
     // 触发自定义事件
-    e.emit('destroyed')
+    e.emit(EditorEvents.DESTROYED)
   }
 
   // scroll to elem
@@ -244,7 +250,7 @@ export const withDOM = <T extends Editor>(editor: T) => {
     e.isFullScreen = true
 
     // 触发自定义事件
-    e.emit('fullScreen')
+    e.emit(EditorEvents.FULLSCREEN)
   }
 
   e.unFullScreen = () => {
@@ -263,7 +269,7 @@ export const withDOM = <T extends Editor>(editor: T) => {
       e.isFullScreen = false
 
       // 触发自定义事件
-      e.emit('unFullScreen')
+      e.emit(EditorEvents.UNFULLSCREEN)
     }, 200)
   }
 

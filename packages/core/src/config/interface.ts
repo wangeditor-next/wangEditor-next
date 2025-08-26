@@ -33,6 +33,8 @@ export type AlertType = 'success' | 'info' | 'warning' | 'error'
  * @property {string} SCROLL - 编辑器滚动时触发，用于同步滚动状态或执行相关操作。
  * @property {string} FULLSCREEN - 编辑器进入全屏时触发，通常用于调整布局或容器尺寸。
  * @property {string} UNFULLSCREEN - 编辑器退出全屏时触发，恢复原始布局状态。
+ * @property {string} MODALORPANELSHOW - 弹窗或面板显示时触发，用于执行相关操作。
+ * @property {string} MODALORPANELHIDE - 弹窗或面板隐藏时触发，用于执行相关操作。
  */
 export const EditorEvents = {
   CREATED: 'created',
@@ -41,6 +43,8 @@ export const EditorEvents = {
   SCROLL: 'scroll',
   FULLSCREEN: 'fullscreen',
   UNFULLSCREEN: 'unFullScreen',
+  MODALORPANELSHOW: 'modalOrPanelShow',
+  MODALORPANELHIDE: 'modalOrPanelHide',
 } as const
 
 export type EditorEventType = typeof EditorEvents[keyof typeof EditorEvents]
@@ -240,12 +244,18 @@ export interface IEditorConfig {
   skipCacheTypes?: string[]
 }
 
+export interface IInsertKeysConfig {
+  index: number
+  keys: string | Array<string | IMenuGroup>
+  replaceFn?: (config: string | IMenuGroup) => string | IMenuGroup
+}
+
 /**
  * toolbar config
  */
 export interface IToolbarConfig {
   toolbarKeys: Array<string | IMenuGroup>
-  insertKeys: { index: number; keys: string | Array<string | IMenuGroup> }
+  insertKeys: IInsertKeysConfig | Array<IInsertKeysConfig>
   excludeKeys: Array<string> // 排除哪些菜单
   modalAppendToBody: boolean // modal append 到 body ，而非 $textAreaContainer 内
 }

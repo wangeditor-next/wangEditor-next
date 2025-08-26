@@ -12,6 +12,7 @@
   "scripts": {
     "cz": "cz",
     "test": "cross-env NODE_OPTIONS=--unhandled-rejections=warn vitest run --passWithNoTests --dangerouslyIgnoreUnhandledErrors",
+    "test:watch": "cross-env NODE_OPTIONS=--unhandled-rejections=warn vitest run --passWithNoTests --dangerouslyIgnoreUnhandledErrors --watch",
     "test-c": "cross-env NODE_OPTIONS=--unhandled-rejections=warn vitest run --passWithNoTests --dangerouslyIgnoreUnhandledErrors --coverage",
     "dev": "cross-env FORCE_COLOR=1 turbo dev",
     "dev:sh": "sh scripts/build-base.sh dev",

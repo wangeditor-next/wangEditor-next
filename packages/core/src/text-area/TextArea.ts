@@ -148,7 +148,7 @@ class TextArea {
       $scroll.on(
         'scroll',
         throttle(() => {
-          editor.emit('scroll')
+          editor.emit(EditorEvents.SCROLL)
         }, 100),
       )
     }

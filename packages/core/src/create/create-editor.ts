@@ -144,7 +144,7 @@ export default function (option: Partial<ICreateOption>) {
   }
 
   // 创建完毕，异步触发 created
-  promiseResolveThen(() => editor.emit('created'))
+  promiseResolveThen(() => editor.emit(EditorEvents.CREATED))
 
   return editor
 }
