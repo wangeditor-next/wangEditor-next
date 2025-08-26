@@ -95,4 +95,25 @@ describe('toolbar config', () => {
 
     expect(insertKeys).toEqual(insertKeysInfo)
   })
+
+  it('insertKeys array', () => {
+    const toolbarKeys = ['mySelectMenu', 'myModalMenu']
+    const insertKeysInfo = [
+      {
+        index: 0,
+        keys: ['myButtonMenu'],
+      },
+      {
+        index: 1,
+        keys: ['mySelectMenu'],
+      },
+    ]
+    const toolbar = createToolbar(editor, {
+      toolbarKeys,
+      insertKeys: insertKeysInfo,
+    })
+    const { insertKeys = {} } = toolbar.getConfig()
+
+    expect(insertKeys).toEqual(insertKeysInfo)
+  })
 })
