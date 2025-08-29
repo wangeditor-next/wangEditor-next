@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.7.44
+
+### Patch Changes
+
+- f6e1fda: feat: 扩展menu插入、修改逻辑(#661)
+
 ## 1.7.43
 
 ### Patch Changes

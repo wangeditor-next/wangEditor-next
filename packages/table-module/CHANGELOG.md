@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.6.57
+
+### Patch Changes
+
+- acff6e3: 修改宽度拖拽逻辑
+- Updated dependencies [f6e1fda]
+  - @wangeditor-next/core@1.7.44
+
 ## 1.6.56
 
 ### Patch Changes

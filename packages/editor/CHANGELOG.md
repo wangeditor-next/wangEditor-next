@@ -1,5 +1,20 @@
 # Change Log
 
+## 5.6.44
+
+### Patch Changes
+
+- f6e1fda: feat: 扩展menu插入、修改逻辑(#661)
+- Updated dependencies [f6e1fda]
+- Updated dependencies [acff6e3]
+  - @wangeditor-next/core@1.7.44
+  - @wangeditor-next/table-module@1.6.57
+  - @wangeditor-next/basic-modules@1.5.44
+  - @wangeditor-next/code-highlight@1.3.41
+  - @wangeditor-next/list-module@1.1.50
+  - @wangeditor-next/upload-image-module@1.1.47
+  - @wangeditor-next/video-module@1.3.50
+
 ## 5.6.43
 
 ### Patch Changes
