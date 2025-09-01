@@ -126,12 +126,22 @@ export function editorSelectionToDOM(textarea: TextArea, editor: IDomEditor, foc
 
     // 这个 if 防止选中图片时发生滚动
     if (!spacer && newDomRange.getBoundingClientRect) {
-      leafEl.getBoundingClientRect = newDomRange.getBoundingClientRect.bind(newDomRange)
+      const rangeRect = newDomRange.getBoundingClientRect.bind(newDomRange)
+      const rect = rangeRect()
+      /**
+       * 当在code、table空行回车时，Range.getBoundingClientRect 返回的各项值是：0，执行 scrollIntoView 函数时，会导致计算失效
+       * 解决方法：判断是否是这种情况，如果存在则保留dom.getBoundingClientRect作为替代方案
+       */
+
+      if (!(rect.top === 0 && rect.right === 0 && rect.bottom === 0 && rect.left === 0 && rect.height === 0 && rect.width === 0)) {
+        leafEl.getBoundingClientRect = newDomRange.getBoundingClientRect.bind(newDomRange)
+      }
+
       const body = document.body
 
       scrollIntoView(leafEl, {
         scrollMode: 'if-needed',
-        boundary: config.scroll ? editorElement.parentElement : body, // issue 4215
+        boundary: config.scroll ? editorElement.parentElement || body : body, // issue 4215
         block: 'end',
         behavior: 'smooth',
       })
