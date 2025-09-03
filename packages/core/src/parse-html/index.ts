@@ -23,14 +23,6 @@ export const TEXT_TAGS = [
   'sup',
 ]
 
-// 解析 elem 时，需要特殊处理的标签
-export const SPAN_WITH_SPECIAL_TAGS = [
-  'a',
-  'img',
-  'video',
-  'iframe',
-]
-
 // ------------------------------------ pre-parse html ------------------------------------
 export type PreParseHtmlFnType = ($node: DOMElement) => DOMElement
 

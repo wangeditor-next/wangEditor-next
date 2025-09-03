@@ -127,7 +127,7 @@ function genChildren($elem: Dom7Array, editor: IDomEditor): Descendant[] {
 function defaultParser(elem: DOMElement, _children: Descendant[], _editor: IDomEditor): Element {
   return {
     type: 'paragraph',
-    children: _children.length ? _children : [{ text: $(elem).text().replace(/\s+/gm, ' ') }],
+    children: [{ text: $(elem).text().replace(/\s+/gm, ' ') }],
   }
 }
 

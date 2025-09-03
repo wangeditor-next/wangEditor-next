@@ -6,20 +6,8 @@
 import { IDomEditor } from '@wangeditor-next/core'
 import { Descendant, Text } from 'slate'
 
-import { CustomElement } from '../../../../custom-types'
 import $, { DOMElement } from '../../utils/dom'
 import { ParagraphElement } from './custom-types'
-
-function hasTypeInChildren(node: CustomElement, targetType: string) {
-  if (!node.children) { return false }
-
-  for (const child of node.children) {
-    if ('type' in child && child.type === targetType) { return true }
-    if ('children' in child && hasTypeInChildren(child as CustomElement, targetType)) { return true }
-  }
-
-  return false
-}
 
 function parseParagraphHtml(
   elem: DOMElement,
@@ -31,13 +19,6 @@ function parseParagraphHtml(
   children = children.filter(child => {
     if (Text.isText(child)) { return true }
     if (editor.isInline(child)) { return true }
-
-    // 包含 image、link、video、iframe 保留, 目前仅额外支持这四种类型
-    if (hasTypeInChildren(child, 'image')) { return true }
-    if (hasTypeInChildren(child, 'link')) { return true }
-    if (hasTypeInChildren(child, 'video')) { return true }
-    if (hasTypeInChildren(child, 'iframe')) { return true }
-
     return false
   })
 
