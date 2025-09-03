@@ -1,5 +1,16 @@
 # Change Log
 
+## 1.5.45
+
+### Patch Changes
+
+- e320246: fix(core/parse-html): 修复腾讯等文档复制html时，存在<span><img /></span>的不支持结构的问题(#645)
+- 7808410: feat(table): 添加行拖动和调整高度功能
+- Updated dependencies [fdd0544]
+- Updated dependencies [e320246]
+- Updated dependencies [7808410]
+  - @wangeditor-next/core@1.7.45
+
 ## 1.5.44
 
 ### Patch Changes

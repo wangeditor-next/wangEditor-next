@@ -1,5 +1,14 @@
 # @wangeditor-next/yjs-for-react
 
+## 0.1.56
+
+### Patch Changes
+
+- 7808410: feat(table): 添加行拖动和调整高度功能
+- Updated dependencies [7808410]
+  - @wangeditor-next/editor@5.6.45
+  - @wangeditor-next/yjs@0.1.43
+
 ## 0.1.55
 
 ### Patch Changes

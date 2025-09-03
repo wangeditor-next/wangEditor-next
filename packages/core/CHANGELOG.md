@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.7.45
+
+### Patch Changes
+
+- fdd0544: fix(core/syncSelection): 修复在code、table中回车会滚动到顶部的问题(#640)
+- e320246: fix(core/parse-html): 修复腾讯等文档复制html时，存在<span><img /></span>的不支持结构的问题(#645)
+- 7808410: feat(table): 添加行拖动和调整高度功能
+
 ## 1.7.44
 
 ### Patch Changes
