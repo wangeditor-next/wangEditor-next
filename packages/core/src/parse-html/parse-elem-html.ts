@@ -62,7 +62,9 @@ function parseElemHtml($elem: Dom7Array, editor: IDomEditor): Descendant | Desce
       return parseCommonElemHtml($elem, editor)
     }
 
-    if ($elem[0].childNodes.length > 1) {
+    const hasImgOrA = $elem.find('img, a').length > 0
+
+    if ($elem[0].childNodes.length > 1 || hasImgOrA) {
       const childNodes = $elem[0].childNodes
       const parentStyle = parseTextElemHtmlToStyle($($elem[0]), editor)
 
