@@ -32,16 +32,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 设置 Node.js 版本
-      - name: Setup Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v5
-        with:
-          node-version:  ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org/'
-
       # 安装 pnpm
       - name: Install pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      # 设置 Node.js 版本
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: https://registry.npmjs.com
+          cache: 'pnpm'
 
       # 加载依赖缓存
       - name: Load cached dependencies
