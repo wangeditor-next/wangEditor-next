@@ -75,6 +75,7 @@
     "snabbdom": "^3.6.0"
   },
   "devDependencies": {
-    "@wangeditor-next-shared/rollup-config": "workspace:^"
+    "@wangeditor-next-shared/rollup-config": "workspace:^",
+    "postcss-merge-rules": "^7.0.6"
   }
 }

@@ -7,6 +7,8 @@ import babel from '@rollup/plugin-babel'
 import terser from '@rollup/plugin-terser'
 import autoprefixer from 'autoprefixer'
 import cssnano from 'cssnano'
+import discardDuplicates from 'postcss-discard-duplicates'
+import mergeRules from 'postcss-merge-rules'
 import cleanup from 'rollup-plugin-cleanup'
 import postcss from 'rollup-plugin-postcss'
 
@@ -34,6 +36,8 @@ function genPrdConf(format) {
     postcss({
       plugins: [
         autoprefixer(),
+        discardDuplicates(), // 去重完全相同的CSS规则
+        mergeRules(), // 合并相似的CSS规则
         cssnano(), // 压缩 css
       ],
       extract: 'css/style.css',

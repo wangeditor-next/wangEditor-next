@@ -4,6 +4,8 @@
  */
 
 import autoprefixer from 'autoprefixer'
+import discardDuplicates from 'postcss-discard-duplicates'
+import mergeRules from 'postcss-merge-rules'
 import postcss from 'rollup-plugin-postcss'
 
 // eslint-disable-next-line import/extensions
@@ -26,7 +28,11 @@ function genDevConf(format) {
       ...plugins,
 
       postcss({
-        plugins: [autoprefixer()],
+        plugins: [
+          autoprefixer(),
+          discardDuplicates(), // 去重完全相同的CSS规则
+          mergeRules(), // 合并相似的CSS规则
+        ],
         extract: 'css/style.css',
       }),
     ],
