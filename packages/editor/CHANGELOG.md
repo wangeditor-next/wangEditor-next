@@ -1,5 +1,15 @@
 # Change Log
 
+## 5.6.46
+
+### Patch Changes
+
+- b6e16d5: chore(styles): 移除 code-block.less 中的样式，转移至 code-highlight 模块以避免重复，同时更新相关导入路径
+- Updated dependencies [b6e16d5]
+  - @wangeditor-next/basic-modules@1.5.46
+  - @wangeditor-next/code-highlight@1.3.43
+  - @wangeditor-next/upload-image-module@1.1.49
+
 ## 5.6.45
 
 ### Patch Changes
