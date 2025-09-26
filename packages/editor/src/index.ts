@@ -4,7 +4,6 @@
  */
 
 import './assets/index.less'
-// core CSS 样式已包含在各模块中，无需重复导入
 // import '@wangeditor-next/core/dist/css/style.css'
 // 兼容性（要放在最开始就执行）
 import './utils/browser-polyfill'

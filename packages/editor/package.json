@@ -76,6 +76,7 @@
   },
   "devDependencies": {
     "@wangeditor-next-shared/rollup-config": "workspace:^",
-    "postcss-merge-rules": "^7.0.6"
+    "postcss-merge-rules": "^7.0.6",
+    "postcss-discard-duplicates": "^7.0.1"
   }
 }
