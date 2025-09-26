@@ -5,4 +5,4 @@
 "@wangeditor-next-shared/rollup-config": patch
 ---
 
-chore(styles): 移除 code-block.less 中的样式，转移至 code-highlight 模块以避免重复，同时更…
+chore(styles): 移除 code-block.less 中的样式，转移至 code-highlight 模块以避免重复，同时更新相关导入路径
