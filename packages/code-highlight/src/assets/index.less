@@ -2,20 +2,26 @@
 // TODO 开发 themes 主题，可以参考 prismjs 主题 https://github.com/PrismJS/prism/tree/master/themes
 
 .w-e-text-container [data-slate-editor] pre>code {
-	text-shadow: 0 1px white;
-	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-	text-align: left;
-	white-space: pre;
-	word-spacing: normal;
-	word-break: normal;
-	word-wrap: normal;
-	line-height: 1.5;
-	tab-size: 4;
-	hyphens: none;
+  display: block;
+    border: 1px solid var(--w-e-textarea-slight-border-color);
+    border-radius: 4px 4px;
+    text-indent: 0;
+    background-color: var(--w-e-textarea-slight-bg-color);
+    font-size: 14px;
+  text-shadow: 0 1px white;
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    text-align: left;
+    white-space: pre;
+    word-spacing: normal;
+    word-break: normal;
+    word-wrap: normal;
+    line-height: 1.5;
+    tab-size: 4;
+    hyphens: none;
 
   padding: 1em;
-	margin: .5em 0;
-	overflow: auto;
+  margin: .5em 0;
+    overflow: auto;
 
   .token.comment,
   .token.prolog,
@@ -80,6 +86,7 @@
   .token.bold {
     font-weight: bold;
   }
+
   .token.italic {
     font-style: italic;
   }
