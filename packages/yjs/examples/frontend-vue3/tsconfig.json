@@ -1,0 +1,47 @@
+{
+  "compilerOptions": {
+    // 基础选项
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+
+    // 类型检查
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // 输出与路径
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@wangeditor-next/yjs-for-vue": ["../../../yjs-for-vue/dist/yjs-for-vue/src/index.d.ts"]
+    },
+
+    // 类型定义
+    "types": ["vite/client"],
+
+    // 其他
+    "composite": true,
+    "declaration": false,
+    "noEmit": true
+  },
+  "include": [
+    "src/**/*",
+    "types/**/*.d.ts",
+    "vite.config.ts",
+    "../../../yjs-for-vue/dist/yjs-for-vue/src/index.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "references": []
+}

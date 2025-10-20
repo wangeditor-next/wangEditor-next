@@ -1,0 +1,42 @@
+{
+  "name": "@wangeditor-next/yjs-demo-vue3",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "install:ignore-workspace": "pnpm install --ignore-workspace",
+    "yjs-for-vue:watch": "pnpm --dir ../../../yjs-for-vue run dev-watch",
+    "dev-client": "vite --force",
+    "dev-server": "pnpm exec y-websocket --port 1234 --path /wangeditor-next-yjs",
+    "dev:all": "pnpm run dev-server & pnpm run dev-client",
+    "eslint-fix": "pnpm exec eslint --fix src/   "
+  },
+  "dependencies": {
+    "@faker-js/faker": "^7.5.0",
+    "@fortawesome/fontawesome-svg-core": "^6.1.0",
+    "@fortawesome/free-regular-svg-icons": "^6.0.0",
+    "@fortawesome/free-solid-svg-icons": "^6.0.0",
+    "@fortawesome/vue-fontawesome": "^3.0.0",
+    "@wangeditor-next/editor": "latest",
+    "@wangeditor-next/editor-for-vue": "latest",
+    "@wangeditor-next/yjs": "latest",
+    "@wangeditor-next/yjs-for-vue": "portal:../../../yjs-for-vue",
+    "randomcolor": "^0.6.2",
+    "vue": "^3.2.0",
+    "y-protocols": "^1.0.6",
+    "yjs": "^13.6.19"
+  },
+  "devDependencies": {
+    "@types/randomcolor": "^0.5.9",
+    "@vitejs/plugin-vue": "^2.3.4",
+    "@vue/tsconfig": "^0.8.1",
+    "typescript": "~4.5.5",
+    "vite": "^2.9.16",
+    "vite-plugin-windicss": "^1.8.3",
+    "vue-tsc": "1.0.24",
+    "windicss": "^3.5.6",
+    "y-websocket": "2.0.4",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.6.2"
+  }
+}
