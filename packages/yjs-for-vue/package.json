@@ -1,0 +1,66 @@
+{
+  "name": "@wangeditor-next/yjs-for-vue",
+  "version": "0.1.0",
+  "description": "Vue specific components/utils for wangeditor-next-yjs.",
+  "author": "wbccb",
+  "type": "module",
+  "homepage": "https://github.com/wangeditor-next/wangeditor-next#readme",
+  "license": "MIT",
+  "types": "dist/yjs-for-vue/src/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "unpkg": "dist/index.global.js",
+  "keywords": [
+    "slate",
+    "wangEditor-next",
+    "yjs",
+    "collaborative",
+    "react"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/yjs-for-vue/src/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./dist/css/style.css": "./dist/css/style.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "directories": {
+    "lib": "dist"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wangeditor-next/wangEditor-next.git"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test-c": "vitest run --coverage",
+    "dev": "cross-env NODE_ENV=development rollup -c rollup.config.js",
+    "dev-watch": "cross-env NODE_ENV=development rollup -c rollup.config.js -w",
+    "build": "cross-env NODE_ENV=production rollup -c rollup.config.js",
+    "dev-size-stats": "cross-env NODE_ENV=development:size_stats rollup -c rollup.config.js",
+    "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
+  },
+  "devDependencies": {
+    "@wangeditor-next-shared/rollup-config": "workspace:^"
+  },
+  "bugs": {
+    "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
+  },
+  "dependencies": {
+    "y-protocols": "^1.0.5"
+  },
+  "peerDependencies": {
+    "@wangeditor-next/editor": "5.6.45",
+    "@wangeditor-next/yjs": "^0.1.43",
+    "vue": ">=3.5.18",
+    "slate": "^0.82.0",
+    "yjs": "^13.5.29"
+  }
+}
