@@ -18,7 +18,7 @@ function renderTableRow(
   const { height } = elemNode as TableRowElement
 
   const vnode = (
-    <tr style={{ height: height ? `${height}px` : undefined }}>
+    <tr style={height ? { height: `${height}px` } : {}}>
       {children}
     </tr>
   )
