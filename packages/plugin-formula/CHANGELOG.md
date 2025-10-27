@@ -1,5 +1,12 @@
 # @wangeditor-next/plugin-formula
 
+## 1.0.33
+
+### Patch Changes
+
+- Updated dependencies [5aeb10f]
+  - @wangeditor-next/editor@5.6.47
+
 ## 1.0.32
 
 ### Patch Changes

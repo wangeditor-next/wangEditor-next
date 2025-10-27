@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.6.47
+
+### Patch Changes
+
+- 5aeb10f: feat(yjs): add yjs-for-vue(#165)
+- Updated dependencies [5aeb10f]
+  - @wangeditor-next/table-module@1.6.59
+
 ## 5.6.46
 
 ### Patch Changes

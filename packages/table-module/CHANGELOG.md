@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.6.59
+
+### Patch Changes
+
+- 5aeb10f: feat(yjs): add yjs-for-vue(#165)
+
 ## 1.6.58
 
 ### Patch Changes

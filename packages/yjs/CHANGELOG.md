@@ -1,5 +1,11 @@
 # @wangeditor-next/yjs
 
+## 0.1.44
+
+### Patch Changes
+
+- 5aeb10f: feat(yjs): add yjs-for-vue(#165)
+
 ## 0.1.43
 
 ### Patch Changes
