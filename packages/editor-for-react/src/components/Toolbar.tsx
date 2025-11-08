@@ -21,9 +21,17 @@ function ToolbarComponent(props: IProps) {
   const ref = useRef<HTMLDivElement>(null)
   const toolbarRef = useRef<wangEditor.Toolbar | null>(null)
 
+  function destroyToolbar() {
+    if (toolbarRef.current) {
+      toolbarRef.current.destroy()
+      toolbarRef.current = null
+    }
+  }
+
   useEffect(() => {
-    if (ref.current == null) { return }
-    if (editor == null) { return }
+    if (ref.current == null || editor == null) {
+      return destroyToolbar()
+    }
     if (ref.current?.getAttribute('data-w-e-toolbar')) { return }
 
     toolbarRef.current = wangEditor.createToolbar({
@@ -35,11 +43,7 @@ function ToolbarComponent(props: IProps) {
   }, [editor, defaultConfig, mode])
 
   useEffect(() => {
-    return () => {
-      if (toolbarRef.current) {
-        toolbarRef.current.destroy()
-      }
-    }
+    return destroyToolbar
   }, [])
 
   return <div style={style} ref={ref} className={className}></div>
