@@ -19,25 +19,28 @@ function ToolbarComponent(props: IProps) {
     editor, defaultConfig = {}, mode = 'default', style = {}, className,
   } = props
   const ref = useRef<HTMLDivElement>(null)
+  const toolbarRef = useRef<wangEditor.Toolbar | null>(null)
 
   useEffect(() => {
     if (ref.current == null) { return }
     if (editor == null) { return }
     if (ref.current?.getAttribute('data-w-e-toolbar')) { return }
 
-    const toolbar = wangEditor.createToolbar({
+    toolbarRef.current = wangEditor.createToolbar({
       editor,
       selector: ref.current,
       config: defaultConfig,
       mode,
     })
+  }, [editor, defaultConfig, mode])
 
+  useEffect(() => {
     return () => {
-      if (toolbar) {
-        toolbar.destroy()
+      if (toolbarRef.current) {
+        toolbarRef.current.destroy()
       }
     }
-  }, [editor, defaultConfig, mode])
+  }, [])
 
   return <div style={style} ref={ref} className={className}></div>
 }
