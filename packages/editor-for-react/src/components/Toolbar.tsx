@@ -25,6 +25,7 @@ function ToolbarComponent(props: IProps) {
     if (toolbarRef.current) {
       toolbarRef.current.destroy()
       toolbarRef.current = null
+      ref.current?.removeAttribute('data-w-e-toolbar')
     }
   }
 
@@ -32,7 +33,9 @@ function ToolbarComponent(props: IProps) {
     if (ref.current == null || editor == null) {
       return destroyToolbar()
     }
-    if (ref.current?.getAttribute('data-w-e-toolbar')) { return }
+    if (ref.current?.getAttribute('data-w-e-toolbar')) {
+      return
+    }
 
     toolbarRef.current = wangEditor.createToolbar({
       editor,
@@ -40,11 +43,9 @@ function ToolbarComponent(props: IProps) {
       config: defaultConfig,
       mode,
     })
-  }, [editor, defaultConfig, mode])
 
-  useEffect(() => {
     return destroyToolbar
-  }, [])
+  }, [editor, defaultConfig, mode])
 
   return <div style={style} ref={ref} className={className}></div>
 }
