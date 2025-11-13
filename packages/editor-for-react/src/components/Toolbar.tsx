@@ -21,8 +21,7 @@ function ToolbarComponent(props: IProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (ref.current == null) { return }
-    if (editor == null) { return }
+    if (ref.current == null || editor == null) { return }
     if (ref.current?.getAttribute('data-w-e-toolbar')) { return }
 
     const toolbar = wangEditor.createToolbar({
@@ -35,6 +34,7 @@ function ToolbarComponent(props: IProps) {
     return () => {
       if (toolbar) {
         toolbar.destroy()
+        ref.current?.removeAttribute('data-w-e-toolbar')
       }
     }
   }, [editor, defaultConfig, mode])
