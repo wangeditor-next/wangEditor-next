@@ -5,7 +5,8 @@
 
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
 import {
-  Editor, Node, Point, Transforms,
+  Editor, Node, Point,
+  Transforms,
 } from 'slate'
 
 function insertParagraphBeforeNewline(editor: any) {
@@ -46,8 +47,9 @@ function withBlockquote<T extends IDomEditor>(editor: T): T {
     const quoteEndLocation = Editor.end(editor, quotePath)
 
     if (Point.equals(quoteEndLocation, selection.focus)) {
+      const lastNode = Editor.last(editor, quoteEndLocation.path)
       // 光标位于 blockquote 最后
-      const str = Node.string(quoteElem)
+      const str = Node.string(lastNode[0])
 
       if (str && str.slice(-1) === '\n') {
         insertParagraphBeforeNewline(newEditor)
