@@ -6,7 +6,9 @@
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
 import debounce from 'lodash.debounce'
 import {
-  Editor, Element as SlateElement, Path, Point, Range,
+  Editor,
+  Element as SlateElement,
+  Path, Point, Range,
 } from 'slate'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { h, jsx, VNode } from 'snabbdom'
@@ -133,8 +135,10 @@ function renderTable(elemNode: SlateElement, children: VNode[] | null, editor: I
         on={{
           mousemove: debounce(
             (e: MouseEvent) => {
-              handleCellBorderVisible(editor, elemNode, e, scrollWidth)
-              handleRowBorderVisible(editor, elemNode, e)
+              if (!TableCursor.hasSelected(editor)) {
+                handleCellBorderVisible(editor, elemNode, e, scrollWidth)
+                handleRowBorderVisible(editor, elemNode, e)
+              }
             },
             25,
           ),

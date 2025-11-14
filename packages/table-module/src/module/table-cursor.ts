@@ -84,4 +84,8 @@ export const TableCursor = {
 
     return selectedElements.has(element)
   },
+
+  hasSelected(editor: Editor) {
+    return EDITOR_TO_SELECTION.has(editor)
+  },
 }
