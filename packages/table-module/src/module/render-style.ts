@@ -20,7 +20,16 @@ export function renderStyle(node: Descendant, vnode: VNode): VNode {
   const props: TableCellProperty = {}
 
   if (backgroundColor) { props.backgroundColor = backgroundColor }
-  if (borderWidth) { props.borderWidth = `${borderWidth}px` }
+  if (borderWidth) {
+    const pureNumericRegex = /^\d+(\.\d+)?$/
+
+    if (pureNumericRegex.test(borderWidth)) {
+      // 增加一层校验，如果是纯数字则增加px的后缀："123"、"123.333"
+      props.borderWidth = `${borderWidth}px`
+    } else {
+      props.borderWidth = borderWidth
+    }
+  }
   if (borderStyle) { props.borderStyle = borderStyle === 'none' ? '' : borderStyle }
   if (borderColor) { props.borderColor = borderColor }
   if (textAlign) { props.textAlign = textAlign }
