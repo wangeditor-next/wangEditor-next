@@ -183,7 +183,7 @@ describe('table - parse html', () => {
     const $cell = $('<td style="border-width: 1pt; border-style: solid;">Cell G</td>')
     const children = [{ text: 'Cell G' }]
 
-    const expectedPx = `${((1 * 4) / 3).toFixed(6)}px`
+    const expectedPx = `${((1 * 4) / 3).toFixed(2)}px`
 
     expect(parseElemHtmlFromCore($($cell[0]), editor)).toEqual([
       {
@@ -203,8 +203,8 @@ describe('table - parse html', () => {
     )
     const children = [{ text: 'Cell H' }]
 
-    const expected1pt = ((1 * 4) / 3).toFixed(6)
-    const expected05pt = ((0.5 * 4) / 3).toFixed(6)
+    const expected1pt = ((1 * 4) / 3).toFixed(2)
+    const expected05pt = ((0.5 * 4) / 3).toFixed(2)
     const expectedBorderWidth = `medium ${expected1pt}px ${expected05pt}px 2px`
 
     expect(parseElemHtmlFromCore($($cell[0]), editor)).toEqual([
@@ -222,7 +222,7 @@ describe('table - parse html', () => {
     const $cell = $('<td style="border-width: 2.25pt;">Cell I</td>')
     const children = [{ text: 'Cell I' }]
 
-    const expectedPx = `${((2.25 * 4) / 3).toFixed(6)}px`
+    const expectedPx = `${((2.25 * 4) / 3).toFixed(2)}px`
 
     expect(parseElemHtmlFromCore($($cell[0]), editor)).toEqual([
       {

@@ -29,7 +29,7 @@ function convertPtToPx(cssValue: string): string {
     // p1 是捕获到的数字部分 (如 '1' 或 '0.5')
     const ptValue = parseFloat(p1)
     // 1pt ≈ 1.333333px。为了简化和保证精度，使用 4/3
-    const pxValue = ((ptValue * 4) / 3).toFixed(6)
+    const pxValue = ((ptValue * 4) / 3).toFixed(2)
 
     return `${pxValue}px`
   })
