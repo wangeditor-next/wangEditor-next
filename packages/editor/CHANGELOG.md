@@ -1,5 +1,14 @@
 # Change Log
 
+## 5.6.48
+
+### Patch Changes
+
+- 6b823fa: fix(blockquote/plugin): 修复有文字 + /n + img 的情况下，会误删 img 的问题(#709)
+- Updated dependencies [6b823fa]
+  - @wangeditor-next/basic-modules@1.5.47
+  - @wangeditor-next/upload-image-module@1.1.50
+
 ## 5.6.47
 
 ### Patch Changes

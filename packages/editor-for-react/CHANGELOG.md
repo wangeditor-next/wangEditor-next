@@ -1,5 +1,13 @@
 # @wangeditor-next/editor-for-react
 
+## 1.0.11
+
+### Patch Changes
+
+- b311b76: fix(for-react): incorrect destruction logic in toolbar
+- Updated dependencies [6b823fa]
+  - @wangeditor-next/editor@5.6.48
+
 ## 1.0.10
 
 ### Patch Changes
