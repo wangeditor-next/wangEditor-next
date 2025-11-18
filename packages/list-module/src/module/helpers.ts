@@ -27,7 +27,7 @@ export function getBrotherListNodeByLevel(
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    if (brotherPath.length === 0 || path[path.length - 1] === 0) {
+    if (brotherPath.length === 0 || brotherPath[brotherPath.length - 1] === 0) {
       return null // 已经是最后一个节点或没有找到有效的前一个 list 节点
     }
     brotherPath = Path.previous(brotherPath)
