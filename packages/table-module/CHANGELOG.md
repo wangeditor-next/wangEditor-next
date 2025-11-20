@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.6.60
+
+### Patch Changes
+
+- dd1b701: fix(table-module): fix the borderWidth of table copied from Safari(#146)
+- abbac6e: fix(table-module): 修复多选table-cell时，鼠标触发到设置cell宽度的border，会导致选中丢失的问题
+
 ## 1.6.59
 
 ### Patch Changes
