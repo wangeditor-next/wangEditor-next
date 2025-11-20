@@ -1,5 +1,12 @@
 # @wangeditor-next/yjs-for-vue
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [dd1b701]
+  - @wangeditor-next/editor@5.6.49
+
 ## 0.1.2
 
 ### Patch Changes

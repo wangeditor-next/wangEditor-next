@@ -1,5 +1,12 @@
 # @wangeditor-next/plugin-mention
 
+## 1.0.19
+
+### Patch Changes
+
+- Updated dependencies [dd1b701]
+  - @wangeditor-next/editor@5.6.49
+
 ## 1.0.18
 
 ### Patch Changes

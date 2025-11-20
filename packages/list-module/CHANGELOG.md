@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.1.52
+
+### Patch Changes
+
+- d2a3191: fix(list-module): correctly handle deletion of nodes after a skip-level promotion(L1->L3)(#655)
+
 ## 1.1.51
 
 ### Patch Changes

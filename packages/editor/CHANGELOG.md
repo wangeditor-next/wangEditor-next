@@ -1,5 +1,16 @@
 # Change Log
 
+## 5.6.49
+
+### Patch Changes
+
+- dd1b701: fix(table-module): fix the borderWidth of table copied from Safari(#146)
+- Updated dependencies [dd1b701]
+- Updated dependencies [d2a3191]
+- Updated dependencies [abbac6e]
+  - @wangeditor-next/table-module@1.6.60
+  - @wangeditor-next/list-module@1.1.52
+
 ## 5.6.48
 
 ### Patch Changes
