@@ -101,12 +101,9 @@ describe('code-highlight select lang menu', () => {
     editor.select(codeLocation)
     menu.exec(editor, 'html') // change lang
 
-    setTimeout(() => {
-      if (editor == null || menu == null) { return }
-
-      editor.select(codeLocation)
-      expect(menu.getValue(editor)).toBe('html')
-    })
+    await Promise.resolve()
+    editor.select(codeLocation)
+    expect(menu.getValue(editor)).toBe('html')
   })
 
   it('menu exec (without lang)', async () => {
@@ -116,11 +113,8 @@ describe('code-highlight select lang menu', () => {
     editor.select(codeLocation)
     menu.exec(editor, 'hello') // change lang
 
-    setTimeout(() => {
-      if (editor == null || menu == null) { return }
-
-      editor.select(codeLocation)
-      expect(menu.getValue(editor)).toBe('')
-    })
+    await Promise.resolve()
+    editor.select(codeLocation)
+    expect(menu.getValue(editor)).toBe('')
   })
 })

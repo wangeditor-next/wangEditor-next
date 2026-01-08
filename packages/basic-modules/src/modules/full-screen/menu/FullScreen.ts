@@ -30,17 +30,17 @@ class FullScreen implements IButtonMenu {
 
   getIcon(editor: IDomEditor): string {
     if (editor.isFullScreen) {
-      return FULL_SCREEN_SVG
+      return CANCEL_FULL_SCREEN_SVG
     }
-    return CANCEL_FULL_SCREEN_SVG
+    return FULL_SCREEN_SVG
 
   }
 
   getTitle(editor: IDomEditor): string {
     if (editor.isFullScreen) {
-      return t('fullScreen.title')
+      return t('fullScreen.cancelTitle')
     }
-    return t('fullScreen.cancelTitle')
+    return t('fullScreen.title')
 
   }
 

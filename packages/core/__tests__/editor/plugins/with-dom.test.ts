@@ -6,8 +6,8 @@
 import { Editor } from 'slate'
 
 import createBasicEditor from '../../../src/create/create-editor'
+import { DomEditor } from '../../../src/editor/dom-editor'
 import { withDOM } from '../../../src/editor/plugins/with-dom'
-import $ from '../../../src/utils/dom'
 import { EDITOR_TO_SELECTION } from '../../../src/utils/weak-maps'
 import createCoreEditor, { createToolbar } from '../../create-core-editor' // packages/core 不依赖 packages/editor ，不能使用后者的 createEditor
 
@@ -53,13 +53,12 @@ describe('editor DOM API', () => {
     createToolbar(editor)
     expect(editor.isDestroyed).toBeFalsy()
 
-    setTimeout(() => {
-      editor.destroy()
-      expect(editor.isDestroyed).toBeTruthy()
-    })
+    await Promise.resolve()
+    editor.destroy()
+    expect(editor.isDestroyed).toBeTruthy()
   })
 
-  it('scroll to elem', () => {
+  it('scroll to elem', async () => {
     const container = document.createElement('div')
 
     container.setAttribute('id', 'editor-text-area')
@@ -67,14 +66,26 @@ describe('editor DOM API', () => {
     const editor = createBasicEditor({
       selector: '#editor-text-area',
     })
-    const $textarea = $('#editor-text-area')
-    const id = $textarea.attr('id')
 
-    editor.scrollToElem(id)
-    // TODO
+    await Promise.resolve()
+    const textarea = DomEditor.getTextarea(editor)
+    const target = document.createElement('div')
+
+    target.setAttribute('id', 'scroll-target')
+    const editorDom = DomEditor.toDOMNode(editor, editor)
+
+    editorDom.appendChild(target)
+
+    const scrollElem = textarea.$scroll[0] as any
+
+    scrollElem.scrollBy = vi.fn()
+
+    editor.scrollToElem('scroll-target')
+    expect(scrollElem.scrollBy).toHaveBeenCalled()
   })
 
-  it('isFullScreen fullScreen unFullScreen', async () => {
+  it('isFullScreen fullScreen unFullScreen', () => {
+    vi.useFakeTimers()
     const editor = createEditor()
 
     createToolbar(editor)
@@ -85,9 +96,9 @@ describe('editor DOM API', () => {
     expect(editor.isFullScreen).toBeTruthy()
 
     editor.unFullScreen()
-    setTimeout(() => {
-      expect(editor.isFullScreen).toBeFalsy()
-    }, 1000)
+    vi.advanceTimersByTime(200)
+    expect(editor.isFullScreen).toBeFalsy()
+    vi.useRealTimers()
   })
 
   it('toDOMNode', async () => {
@@ -96,11 +107,10 @@ describe('editor DOM API', () => {
       content: [p],
     })
 
-    setTimeout(() => {
-      const domNode = editor.toDOMNode(p)
+    await Promise.resolve()
+    const domNode = editor.toDOMNode(p)
 
-      expect(domNode.tagName).toBe('DIV')
-    })
+    expect(domNode.tagName).toBe('DIV')
   })
 
   it('foucus', () => {

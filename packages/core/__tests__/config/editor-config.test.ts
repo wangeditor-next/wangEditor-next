@@ -93,9 +93,8 @@ describe('editor config', () => {
       },
     })
 
-    setTimeout(() => {
-      expect(fn).toHaveBeenCalled()
-    })
+    await Promise.resolve()
+    expect(fn).toHaveBeenCalled()
   })
 
   it('if set onChange option, it will be called when change editor selection', async () => {
@@ -105,12 +104,16 @@ describe('editor config', () => {
       config: {
         onChange: fn,
       },
+      content: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     })
 
-    editor.select(getStartLocation(editor)) // 选区变化，触发 onchange
-    setTimeout(() => {
-      expect(fn).toHaveBeenCalledWith(editor)
-    })
+    await Promise.resolve()
+    editor.select({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 1 },
+    }) // 选区变化，触发 onchange
+    await Promise.resolve()
+    expect(fn).toHaveBeenCalledWith(editor)
   })
 
   it('if set onChange option, it will be called when change editor content', async () => {
@@ -122,12 +125,12 @@ describe('editor config', () => {
       },
     })
 
+    await Promise.resolve()
     editor.select(getStartLocation(editor))
-
-    await 1
+    fn.mockClear()
     editor.insertText('123')
-    await 1
-    expect(fn).toHaveBeenCalledTimes(2)
+    await Promise.resolve()
+    expect(fn).toHaveBeenCalledWith(editor)
   })
 
   it('if set onDestroyed option, it will be called when destroy editor', async () => {
@@ -138,12 +141,8 @@ describe('editor config', () => {
       },
     })
 
-    setTimeout(() => {
-      editor.destroy()
-    })
-
-    setTimeout(() => {
-      expect(fn).toHaveBeenCalledWith(editor)
-    }, 100)
+    await Promise.resolve()
+    editor.destroy()
+    expect(fn).toHaveBeenCalledWith(editor)
   })
 })

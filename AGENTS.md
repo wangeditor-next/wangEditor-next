@@ -59,6 +59,12 @@
 
 ## 提交与 PR
 - 从 `master` 分支拉新分支。
+- 分支命名规范（富文本编辑器项目）：
+  - 规则：`<type>/<scope>/<short-desc>`
+  - type 取值：`feat` `fix` `refactor` `docs` `test` `perf` `chore` `ci` `style` `build` `revert`
+  - scope：包名或领域（如 `core` `editor` `basic-modules` `table-module` `tests` `docs`）
+  - short-desc：小写英文与数字，使用 `-` 连接
+  - 示例：`test/core/async-tests`、`fix/editor/fullscreen-icon`、`docs/readme/update-usage`
 - 提交信息格式（见 `CONTRIBUTING.md`）：
   - 类型：`feat`、`fix`、`refactor`、`docs`、`test`、`perf`、`chore`、`ci`、`style`、`build`、`revert`
   - 格式：

@@ -6,6 +6,7 @@
 import { Editor } from 'slate'
 
 import createEditor from '../../../../tests/utils/create-editor'
+import * as linkHelper from '../../src/modules/link/helper'
 import withLink from '../../src/modules/link/plugin'
 
 // 模拟 DataTransfer
@@ -22,8 +23,16 @@ class MyDataTransfer {
 }
 
 describe('link plugin', () => {
-  const editor = withLink(createEditor())
-  const startLocation = Editor.start(editor, [])
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = withLink(createEditor())
+  })
+
+  afterEach(async () => {
+    await Promise.resolve()
+    editor.destroy()
+  })
 
   it('link is inline elem', () => {
     const elem = { type: 'link', children: [] }
@@ -31,25 +40,26 @@ describe('link plugin', () => {
     expect(editor.isInline(elem)).toBeTruthy()
   })
 
-  it('link insert data', () => {
+  it('link insert data', async () => {
     const url = 'https://wangeditor-next.github.io/docs/'
+    const insertLinkSpy = vi.spyOn(linkHelper, 'insertLink')
 
     const data = new MyDataTransfer()
 
     data.setData('text/plain', url)
 
-    editor.select(startLocation)
+    editor.select(Editor.start(editor, []))
     // @ts-ignore
     editor.insertData(data)
 
-    setTimeout(() => {
-      const links = editor.getElemsByTypePrefix('link')
+    expect(insertLinkSpy).toHaveBeenCalled()
+    await insertLinkSpy.mock.results[0].value
+    const links = editor.getElemsByTypePrefix('link')
 
-      expect(links.length).toBe(1)
-      const linkElem = links[0] as any
+    expect(links.length).toBe(1)
+    const linkElem = links[0] as any
 
-      expect(linkElem.url).toBe(url)
-    })
+    expect(linkElem.url).toBe(url)
   })
   it('should insert an image correctly when dragging and dropping an image', () => {
     const imgHtml = '<img src="https://www.wangeditor.com/img.jpg" />'
@@ -60,35 +70,31 @@ describe('link plugin', () => {
     data.setData('text/html', imgHtml)
     data.setData('text/plain', imgUrl)
 
-    editor.select(startLocation)
+    editor.select(Editor.start(editor, []))
     // @ts-ignore
     editor.insertData(data)
 
-    setTimeout(() => {
-      const images = editor.getElemsByTypePrefix('image')
+    const images = editor.getElemsByTypePrefix('image')
 
-      expect(images.length).toBe(1)
-      const imgElem = images[0] as any
+    expect(images.length).toBe(1)
+    const imgElem = images[0] as any
 
-      expect(imgElem.src).toBe('https://www.wangeditor.com/img.jpg')
-    })
+    expect(imgElem.src).toBe('https://www.wangeditor.com/img.jpg')
   })
 
-  it('should insert non-link data correctly', async () => {
+  it('should insert non-link data correctly', () => {
     const text = 'This is a test text.'
 
     const data = new MyDataTransfer()
 
     data.setData('text/plain', text)
 
-    editor.select(startLocation)
+    editor.select(Editor.start(editor, []))
     // @ts-ignore
     editor.insertData(data)
 
-    setTimeout(() => {
-      const content = Editor.string(editor, [])
+    const content = Editor.string(editor, [])
 
-      expect(content).toContain(text)
-    })
+    expect(content).toContain(text)
   })
 })

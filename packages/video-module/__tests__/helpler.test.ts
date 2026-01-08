@@ -57,11 +57,10 @@ describe('Video module helper', () => {
 
       vi.spyOn(slate.Transforms, 'insertNodes').mockImplementation(fn)
 
-      insertVideo(baseEditor, 'test.mp4', 'xxx.png').then(() => {
-        setTimeout(() => {
-          expect(fn).toBeCalled()
-        })
-      })
+      await insertVideo(baseEditor, 'test.mp4', 'xxx.png')
+      await Promise.resolve()
+
+      expect(fn).toBeCalled()
     })
 
     test('it should invoke onInsertedVideo callback if pass the option when create editor', async () => {
@@ -77,9 +76,8 @@ describe('Video module helper', () => {
         },
       })
 
-      insertVideo(editor, 'test.mp4', 'xxx.png').then(() => {
-        expect(fn).toBeCalled()
-      })
+      await insertVideo(editor, 'test.mp4', 'xxx.png')
+      expect(fn).toBeCalled()
     })
 
     test('it should parse iframe if give iframe element', async () => {
@@ -87,11 +85,10 @@ describe('Video module helper', () => {
 
       vi.spyOn(slate.Transforms, 'insertNodes').mockImplementation(fn)
 
-      insertVideo(baseEditor, '<iframe src="test.mp4"></iframe>').then(() => {
-        setTimeout(() => {
-          expect(fn).toBeCalled()
-        })
-      })
+      await insertVideo(baseEditor, '<iframe src="test.mp4"></iframe>')
+      await Promise.resolve()
+
+      expect(fn).toBeCalled()
     })
   })
 

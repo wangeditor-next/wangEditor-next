@@ -37,16 +37,21 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: {
+    alias: [
       // 对于样式文件 mock
-      '^.+\\.(css|less)$': path.resolve(__dirname, 'tests/utils/stylesMock.js'),
-      ...Object.fromEntries(
-        modulePaths.map(p => [
-          `${p}/dist/css/style.css`,
-          path.resolve(__dirname, 'tests/utils/stylesMock.js')
-        ])
-      ),
-    },
+      {
+        find: /^.+\.(css|less)$/,
+        replacement: path.resolve(__dirname, 'tests/utils/stylesMock.js'),
+      },
+      ...modulePaths.map(p => ({
+        find: new RegExp(`^${p}$`),
+        replacement: path.resolve(__dirname, `packages/${p.split('/')[1]}/src/index.ts`),
+      })),
+      ...modulePaths.map(p => ({
+        find: `${p}/dist/css/style.css`,
+        replacement: path.resolve(__dirname, 'tests/utils/stylesMock.js'),
+      })),
+    ],
   },
   esbuild: {
     // 如果需要特定的转译处理
