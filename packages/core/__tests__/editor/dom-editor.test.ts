@@ -5,6 +5,7 @@
 
 import { Editor, Range as SlateRange } from 'slate'
 
+import flushPromises from '../../../../tests/utils/flush-promises'
 import { CustomElement } from '../../../custom-types'
 import { DomEditor } from '../../src/editor/dom-editor'
 import { IDomEditor } from '../../src/editor/interface'
@@ -170,7 +171,7 @@ describe('Core DomEditor', () => {
 
   test('toDOMRange', async () => {
     editor.insertText('hello')
-    await Promise.resolve()
+    await flushPromises()
 
     const range = {
       anchor: { path: [0, 0], offset: 1 },
@@ -183,7 +184,7 @@ describe('Core DomEditor', () => {
 
   test('toDOMPoint', async () => {
     editor.insertText('hello')
-    await Promise.resolve()
+    await flushPromises()
 
     const point = { path: [0, 0], offset: 2 }
     const [domNode, domOffset] = DomEditor.toDOMPoint(editor, point)
@@ -204,7 +205,7 @@ describe('Core DomEditor', () => {
 
   test('findEventRange', async () => {
     editor.insertText('hello')
-    await Promise.resolve()
+    await flushPromises()
 
     const range = {
       anchor: { path: [0, 0], offset: 1 },
@@ -235,7 +236,7 @@ describe('Core DomEditor', () => {
 
   test('toSlateRange', async () => {
     editor.insertText('hello')
-    await Promise.resolve()
+    await flushPromises()
 
     const range = {
       anchor: { path: [0, 0], offset: 1 },
@@ -252,7 +253,7 @@ describe('Core DomEditor', () => {
 
   test('toSlatePoint', async () => {
     editor.insertText('hello')
-    await Promise.resolve()
+    await flushPromises()
 
     const point = { path: [0, 0], offset: 3 }
     const domPoint = DomEditor.toDOMPoint(editor, point)

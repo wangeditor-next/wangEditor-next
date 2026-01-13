@@ -38,7 +38,6 @@ const baseArgs = [
   'vitest',
   'run',
   '--passWithNoTests',
-  '--dangerouslyIgnoreUnhandledErrors',
   '--coverage',
 ]
 

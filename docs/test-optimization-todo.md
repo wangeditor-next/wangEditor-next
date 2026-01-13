@@ -40,4 +40,4 @@
 - [x] Phase 1 生命周期统一
 - [x] Phase 2 覆盖率补齐
 - [x] Phase 3 E2E 覆盖
-- [ ] Phase 4 质量门槛
+- [x] Phase 4 质量门槛

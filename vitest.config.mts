@@ -43,6 +43,12 @@ export default defineConfig({
        '**/locale/**/*',
        '**/index.ts',
       ], // 忽略覆盖率计算的文件
+      thresholds: {
+        lines: 1,
+        functions: 1,
+        branches: 1,
+        statements: 1,
+      },
     },
   },
   resolve: {
