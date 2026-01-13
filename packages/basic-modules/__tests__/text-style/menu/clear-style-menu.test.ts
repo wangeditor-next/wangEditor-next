@@ -9,13 +9,13 @@ import createEditor from '../../../../../tests/utils/create-editor'
 import ClearStyleMenu from '../../../src/modules/text-style/menu/ClearStyleMenu'
 
 describe('clear style menu', () => {
-  const editor = createEditor()
-  const startLocation = Editor.start(editor, [])
   const menu = new ClearStyleMenu()
+  let editor: ReturnType<typeof createEditor>
+  let startLocation: ReturnType<typeof Editor.start>
 
-  afterEach(() => {
-    editor.select(startLocation)
-    editor.clear()
+  beforeEach(() => {
+    editor = createEditor()
+    startLocation = Editor.start(editor, [])
   })
 
   it('is disabled', () => {

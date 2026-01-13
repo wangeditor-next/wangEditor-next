@@ -9,9 +9,14 @@ import createEditor from '../../../../../tests/utils/create-editor'
 import HeaderSelectMenu from '../../../src/modules/header/menu/HeaderSelectMenu'
 
 describe('header select menu', () => {
-  const editor = createEditor()
-  const startLocation = Editor.start(editor, [])
   const menu = new HeaderSelectMenu()
+  let editor: ReturnType<typeof createEditor>
+  let startLocation: ReturnType<typeof Editor.start>
+
+  beforeEach(() => {
+    editor = createEditor()
+    startLocation = Editor.start(editor, [])
+  })
 
   it('get options', () => {
     editor.select(startLocation)

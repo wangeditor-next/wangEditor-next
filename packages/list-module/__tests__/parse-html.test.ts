@@ -9,7 +9,11 @@ import createEditor from '../../../tests/utils/create-editor'
 import { parseItemHtmlConf, parseListHtmlConf } from '../src/module/parse-elem-html'
 
 describe('list - parse html', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('parse unOrdered list item', () => {
     const $ul = $('<ul></ul>')

@@ -12,14 +12,18 @@ describe('list module - render elem', () => {
   const leveleTwoUndOrderedItem = { type: 'list-item', level: 2, children: [{ text: '' }] }
   const baseOrderedItem = { type: 'list-item', ordered: true, children: [{ text: '' }] }
   const leveledItem = { type: 'list-item', level: 3, children: [{ text: '' }] }
-  const baseEditor = createEditor({
-    content: [
-      unOrderedItem,
-      leveleOneUndOrderedItem,
-      leveleTwoUndOrderedItem,
-      baseOrderedItem,
-      leveledItem,
-    ],
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor({
+      content: [
+        unOrderedItem,
+        leveleOneUndOrderedItem,
+        leveleTwoUndOrderedItem,
+        baseOrderedItem,
+        leveledItem,
+      ],
+    })
   })
 
   it('render conf type', () => {
@@ -27,7 +31,7 @@ describe('list module - render elem', () => {
   })
 
   it('render ordered list item elem', () => {
-    const vnode: any = renderListItemConf.renderElem(baseOrderedItem, null, baseEditor)
+    const vnode: any = renderListItemConf.renderElem(baseOrderedItem, null, editor)
 
     expect(vnode.sel).toBe('div') // render-elem 使用 <div> 模拟 <li>
 
@@ -37,7 +41,7 @@ describe('list module - render elem', () => {
   })
 
   it('render unOrdered list item elem', () => {
-    const vnode: any = renderListItemConf.renderElem(unOrderedItem, null, baseEditor)
+    const vnode: any = renderListItemConf.renderElem(unOrderedItem, null, editor)
 
     expect(vnode.sel).toBe('div') // render-elem 使用 <div> 模拟 <li>
 
@@ -47,7 +51,7 @@ describe('list module - render elem', () => {
   })
 
   it('render leveled list item elem', () => {
-    const vnode: any = renderListItemConf.renderElem(leveledItem, null, baseEditor)
+    const vnode: any = renderListItemConf.renderElem(leveledItem, null, editor)
     const style = vnode.data.style
 
     expect(style).toEqual({
@@ -58,7 +62,7 @@ describe('list module - render elem', () => {
   })
 
   it('render one leveled orderd list item elem', () => {
-    const vnode: any = renderListItemConf.renderElem(leveleOneUndOrderedItem, null, baseEditor)
+    const vnode: any = renderListItemConf.renderElem(leveleOneUndOrderedItem, null, editor)
 
     expect(vnode.sel).toBe('div') // render-elem 使用 <div> 模拟 <li>
 
@@ -68,7 +72,7 @@ describe('list module - render elem', () => {
   })
 
   it('render two leveled orderd list item elem', () => {
-    const vnode: any = renderListItemConf.renderElem(leveleTwoUndOrderedItem, null, baseEditor)
+    const vnode: any = renderListItemConf.renderElem(leveleTwoUndOrderedItem, null, editor)
 
     expect(vnode.sel).toBe('div') // render-elem 使用 <div> 模拟 <li>
 
@@ -79,10 +83,10 @@ describe('list module - render elem', () => {
 
   it('render two same leveled orderd list item elem', () => {
     const orderedItem = { type: 'list-item', ordered: true, children: [{ text: '' }] }
-    const editor = createEditor({
+    const localEditor = createEditor({
       content: [orderedItem, orderedItem],
     })
-    const vnode: any = renderListItemConf.renderElem(orderedItem, null, editor)
+    const vnode: any = renderListItemConf.renderElem(orderedItem, null, localEditor)
 
     expect(vnode.sel).toBe('div') // render-elem 使用 <div> 模拟 <li>
 

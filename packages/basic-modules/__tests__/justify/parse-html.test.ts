@@ -9,7 +9,11 @@ import createEditor from '../../../../tests/utils/create-editor'
 import { parseStyleHtml } from '../../src/modules/justify/parse-style-html'
 
 describe('text align - parse style', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('parse style', () => {
     const $p = $('<p style="text-align: center;"></p>')

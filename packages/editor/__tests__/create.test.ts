@@ -19,6 +19,13 @@ function customCreateEditor(config: Partial<ICreateEditorOption> = {}) {
     ...config,
   })
 
+  const globalScope = globalThis as any
+
+  if (!globalScope.testEditors) {
+    globalScope.testEditors = new Set()
+  }
+  globalScope.testEditors.add(editor)
+
   return editor
 }
 

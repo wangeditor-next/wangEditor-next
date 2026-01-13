@@ -9,7 +9,11 @@ import createEditor from '../../../../tests/utils/create-editor'
 import { parseParagraphHtmlConf } from '../../src/modules/paragraph/parse-elem-html'
 
 describe('paragraph - parse html', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('without children', () => {
     const $elem = $('<p>hello&nbsp;world</p>')

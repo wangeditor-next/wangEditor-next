@@ -9,9 +9,14 @@ import createEditor from '../../../../tests/utils/create-editor'
 import RedoMenu from '../../src/modules/undo-redo/menu/RedoMenu'
 
 describe('redo menu', () => {
-  const editor = createEditor()
   const menu = new RedoMenu()
-  const location = Editor.start(editor, []) // 选区位置
+  let editor: ReturnType<typeof createEditor>
+  let location: ReturnType<typeof Editor.start>
+
+  beforeEach(() => {
+    editor = createEditor()
+    location = Editor.start(editor, []) // 选区位置
+  })
 
   it('basic contract', () => {
     expect(menu.tag).toBe('button')

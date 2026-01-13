@@ -25,12 +25,12 @@ const MENU_INFO_LIST = [
 ]
 
 describe('text style menus', () => {
-  const editor = createEditor()
-  const startLocation = Editor.start(editor, [])
+  let editor: ReturnType<typeof createEditor>
+  let startLocation: ReturnType<typeof Editor.start>
 
-  afterEach(() => {
-    editor.select(startLocation)
-    editor.clear()
+  beforeEach(() => {
+    editor = createEditor()
+    startLocation = Editor.start(editor, [])
   })
 
   // getValue 已经被 isActive 覆盖

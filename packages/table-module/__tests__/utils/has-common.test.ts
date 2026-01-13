@@ -19,9 +19,12 @@ function setEditorSelection(
 }
 
 describe('hasCommon', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
 
-  setEditorSelection(editor)
+  beforeEach(() => {
+    editor = createEditor()
+    setEditorSelection(editor)
+  })
 
   it('should return true if paths have a common ancestor of type table', () => {
     const path1 = [1, 0, 0]

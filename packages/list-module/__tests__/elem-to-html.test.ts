@@ -17,16 +17,20 @@ describe('module elem-to-html', () => {
   const unOrderedItem2 = { type: 'list-item', children: [{ text: '' }] }
   const unOrderedItem21 = { type: 'list-item', level: 1, children: [{ text: '' }] }
 
-  const editor = createEditor({
-    content: [orderedElem1, orderedElem2, unOrderedItem1, unOrderedItem2, unOrderedItem21],
-  })
+  let editor: ReturnType<typeof createEditor>
 
-  // elem 绑定 editor
-  ELEM_TO_EDITOR.set(orderedElem1, editor)
-  ELEM_TO_EDITOR.set(orderedElem2, editor)
-  ELEM_TO_EDITOR.set(unOrderedItem1, editor)
-  ELEM_TO_EDITOR.set(unOrderedItem2, editor)
-  ELEM_TO_EDITOR.set(unOrderedItem21, editor)
+  beforeEach(() => {
+    editor = createEditor({
+      content: [orderedElem1, orderedElem2, unOrderedItem1, unOrderedItem2, unOrderedItem21],
+    })
+
+    // elem 绑定 editor
+    ELEM_TO_EDITOR.set(orderedElem1, editor)
+    ELEM_TO_EDITOR.set(orderedElem2, editor)
+    ELEM_TO_EDITOR.set(unOrderedItem1, editor)
+    ELEM_TO_EDITOR.set(unOrderedItem2, editor)
+    ELEM_TO_EDITOR.set(unOrderedItem21, editor)
+  })
 
   test('toHtml conf type', () => {
     expect(listItemToHtmlConf.type).toBe('list-item')
@@ -108,25 +112,29 @@ describe('module elem-to-html complex list', () => {
   const firstTextHtml = { type: 'paragraph', children: [{ text: 'hello' }] }
   const lastTextHtml = { type: 'paragraph', children: [{ text: 'world' }] }
 
-  const editor = createEditor({
-    content: [
-      firstTextHtml,
-      unOrderedElem1,
-      unOrderedElem2,
-      unOrderedElem3,
-      orderedElem1,
-      orderedElem2,
-      lastTextHtml,
-    ],
-  })
+  let editor: ReturnType<typeof createEditor>
 
-  // elem 绑定 editor
-  ELEM_TO_EDITOR.set(firstTextHtml, editor)
-  ELEM_TO_EDITOR.set(unOrderedElem1, editor)
-  ELEM_TO_EDITOR.set(unOrderedElem2, editor)
-  ELEM_TO_EDITOR.set(orderedElem1, editor)
-  ELEM_TO_EDITOR.set(orderedElem2, editor)
-  ELEM_TO_EDITOR.set(lastTextHtml, editor)
+  beforeEach(() => {
+    editor = createEditor({
+      content: [
+        firstTextHtml,
+        unOrderedElem1,
+        unOrderedElem2,
+        unOrderedElem3,
+        orderedElem1,
+        orderedElem2,
+        lastTextHtml,
+      ],
+    })
+
+    // elem 绑定 editor
+    ELEM_TO_EDITOR.set(firstTextHtml, editor)
+    ELEM_TO_EDITOR.set(unOrderedElem1, editor)
+    ELEM_TO_EDITOR.set(unOrderedElem2, editor)
+    ELEM_TO_EDITOR.set(orderedElem1, editor)
+    ELEM_TO_EDITOR.set(orderedElem2, editor)
+    ELEM_TO_EDITOR.set(lastTextHtml, editor)
+  })
 
   test('get container tag mumber', () => {
     const childrenHtml = '<span>hello</span>'

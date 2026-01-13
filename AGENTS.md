@@ -6,7 +6,8 @@
 - `packages/`: 主要包（core、editor、框架适配、插件、yjs）
 - `shared/rollup-config/`: 共享构建配置
 - `docs/`: 开发/测试/发布指南
-- `tests/units/`: 单元测试，按包组织
+- `packages/*/__tests__/`: 单元测试，按包组织
+- `tests/`: 测试基础设施与工具（setup、utils）
 - `cypress/integration/`: E2E 测试
 - `scripts/`: 构建辅助脚本
 
@@ -36,7 +37,7 @@
 - Changeset：`npx changeset`
 
 ## 测试注意
-- 单元测试位于 `tests/units/<package>/`。
+- 单元测试位于 `packages/<package>/__tests__/`。
 - E2E 测试位于 `cypress/integration/`。
 - 若修改了 `packages/core` 的 API，需要执行 `pnpm build` 让其他包读取最新产物。
 

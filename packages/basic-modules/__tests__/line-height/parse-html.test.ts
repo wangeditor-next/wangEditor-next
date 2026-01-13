@@ -9,7 +9,11 @@ import createEditor from '../../../../tests/utils/create-editor'
 import { parseStyleHtml } from '../../src/modules/line-height/parse-style-html'
 
 describe('line height - parse style', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('parse style', () => {
     const $p = $('<p style="line-height: 2.5;"></p>')

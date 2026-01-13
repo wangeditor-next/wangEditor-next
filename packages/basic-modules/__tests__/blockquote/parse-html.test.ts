@@ -9,7 +9,11 @@ import createEditor from '../../../../tests/utils/create-editor'
 import { parseHtmlConf } from '../../src/modules/blockquote/parse-elem-html'
 
 describe('blockquote - parse html', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('without children', () => {
     const $elem = $('<blockquote>hello&nbsp;world</blockquote>')

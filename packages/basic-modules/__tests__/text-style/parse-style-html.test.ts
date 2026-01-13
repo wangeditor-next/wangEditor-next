@@ -3,7 +3,11 @@ import { parseStyleHtml } from '../../src/modules/text-style/parse-style-html'
 import $ from '../../src/utils/dom'
 
 describe('parse style html', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('it should return directly if give node that type is not text', () => {
     const element = $('<p></p>')

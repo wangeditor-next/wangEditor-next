@@ -57,7 +57,11 @@ describe('video - pre parse html', () => {
 })
 
 describe('video - parse html', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('iframe', () => {
     const iframeHtml = '<iframe src="xxx" width="500" height="300"></iframe>'

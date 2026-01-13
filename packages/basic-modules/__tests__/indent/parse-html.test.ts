@@ -10,7 +10,11 @@ import { parseStyleHtml } from '../../src/modules/indent/parse-style-html'
 import { preParseHtmlConf } from '../../src/modules/indent/pre-parse-html'
 
 describe('indent - parse style', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('parse style', () => {
     const $p = $('<p style="text-indent: 2em;"></p>')

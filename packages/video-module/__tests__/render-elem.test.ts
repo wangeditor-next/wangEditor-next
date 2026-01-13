@@ -7,7 +7,11 @@ import createEditor from '../../../tests/utils/create-editor'
 import { renderVideoConf } from '../src/module/render-elem'
 
 describe('video module - render elem', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('render video elem', () => {
     expect(renderVideoConf.type).toBe('video')

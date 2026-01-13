@@ -14,8 +14,13 @@ import Header5ButtonMenu from '../../../src/modules/header/menu/Header5ButtonMen
 import Header6ButtonMenu from '../../../src/modules/header/menu/Header6ButtonMenu'
 
 describe('header menu', () => {
-  const editor = createEditor()
-  const startLocation = Editor.start(editor, [])
+  let editor: ReturnType<typeof createEditor>
+  let startLocation: ReturnType<typeof Editor.start>
+
+  beforeEach(() => {
+    editor = createEditor()
+    startLocation = Editor.start(editor, [])
+  })
 
   describe('header1 menu', () => {
     const menu = new Header1ButtonMenu()
