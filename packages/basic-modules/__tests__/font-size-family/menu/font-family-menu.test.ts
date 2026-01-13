@@ -25,6 +25,7 @@ describe('font family menu', () => {
 
   it('get options', () => {
     editor.select(startLocation)
+    expect(menu.isActive(editor)).toBeFalsy()
     const options1 = menu.getOptions(editor)
     const selectedDefault = options1.some(opt => opt.selected && opt.value === '')
 
@@ -37,10 +38,6 @@ describe('font family menu', () => {
     const selectedHeiti = options2.some(opt => opt.selected && opt.value === '黑体')
 
     expect(selectedHeiti).toBeTruthy()
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
   })
 
   it('is disabled', () => {

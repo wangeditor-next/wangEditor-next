@@ -32,6 +32,7 @@ describe('view link menu', () => {
   it('get value', () => {
     editor.select(startLocation)
     expect(menu.getValue(editor)).toBe('')
+    expect(menu.isActive(editor)).toBe(false)
 
     editor.insertNode(linkNode)
     editor.select({
@@ -39,10 +40,6 @@ describe('view link menu', () => {
       offset: 1,
     })
     expect(menu.getValue(editor)).toBe(linkNode.url)
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBe(false)
   })
 
   it('is disable', () => {

@@ -30,14 +30,6 @@ describe('justify menus', () => {
     startLocation = null
   })
 
-  it('get value', () => {
-    expect(centerMenu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
-    expect(centerMenu.isActive(editor)).toBeFalsy()
-  })
-
   it('is disabled', () => {
     editor.deselect()
     expect(centerMenu.isDisabled(editor)).toBeTruthy()
@@ -55,6 +47,8 @@ describe('justify menus', () => {
 
   it('exec', () => {
     editor.select(startLocation)
+    expect(centerMenu.getValue(editor)).toBe('')
+    expect(centerMenu.isActive(editor)).toBeFalsy()
 
     centerMenu.exec(editor, '')
     const p1 = editor.getElemsByTypePrefix('paragraph')[0]

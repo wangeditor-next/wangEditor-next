@@ -148,7 +148,19 @@ describe('editor DOM API', () => {
     })
   })
 
-  // TODO blur isFocused 用 vi 测试异常，以及 editor-config.test.ts 中的 `onFocus` `onBlur`
+  it('blur isFocused', async () => {
+    const editor = createEditor()
+
+    await Promise.resolve()
+    expect(editor.isFocused()).toBeFalsy()
+
+    editor.focus()
+    expect(editor.isFocused()).toBeTruthy()
+
+    editor.blur()
+    expect(editor.isFocused()).toBeFalsy()
+    expect(editor.selection).toBeNull()
+  })
 
   it('disable isDisabled enable', () => {
     const editor = createEditor()

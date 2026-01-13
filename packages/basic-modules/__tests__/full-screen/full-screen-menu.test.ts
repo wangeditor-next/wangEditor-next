@@ -24,16 +24,13 @@ describe('full screen menu', () => {
     editor.destroy()
   })
 
-  it('get value', () => {
-    expect(menu.getValue(editor)).toBe('')
-  })
-
   it('is disabled', () => {
     expect(menu.isDisabled(editor)).toBeFalsy()
   })
 
   it('full screen menu', () => {
     vi.useFakeTimers()
+    expect(menu.getValue(editor)).toBe('')
     menu.exec(editor, '') // 设置全屏
     expect(menu.isActive(editor)).toBeTruthy()
 

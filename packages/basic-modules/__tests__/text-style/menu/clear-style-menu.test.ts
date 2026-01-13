@@ -18,20 +18,15 @@ describe('clear style menu', () => {
     editor.clear()
   })
 
-  it('get value', () => {
-    expect(menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
-  })
-
   it('is disabled', () => {
     editor.select(startLocation)
     expect(menu.isDisabled(editor)).toBeFalsy()
   })
 
   it('exec', () => {
+    expect(menu.getValue(editor)).toBe('')
+    expect(menu.isActive(editor)).toBeFalsy()
+
     editor.select(startLocation)
     editor.insertText('hello')
 

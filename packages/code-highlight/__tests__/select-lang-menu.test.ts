@@ -15,23 +15,18 @@ describe('code-highlight select lang menu', () => {
   let editor: IDomEditor | null = null
   let menu: SelectLangMenu | null = null
 
-  beforeAll(() => {
-    // 创建 editor
+  beforeEach(() => {
     editor = createEditor({
       content,
     })
-
-    // 创建 menu
     menu = new SelectLangMenu()
   })
 
-  afterAll(() => {
-    // 销毁 editor
-    if (editor == null) { return }
-    editor.destroy()
+  afterEach(() => {
+    if (editor) {
+      editor.destroy()
+    }
     editor = null
-
-    // 销毁 menu
     menu = null
   })
 

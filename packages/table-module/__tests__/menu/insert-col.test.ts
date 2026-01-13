@@ -24,24 +24,13 @@ function setEditorSelection(
 describe('Table Module Insert Col Menu', () => {
   test('it should create InsertCol object', () => {
     const insertColMenu = new InsertCol()
+    const editor = createEditor()
 
     expect(typeof insertColMenu).toBe('object')
     expect(insertColMenu.tag).toBe('button')
     expect(insertColMenu.iconSvg).toBe(ADD_COL_SVG)
     expect(insertColMenu.title).toBe(locale.tableModule.insertCol)
-  })
-
-  test('it should get empty string if invoke getValue method', () => {
-    const insertColMenu = new InsertCol()
-    const editor = createEditor()
-
     expect(insertColMenu.getValue(editor)).toBe('')
-  })
-
-  test('it should get falsy value if invoke isActive method', () => {
-    const insertColMenu = new InsertCol()
-    const editor = createEditor()
-
     expect(insertColMenu.isActive(editor)).toBeFalsy()
   })
 

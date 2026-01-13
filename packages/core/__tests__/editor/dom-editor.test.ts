@@ -168,11 +168,30 @@ describe('Core DomEditor', () => {
     expect(res).toBeTruthy()
   })
 
-  // TODO 待写...
-  // test('toDOMRange', () => {})
+  test('toDOMRange', async () => {
+    editor.insertText('hello')
+    await Promise.resolve()
 
-  // TODO 待写...
-  // test('toDOMPoint', () => {})
+    const range = {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 4 },
+    }
+    const domRange = DomEditor.toDOMRange(editor, range)
+
+    expect(domRange.toString()).toBe('ell')
+  })
+
+  test('toDOMPoint', async () => {
+    editor.insertText('hello')
+    await Promise.resolve()
+
+    const point = { path: [0, 0], offset: 2 }
+    const [domNode, domOffset] = DomEditor.toDOMPoint(editor, point)
+
+    expect(domNode.nodeType).toBe(Node.TEXT_NODE)
+    expect(domNode.textContent).toBe('hello')
+    expect(domOffset).toBe(2)
+  })
 
   test('toSlateNode', () => {
     const p = editor.children[0]
@@ -183,14 +202,67 @@ describe('Core DomEditor', () => {
     expect(slateNode).toBe(p)
   })
 
-  // TODO 待写...
-  // test('findEventRange', () => {})
+  test('findEventRange', async () => {
+    editor.insertText('hello')
+    await Promise.resolve()
 
-  // TODO 待写...
-  // test('toSlateRange', () => {})
+    const range = {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 3 },
+    }
+    const domRange = DomEditor.toDOMRange(editor, range)
+    const target = DomEditor.toDOMNode(editor, editor.children[0])
+    const { document } = DomEditor.getWindow(editor)
+    const original = (document as any).caretRangeFromPoint;
 
-  // TODO 待写...
-  // test('toSlatePoint', () => {})
+    (document as any).caretRangeFromPoint = vi.fn(() => domRange)
+
+    const event = {
+      clientX: 10,
+      clientY: 20,
+      target,
+    }
+    const res = DomEditor.findEventRange(editor, event)
+
+    expect(res).toEqual(range)
+
+    if (original) {
+      (document as any).caretRangeFromPoint = original
+    } else {
+      delete (document as any).caretRangeFromPoint
+    }
+  })
+
+  test('toSlateRange', async () => {
+    editor.insertText('hello')
+    await Promise.resolve()
+
+    const range = {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 4 },
+    }
+    const domRange = DomEditor.toDOMRange(editor, range)
+    const slateRange = DomEditor.toSlateRange(editor, domRange, {
+      exactMatch: false,
+      suppressThrow: false,
+    })
+
+    expect(slateRange).toEqual(range)
+  })
+
+  test('toSlatePoint', async () => {
+    editor.insertText('hello')
+    await Promise.resolve()
+
+    const point = { path: [0, 0], offset: 3 }
+    const domPoint = DomEditor.toDOMPoint(editor, point)
+    const slatePoint = DomEditor.toSlatePoint(editor, domPoint, {
+      exactMatch: false,
+      suppressThrow: false,
+    })
+
+    expect(slatePoint).toEqual(point)
+  })
 
   test('hasRange', () => {
     editor.insertText('hello')

@@ -24,14 +24,6 @@ describe('format painter menu', () => {
     FormatPainter.attrs.formatStyle = null
   })
 
-  it('get value', () => {
-    expect(menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBe(FormatPainter.attrs.isSelect)
-  })
-
   it('is disabled', () => {
     expect(menu.isDisabled(editor)).toBeFalsy()
   })
@@ -71,6 +63,9 @@ describe('format painter menu', () => {
   })
 
   it('exec', () => {
+    expect(menu.getValue(editor)).toBe('')
+    expect(menu.isActive(editor)).toBe(FormatPainter.attrs.isSelect)
+
     editor.focus()
 
     editor.insertText('Hello World')

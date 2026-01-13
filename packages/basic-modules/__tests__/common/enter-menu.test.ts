@@ -23,14 +23,6 @@ describe('enter menu', () => {
     startLocation = null
   })
 
-  it('get value', () => {
-    expect(menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
-  })
-
   it('is disabled', () => {
     editor.deselect()
     expect(menu.isDisabled(editor)).toBeTruthy()
@@ -42,6 +34,8 @@ describe('enter menu', () => {
   })
 
   it('exec', () => {
+    expect(menu.getValue(editor)).toBe('')
+    expect(menu.isActive(editor)).toBeFalsy()
     editor.deselect()
     expect(menu.exec(editor, '')).toBeUndefined()
     editor.select(startLocation)

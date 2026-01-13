@@ -13,15 +13,9 @@ describe('undo menu', () => {
   const menu = new UndoMenu()
   const location = Editor.start(editor, []) // 选区位置
 
-  it('tag', () => {
+  it('basic contract', () => {
     expect(menu.tag).toBe('button')
-  })
-
-  it('get value', () => {
     expect(menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
     expect(menu.isActive(editor)).toBeFalsy()
   })
 

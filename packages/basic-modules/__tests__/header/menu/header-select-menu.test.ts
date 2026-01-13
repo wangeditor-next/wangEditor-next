@@ -15,6 +15,7 @@ describe('header select menu', () => {
 
   it('get options', () => {
     editor.select(startLocation)
+    expect(menu.isActive(editor)).toBeFalsy()
     const options1 = menu.getOptions(editor)
     const selectedP = options1.some(opt => opt.selected && opt.value === 'paragraph') // 选中“文本”
 
@@ -25,10 +26,6 @@ describe('header select menu', () => {
     const selectedHeader = options2.some(opt => opt.selected && opt.value === 'header1') // 选中“h1”
 
     expect(selectedHeader).toBeTruthy()
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
   })
 
   it('is disabled', () => {

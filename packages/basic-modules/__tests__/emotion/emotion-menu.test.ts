@@ -24,14 +24,6 @@ describe('font family menu', () => {
     startLocation = null
   })
 
-  it('get value', () => {
-    expect(menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
-  })
-
   it('is disabled', () => {
     editor.select(startLocation)
     expect(menu.isDisabled(editor)).toBeFalsy()
@@ -42,6 +34,9 @@ describe('font family menu', () => {
   })
 
   it('get panel content elem', () => {
+    expect(menu.getValue(editor)).toBe('')
+    expect(menu.isActive(editor)).toBeFalsy()
+
     const elem = menu.getPanelContentElem(editor)
 
     expect(isHTMLElememt(elem)).toBeTruthy()

@@ -23,3 +23,38 @@ vi.spyOn(global.console, 'error').mockImplementation(() => vi.fn())
 global.DataTransfer = DataTransfer
 
 global.ResizeObserver = ResizeObserver
+
+const zeroRect = {
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  width: 0,
+  height: 0,
+}
+
+if (!Range.prototype.getClientRects) {
+  Range.prototype.getClientRects = () => [zeroRect] as any
+}
+
+if (!Range.prototype.getBoundingClientRect) {
+  Range.prototype.getBoundingClientRect = () => zeroRect as any
+}
+
+afterEach(() => {
+  const globalScope = globalThis as any
+  const editors: Set<any> | undefined = globalScope.testEditors
+
+  if (editors) {
+    editors.forEach(editor => {
+      try {
+        editor.destroy?.()
+      } catch (error) {
+        console.error(error)
+      }
+    })
+    editors.clear()
+  }
+
+  document.body.innerHTML = ''
+})

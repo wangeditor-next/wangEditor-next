@@ -145,4 +145,29 @@ describe('editor config', () => {
     editor.destroy()
     expect(fn).toHaveBeenCalledWith(editor)
   })
+
+  it('if set onFocus/onBlur option, it will be called on selection changes', async () => {
+    vi.useFakeTimers()
+    const onFocus = vi.fn()
+    const onBlur = vi.fn()
+
+    const editor = createCoreEditor({
+      config: {
+        onFocus,
+        onBlur,
+      },
+    })
+
+    await Promise.resolve()
+    editor.select(getStartLocation(editor))
+    editor.onChange()
+    vi.runAllTimers()
+    expect(onFocus).toHaveBeenCalledWith(editor)
+
+    editor.deselect()
+    editor.onChange()
+    vi.runAllTimers()
+    expect(onBlur).toHaveBeenCalledWith(editor)
+    vi.useRealTimers()
+  })
 })

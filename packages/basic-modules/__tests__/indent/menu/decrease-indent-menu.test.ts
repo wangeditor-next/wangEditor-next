@@ -36,14 +36,11 @@ describe('decrease indent menu', () => {
     // Transforms.removeNodes(editor, { mode: 'highest' }) // 移除 pre/code
   })
 
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
-  })
-
   // getValue 在 increase menu 已测试过
 
   it('exec', () => {
     editor.select(startLocation)
+    expect(menu.isActive(editor)).toBeFalsy()
     Transforms.setNodes(editor, { type: 'paragraph', indent: '2em', children: [] })
 
     expect(menu.isDisabled(editor)).toBeFalsy() // 有 indent 则取消 disabled

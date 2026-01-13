@@ -9,12 +9,6 @@ import BulletedListMenu from '../../src/module/menu/BulletedListMenu'
 describe('list BulletedListMenu', () => {
   const menu = new BulletedListMenu()
 
-  it('getValue', () => {
-    const editor = createEditor()
-
-    expect(menu.getValue(editor)).toBe('')
-  })
-
   it('isActive', () => {
     const editor = createEditor({
       content: [
@@ -77,6 +71,7 @@ describe('list BulletedListMenu', () => {
       content: [pElem],
     })
 
+    expect(menu.getValue(editor)).toBe('')
     editor.select({ path: [0, 0], offset: 0 }) // 选中 p
 
     menu.exec(editor, '') // p 转 li
