@@ -23,6 +23,15 @@ const runs = [
   { name: 'upload-image-module', paths: ['packages/upload-image-module/__tests__'] },
   { name: 'video-module', paths: ['packages/video-module/__tests__'] },
   { name: 'code-highlight', paths: ['packages/code-highlight/__tests__'] },
+  { name: 'editor-for-react', paths: ['packages/editor-for-react/__tests__'] },
+  { name: 'plugin-float-image', paths: ['packages/plugin-float-image/__tests__'] },
+  { name: 'plugin-formula', paths: ['packages/plugin-formula/__tests__'] },
+  { name: 'plugin-link-card', paths: ['packages/plugin-link-card/__tests__'] },
+  { name: 'plugin-markdown', paths: ['packages/plugin-markdown/__tests__'] },
+  { name: 'plugin-mention', paths: ['packages/plugin-mention/__tests__'] },
+  { name: 'yjs', paths: ['packages/yjs/__tests__'] },
+  { name: 'yjs-for-react', paths: ['packages/yjs-for-react/__tests__'] },
+  { name: 'yjs-for-vue', paths: ['packages/yjs-for-vue/__tests__'] },
 ]
 
 const baseArgs = [

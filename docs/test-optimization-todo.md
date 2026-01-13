@@ -38,6 +38,6 @@
 ## 执行记录
 - [x] Phase 0 文档更新
 - [x] Phase 1 生命周期统一
-- [ ] Phase 2 覆盖率补齐
+- [x] Phase 2 覆盖率补齐
 - [ ] Phase 3 E2E 覆盖
 - [ ] Phase 4 质量门槛

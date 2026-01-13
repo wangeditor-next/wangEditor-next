@@ -7,10 +7,19 @@ const modulePaths = [
   '@wangeditor-next/basic-modules',
   '@wangeditor-next/code-highlight',
   '@wangeditor-next/editor',
+  '@wangeditor-next/editor-for-react',
   '@wangeditor-next/list-module',
+  '@wangeditor-next/plugin-float-image',
+  '@wangeditor-next/plugin-formula',
+  '@wangeditor-next/plugin-link-card',
+  '@wangeditor-next/plugin-markdown',
+  '@wangeditor-next/plugin-mention',
   '@wangeditor-next/table-module',
   '@wangeditor-next/upload-image-module',
   '@wangeditor-next/video-module',
+  '@wangeditor-next/yjs',
+  '@wangeditor-next/yjs-for-react',
+  '@wangeditor-next/yjs-for-vue',
 ]
 
 export default defineConfig({
