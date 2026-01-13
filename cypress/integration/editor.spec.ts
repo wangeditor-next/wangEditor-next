@@ -1,11 +1,49 @@
 describe('Basic Editor', () => {
-  it('create editor', () => {
+  const getEditable = () => cy.get('[data-testid="editor-textarea"] [contenteditable="true"]')
+
+  beforeEach(() => {
     cy.visit('/examples/default-mode.html')
+    cy.get('[data-testid="btn-create"]').click()
+  })
 
-    cy.get('#btn-create').click()
-
-    cy.get('#editor-toolbar').should('have.attr', 'data-w-e-toolbar', 'true')
-    cy.get('#editor-text-area').should('have.attr', 'data-w-e-textarea', 'true')
+  it('create editor', () => {
+    cy.get('[data-testid="editor-toolbar"]').should('have.attr', 'data-w-e-toolbar', 'true')
+    cy.get('[data-testid="editor-textarea"]').should('have.attr', 'data-w-e-textarea', 'true')
     cy.get('#w-e-textarea-1').contains('一行标题')
+  })
+
+  it('updates html when typing', () => {
+    getEditable().click().type('{selectall}{backspace}e2e-text')
+    cy.get('[data-testid="editor-html"]').should('contain', 'e2e-text')
+  })
+
+  it('applies bold and italic formatting', () => {
+    getEditable().click().type('{selectall}{backspace}format text')
+    getEditable().type('{selectall}')
+
+    cy.get('[data-menu-key="bold"]').click()
+    cy.get('[data-menu-key="italic"]').click()
+
+    cy.get('[data-testid="editor-html"]').should('contain', '<strong>')
+    cy.get('[data-testid="editor-html"]').should('contain', '<em>')
+  })
+
+  it('creates a bulleted list item', () => {
+    getEditable().click().type('{selectall}{backspace}list item')
+    cy.get('[data-menu-key="bulletedList"]').click()
+
+    cy.get('[data-testid="editor-html"]').should('contain', '<ul>')
+    cy.get('[data-testid="editor-html"]').should('contain', '<li>list item</li>')
+  })
+
+  it('undoes and redoes changes', () => {
+    getEditable().click().type('{selectall}{backspace}undo text')
+    cy.get('[data-testid="editor-html"]').should('contain', 'undo text')
+
+    cy.get('[data-menu-key="undo"]').click()
+    cy.get('[data-testid="editor-html"]').should('not.contain', 'undo text')
+
+    cy.get('[data-menu-key="redo"]').click()
+    cy.get('[data-testid="editor-html"]').should('contain', 'undo text')
   })
 })

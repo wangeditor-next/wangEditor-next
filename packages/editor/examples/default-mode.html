@@ -14,15 +14,15 @@
 <body>
   <div style="width: 1000px; margin: 0 auto;">
     <p>
-      <button id="btn-create">create editor</button>
-      <button id="btn-toggle-enable">disable/enable</button>
-      <button id="btn-destroy">destroy editor</button>
+      <button id="btn-create" data-testid="btn-create">create editor</button>
+      <button id="btn-toggle-enable" data-testid="btn-toggle-enable">disable/enable</button>
+      <button id="btn-destroy" data-testid="btn-destroy">destroy editor</button>
     </p>
 
     <!-- 编辑器 -->
     <div>
-      <div id="editor-toolbar" class="editor-toolbar"></div>
-      <div id="editor-text-area" class="editor-text-area"></div>
+      <div id="editor-toolbar" class="editor-toolbar" data-testid="editor-toolbar"></div>
+      <div id="editor-text-area" class="editor-text-area" data-testid="editor-textarea"></div>
     </div>
 
     <!-- 内容状态 -->
@@ -35,9 +35,9 @@
 
     <!-- 显示HTML字符串 -->
     HTML字符:
-    <div id="editor-html-view" class="editor-html-view"></div>
+    <div id="editor-html-view" class="editor-html-view" data-testid="editor-html"></div>
     <!-- 显示内容 -->
-    <div id="editor-content-view" class="editor-content-view"></div>
+    <div id="editor-content-view" class="editor-content-view" data-testid="editor-content"></div>
   </div>
 
   <script src="js/init-content.js"></script>
