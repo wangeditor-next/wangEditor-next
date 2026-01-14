@@ -54,4 +54,27 @@ describe('Basic Editor', () => {
 
     cy.get('[data-testid="editor-html"]').should('contain', '<table')
   })
+
+  it('uploads an image as base64', () => {
+    getEditable().click().type('{selectall}{backspace}')
+
+    cy.get('[data-menu-key="uploadImage"]').click({ force: true })
+    cy.get('input[type="file"]').last().selectFile({
+      contents: 'fake-image',
+      fileName: 'e2e.png',
+      mimeType: 'image/png',
+    }, { force: true })
+
+    cy.get('[data-testid="editor-html"]').should('contain', 'data:image')
+  })
+
+  it('creates a code block', () => {
+    getEditable().click().type('{selectall}{backspace}code line')
+    getEditable().type('{selectall}')
+
+    cy.get('[data-menu-key="codeBlock"]').click()
+
+    cy.get('[data-testid="editor-html"]').should('contain', '<pre>')
+    cy.get('[data-testid="editor-html"]').should('contain', '<code>')
+  })
 })
