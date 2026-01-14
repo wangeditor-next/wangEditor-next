@@ -6,6 +6,7 @@
 import { IDomEditor } from '@wangeditor-next/core'
 
 import createEditor from '../../../tests/utils/create-editor'
+import flushPromises from '../../../tests/utils/flush-promises'
 import SelectLangMenu from '../src/module/menu/SelectLangMenu'
 import {
   codeLocation, content, language, paragraphLocation,
@@ -96,7 +97,7 @@ describe('code-highlight select lang menu', () => {
     editor.select(codeLocation)
     menu.exec(editor, 'html') // change lang
 
-    await Promise.resolve()
+    await flushPromises()
     editor.select(codeLocation)
     expect(menu.getValue(editor)).toBe('html')
   })
@@ -108,7 +109,7 @@ describe('code-highlight select lang menu', () => {
     editor.select(codeLocation)
     menu.exec(editor, 'hello') // change lang
 
-    await Promise.resolve()
+    await flushPromises()
     editor.select(codeLocation)
     expect(menu.getValue(editor)).toBe('')
   })

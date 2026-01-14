@@ -7,6 +7,7 @@ import {
   afterEach, describe, expect, it, vi,
 } from 'vitest'
 
+import flushPromises from '../../../../tests/utils/flush-promises'
 import { DomEditor } from '../../src/editor/dom-editor'
 import { IDomEditor } from '../../src/editor/interface'
 import { correctPosition, getPositionByNode, getPositionBySelection } from '../../src/menus/helpers/position'
@@ -239,7 +240,7 @@ describe('menu position helpers', () => {
     } as any
 
     correctPosition(editor, positionElem)
-    await Promise.resolve()
+    await flushPromises()
 
     expect(styleStore.top).toBe('80px')
     expect(styleStore.left).toBe('60px')
@@ -275,7 +276,7 @@ describe('menu position helpers', () => {
     } as any
 
     correctPosition(editor, positionElem)
-    await Promise.resolve()
+    await flushPromises()
 
     expect(styleStore.bottom).toBe('0px')
     expect(styleStore.right).toBe('5px')

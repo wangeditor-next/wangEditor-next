@@ -5,6 +5,7 @@
 
 import { Editor } from 'slate'
 
+import flushPromises from '../../../../tests/utils/flush-promises'
 import createCoreEditor from '../create-core-editor' // packages/core 不依赖 packages/editor ，不能使用后者的 createEditor
 
 describe('editor config', () => {
@@ -93,7 +94,7 @@ describe('editor config', () => {
       },
     })
 
-    await Promise.resolve()
+    await flushPromises()
     expect(fn).toHaveBeenCalled()
   })
 
@@ -107,12 +108,12 @@ describe('editor config', () => {
       content: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     })
 
-    await Promise.resolve()
+    await flushPromises()
     editor.select({
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 1 },
     }) // 选区变化，触发 onchange
-    await Promise.resolve()
+    await flushPromises()
     expect(fn).toHaveBeenCalledWith(editor)
   })
 
@@ -125,11 +126,11 @@ describe('editor config', () => {
       },
     })
 
-    await Promise.resolve()
+    await flushPromises()
     editor.select(getStartLocation(editor))
     fn.mockClear()
     editor.insertText('123')
-    await Promise.resolve()
+    await flushPromises()
     expect(fn).toHaveBeenCalledWith(editor)
   })
 
@@ -141,7 +142,7 @@ describe('editor config', () => {
       },
     })
 
-    await Promise.resolve()
+    await flushPromises()
     editor.destroy()
     expect(fn).toHaveBeenCalledWith(editor)
   })
@@ -158,7 +159,7 @@ describe('editor config', () => {
       },
     })
 
-    await Promise.resolve()
+    await flushPromises()
     editor.select(getStartLocation(editor))
     editor.onChange()
     vi.runAllTimers()

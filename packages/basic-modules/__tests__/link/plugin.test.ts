@@ -6,6 +6,7 @@
 import { Editor } from 'slate'
 
 import createEditor from '../../../../tests/utils/create-editor'
+import flushPromises from '../../../../tests/utils/flush-promises'
 import * as linkHelper from '../../src/modules/link/helper'
 import withLink from '../../src/modules/link/plugin'
 
@@ -30,7 +31,7 @@ describe('link plugin', () => {
   })
 
   afterEach(async () => {
-    await Promise.resolve()
+    await flushPromises()
     editor.destroy()
   })
 

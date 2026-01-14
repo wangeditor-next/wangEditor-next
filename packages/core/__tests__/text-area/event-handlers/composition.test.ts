@@ -7,6 +7,7 @@ import {
   afterEach, describe, expect, it, vi,
 } from 'vitest'
 
+import flushPromises from '../../../../../tests/utils/flush-promises'
 import { DomEditor } from '../../../src/editor/dom-editor'
 import {
   handleCompositionEnd,
@@ -54,7 +55,7 @@ describe('composition handlers', () => {
     vi.spyOn(DomEditor, 'toDOMRange').mockReturnValue({ startContainer } as any)
 
     handleCompositionStart(event, textarea, editor)
-    await Promise.resolve()
+    await flushPromises()
 
     expect(Editor.deleteFragment).toHaveBeenCalledWith(editor)
     expect(textarea.isComposing).toBe(true)

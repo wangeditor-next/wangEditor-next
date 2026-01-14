@@ -5,6 +5,7 @@
 
 import { Editor } from 'slate'
 
+import flushPromises from '../../../../../tests/utils/flush-promises'
 import createBasicEditor from '../../../src/create/create-editor'
 import { DomEditor } from '../../../src/editor/dom-editor'
 import { withDOM } from '../../../src/editor/plugins/with-dom'
@@ -53,7 +54,7 @@ describe('editor DOM API', () => {
     createToolbar(editor)
     expect(editor.isDestroyed).toBeFalsy()
 
-    await Promise.resolve()
+    await flushPromises()
     editor.destroy()
     expect(editor.isDestroyed).toBeTruthy()
   })
@@ -67,7 +68,7 @@ describe('editor DOM API', () => {
       selector: '#editor-text-area',
     })
 
-    await Promise.resolve()
+    await flushPromises()
     const textarea = DomEditor.getTextarea(editor)
     const target = document.createElement('div')
 
@@ -107,7 +108,7 @@ describe('editor DOM API', () => {
       content: [p],
     })
 
-    await Promise.resolve()
+    await flushPromises()
     const domNode = editor.toDOMNode(p)
 
     expect(domNode.tagName).toBe('DIV')
@@ -151,7 +152,7 @@ describe('editor DOM API', () => {
   it('blur isFocused', async () => {
     const editor = createEditor()
 
-    await Promise.resolve()
+    await flushPromises()
     expect(editor.isFocused()).toBeFalsy()
 
     editor.focus()

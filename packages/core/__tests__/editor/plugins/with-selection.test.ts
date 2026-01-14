@@ -5,6 +5,7 @@
 
 import { Editor } from 'slate'
 
+import flushPromises from '../../../../../tests/utils/flush-promises'
 import { withSelection } from '../../../src/editor/plugins/with-selection'
 import createCoreEditor from '../../create-core-editor' // packages/core 不依赖 packages/editor ，不能使用后者的 createEditor
 
@@ -25,7 +26,7 @@ describe('editor selection API', () => {
   it('restoreSelection', async () => {
     const editor = createEditor()
 
-    await Promise.resolve()
+    await flushPromises()
     editor.select(getStartLocation(editor))
     editor.onChange()
     const selection = editor.selection

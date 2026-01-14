@@ -2,6 +2,7 @@ import nock from 'nock'
 import * as slate from 'slate'
 
 import createEditor from '../../../tests/utils/create-editor'
+import flushPromises from '../../../tests/utils/flush-promises'
 import insertVideo from '../src/module/helper/insert-video'
 import uploadVideos from '../src/module/helper/upload-videos'
 
@@ -58,7 +59,7 @@ describe('Video module helper', () => {
       vi.spyOn(slate.Transforms, 'insertNodes').mockImplementation(fn)
 
       await insertVideo(baseEditor, 'test.mp4', 'xxx.png')
-      await Promise.resolve()
+      await flushPromises()
 
       expect(fn).toBeCalled()
     })
@@ -86,7 +87,7 @@ describe('Video module helper', () => {
       vi.spyOn(slate.Transforms, 'insertNodes').mockImplementation(fn)
 
       await insertVideo(baseEditor, '<iframe src="test.mp4"></iframe>')
-      await Promise.resolve()
+      await flushPromises()
 
       expect(fn).toBeCalled()
     })

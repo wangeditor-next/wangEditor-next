@@ -6,6 +6,7 @@
 import { t } from '@wangeditor-next/core'
 
 import createEditor from '../../../../tests/utils/create-editor'
+import flushPromises from '../../../../tests/utils/flush-promises'
 import { CANCEL_FULL_SCREEN_SVG, FULL_SCREEN_SVG } from '../../src/constants/icon-svg'
 import FullScreen from '../../src/modules/full-screen/menu/FullScreen'
 
@@ -20,7 +21,7 @@ describe('full screen menu', () => {
 
   afterEach(async () => {
     vi.useRealTimers()
-    await Promise.resolve()
+    await flushPromises()
     editor.destroy()
   })
 
