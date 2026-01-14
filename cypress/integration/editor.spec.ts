@@ -36,6 +36,14 @@ describe('Basic Editor', () => {
     cy.get('[data-testid="editor-html"]').should('contain', '<li>list item</li>')
   })
 
+  it('creates a numbered list item', () => {
+    getEditable().click().type('{selectall}{backspace}numbered item')
+    cy.get('[data-menu-key="numberedList"]').click()
+
+    cy.get('[data-testid="editor-html"]').should('contain', '<ol>')
+    cy.get('[data-testid="editor-html"]').should('contain', '<li>numbered item</li>')
+  })
+
   it('undoes and redoes changes', () => {
     getEditable().click().type('{selectall}{backspace}undo text')
     cy.get('[data-testid="editor-html"]').should('contain', 'undo text')
