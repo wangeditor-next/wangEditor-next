@@ -8,7 +8,7 @@ export default defineConfig({
   },
   retries: process.env.CI ? 2 : 0,
   use: {
-    baseURL: 'http://localhost:8881',
+    baseURL: 'http://127.0.0.1:8881',
     testIdAttribute: 'data-testid',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
@@ -16,11 +16,11 @@ export default defineConfig({
   },
   webServer: {
     command: 'pnpm example',
-    url: 'http://localhost:8881/examples/default-mode.html',
+    url: 'http://127.0.0.1:8881',
     reuseExistingServer: !process.env.CI,
     stdout: 'pipe',
     stderr: 'pipe',
-    timeout: 120_000,
+    timeout: 180_000,
   },
   projects: [
     {
