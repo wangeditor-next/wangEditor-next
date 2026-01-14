@@ -64,6 +64,25 @@ describe('Basic Editor', () => {
     cy.get('[data-testid="editor-textarea"] table tr').should('have.length', 1)
   })
 
+  it('deletes a table column', () => {
+    getEditable().click()
+    cy.get('[data-menu-key="insertTable"]').click()
+    cy.get('.w-e-panel-content-table td[data-x="1"][data-y="1"]').click()
+
+    cy.get('[data-testid="editor-textarea"] table tr')
+      .first()
+      .children()
+      .should('have.length', 2)
+
+    cy.get('[data-testid="editor-textarea"] table td').first().click()
+    cy.get('.w-e-hover-bar [data-menu-key="deleteTableCol"]').click({ force: true })
+
+    cy.get('[data-testid="editor-textarea"] table tr')
+      .first()
+      .children()
+      .should('have.length', 1)
+  })
+
   it('pastes plain text', () => {
     getEditable().click().type('{selectall}{backspace}')
     getEditable().trigger('paste', {
