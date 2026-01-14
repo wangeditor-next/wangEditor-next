@@ -64,6 +64,18 @@ describe('Basic Editor', () => {
     cy.get('[data-testid="editor-textarea"] table tr').should('have.length', 1)
   })
 
+  it('pastes plain text', () => {
+    getEditable().click().type('{selectall}{backspace}')
+    getEditable().trigger('paste', {
+      clipboardData: {
+        types: ['text/plain'],
+        getData: () => 'pasted text',
+      },
+    })
+
+    cy.get('[data-testid="editor-html"]').should('contain', 'pasted text')
+  })
+
   it('undoes and redoes changes', () => {
     getEditable().click().type('{selectall}{backspace}undo text')
     cy.get('[data-testid="editor-html"]').should('contain', 'undo text')
