@@ -44,6 +44,14 @@ describe('Basic Editor', () => {
     cy.get('[data-testid="editor-html"]').should('contain', '<li>numbered item</li>')
   })
 
+  it('creates a todo item', () => {
+    getEditable().click().type('{selectall}{backspace}todo item')
+    cy.get('[data-menu-key="todo"]').click()
+
+    cy.get('[data-testid="editor-html"]').should('contain', 'data-w-e-type="todo"')
+    cy.get('[data-testid="editor-html"]').should('contain', 'todo item')
+  })
+
   it('undoes and redoes changes', () => {
     getEditable().click().type('{selectall}{backspace}undo text')
     cy.get('[data-testid="editor-html"]').should('contain', 'undo text')
