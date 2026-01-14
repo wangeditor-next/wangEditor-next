@@ -8,7 +8,7 @@
 - `docs/`: 开发/测试/发布指南
 - `packages/*/__tests__/`: 单元测试，按包组织
 - `tests/`: 测试基础设施与工具（setup、utils）
-- `cypress/integration/`: E2E 测试
+- `tests/e2e/`: E2E 测试
 - `scripts/`: 构建辅助脚本
 
 ## 关键包职责
@@ -38,7 +38,7 @@
 
 ## 测试注意
 - 单元测试位于 `packages/<package>/__tests__/`。
-- E2E 测试位于 `cypress/integration/`。
+- E2E 测试位于 `tests/e2e/`。
 - 若修改了 `packages/core` 的 API，需要执行 `pnpm build` 让其他包读取最新产物。
 
 ## 核心数据流与扩展点
