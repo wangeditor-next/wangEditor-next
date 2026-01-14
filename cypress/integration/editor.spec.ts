@@ -76,6 +76,20 @@ describe('Basic Editor', () => {
     cy.get('[data-testid="editor-html"]').should('contain', 'pasted text')
   })
 
+  it('handles image drag and drop', () => {
+    getEditable().click().type('{selectall}{backspace}')
+
+    cy.window().then(win => {
+      const dataTransfer = new win.DataTransfer()
+      const file = new win.File(['drag-image'], 'drag.png', { type: 'image/png' })
+
+      dataTransfer.items.add(file)
+      getEditable().trigger('drop', { dataTransfer })
+    })
+
+    cy.get('[data-testid="editor-html"]').should('contain', 'data:image')
+  })
+
   it('undoes and redoes changes', () => {
     getEditable().click().type('{selectall}{backspace}undo text')
     cy.get('[data-testid="editor-html"]').should('contain', 'undo text')
