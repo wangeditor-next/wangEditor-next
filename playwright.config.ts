@@ -15,11 +15,11 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   webServer: {
-    command: 'pnpm example',
-    url: 'http://127.0.0.1:8881',
-    reuseExistingServer: !process.env.CI,
-    stdout: 'pipe',
-    stderr: 'pipe',
+    command: 'pnpm -C packages/editor example',
+    url: 'http://127.0.0.1:8881/examples/default-mode.html',
+    reuseExistingServer: false,
+    stdout: 'inherit',
+    stderr: 'inherit',
     timeout: 180_000,
   },
   projects: [
