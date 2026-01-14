@@ -52,6 +52,18 @@ describe('Basic Editor', () => {
     cy.get('[data-testid="editor-html"]').should('contain', 'todo item')
   })
 
+  it('deletes a table row', () => {
+    getEditable().click()
+    cy.get('[data-menu-key="insertTable"]').click()
+    cy.get('.w-e-panel-content-table td[data-x="1"][data-y="1"]').click()
+
+    cy.get('[data-testid="editor-textarea"] table tr').should('have.length', 2)
+    cy.get('[data-testid="editor-textarea"] table td').first().click()
+    cy.get('.w-e-hover-bar [data-menu-key="deleteTableRow"]').click({ force: true })
+
+    cy.get('[data-testid="editor-textarea"] table tr').should('have.length', 1)
+  })
+
   it('undoes and redoes changes', () => {
     getEditable().click().type('{selectall}{backspace}undo text')
     cy.get('[data-testid="editor-html"]').should('contain', 'undo text')
