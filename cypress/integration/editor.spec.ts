@@ -77,4 +77,26 @@ describe('Basic Editor', () => {
     cy.get('[data-testid="editor-html"]').should('contain', '<pre>')
     cy.get('[data-testid="editor-html"]').should('contain', '<code>')
   })
+
+  it('toggles readOnly via button', () => {
+    cy.get('#w-e-textarea-1').should('have.attr', 'contenteditable', 'true')
+    cy.get('[data-testid="btn-toggle-enable"]').trigger('mousedown')
+    cy.get('#w-e-textarea-1').should('have.attr', 'contenteditable', 'false')
+
+    cy.get('[data-testid="btn-toggle-enable"]').trigger('mousedown')
+    cy.get('#w-e-textarea-1').should('have.attr', 'contenteditable', 'true')
+  })
+
+  it('toggles full screen mode', () => {
+    cy.get('[data-menu-key="fullScreen"]').click()
+    cy.get('[data-testid="editor-textarea"]')
+      .parent()
+      .should('have.class', 'w-e-full-screen-container')
+
+    cy.get('[data-menu-key="fullScreen"]').click()
+    cy.wait(250)
+    cy.get('[data-testid="editor-textarea"]')
+      .parent()
+      .should('not.have.class', 'w-e-full-screen-container')
+  })
 })
