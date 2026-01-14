@@ -46,4 +46,12 @@ describe('Basic Editor', () => {
     cy.get('[data-menu-key="redo"]').click()
     cy.get('[data-testid="editor-html"]').should('contain', 'undo text')
   })
+
+  it('inserts a table', () => {
+    getEditable().click()
+    cy.get('[data-menu-key="insertTable"]').click()
+    cy.get('.w-e-panel-content-table td').first().click()
+
+    cy.get('[data-testid="editor-html"]').should('contain', '<table')
+  })
 })
