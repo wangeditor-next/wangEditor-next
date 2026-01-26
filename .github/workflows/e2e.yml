@@ -71,7 +71,7 @@ jobs:
         run: pnpm build
 
       # 运行 Cypress 测试
-      - uses: cypress-io/github-action@v6
+      - uses: cypress-io/github-action@v7
         with:
           install: false
           browser: chrome
