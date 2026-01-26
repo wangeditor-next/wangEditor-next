@@ -69,7 +69,7 @@ jobs:
 
       # 运行 E2E 测试
       - name: E2E test
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           browser: chrome
           start: pnpm run example
