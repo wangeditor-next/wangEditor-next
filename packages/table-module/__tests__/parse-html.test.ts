@@ -55,6 +55,29 @@ describe('table - pre parse html', () => {
 
     expect(res.outerHTML).toBe('<table><tr><td width="auto">hello</td></tr></table>')
   })
+
+  it('should preserve line breaks when flattening paragraphs inside cells', () => {
+    const $table = $(
+      [
+        '<table><tbody><tr><td>',
+        '<p><span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 1</span></p>',
+        '<p><span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 2</span></p>',
+        '</td></tr></tbody></table>',
+      ].join(''),
+    )
+
+    const res = preParseTableHtmlConf.preParseHtml($table[0])
+
+    expect(res.outerHTML).toBe(
+      [
+        '<table><tr><td width="auto">',
+        '<span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 1</span>',
+        '<br>',
+        '<span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 2</span>',
+        '</td></tr></table>',
+      ].join(''),
+    )
+  })
 })
 
 describe('table - parse html', () => {
@@ -94,6 +117,37 @@ describe('table - parse html', () => {
       width: 'auto',
       children,
       hidden: true,
+    })
+  })
+
+  it('table cell should keep line breaks imported from word-like paragraphs', () => {
+    const $cell = $(
+      '<td><span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 1<br>line 2</span></td>',
+    )
+    const [cell] = parseElemHtmlFromCore($($cell[0]), editor) as any[]
+
+    expect(cell).toMatchObject({
+      ...TABLE_CELL_BASE_PROPS,
+      borderWidth: '1px',
+      borderStyle: 'solid',
+      children: [
+        {
+          text: 'line 1',
+          color: 'rgb(255, 0, 0)',
+          bgColor: 'rgb(255, 255, 0)',
+        },
+        {
+          type: 'paragraph',
+          color: 'rgb(255, 0, 0)',
+          bgColor: 'rgb(255, 255, 0)',
+          children: [{ text: '' }],
+        },
+        {
+          text: 'line 2',
+          color: 'rgb(255, 0, 0)',
+          bgColor: 'rgb(255, 255, 0)',
+        },
+      ],
     })
   })
 
