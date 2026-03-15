@@ -424,5 +424,42 @@ describe('editor content API', () => {
       expect(editor.getHtml()).toBe(newHtml)
       expect(editor.isDisabled()).toBe(true)
     })
+
+    it('setHtml uses sanitizeHtml config before parsing', () => {
+      const sanitizeHtml = vi.fn().mockReturnValue('<div>safe</div>')
+      const editor = createEditor({
+        html: '<div>hello</div>',
+        config: {
+          sanitizeHtml,
+        },
+      })
+
+      editor.setHtml('<a href="javascript:alert(1)">unsafe</a>')
+
+      expect(sanitizeHtml).toHaveBeenCalledWith('<a href="javascript:alert(1)">unsafe</a>')
+      expect(editor.getHtml()).toBe('<div>safe</div>')
+    })
+  })
+
+  it('insertData sanitizes html before inserting', () => {
+    const unsafeHref = ['java', 'script:alert(1)'].join('')
+    const sanitizeHtml = vi.fn().mockReturnValue('<a href="https://example.com">safe</a>')
+    const editor = createEditor({
+      config: {
+        sanitizeHtml,
+      },
+    })
+    const insertHtmlSpy = vi.spyOn(editor, 'dangerouslyInsertHtml')
+
+    editor.select(getStartLocation(editor))
+    editor.insertData({
+      getData(type: string) {
+        if (type === 'text/html') { return `<a href="${unsafeHref}">unsafe</a>` }
+        return ''
+      },
+    } as DataTransfer)
+
+    expect(sanitizeHtml).toHaveBeenCalledWith(`<a href="${unsafeHref}">unsafe</a>`)
+    expect(insertHtmlSpy).toHaveBeenCalledWith('<a href="https://example.com">safe</a>')
   })
 })

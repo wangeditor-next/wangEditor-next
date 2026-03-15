@@ -6,6 +6,7 @@
 import cloneDeep from 'lodash.clonedeep'
 import forEach from 'lodash.foreach'
 
+import { defaultSanitizeHtml } from '../utils/sanitize-html'
 import { IEditorConfig, IMenuConfig, IToolbarConfig } from './interface'
 import { GLOBAL_MENU_CONF } from './register'
 
@@ -39,6 +40,7 @@ export function genEditorConfig(userConfig: Partial<IEditorConfig> = {}): IEdito
     hoverbarKeys: {
       // 'link': { menuKeys: ['editLink', 'unLink', 'viewLink'] },
     },
+    sanitizeHtml: defaultSanitizeHtml,
     customAlert(info: string, type: string) {
       window.alert(`${type}:\n${info}`)
     },

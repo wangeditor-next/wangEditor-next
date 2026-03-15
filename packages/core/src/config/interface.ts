@@ -222,6 +222,11 @@ export interface IEditorConfig {
    * 自定义复制。拦截 event 添加或修改 clipboardData 数据
    */
   customCopy?: (editor: IDomEditor, e: ClipboardEvent) => void
+  /**
+   * 自定义 HTML 清洗逻辑。在 setHtml / 初始化 html / 默认粘贴 HTML 前执行。
+   * 返回值会继续进入编辑器的 HTML 解析流程。
+   */
+  sanitizeHtml?: (html: string) => string
 
   // edit state
   scroll: boolean
