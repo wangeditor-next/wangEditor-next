@@ -44,7 +44,7 @@ describe('handleOnPaste', () => {
     handleOnPaste(event, {} as any, editor)
 
     expect(EDITOR_TO_CAN_PASTE.get(editor)).toBe(false)
-    expect(event.preventDefault).not.toHaveBeenCalled()
+    expect(event.preventDefault).toHaveBeenCalled()
     expect(editor.insertData).not.toHaveBeenCalled()
     EDITOR_TO_CAN_PASTE.delete(editor)
   })
