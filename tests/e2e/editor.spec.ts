@@ -105,6 +105,25 @@ test.describe('Basic Editor', () => {
     await expect(page.getByTestId('editor-html')).toContainText('e2e-text')
   })
 
+  test('does not execute script when importing untrusted html', async ({ page }) => {
+    const dialogs: string[] = []
+
+    page.on('dialog', async dialog => {
+      dialogs.push(dialog.message())
+      await dialog.dismiss()
+    })
+
+    await page.goto('/examples/parse-html.html')
+    await page.locator('#text-html').fill('<img src=x onerror="alert(1)" />')
+    await page.locator('#btn-create').click()
+    await page.waitForTimeout(300)
+    await page.locator('#btn-set-html').click()
+    await page.waitForTimeout(300)
+
+    expect(dialogs).toEqual([])
+    await expect(page.locator('#editor-text-area img')).toHaveCount(1)
+  })
+
   test('applies bold and italic formatting', async ({ page }) => {
     await typeInEditor(page, 'format text')
     await selectAll(page)

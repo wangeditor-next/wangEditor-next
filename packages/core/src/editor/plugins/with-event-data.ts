@@ -123,7 +123,9 @@ export const withEventData = <T extends Editor>(editor: T) => {
     // const rtf = data.getData('text/rtf')
 
     if (html) {
-      e.dangerouslyInsertHtml(html)
+      const { sanitizeHtml } = e.getConfig()
+
+      e.dangerouslyInsertHtml(sanitizeHtml ? sanitizeHtml(html) : html)
       return
     }
 

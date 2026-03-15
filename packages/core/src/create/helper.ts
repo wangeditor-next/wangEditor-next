@@ -72,6 +72,7 @@ export function genDefaultContent() {
  */
 export function htmlToContent(editor: IDomEditor, html: string = ''): Descendant[] {
   const res: Descendant[] = []
+  const { sanitizeHtml } = editor.getConfig()
 
   // 空白内容
   if (html === '') { html = '<p><br></p>' }
@@ -83,6 +84,8 @@ export function htmlToContent(editor: IDomEditor, html: string = ''): Descendant
       .map(line => `<p>${line}</p>`)
       .join('')
   }
+
+  html = sanitizeHtml ? sanitizeHtml(html) : html
 
   const $content = $(`<div>${html}</div>`)
   const list = Array.from($content.children())
