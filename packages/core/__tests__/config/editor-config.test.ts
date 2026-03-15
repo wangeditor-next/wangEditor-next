@@ -5,6 +5,7 @@
 
 import { Editor } from 'slate'
 
+import flushPromises from '../../../../tests/utils/flush-promises'
 import createCoreEditor from '../create-core-editor' // packages/core 不依赖 packages/editor ，不能使用后者的 createEditor
 
 describe('editor config', () => {
@@ -93,9 +94,8 @@ describe('editor config', () => {
       },
     })
 
-    setTimeout(() => {
-      expect(fn).toHaveBeenCalled()
-    })
+    await flushPromises()
+    expect(fn).toHaveBeenCalled()
   })
 
   it('if set onChange option, it will be called when change editor selection', async () => {
@@ -105,12 +105,16 @@ describe('editor config', () => {
       config: {
         onChange: fn,
       },
+      content: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     })
 
-    editor.select(getStartLocation(editor)) // 选区变化，触发 onchange
-    setTimeout(() => {
-      expect(fn).toHaveBeenCalledWith(editor)
-    })
+    await flushPromises()
+    editor.select({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 1 },
+    }) // 选区变化，触发 onchange
+    await flushPromises()
+    expect(fn).toHaveBeenCalledWith(editor)
   })
 
   it('if set onChange option, it will be called when change editor content', async () => {
@@ -122,12 +126,12 @@ describe('editor config', () => {
       },
     })
 
+    await flushPromises()
     editor.select(getStartLocation(editor))
-
-    await 1
+    fn.mockClear()
     editor.insertText('123')
-    await 1
-    expect(fn).toHaveBeenCalledTimes(2)
+    await flushPromises()
+    expect(fn).toHaveBeenCalledWith(editor)
   })
 
   it('if set onDestroyed option, it will be called when destroy editor', async () => {
@@ -138,12 +142,32 @@ describe('editor config', () => {
       },
     })
 
-    setTimeout(() => {
-      editor.destroy()
+    await flushPromises()
+    editor.destroy()
+    expect(fn).toHaveBeenCalledWith(editor)
+  })
+
+  it('if set onFocus/onBlur option, it will be called on selection changes', async () => {
+    const onFocus = vi.fn()
+    const onBlur = vi.fn()
+
+    const editor = createCoreEditor({
+      config: {
+        autoFocus: false,
+        onFocus,
+        onBlur,
+      },
     })
 
-    setTimeout(() => {
-      expect(fn).toHaveBeenCalledWith(editor)
-    }, 100)
+    await flushPromises()
+    editor.select(getStartLocation(editor))
+    editor.onChange()
+    await flushPromises()
+    expect(onFocus).toHaveBeenCalledWith(editor)
+
+    editor.deselect()
+    editor.onChange()
+    await flushPromises()
+    expect(onBlur).toHaveBeenCalledWith(editor)
   })
 })

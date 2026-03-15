@@ -9,12 +9,6 @@ import NumberedListMenu from '../../src/module/menu/NumberedListMenu'
 describe('list NumberedListMenu', () => {
   const menu = new NumberedListMenu()
 
-  it('getValue', () => {
-    const editor = createEditor()
-
-    expect(menu.getValue(editor)).toBe('')
-  })
-
   it('isActive', () => {
     const editor = createEditor({
       content: [
@@ -77,6 +71,7 @@ describe('list NumberedListMenu', () => {
       content: [pElem],
     })
 
+    expect(menu.getValue(editor)).toBe('')
     editor.select({ path: [0, 0], offset: 0 }) // 选中 p
 
     menu.exec(editor, '') // p 转 li

@@ -13,7 +13,11 @@ import {
 } from '../../src/modules/header/render-elem'
 
 describe('render header elem', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('render h1', () => {
     expect(renderHeader1Conf.type).toBe('header1')

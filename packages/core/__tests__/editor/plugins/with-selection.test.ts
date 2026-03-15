@@ -5,6 +5,7 @@
 
 import { Editor } from 'slate'
 
+import flushPromises from '../../../../../tests/utils/flush-promises'
 import { withSelection } from '../../../src/editor/plugins/with-selection'
 import createCoreEditor from '../../create-core-editor' // packages/core 不依赖 packages/editor ，不能使用后者的 createEditor
 
@@ -22,18 +23,20 @@ describe('editor selection API', () => {
 
   // selection select deselect move 是 slate 自带 API 或属性，不测试
 
-  // // TODO 运行报错，看源码有使用 focus ，可能和这个相关？？？
-  // it('restoreSelection', () => {
-  //   const editor = createEditor()
-  //   editor.select(getStartLocation(editor))
+  it('restoreSelection', async () => {
+    const editor = createEditor()
 
-  //   editor.deselect()
-  //   expect(editor.selection).toBeNull()
+    await flushPromises()
+    editor.select(getStartLocation(editor))
+    editor.onChange()
+    const selection = editor.selection
 
-  //   editor.restoreSelection()
-  //   expect(editor.selection).not.toBeNull()
-  //   // console.log(111, JSON.stringify(editor.selection))
-  // })
+    editor.deselect()
+    expect(editor.selection).toBeNull()
+
+    editor.restoreSelection()
+    expect(editor.selection).toEqual(selection)
+  })
 
   it('isSelectedAll', () => {
     const p = genParagraph()

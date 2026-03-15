@@ -32,14 +32,6 @@ describe('image width menus', () => {
     startLocation = null
   })
 
-  it('get value', () => {
-    expect(width30Menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
-    expect(width30Menu.isActive(editor)).toBeFalsy()
-  })
-
   it('is disabled', () => {
     editor.deselect()
     expect(width30Menu.isDisabled(editor)).toBeTruthy()
@@ -72,6 +64,8 @@ describe('image width menus', () => {
 
   it('exec', () => {
     editor.select(startLocation)
+    expect(width30Menu.getValue(editor)).toBe('')
+    expect(width30Menu.isActive(editor)).toBeFalsy()
     const elem = {
       type: 'image',
       src,

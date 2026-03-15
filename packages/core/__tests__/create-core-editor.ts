@@ -12,10 +12,19 @@ export default function (options: any = {}) {
 
   document.body.appendChild(container)
 
-  return createEditor({
+  const editor = createEditor({
     selector: container,
     ...options,
   })
+
+  const globalScope = globalThis as any
+
+  if (!globalScope.testEditors) {
+    globalScope.testEditors = new Set()
+  }
+  globalScope.testEditors.add(editor)
+
+  return editor
 }
 
 export const createToolbar = function (editor: IDomEditor, customConfig = {}) {

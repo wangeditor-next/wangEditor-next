@@ -91,9 +91,12 @@ describe('isCellInFirstRow', () => {
     },
   ]
 
-  const editor = createEditor({ content })
+  let editor: ReturnType<typeof createEditor>
 
-  setEditorSelection(editor)
+  beforeEach(() => {
+    editor = createEditor({ content })
+    setEditorSelection(editor)
+  })
 
   it('should correctly identify cells in the first row', () => {
     const result = isCellInFirstRow(editor, (editor.children[1] as TableElement).children[0].children[0])
@@ -108,6 +111,5 @@ describe('isCellInFirstRow', () => {
     const nonCellElement = editor.children[0]
 
     expect(isCellInFirstRow(editor, nonCellElement as any)).toBe(false)
-
   })
 })

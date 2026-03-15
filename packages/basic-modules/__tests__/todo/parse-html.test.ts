@@ -9,7 +9,11 @@ import createEditor from '../../../../tests/utils/create-editor'
 import { parseHtmlConf } from '../../src/modules/todo/parse-elem-html'
 
 describe('todo - parse html', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('with children, checked', () => {
     const $todo = $('<div data-w-e-type="todo"><input type="checkbox" disabled checked>hello</div>')

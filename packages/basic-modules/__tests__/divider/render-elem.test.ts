@@ -9,8 +9,13 @@ import createEditor from '../../../../tests/utils/create-editor'
 import { renderDividerConf } from '../../src/modules/divider/render-elem'
 
 describe('divider - render elem test', () => {
-  const editor = createEditor()
-  const startLocation = Editor.start(editor, [])
+  let editor: ReturnType<typeof createEditor>
+  let startLocation: ReturnType<typeof Editor.start>
+
+  beforeEach(() => {
+    editor = createEditor()
+    startLocation = Editor.start(editor, [])
+  })
 
   it('render divider elem', () => {
     expect(renderDividerConf.type).toBe('divider')

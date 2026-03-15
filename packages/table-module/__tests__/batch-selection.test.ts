@@ -10,93 +10,100 @@ import withTable from '../src/module/plugin'
 import { EDITOR_TO_SELECTION } from '../src/module/weak-maps'
 import { NodeEntryWithContext } from '../src/utils'
 
+const createTableFixture = () => {
+  const tableElement = {
+    type: 'table',
+    children: [
+      {
+        type: 'tr',
+        children: [
+          { type: 'td', children: [{ text: 'Cell 0,0' }] },
+          { type: 'td', children: [{ text: 'Cell 0,1' }] },
+          { type: 'td', children: [{ text: 'Cell 0,2' }] },
+        ],
+      },
+      {
+        type: 'tr',
+        children: [
+          { type: 'td', children: [{ text: 'Cell 1,0' }] },
+          { type: 'td', children: [{ text: 'Cell 1,1' }] },
+          { type: 'td', children: [{ text: 'Cell 1,2' }] },
+        ],
+      },
+      {
+        type: 'tr',
+        children: [
+          { type: 'td', children: [{ text: 'Cell 2,0' }] },
+          { type: 'td', children: [{ text: 'Cell 2,1' }] },
+          { type: 'td', children: [{ text: 'Cell 2,2' }] },
+        ],
+      },
+    ],
+  }
+
+  const tableSelection: NodeEntryWithContext[][] = [
+    [
+      [
+        [{ type: 'td', children: [{ text: 'Cell 1,1' }] }, [0, 1, 1]],
+        {
+          rtl: 0,
+          ltr: 0,
+          ttb: 0,
+          btt: 0,
+        },
+      ],
+      [
+        [{ type: 'td', children: [{ text: 'Cell 1,2' }] }, [0, 1, 2]],
+        {
+          rtl: 0,
+          ltr: 0,
+          ttb: 0,
+          btt: 0,
+        },
+      ],
+    ],
+    [
+      [
+        [{ type: 'td', children: [{ text: 'Cell 2,1' }] }, [0, 2, 1]],
+        {
+          rtl: 0,
+          ltr: 0,
+          ttb: 0,
+          btt: 0,
+        },
+      ],
+      [
+        [{ type: 'td', children: [{ text: 'Cell 2,2' }] }, [0, 2, 2]],
+        {
+          rtl: 0,
+          ltr: 0,
+          ttb: 0,
+          btt: 0,
+        },
+      ],
+    ],
+  ]
+
+  return { tableElement, tableSelection }
+}
+
 describe('Table Batch Selection', () => {
+  const originalSetNodes = Transforms.setNodes
   let editor: any
   let tableSelection: NodeEntryWithContext[][]
 
   beforeEach(() => {
+    Transforms.setNodes = originalSetNodes
     editor = withTable(createEditor())
+    const fixture = createTableFixture()
 
-    // Mock table structure: 3x3 table
-    const tableElement = {
-      type: 'table',
-      children: [
-        {
-          type: 'tr',
-          children: [
-            { type: 'td', children: [{ text: 'Cell 0,0' }] },
-            { type: 'td', children: [{ text: 'Cell 0,1' }] },
-            { type: 'td', children: [{ text: 'Cell 0,2' }] },
-          ],
-        },
-        {
-          type: 'tr',
-          children: [
-            { type: 'td', children: [{ text: 'Cell 1,0' }] },
-            { type: 'td', children: [{ text: 'Cell 1,1' }] },
-            { type: 'td', children: [{ text: 'Cell 1,2' }] },
-          ],
-        },
-        {
-          type: 'tr',
-          children: [
-            { type: 'td', children: [{ text: 'Cell 2,0' }] },
-            { type: 'td', children: [{ text: 'Cell 2,1' }] },
-            { type: 'td', children: [{ text: 'Cell 2,2' }] },
-          ],
-        },
-      ],
-    }
+    editor.children = [fixture.tableElement]
+    tableSelection = fixture.tableSelection
+  })
 
-    // Setup editor with table content
-    editor.children = [tableElement]
-
-    // Mock table selection for cells (1,1) to (2,2)
-    // This simulates selecting the bottom-right 2x2 area
-    tableSelection = [
-      [
-        // Row 1
-        [
-          [{ type: 'td', children: [{ text: 'Cell 1,1' }] }, [0, 1, 1]], // cell (1,1)
-          {
-            rtl: 0,
-            ltr: 0,
-            ttb: 0,
-            btt: 0,
-          },
-        ],
-        [
-          [{ type: 'td', children: [{ text: 'Cell 1,2' }] }, [0, 1, 2]], // cell (1,2)
-          {
-            rtl: 0,
-            ltr: 0,
-            ttb: 0,
-            btt: 0,
-          },
-        ],
-      ],
-      [
-        // Row 2
-        [
-          [{ type: 'td', children: [{ text: 'Cell 2,1' }] }, [0, 2, 1]], // cell (2,1)
-          {
-            rtl: 0,
-            ltr: 0,
-            ttb: 0,
-            btt: 0,
-          },
-        ],
-        [
-          [{ type: 'td', children: [{ text: 'Cell 2,2' }] }, [0, 2, 2]], // cell (2,2)
-          {
-            rtl: 0,
-            ltr: 0,
-            ttb: 0,
-            btt: 0,
-          },
-        ],
-      ],
-    ]
+  afterEach(() => {
+    Transforms.setNodes = originalSetNodes
+    EDITOR_TO_SELECTION.delete(editor)
   })
 
   describe('getTableSelection method', () => {
@@ -194,8 +201,22 @@ describe('Table Batch Selection', () => {
   })
 
   describe('Transforms.setNodes with table selection', () => {
+    let baseSetNodes: ReturnType<typeof vi.fn>
+
     beforeEach(() => {
+      Transforms.setNodes = originalSetNodes
+      baseSetNodes = vi.fn()
+      Transforms.setNodes = baseSetNodes as any
+      editor = withTable(createEditor())
+      const fixture = createTableFixture()
+
+      editor.children = [fixture.tableElement]
+      tableSelection = fixture.tableSelection
       EDITOR_TO_SELECTION.set(editor, tableSelection)
+    })
+
+    afterEach(() => {
+      Transforms.setNodes = originalSetNodes
     })
 
     test('should apply textAlign to selected cells', () => {
@@ -205,6 +226,7 @@ describe('Table Batch Selection', () => {
 
       // Should be called (the plugin modifies the behavior)
       expect(setNodesSpy).toHaveBeenCalled()
+      expect(baseSetNodes).toHaveBeenCalled()
     })
 
     test('should apply lineHeight to selected cells', () => {
@@ -213,6 +235,7 @@ describe('Table Batch Selection', () => {
       Transforms.setNodes(editor, { lineHeight: '1.5' })
 
       expect(setNodesSpy).toHaveBeenCalled()
+      expect(baseSetNodes).toHaveBeenCalled()
     })
 
     test('should apply indent to selected cells', () => {
@@ -221,6 +244,7 @@ describe('Table Batch Selection', () => {
       Transforms.setNodes(editor, { indent: '2em' })
 
       expect(setNodesSpy).toHaveBeenCalled()
+      expect(baseSetNodes).toHaveBeenCalled()
     })
   })
 
@@ -304,46 +328,61 @@ describe('Table Batch Selection', () => {
   })
 
   describe('integration with real table operations', () => {
-    test('should work with color menu operations', () => {
+    let baseSetNodes: ReturnType<typeof vi.fn>
+
+    beforeEach(() => {
+      Transforms.setNodes = originalSetNodes
+      baseSetNodes = vi.fn()
+      Transforms.setNodes = baseSetNodes as any
+      editor = withTable(createEditor())
+      const fixture = createTableFixture()
+
+      editor.children = [fixture.tableElement]
+      tableSelection = fixture.tableSelection
       EDITOR_TO_SELECTION.set(editor, tableSelection)
+    })
 
-      // Simulate color menu click
-      const setNodesSpy = vi.spyOn(Transforms, 'setNodes')
+    afterEach(() => {
+      Transforms.setNodes = originalSetNodes
+    })
 
+    test('should work with color menu operations', () => {
       // Apply color through addMark (like ColorMenu does)
       editor.addMark('color', '#ff0000')
 
-      expect(setNodesSpy).toHaveBeenCalled()
+      const calls = baseSetNodes.mock.calls
+
+      expect(calls.some(call => call[1] && (call[1] as any).color === '#ff0000')).toBe(true)
     })
 
     test('should work with justify menu operations', () => {
-      EDITOR_TO_SELECTION.set(editor, tableSelection)
-
-      const setNodesSpy = vi.spyOn(Transforms, 'setNodes')
+      const match = (node: any) => Element.isElement(node) && !editor.isInline(node)
 
       // Simulate justify center operation
       Transforms.setNodes(
         editor,
         { textAlign: 'center' },
         {
-          match: n => Element.isElement(n) && !editor.isInline(n),
+          match,
         },
       )
 
-      expect(setNodesSpy).toHaveBeenCalled()
+      const calls = baseSetNodes.mock.calls
+
+      expect(calls.length).toBeGreaterThan(0)
+      expect(calls.some(call => call[2]?.match === match)).toBe(true)
     })
 
     test('should preserve original options when applying to table selection', () => {
-      EDITOR_TO_SELECTION.set(editor, tableSelection)
-
-      const setNodesSpy = vi.spyOn(Transforms, 'setNodes')
-
       const options = { mode: 'highest' as const }
 
       Transforms.setNodes(editor, { lineHeight: '2.0' }, options)
 
       // Should preserve options in calls to selected cells
-      expect(setNodesSpy).toHaveBeenCalled()
+      const calls = baseSetNodes.mock.calls
+
+      expect(calls.length).toBeGreaterThan(0)
+      expect(calls.some(call => call[2]?.mode === 'highest')).toBe(true)
     })
   })
 })

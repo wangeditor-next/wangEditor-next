@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18]
+        node-version: ['22.13.0']
 
     steps:
       # 检出代码库
@@ -51,7 +51,7 @@ jobs:
           path: |
             **/node_modules
             **/.turbo
-            /home/runner/.cache/Cypress
+            /home/runner/.cache/ms-playwright
             ~/.pnpm-store
           key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package.json', '**/pnpm-lock.yaml') }}
 
@@ -69,11 +69,11 @@ jobs:
 
       # 运行 E2E 测试
       - name: E2E test
-        uses: cypress-io/github-action@v6
-        with:
-          browser: chrome
-          start: pnpm run example
-          wait-on: 'http://localhost:8881/examples/default-mode.html'
+        env:
+          PLAYWRIGHT_SKIP_BUILD: '1'
+        run: |
+          pnpm exec playwright install --with-deps chromium
+          pnpm e2e
 
       # 创建测试版本或稳定版本的 Release PR
       - name: Manage Changeset Pre-release Mode
@@ -97,6 +97,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-
 

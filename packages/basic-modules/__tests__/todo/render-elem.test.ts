@@ -7,7 +7,11 @@ import createEditor from '../../../../tests/utils/create-editor'
 import { renderTodoConf } from '../../src/modules/todo/render-elem'
 
 describe('todo - render elem', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('render elem', () => {
     expect(renderTodoConf.type).toBe('todo')

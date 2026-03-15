@@ -58,9 +58,10 @@ describe('table - pre parse html', () => {
 })
 
 describe('table - parse html', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
 
   beforeEach(() => {
+    editor = createEditor()
     wangEditorTableModule.parseElemsHtml!.forEach(item => {
       registerParseElemHtmlConf(item)
     })

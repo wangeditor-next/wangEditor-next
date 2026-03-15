@@ -9,12 +9,18 @@ import createEditor from '../../../../../tests/utils/create-editor'
 import HeaderSelectMenu from '../../../src/modules/header/menu/HeaderSelectMenu'
 
 describe('header select menu', () => {
-  const editor = createEditor()
-  const startLocation = Editor.start(editor, [])
   const menu = new HeaderSelectMenu()
+  let editor: ReturnType<typeof createEditor>
+  let startLocation: ReturnType<typeof Editor.start>
+
+  beforeEach(() => {
+    editor = createEditor()
+    startLocation = Editor.start(editor, [])
+  })
 
   it('get options', () => {
     editor.select(startLocation)
+    expect(menu.isActive(editor)).toBeFalsy()
     const options1 = menu.getOptions(editor)
     const selectedP = options1.some(opt => opt.selected && opt.value === 'paragraph') // 选中“文本”
 
@@ -25,10 +31,6 @@ describe('header select menu', () => {
     const selectedHeader = options2.some(opt => opt.selected && opt.value === 'header1') // 选中“h1”
 
     expect(selectedHeader).toBeTruthy()
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
   })
 
   it('is disabled', () => {

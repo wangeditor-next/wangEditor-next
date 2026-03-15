@@ -7,7 +7,11 @@ import createEditor from '../../../../tests/utils/create-editor'
 import { renderParagraphConf } from '../../src/modules/paragraph/render-elem'
 
 describe('paragraph - render elem', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('render paragraph', () => {
     expect(renderParagraphConf.type).toBe('paragraph')

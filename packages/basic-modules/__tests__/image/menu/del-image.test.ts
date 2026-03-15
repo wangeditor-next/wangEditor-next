@@ -27,15 +27,10 @@ describe('delete image menu', () => {
     startLocation = null
   })
 
-  it('get value', () => {
-    expect(menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
-  })
-
   it('is disabled', () => {
+    expect(menu.getValue(editor)).toBe('')
+    expect(menu.isActive(editor)).toBeFalsy()
+
     editor.deselect()
     expect(menu.isDisabled(editor)).toBeTruthy()
 

@@ -9,21 +9,13 @@ import createEditor from '../../../../../tests/utils/create-editor'
 import ClearStyleMenu from '../../../src/modules/text-style/menu/ClearStyleMenu'
 
 describe('clear style menu', () => {
-  const editor = createEditor()
-  const startLocation = Editor.start(editor, [])
   const menu = new ClearStyleMenu()
+  let editor: ReturnType<typeof createEditor>
+  let startLocation: ReturnType<typeof Editor.start>
 
-  afterEach(() => {
-    editor.select(startLocation)
-    editor.clear()
-  })
-
-  it('get value', () => {
-    expect(menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
+  beforeEach(() => {
+    editor = createEditor()
+    startLocation = Editor.start(editor, [])
   })
 
   it('is disabled', () => {
@@ -32,6 +24,9 @@ describe('clear style menu', () => {
   })
 
   it('exec', () => {
+    expect(menu.getValue(editor)).toBe('')
+    expect(menu.isActive(editor)).toBeFalsy()
+
     editor.select(startLocation)
     editor.insertText('hello')
 

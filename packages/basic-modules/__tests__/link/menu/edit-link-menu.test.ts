@@ -32,6 +32,7 @@ describe('edit link menu', () => {
 
   it('get value', () => {
     editor.select(startLocation)
+    expect(menu.isActive(editor)).toBeFalsy()
     expect(menu.getValue(editor)).toBe('')
 
     editor.insertNode(linkNode)
@@ -40,10 +41,6 @@ describe('edit link menu', () => {
       offset: 1,
     })
     expect(menu.getValue(editor)).toBe(linkNode.url)
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
   })
 
   it('is disable', () => {
@@ -97,8 +94,10 @@ describe('edit link menu', () => {
     editor.insertNode(linkNode)
     editor.select(startLocation)
 
-    menu.getModalContentElem(editor)
-    const inputSrc = document.getElementById((menu as any).urlInputId) as HTMLInputElement
+    const elem = menu.getModalContentElem(editor)
+
+    document.body.appendChild(elem)
+    const inputSrc = elem.querySelector(`#${(menu as any).urlInputId}`) as HTMLInputElement
 
     vi.spyOn(inputSrc, 'focus')
 

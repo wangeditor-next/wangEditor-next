@@ -29,15 +29,12 @@ describe('line-height menu', () => {
     const options = menu.getOptions(editor)
 
     expect(options.length).toBeGreaterThan(0)
+    expect(menu.isActive(editor)).toBeFalsy()
 
     // 默认选中 空
     const selectedEmptyOne = options.some(opt => opt.value === '' && opt.selected)
 
     expect(selectedEmptyOne).toBe(true)
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
   })
 
   it('get value', () => {

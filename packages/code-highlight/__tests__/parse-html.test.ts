@@ -9,7 +9,11 @@ import createEditor from '../../../tests/utils/create-editor'
 import { parseCodeStyleHtml } from '../src/module/parse-style-html'
 
 describe('code highlight - parse style html', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('v5 format', () => {
     const $code = $('<code class="language-javascript"></code>') // v5 html format

@@ -29,15 +29,9 @@ describe('insert link menu', () => {
     startLocation = null
   })
 
-  it('get value', () => {
-    expect(menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
-  })
-
   it('get modal position node', () => {
+    expect(menu.getValue(editor)).toBe('')
+    expect(menu.isActive(editor)).toBeFalsy()
     expect(menu.getModalPositionNode(editor)).toBeNull()
   })
 
@@ -73,8 +67,10 @@ describe('insert link menu', () => {
     editor.insertNode(linkNode)
     editor.select([])
 
-    menu.getModalContentElem(editor)
-    const inputSrc = document.getElementById((menu as any).textInputId) as HTMLInputElement
+    const elem = menu.getModalContentElem(editor)
+
+    document.body.appendChild(elem)
+    const inputSrc = elem.querySelector(`#${(menu as any).textInputId}`) as HTMLInputElement
 
     vi.spyOn(inputSrc, 'focus')
 

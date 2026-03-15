@@ -14,19 +14,16 @@ import Header5ButtonMenu from '../../../src/modules/header/menu/Header5ButtonMen
 import Header6ButtonMenu from '../../../src/modules/header/menu/Header6ButtonMenu'
 
 describe('header menu', () => {
-  const editor = createEditor()
-  const startLocation = Editor.start(editor, [])
+  let editor: ReturnType<typeof createEditor>
+  let startLocation: ReturnType<typeof Editor.start>
+
+  beforeEach(() => {
+    editor = createEditor()
+    startLocation = Editor.start(editor, [])
+  })
 
   describe('header1 menu', () => {
     const menu = new Header1ButtonMenu()
-
-    it('get value', () => {
-      expect(menu.getValue(editor)).toBe('paragraph')
-    })
-
-    it('is active', () => {
-      expect(menu.isActive(editor)).toBeFalsy()
-    })
 
     it('is disabled', () => {
       editor.select(startLocation)
@@ -35,6 +32,8 @@ describe('header menu', () => {
 
     it('exec', () => {
       editor.select(startLocation)
+      expect(menu.getValue(editor)).toBe('paragraph')
+      expect(menu.isActive(editor)).toBeFalsy()
 
       menu.exec(editor, 'paragraph') // 设置 header （ paragraph 是当前选中的 node type ）
       const headers1 = editor.getElemsByTypePrefix('header1')

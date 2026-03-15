@@ -23,14 +23,6 @@ describe('divider plugin', () => {
     startLocation = null
   })
 
-  it('get value', () => {
-    expect(menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
-  })
-
   it('is disabled', () => {
     editor.deselect()
     expect(menu.isDisabled(editor)).toBeTruthy()
@@ -50,6 +42,8 @@ describe('divider plugin', () => {
 
   it('exec', () => {
     editor.select(startLocation)
+    expect(menu.getValue(editor)).toBe('')
+    expect(menu.isActive(editor)).toBeFalsy()
     menu.exec(editor, '')
 
     const dividers = editor.getElemsByTypePrefix('divider')

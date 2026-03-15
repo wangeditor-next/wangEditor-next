@@ -23,11 +23,8 @@ describe('todo-menu', () => {
     startLocation = null
   })
 
-  it('get value', () => {
-    expect(menu.getValue(editor)).toBe('')
-  })
-
   it('is active', () => {
+    expect(menu.getValue(editor)).toBe('')
     editor.select(startLocation)
     expect(menu.isActive(editor)).toBeFalsy()
 

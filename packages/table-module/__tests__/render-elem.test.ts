@@ -2,7 +2,11 @@ import createEditor from '../../../tests/utils/create-editor'
 import { renderTableCellConf, renderTableConf, renderTableRowConf } from '../src/module/render-elem'
 
 describe('table module - render elem', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('render table td elem', () => {
     expect(renderTableCellConf.type).toBe('table-cell')

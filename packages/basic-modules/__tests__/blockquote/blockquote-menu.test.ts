@@ -23,14 +23,6 @@ describe('blockquote menu', () => {
     startLocation = null
   })
 
-  it('get value', () => {
-    expect(menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
-  })
-
   it('is disabled', () => {
     editor.select(startLocation)
     expect(menu.isDisabled(editor)).toBeFalsy()
@@ -44,6 +36,8 @@ describe('blockquote menu', () => {
 
   it('exec and isActive', () => {
     editor.select(startLocation)
+    expect(menu.getValue(editor)).toBe('')
+    expect(menu.isActive(editor)).toBeFalsy()
 
     menu.exec(editor, '') // 转换为 blockquote
     const blockquotes1 = editor.getElemsByTypePrefix('blockquote')

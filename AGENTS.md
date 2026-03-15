@@ -6,8 +6,9 @@
 - `packages/`: 主要包（core、editor、框架适配、插件、yjs）
 - `shared/rollup-config/`: 共享构建配置
 - `docs/`: 开发/测试/发布指南
-- `tests/units/`: 单元测试，按包组织
-- `cypress/integration/`: E2E 测试
+- `packages/*/__tests__/`: 单元测试，按包组织
+- `tests/`: 测试基础设施与工具（setup、utils）
+- `tests/e2e/`: E2E 测试
 - `scripts/`: 构建辅助脚本
 
 ## 关键包职责
@@ -36,8 +37,8 @@
 - Changeset：`npx changeset`
 
 ## 测试注意
-- 单元测试位于 `tests/units/<package>/`。
-- E2E 测试位于 `cypress/integration/`。
+- 单元测试位于 `packages/<package>/__tests__/`。
+- E2E 测试位于 `tests/e2e/`。
 - 若修改了 `packages/core` 的 API，需要执行 `pnpm build` 让其他包读取最新产物。
 
 ## 核心数据流与扩展点
@@ -59,6 +60,12 @@
 
 ## 提交与 PR
 - 从 `master` 分支拉新分支。
+- 分支命名规范（富文本编辑器项目）：
+  - 规则：`<type>/<scope>/<short-desc>`
+  - type 取值：`feat` `fix` `refactor` `docs` `test` `perf` `chore` `ci` `style` `build` `revert`
+  - scope：包名或领域（如 `core` `editor` `basic-modules` `table-module` `tests` `docs`）
+  - short-desc：小写英文与数字，使用 `-` 连接
+  - 示例：`test/core/async-tests`、`fix/editor/fullscreen-icon`、`docs/readme/update-usage`
 - 提交信息格式（见 `CONTRIBUTING.md`）：
   - 类型：`feat`、`fix`、`refactor`、`docs`、`test`、`perf`、`chore`、`ci`、`style`、`build`、`revert`
   - 格式：

@@ -9,19 +9,18 @@ import createEditor from '../../../../tests/utils/create-editor'
 import UndoMenu from '../../src/modules/undo-redo/menu/UndoMenu'
 
 describe('undo menu', () => {
-  const editor = createEditor()
   const menu = new UndoMenu()
-  const location = Editor.start(editor, []) // 选区位置
+  let editor: ReturnType<typeof createEditor>
+  let location: ReturnType<typeof Editor.start>
 
-  it('tag', () => {
+  beforeEach(() => {
+    editor = createEditor()
+    location = Editor.start(editor, []) // 选区位置
+  })
+
+  it('basic contract', () => {
     expect(menu.tag).toBe('button')
-  })
-
-  it('get value', () => {
     expect(menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
     expect(menu.isActive(editor)).toBeFalsy()
   })
 

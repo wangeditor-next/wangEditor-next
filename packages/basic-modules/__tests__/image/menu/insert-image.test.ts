@@ -29,14 +29,6 @@ describe('insert image menu', () => {
     startLocation = null
   })
 
-  it('get value', () => {
-    expect(menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
-  })
-
   it('is disabled', () => {
     editor.deselect()
     expect(menu.isDisabled(editor)).toBeTruthy()
@@ -62,6 +54,9 @@ describe('insert image menu', () => {
   })
 
   it('get modal content elem', () => {
+    expect(menu.getValue(editor)).toBe('')
+    expect(menu.isActive(editor)).toBeFalsy()
+
     const spy = vi.spyOn(menu as any, 'insertImage')
 
     // Generate modal content and simulate button click
@@ -107,8 +102,10 @@ describe('insert image menu', () => {
   })
 
   it('focus input asynchronously', async () => {
-    menu.getModalContentElem(editor)
-    const inputSrc = document.getElementById((menu as any).srcInputId) as HTMLInputElement
+    const elem = menu.getModalContentElem(editor)
+
+    document.body.appendChild(elem)
+    const inputSrc = elem.querySelector(`#${(menu as any).srcInputId}`) as HTMLInputElement
 
     vi.spyOn(inputSrc, 'focus')
 

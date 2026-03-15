@@ -27,7 +27,11 @@ describe('code block - pre parse html', () => {
 })
 
 describe('code block - parse html', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('parse code html', () => {
     const $pre = $('<pre></pre>')

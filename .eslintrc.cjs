@@ -25,10 +25,7 @@ module.exports = {
         './**/*.cjs',
         './**/*.mjs',
       ],
-      plugins: ['html', 'cypress', '@typescript-eslint', 'simple-import-sort'],
-      env: {
-        'cypress/globals': true,
-      },
+      plugins: ['html', '@typescript-eslint', 'simple-import-sort'],
       globals: {
         globalThis: 'readonly',
         vi: 'readonly',

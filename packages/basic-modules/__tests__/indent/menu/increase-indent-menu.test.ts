@@ -38,12 +38,9 @@ describe('increase indent menu', () => {
     expect(menu.isDisabled(editor)).toBeTruthy() // 除了 p header 之外，其他 type 不可用 indent
   })
 
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
-  })
-
   it('exec and getValue', () => {
     editor.select(startLocation)
+    expect(menu.isActive(editor)).toBeFalsy()
     expect(menu.getValue(editor)).toBe('')
 
     menu.exec(editor, '')

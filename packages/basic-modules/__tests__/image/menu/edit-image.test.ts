@@ -28,15 +28,10 @@ describe('edit image menu', () => {
     startLocation = null
   })
 
-  it('get value', () => {
-    expect(menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
-  })
-
   it('is disabled', () => {
+    expect(menu.getValue(editor)).toBe('')
+    expect(menu.isActive(editor)).toBeFalsy()
+
     editor.deselect()
     expect(menu.isDisabled(editor)).toBeTruthy()
 
@@ -176,8 +171,10 @@ describe('edit image menu', () => {
       offset: 0,
     })
 
-    menu.getModalContentElem(editor)
-    const inputSrc = document.getElementById((menu as any).srcInputId) as HTMLInputElement
+    const elem = menu.getModalContentElem(editor)
+
+    document.body.appendChild(elem)
+    const inputSrc = elem.querySelector(`#${(menu as any).srcInputId}`) as HTMLInputElement
 
     vi.spyOn(inputSrc, 'focus')
 

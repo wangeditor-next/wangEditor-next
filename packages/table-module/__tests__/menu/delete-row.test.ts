@@ -24,24 +24,13 @@ function setEditorSelection(
 describe('Table Module Delete Row Menu', () => {
   test('it should create DeleteRow object', () => {
     const deleteRowMenu = new DeleteRow()
+    const editor = createEditor()
 
     expect(typeof deleteRowMenu).toBe('object')
     expect(deleteRowMenu.tag).toBe('button')
     expect(deleteRowMenu.iconSvg).toBe(DEL_ROW_SVG)
     expect(deleteRowMenu.title).toBe(locale.tableModule.deleteRow)
-  })
-
-  test('it should get empty string if invoke getValue method', () => {
-    const deleteRowMenu = new DeleteRow()
-    const editor = createEditor()
-
     expect(deleteRowMenu.getValue(editor)).toBe('')
-  })
-
-  test('it should get falsy value if invoke isActive method', () => {
-    const deleteRowMenu = new DeleteRow()
-    const editor = createEditor()
-
     expect(deleteRowMenu.isActive(editor)).toBeFalsy()
   })
 

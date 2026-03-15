@@ -7,10 +7,19 @@ const modulePaths = [
   '@wangeditor-next/basic-modules',
   '@wangeditor-next/code-highlight',
   '@wangeditor-next/editor',
+  '@wangeditor-next/editor-for-react',
   '@wangeditor-next/list-module',
+  '@wangeditor-next/plugin-float-image',
+  '@wangeditor-next/plugin-formula',
+  '@wangeditor-next/plugin-link-card',
+  '@wangeditor-next/plugin-markdown',
+  '@wangeditor-next/plugin-mention',
   '@wangeditor-next/table-module',
   '@wangeditor-next/upload-image-module',
   '@wangeditor-next/video-module',
+  '@wangeditor-next/yjs',
+  '@wangeditor-next/yjs-for-react',
+  '@wangeditor-next/yjs-for-vue',
 ]
 
 export default defineConfig({
@@ -34,19 +43,30 @@ export default defineConfig({
        '**/locale/**/*',
        '**/index.ts',
       ], // 忽略覆盖率计算的文件
+      thresholds: {
+        lines: 1,
+        functions: 1,
+        branches: 1,
+        statements: 1,
+      },
     },
   },
   resolve: {
-    alias: {
+    alias: [
       // 对于样式文件 mock
-      '^.+\\.(css|less)$': path.resolve(__dirname, 'tests/utils/stylesMock.js'),
-      ...Object.fromEntries(
-        modulePaths.map(p => [
-          `${p}/dist/css/style.css`,
-          path.resolve(__dirname, 'tests/utils/stylesMock.js')
-        ])
-      ),
-    },
+      {
+        find: /^.+\.(css|less)$/,
+        replacement: path.resolve(__dirname, 'tests/utils/stylesMock.js'),
+      },
+      ...modulePaths.map(p => ({
+        find: new RegExp(`^${p}$`),
+        replacement: path.resolve(__dirname, `packages/${p.split('/')[1]}/src/index.ts`),
+      })),
+      ...modulePaths.map(p => ({
+        find: `${p}/dist/css/style.css`,
+        replacement: path.resolve(__dirname, 'tests/utils/stylesMock.js'),
+      })),
+    ],
   },
   esbuild: {
     // 如果需要特定的转译处理

@@ -9,7 +9,11 @@ import createEditor from '../../../../tests/utils/create-editor'
 import { parseHeader1HtmlConf } from '../../src/modules/header/parse-elem-html'
 
 describe('header - parse html', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('with children', () => {
     const $h1 = $('<h1></h1>')

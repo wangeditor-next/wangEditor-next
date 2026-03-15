@@ -7,7 +7,11 @@ import createEditor from '../../../../tests/utils/create-editor'
 import { renderCodeConf, renderPreConf } from '../../src/modules/code-block/render-elem'
 
 describe('code-block render elem', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('render code elem', () => {
     expect(renderCodeConf.type).toBe('code')

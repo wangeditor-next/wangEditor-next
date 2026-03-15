@@ -30,6 +30,7 @@ describe('view image link menu', () => {
   it('getValue and isDisabled', () => {
     editor.select(startLocation)
     expect(menu.getValue(editor)).toBe('')
+    expect(menu.isActive(editor)).toBeFalsy()
     expect(menu.isDisabled(editor)).toBeTruthy()
 
     const elem = {
@@ -48,10 +49,6 @@ describe('view image link menu', () => {
     })
     expect(menu.getValue(editor)).toBe(href)
     expect(menu.isDisabled(editor)).toBeFalsy()
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBeFalsy()
   })
 
   it('exec', () => {

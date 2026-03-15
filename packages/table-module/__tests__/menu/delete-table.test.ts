@@ -17,23 +17,12 @@ function setEditorSelection(
 describe('Table Module Delete Table Menu', () => {
   test('it should create DeleteTable object', () => {
     const deleteTableMenu = new DeleteTable()
+    const editor = createEditor()
 
     expect(typeof deleteTableMenu).toBe('object')
     expect(deleteTableMenu.tag).toBe('button')
     expect(deleteTableMenu.title).toBe(locale.tableModule.deleteTable)
-  })
-
-  test('it should get empty string if invoke getValue method', () => {
-    const deleteTableMenu = new DeleteTable()
-    const editor = createEditor()
-
     expect(deleteTableMenu.getValue(editor)).toBe('')
-  })
-
-  test('it should get falsy value if invoke isActive method', () => {
-    const deleteTableMenu = new DeleteTable()
-    const editor = createEditor()
-
     expect(deleteTableMenu.isActive(editor)).toBeFalsy()
   })
 

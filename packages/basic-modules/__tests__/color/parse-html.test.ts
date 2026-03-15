@@ -24,7 +24,11 @@ describe('color - pre parse html', () => {
 })
 
 describe('color - parse style html', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('parse style html', () => {
     const $span = $(

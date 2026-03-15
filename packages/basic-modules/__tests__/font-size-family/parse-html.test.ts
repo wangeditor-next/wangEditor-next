@@ -24,7 +24,11 @@ describe('font size family - pre parse html', () => {
 })
 
 describe('font size family - parse style html', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('parse style html', () => {
     const $span = $('<span style="font-size: 12px; font-family: 黑体;"></span>')

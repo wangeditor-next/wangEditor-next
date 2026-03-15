@@ -29,15 +29,10 @@ describe('unlink menu test', () => {
     startLocation = null
   })
 
-  it('get value', () => {
-    expect(menu.getValue(editor)).toBe('')
-  })
-
-  it('is active', () => {
-    expect(menu.isActive(editor)).toBe(false)
-  })
-
   it('is disable', () => {
+    expect(menu.getValue(editor)).toBe('')
+    expect(menu.isActive(editor)).toBe(false)
+
     editor.select(startLocation)
     expect(menu.isDisabled(editor)).toBeTruthy()
 

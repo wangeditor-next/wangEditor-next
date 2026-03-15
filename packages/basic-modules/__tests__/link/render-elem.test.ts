@@ -7,7 +7,11 @@ import createEditor from '../../../../tests/utils/create-editor'
 import { renderLinkConf } from '../../src/modules/link/render-elem'
 
 describe('link render elem', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('render elem', () => {
     expect(renderLinkConf.type).toBe('link')

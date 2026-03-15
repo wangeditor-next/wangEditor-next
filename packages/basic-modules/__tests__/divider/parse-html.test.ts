@@ -9,7 +9,11 @@ import createEditor from '../../../../tests/utils/create-editor'
 import { parseHtmlConf } from '../../src/modules/divider/parse-elem-html'
 
 describe('divider - parse html', () => {
-  const editor = createEditor()
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor()
+  })
 
   it('parse html', () => {
     const $hr = $('<hr>')
