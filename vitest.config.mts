@@ -22,6 +22,18 @@ const modulePaths = [
   '@wangeditor-next/yjs-for-vue',
 ]
 
+// 覆盖率只统计已纳入当前单测范围的内置模块
+const coverageModulePaths = [
+  '@wangeditor-next/core',
+  '@wangeditor-next/basic-modules',
+  '@wangeditor-next/code-highlight',
+  '@wangeditor-next/editor',
+  '@wangeditor-next/list-module',
+  '@wangeditor-next/table-module',
+  '@wangeditor-next/upload-image-module',
+  '@wangeditor-next/video-module',
+]
+
 export default defineConfig({
   test: {
     environment: 'jsdom', // Vitest 默认使用 jsdom
@@ -31,17 +43,23 @@ export default defineConfig({
     coverage: {
       reporter: ['text', 'json', 'html', 'lcov'], // 覆盖率报告格式
       include: [
-        `packages/{${modulePaths.map(p => p.split('/')[1]).join(',')}}/src/**/*.{ts,tsx}`,
+        `packages/{${coverageModulePaths.map(p => p.split('/')[1]).join(',')}}/src/**/*.{ts,tsx}`,
       ],
       exclude: [
         'dist',
         'locale',
+        '**/*.d.ts',
         'index.ts',
         'config.ts',
         'browser-polyfill.ts',
         'node-polyfill.ts',
-       '**/locale/**/*',
-       '**/index.ts',
+        '**/custom-types.ts',
+        'packages/core/src/editor/interface.ts',
+        'packages/core/src/menus/interface.ts',
+        'packages/core/src/upload/interface.ts',
+        'packages/table-module/src/utils/types.ts',
+        '**/locale/**/*',
+        '**/index.ts',
       ], // 忽略覆盖率计算的文件
       thresholds: {
         lines: 1,
