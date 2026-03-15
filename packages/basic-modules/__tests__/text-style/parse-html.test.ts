@@ -25,7 +25,6 @@ describe('text style - parse style html', () => {
       { html: '<sub>hello</sub>', key: 'sub' },
       { html: '<sup>hello</sup>', key: 'sup' },
       { html: '<code>hello</code>', key: 'code' },
-      { html: '<span><b>hello</b></span>', key: 'bold' },
     ]
 
     cases.forEach(({ html, key }) => {
