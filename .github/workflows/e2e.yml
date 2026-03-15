@@ -1,4 +1,4 @@
-name: Cypress tests
+name: E2E Test
 
 on:
   push:
@@ -17,9 +17,9 @@ on:
       - 'scripts/**'
       - 'tests/**'
       - 'build/**'
-      - 'cypress/**'
       - 'babel.config.json'
-      - 'cypress.json'
+      - 'package.json'
+      - 'playwright.config.ts'
   pull_request:
     branches:
       - master
@@ -27,17 +27,14 @@ on:
 jobs:
   test-e2e:
     runs-on: ubuntu-latest
-    container:
-      image: cypress/browsers:latest
-      options: --user 1001
     steps:
       - uses: actions/checkout@v6
 
       # 设置 Node.js 版本
-      - name: Use Node.js 18
+      - name: Use Node.js 22.13.0
         uses: actions/setup-node@v6
         with:
-          node-version: '18'
+          node-version: '22.13.0'
 
       # 安装 pnpm
       - name: Install pnpm
@@ -53,27 +50,19 @@ jobs:
           path: |
             **/node_modules
             **/.turbo
-            /root/.cache/Cypress
+            /home/runner/.cache/ms-playwright
             ~/.pnpm-store
-          key: ${{ runner.os }}-node-18-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-node-22.13.0-${{ hashFiles('**/pnpm-lock.yaml') }}
 
 
       # 安装项目依赖
       - name: Install dependencies
         run: pnpm install
 
-      # 确保 Cypress 二进制文件正确安装
-      - name: Install Cypress binary
-        run: npx cypress install
+      # 安装 Playwright 浏览器和系统依赖
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
 
-      # 构建项目
-      - name: Build packages
-        run: pnpm build
-
-      # 运行 Cypress 测试
-      - uses: cypress-io/github-action@v6
-        with:
-          install: false
-          browser: chrome
-          start: pnpm run example
-          wait-on: 'http://localhost:8881/examples/default-mode.html'
+      # 运行 Playwright 测试
+      - name: Run E2E tests
+        run: pnpm e2e
