@@ -29,7 +29,7 @@ export default defineConfig({
     globals: true, // 如果需要全局的 vi 函数
     setupFiles: path.resolve(__dirname, 'tests/setup/index.ts'), // 对应 setup 文件
     coverage: {
-      reporter: ['text', 'json', 'html'], // 覆盖率报告格式
+      reporter: ['text', 'json', 'html', 'lcov'], // 覆盖率报告格式
       include: [
         `packages/{${modulePaths.map(p => p.split('/')[1]).join(',')}}/src/**/*.{ts,tsx}`,
       ],
