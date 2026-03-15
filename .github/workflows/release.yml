@@ -69,6 +69,8 @@ jobs:
 
       # 运行 E2E 测试
       - name: E2E test
+        env:
+          PLAYWRIGHT_SKIP_BUILD: '1'
         run: |
           pnpm exec playwright install --with-deps chromium
           pnpm e2e
@@ -95,5 +97,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
 

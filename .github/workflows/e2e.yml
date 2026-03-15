@@ -59,10 +59,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      # 先构建 editor 及其依赖，避免把冷构建时间算进 Playwright webServer 超时
+      - name: Build editor packages
+        run: pnpm turbo build --filter=@wangeditor-next/editor
+
       # 安装 Playwright 浏览器和系统依赖
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
 
       # 运行 Playwright 测试
       - name: Run E2E tests
+        env:
+          PLAYWRIGHT_SKIP_BUILD: '1'
         run: pnpm e2e

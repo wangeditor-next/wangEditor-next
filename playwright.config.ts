@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const webServerCommand = process.env.PLAYWRIGHT_SKIP_BUILD
+  ? 'pnpm -C packages/editor exec http-server -p 8881 -c-1'
+  : 'pnpm turbo build --filter=@wangeditor-next/editor && pnpm -C packages/editor exec http-server -p 8881 -c-1'
+
 export default defineConfig({
   testDir: './tests/e2e',
   timeout: 30_000,
@@ -15,7 +19,7 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   webServer: {
-    command: 'pnpm turbo build --filter=@wangeditor-next/editor && pnpm -C packages/editor exec http-server -p 8881 -c-1',
+    command: webServerCommand,
     url: 'http://127.0.0.1:8881/examples/default-mode.html',
     reuseExistingServer: false,
     stdout: 'inherit',
