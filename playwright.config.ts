@@ -15,7 +15,7 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   webServer: {
-    command: 'pnpm -C packages/editor example',
+    command: 'pnpm turbo build --filter=@wangeditor-next/editor && pnpm -C packages/editor exec http-server -p 8881 -c-1',
     url: 'http://127.0.0.1:8881/examples/default-mode.html',
     reuseExistingServer: false,
     stdout: 'inherit',

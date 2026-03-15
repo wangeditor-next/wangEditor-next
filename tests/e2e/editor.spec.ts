@@ -91,6 +91,7 @@ test.describe('Basic Editor', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/examples/default-mode.html')
     await page.getByTestId('btn-create').click()
+    await expect(getEditable(page)).toBeVisible()
   })
 
   test('create editor', async ({ page }) => {

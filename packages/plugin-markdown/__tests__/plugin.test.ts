@@ -3,10 +3,9 @@ import { Editor } from 'slate'
 import createEditor from '../../../tests/utils/create-editor'
 import withMarkdown from '../src/module/plugin'
 
-const createMarkdownEditor = () => createEditor({
+const createMarkdownEditor = () => withMarkdown(createEditor({
   content: [{ type: 'paragraph', children: [{ text: '' }] }],
-  plugins: [withMarkdown],
-})
+}))
 
 describe('plugin-markdown', () => {
   it('converts headings when typing space', () => {

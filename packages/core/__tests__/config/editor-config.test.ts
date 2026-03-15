@@ -148,12 +148,12 @@ describe('editor config', () => {
   })
 
   it('if set onFocus/onBlur option, it will be called on selection changes', async () => {
-    vi.useFakeTimers()
     const onFocus = vi.fn()
     const onBlur = vi.fn()
 
     const editor = createCoreEditor({
       config: {
+        autoFocus: false,
         onFocus,
         onBlur,
       },
@@ -162,13 +162,12 @@ describe('editor config', () => {
     await flushPromises()
     editor.select(getStartLocation(editor))
     editor.onChange()
-    vi.runAllTimers()
+    await flushPromises()
     expect(onFocus).toHaveBeenCalledWith(editor)
 
     editor.deselect()
     editor.onChange()
-    vi.runAllTimers()
+    await flushPromises()
     expect(onBlur).toHaveBeenCalledWith(editor)
-    vi.useRealTimers()
   })
 })
