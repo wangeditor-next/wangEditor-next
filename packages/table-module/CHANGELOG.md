@@ -1,5 +1,19 @@
 # Change Log
 
+## 1.6.61
+
+### Patch Changes
+
+- d672332: Preserve line breaks when importing table cell content from Word-like HTML paragraphs.
+- b8810ee: Preserve `colgroup` column widths when importing tables with merged cells so adjusted table widths survive `getHtml` and `setHtml` round-trips.
+- Updated dependencies [943a933]
+- Updated dependencies [1a859f0]
+- Updated dependencies [890a8b5]
+- Updated dependencies [c10a734]
+- Updated dependencies [c47ad92]
+- Updated dependencies [56e2d9a]
+  - @wangeditor-next/core@1.7.46
+
 ## 1.6.60
 
 ### Patch Changes
