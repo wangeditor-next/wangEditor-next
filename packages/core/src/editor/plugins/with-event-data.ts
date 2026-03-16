@@ -4,12 +4,22 @@
  */
 
 import {
-  Editor, Node, Range, Transforms,
+  Editor, Node, Range,
 } from 'slate'
 
 import { IDomEditor } from '../..'
 import { getPlainText, isDOMText } from '../../utils/dom'
 import { DomEditor } from '../dom-editor'
+
+function createPlainTextFragment(text: string): Node[] {
+  return text
+    .replace(/\n\r|\r\n|\r/g, '\n')
+    .split('\n')
+    .map(line => ({
+      type: 'paragraph',
+      children: [{ text: line }],
+    }))
+}
 
 export const withEventData = <T extends Editor>(editor: T) => {
   const e = editor as T & IDomEditor
@@ -130,20 +140,14 @@ export const withEventData = <T extends Editor>(editor: T) => {
     }
 
     if (text) {
-      const lines = text.split(/\n\r|\r\n|\r|\n/)
-      let split = false
-
-      for (const line of lines) {
-        const leftLength = DomEditor.getLeftLengthOfMaxLength(e)
-        // 当设置了 maxLength 且剩余 length 为0时，不插入任何字符
-
-        if (split && leftLength > 0) {
-          Transforms.splitNodes(e, { always: true })
-        }
-
-        e.insertText(line)
-        split = true
+      if (!/[\r\n]/.test(text)) {
+        e.insertText(text)
+        return
       }
+
+      const textFragment = createPlainTextFragment(text)
+
+      e.insertFragment(textFragment)
 
     }
   }

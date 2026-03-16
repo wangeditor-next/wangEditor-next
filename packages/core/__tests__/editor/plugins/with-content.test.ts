@@ -462,4 +462,31 @@ describe('editor content API', () => {
     expect(sanitizeHtml).toHaveBeenCalledWith(`<a href="${unsafeHref}">unsafe</a>`)
     expect(insertHtmlSpy).toHaveBeenCalledWith('<a href="https://example.com">safe</a>')
   })
+
+  it('insertData inserts multiline plain text as paragraphs', () => {
+    const editor = createEditor()
+
+    editor.select(getStartLocation(editor))
+    editor.insertData({
+      getData(type: string) {
+        if (type === 'text/plain') { return 'hello\nworld\n' }
+        return ''
+      },
+    } as DataTransfer)
+
+    expect(editor.children).toEqual([
+      {
+        type: 'paragraph',
+        children: [{ text: 'hello' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: 'world' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: '' }],
+      },
+    ])
+  })
 })
