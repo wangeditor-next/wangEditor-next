@@ -5,6 +5,53 @@
 
 import $, { DOMElement, getTagName } from '../utils/dom'
 
+function normalizeCellParagraphs(cellHtml: string): string {
+  const container = document.createElement('div')
+
+  container.innerHTML = cellHtml
+
+  const normalizedNodes: Node[] = []
+  let hasMeaningfulContent = false
+
+  Array.from(container.childNodes).forEach(node => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      if ((node.textContent || '').trim()) {
+        normalizedNodes.push(node.cloneNode(true))
+        hasMeaningfulContent = true
+      }
+      return
+    }
+
+    if (!(node instanceof HTMLElement) || node.tagName.toLowerCase() !== 'p') {
+      normalizedNodes.push(node.cloneNode(true))
+      hasMeaningfulContent = true
+      return
+    }
+
+    const paragraphHtml = node.innerHTML
+    const trimmedHtml = paragraphHtml.trim()
+
+    if (!trimmedHtml || trimmedHtml === '&nbsp;') { return }
+
+    if (hasMeaningfulContent) {
+      normalizedNodes.push(document.createElement('br'))
+    }
+
+    const paragraphContainer = document.createElement('div')
+
+    paragraphContainer.innerHTML = paragraphHtml
+
+    Array.from(paragraphContainer.childNodes).forEach(childNode => {
+      normalizedNodes.push(childNode.cloneNode(true))
+    })
+    hasMeaningfulContent = true
+  })
+
+  container.replaceChildren(...normalizedNodes)
+
+  return container.innerHTML
+}
+
 /**
  * pre-prase table ，去掉 <tbody> 和处理单元格中的 <p> 标签，以及删除隐藏的单元格
  * @param table table elem
@@ -61,16 +108,7 @@ function preParse(tableElem: DOMElement): DOMElement {
     cellHtml = cellHtml.replace(/<o:p[^>]*>[\s\S]*?<\/o:p>/gi, '') // 删除 <o:p> 标签
     cellHtml = cellHtml.replace(/<\/o:p>/gi, '') // 删除可能的自闭合标签
 
-    // 一次性处理所有p标签
-    cellHtml = cellHtml.replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, (match, content) => {
-      // 处理空内容或只包含空白字符的情况
-      const trimmedContent = content.trim()
-
-      if (!trimmedContent || trimmedContent === '&nbsp;') {
-        return '' // 删除空的p标签
-      }
-      return content // 返回p标签的内容
-    })
+    cellHtml = normalizeCellParagraphs(cellHtml)
 
     $cell.html(cellHtml)
   }
