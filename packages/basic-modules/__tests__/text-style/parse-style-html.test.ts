@@ -158,4 +158,17 @@ describe('parse style html', () => {
       },
     ])
   })
+
+  it('it should preserve consecutive spaces in underlined html imports', () => {
+    const underlinedSpaces = '        '
+    const nestedEditor = createEditor({ html: `<p><u>${underlinedSpaces}</u></p>` })
+
+    expect(nestedEditor.children).toEqual([
+      {
+        type: 'paragraph',
+        children: [{ text: underlinedSpaces, underline: true }],
+      },
+    ])
+    expect(nestedEditor.getText()).toBe(underlinedSpaces)
+  })
 })

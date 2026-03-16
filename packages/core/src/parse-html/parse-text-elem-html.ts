@@ -20,8 +20,9 @@ import { PARSE_STYLE_HTML_FN_LIST } from './index'
 function parseTextElemHtml($text: Dom7Array, editor: IDomEditor): Text {
   if ($text.parents('pre').length === 0) {
     // 不在 <pre> 内部
-    // 1. 替换无用空格、换行； 2. 将 <br> 替换为 `\n`
-    $text[0].innerHTML = $text[0].innerHTML.replace(/\s+/gm, ' ').replace(/<br>/g, '\n')
+    // 1. 去掉 html 格式化带来的换行和 tab；2. 将 <br> 替换为 `\n`
+    // 注意不能压缩普通空格，否则会丢失连续空格和 emsp 等宽字符
+    $text[0].innerHTML = $text[0].innerHTML.replace(/[\r\n\t]+/g, '').replace(/<br>/g, '\n')
   }
 
   // 用 textContent ，不能用 .text() 。后者无法识别 text 开头和末尾的 &nbsp;
