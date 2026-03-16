@@ -370,4 +370,76 @@ describe('table - parse html', () => {
       height: 0,
     })
   })
+
+  it('table should preserve colgroup widths after merged cells change row lengths', () => {
+    const $table = $(
+      `<table style="width: auto;table-layout: fixed;height:124">
+        <colgroup contentEditable="false">
+          <col width="80"></col>
+          <col width="80"></col>
+          <col width="200"></col>
+        </colgroup>
+        <tr>
+          <th colSpan="1" rowSpan="1" width="auto">姓名</th>
+          <th colSpan="1" rowSpan="1" width="auto">学科</th>
+          <th colSpan="1" rowSpan="1" width="auto">成绩</th>
+        </tr>
+        <tr>
+          <td colSpan="1" rowSpan="1" width="auto">张三</td>
+          <td colSpan="1" rowSpan="1" width="auto">数学</td>
+          <td colSpan="1" rowSpan="1" width="auto">95</td>
+        </tr>
+        <tr>
+          <td colSpan="1" rowSpan="2" width="auto">李四</td>
+          <td colSpan="1" rowSpan="1" width="auto">英语</td>
+          <td colSpan="1" rowSpan="1" width="auto">88</td>
+        </tr>
+        <tr>
+          <td colSpan="1" rowSpan="1" width="auto">数学</td>
+          <td colSpan="1" rowSpan="1" width="auto">92</td>
+        </tr>
+      </table>`,
+    )
+    const children = [
+      {
+        type: 'table-row',
+        children: [
+          { ...TABLE_CELL_BASE_PROPS, isHeader: true, children: [{ text: '姓名' }] },
+          { ...TABLE_CELL_BASE_PROPS, isHeader: true, children: [{ text: '学科' }] },
+          { ...TABLE_CELL_BASE_PROPS, isHeader: true, children: [{ text: '成绩' }] },
+        ],
+      },
+      {
+        type: 'table-row',
+        children: [
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: '张三' }] },
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: '数学' }] },
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: '95' }] },
+        ],
+      },
+      {
+        type: 'table-row',
+        children: [
+          { ...TABLE_CELL_BASE_PROPS, rowSpan: 2, children: [{ text: '李四' }] },
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: '英语' }] },
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: '88' }] },
+        ],
+      },
+      {
+        type: 'table-row',
+        children: [
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: '数学' }] },
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: '92' }] },
+        ],
+      },
+    ]
+
+    expect(parseTableHtmlConf.parseElemHtml($table[0], children as any, editor)).toEqual({
+      type: 'table',
+      width: 'auto',
+      height: 124,
+      children,
+      columnWidths: [80, 80, 200],
+    })
+  })
 })

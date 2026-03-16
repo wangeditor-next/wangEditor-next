@@ -114,13 +114,14 @@ function parseTableHtml(
   }
   const tdList = $elem.find('tr')[0]?.children || []
   const colgroupElments: HTMLCollection = $elem.find('colgroup')[0]?.children || null
-  // @ts-ignore
-  const colLength = children[children.length - 1].children.length
+  const colgroupWidths = colgroupElments
+    ? Array.from(colgroupElments)
+      .map((col: any) => parseInt(col.getAttribute('width'), 10))
+      .filter(width => !Number.isNaN(width))
+    : []
 
-  if (colgroupElments && colgroupElments.length === colLength) {
-    tableELement.columnWidths = Array.from(colgroupElments).map((col: any) => {
-      return parseInt(col.getAttribute('width'), 10)
-    })
+  if (colgroupWidths.length > 0) {
+    tableELement.columnWidths = colgroupWidths
   } else if (tdList.length > 0) {
     const columnWidths: number[] = []
 
