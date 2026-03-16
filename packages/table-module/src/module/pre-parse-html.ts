@@ -10,7 +10,7 @@ function normalizeCellParagraphs(cellHtml: string): string {
 
   container.innerHTML = cellHtml
 
-  const normalizedNodes = []
+  const normalizedNodes: Node[] = []
   let hasMeaningfulContent = false
 
   Array.from(container.childNodes).forEach(node => {
