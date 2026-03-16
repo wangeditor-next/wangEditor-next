@@ -88,7 +88,9 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          createGithubReleases: true
+          # Disable per-package releases; a single consolidated release is
+          # created by the step below instead.
+          createGithubReleases: false
           publish: pnpm changeset publish --access=public
           title: >-
             ${{ github.ref_name == 'master' && 'Publish a new stable version' || 'Publish a new pre-release version' }}
@@ -97,4 +99,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # Create one consolidated GitHub Release that aggregates all published
+      # packages into a single entry instead of one release per package.
+      - name: Create consolidated GitHub Release
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          node .github/scripts/create-consolidated-release.js
+          '${{ steps.changesets.outputs.publishedPackages }}'
 
