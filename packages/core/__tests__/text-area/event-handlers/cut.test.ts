@@ -45,6 +45,7 @@ describe('handleOnCut', () => {
 
   it('deletes void node for collapsed selection', () => {
     const clipboardData = { setData: vi.fn() }
+    const voidNode = { type: 'void', children: [{ text: '' }] }
     const editor = {
       selection: createSelection(false),
       getConfig: () => ({ readOnly: false }),
@@ -57,7 +58,7 @@ describe('handleOnCut', () => {
     } as any
 
     vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
-    vi.spyOn(Node, 'parent').mockReturnValue({ type: 'void' } as any)
+    vi.spyOn(Node, 'parent').mockReturnValue(voidNode as any)
     vi.spyOn(Editor, 'isVoid').mockReturnValue(true)
     vi.spyOn(Transforms, 'delete').mockImplementation(() => {})
 

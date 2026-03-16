@@ -257,6 +257,23 @@ describe('editor content API', () => {
     expect(editor.getText()).toBe('lo')
   })
 
+  it('deleteFragment resets a full-document selection to an empty paragraph', () => {
+    const editor = createEditor({
+      content: [
+        {
+          type: 'header1',
+          textAlign: 'center',
+          children: [{ text: 'hello' }],
+        } as any,
+      ],
+    })
+
+    editor.select([])
+    editor.deleteFragment()
+
+    expect(editor.children).toEqual([{ type: 'paragraph', children: [{ text: '' }] }])
+  })
+
   it('insertBreak', () => {
     const editor = createEditor()
 

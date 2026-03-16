@@ -21,6 +21,7 @@ describe('handleOnClick', () => {
   it('selects void node range', () => {
     const editor = {
       getConfig: () => ({ readOnly: false }),
+      range: vi.fn((at: any, to = at) => ({ anchor: at, focus: to })),
     } as any
     const target = document.createElement('div')
     const event = { target } as any

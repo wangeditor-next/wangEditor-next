@@ -4,13 +4,17 @@
  */
 
 import {
-  Editor, Element, Range, Text,
+  Editor, Element, Range, Text, Transforms,
 } from 'slate'
 
 import { DomEditor } from '../../editor/dom-editor'
 import { IDomEditor } from '../../editor/interface'
 import { DOMNode } from '../../utils/dom'
 import { IS_CHROME, IS_FIREFOX, IS_SAFARI } from '../../utils/ua'
+import {
+  EDITOR_TO_PENDING_COMPOSITION_END,
+  EDITOR_TO_PENDING_SELECTION,
+} from '../../utils/weak-maps'
 import { hasEditableTarget } from '../helpers'
 import { hidePlaceholder } from '../place-holder'
 import { editorSelectionToDOM } from '../syncSelection'
@@ -54,6 +58,7 @@ export function handleCompositionStart(e: Event, textarea: TextArea, editor: IDo
   const event = e as CompositionEvent
 
   if (!hasEditableTarget(editor, event.target)) { return }
+  EDITOR_TO_PENDING_SELECTION.delete(editor)
 
   const { selection } = editor
 
@@ -109,6 +114,23 @@ export function handleCompositionEnd(e: Event, textarea: TextArea, editor: IDomE
 
   if (!hasEditableTarget(editor, event.target)) { return }
   textarea.isComposing = false
+  const shouldSkipInsertion = EDITOR_TO_PENDING_COMPOSITION_END.get(editor) === true
+
+  if (shouldSkipInsertion) {
+    EDITOR_TO_PENDING_COMPOSITION_END.delete(editor)
+    EDITOR_TO_PENDING_SELECTION.delete(editor)
+  } else {
+    const pendingSelection = EDITOR_TO_PENDING_SELECTION.get(editor)
+
+    EDITOR_TO_PENDING_SELECTION.delete(editor)
+
+    if (
+      pendingSelection
+      && (!editor.selection || !Range.equals(editor.selection, pendingSelection))
+    ) {
+      Transforms.select(editor, pendingSelection)
+    }
+  }
 
   const { selection } = editor
 
@@ -141,6 +163,7 @@ export function handleCompositionEnd(e: Event, textarea: TextArea, editor: IDomE
   const { data } = event
 
   if (!data) { return }
+  if (shouldSkipInsertion) { return }
 
   // 检查 maxLength -【注意】这里只处理拼音输入的 maxLength 限制。其他限制，在插件 with-max-length.ts 中处理
   const { maxLength } = editor.getConfig()

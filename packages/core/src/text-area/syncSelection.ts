@@ -10,8 +10,12 @@ import { DomEditor } from '../editor/dom-editor'
 import { IDomEditor } from '../editor/interface'
 import { DOMElement } from '../utils/dom'
 import { IS_FIREFOX } from '../utils/ua'
-import { EDITOR_TO_ELEMENT, IS_FOCUSED } from '../utils/weak-maps'
-import { hasEditableTarget, isTargetInsideNonReadonlyVoid } from './helpers'
+import {
+  EDITOR_TO_ELEMENT,
+  EDITOR_TO_PENDING_SELECTION,
+  IS_FOCUSED,
+} from '../utils/weak-maps'
+import { hasSelectableTarget, hasTarget } from './helpers'
 import TextArea from './TextArea'
 
 /**
@@ -172,8 +176,6 @@ export function DOMSelectionToEditor(textarea: TextArea, editor: IDomEditor) {
   const { isComposing, isUpdatingSelection, isDraggingInternally } = textarea
   const config = editor.getConfig()
 
-  if (config.readOnly) { return }
-  if (isComposing) { return }
   if (isUpdatingSelection) { return }
   if (isDraggingInternally) { return }
 
@@ -197,16 +199,33 @@ export function DOMSelectionToEditor(textarea: TextArea, editor: IDomEditor) {
 
   const { anchorNode, focusNode } = domSelection
 
-  const anchorNodeSelectable = hasEditableTarget(editor, anchorNode) || isTargetInsideNonReadonlyVoid(editor, anchorNode)
-  const focusNodeSelectable = hasEditableTarget(editor, focusNode) || isTargetInsideNonReadonlyVoid(editor, focusNode)
+  const anchorNodeSelectable = hasSelectableTarget(editor, anchorNode)
+  const focusNodeInEditor = hasTarget(editor, focusNode)
 
-  if (anchorNodeSelectable && focusNodeSelectable) {
+  if (isComposing) {
+    if (anchorNodeSelectable && focusNodeInEditor) {
+      const range = DomEditor.toSlateRange(editor, domSelection, {
+        exactMatch: false,
+        suppressThrow: true,
+      })
+
+      EDITOR_TO_PENDING_SELECTION.set(editor, range)
+    }
+
+    return
+  }
+
+  if (anchorNodeSelectable && focusNodeInEditor) {
     const range = DomEditor.toSlateRange(editor, domSelection, {
       exactMatch: false,
-      suppressThrow: false,
+      suppressThrow: true,
     })
 
-    Transforms.select(editor, range)
+    if (range) {
+      Transforms.select(editor, range)
+    }
+  } else if (config.readOnly) {
+    Transforms.deselect(editor)
   } else {
     // 禁用此行，让光标选区继续生效
     // Transforms.deselect(editor)

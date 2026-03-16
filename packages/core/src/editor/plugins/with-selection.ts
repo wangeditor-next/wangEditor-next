@@ -3,18 +3,25 @@
  * @author wangfupeng
  */
 
-import { Editor, Transforms, Location, Node, Range, Point } from 'slate'
-import { IDomEditor } from '../interface'
-import { DomEditor } from '../dom-editor'
+import {
+  Editor, Location, Node, Point,
+  Range,
+} from 'slate'
+
 import { getPositionByNode, getPositionBySelection } from '../../menus/helpers/position'
 import { EDITOR_TO_SELECTION } from '../../utils/weak-maps'
+import { DomEditor } from '../dom-editor'
+import { IDomEditor } from '../interface'
 
 export const withSelection = <T extends Editor>(editor: T) => {
   const e = editor as T & IDomEditor
+  const { select, deselect, move } = e
+
+  type MoveOptions = Parameters<Editor['move']>[0]
 
   // 选中
   e.select = (at: Location) => {
-    Transforms.select(e, at)
+    select(at)
   }
 
   // 取消选中
@@ -28,17 +35,22 @@ export const withSelection = <T extends Editor>(editor: T) => {
     }
 
     if (selection) {
-      Transforms.deselect(editor)
+      deselect()
     }
   }
 
   // 移动光标
-  e.move = (distance: number, reverse = false) => {
-    if (!distance) return
-    if (distance < 0) return
+  e.move = (distanceOrOptions?: number | MoveOptions, reverse = false) => {
+    if (typeof distanceOrOptions !== 'number') {
+      move(distanceOrOptions)
+      return
+    }
 
-    Transforms.move(editor, {
-      distance,
+    if (!distanceOrOptions) { return }
+    if (distanceOrOptions < 0) { return }
+
+    move({
+      distance: distanceOrOptions,
       unit: 'character',
       reverse,
     })
@@ -54,10 +66,11 @@ export const withSelection = <T extends Editor>(editor: T) => {
    */
   e.restoreSelection = () => {
     const selection = EDITOR_TO_SELECTION.get(e)
-    if (selection == null) return
+
+    if (selection == null) { return }
 
     e.focus()
-    Transforms.select(e, selection)
+    select(selection)
   }
 
   /**
@@ -79,7 +92,8 @@ export const withSelection = <T extends Editor>(editor: T) => {
    */
   e.isSelectedAll = () => {
     const { selection } = e
-    if (selection == null) return false
+
+    if (selection == null) { return false }
 
     const [start1, end1] = Range.edges(selection) // 获取当前选取的开始、结束 point
     const [start2, end2] = Editor.edges(e, []) // 获取编辑器全部的开始、结束 point
@@ -97,7 +111,7 @@ export const withSelection = <T extends Editor>(editor: T) => {
     const start = Editor.start(e, [])
     const end = Editor.end(e, [])
 
-    Transforms.select(e, {
+    select({
       anchor: start,
       focus: end,
     })

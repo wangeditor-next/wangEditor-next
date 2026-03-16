@@ -3,7 +3,7 @@
  * @author wangfupeng
  */
 
-import { Editor, Transforms } from 'slate'
+import { Editor, Element, Transforms } from 'slate'
 
 import { DomEditor } from '../../editor/dom-editor'
 import { IDomEditor } from '../../editor/interface'
@@ -21,7 +21,8 @@ export function handleOnDragstart(e: Event, textarea: TextArea, editor: IDomEdit
 
   const node = DomEditor.toSlateNode(editor, event.target)
   const path = DomEditor.findPath(editor, node)
-  const voidMatch = Editor.isVoid(editor, node) || Editor.void(editor, { at: path, voids: true })
+  const voidMatch = (Element.isElement(node) && Editor.isVoid(editor, node))
+    || Editor.void(editor, { at: path, voids: true })
 
   // If starting a drag on a void node, make sure it is selected
   // so that it shows up in the selection's fragment.
@@ -52,7 +53,7 @@ export function handleOnDragover(event: Event, textarea: TextArea, editor: IDomE
   // default, and calling `preventDefault` hides the cursor.
   const node = DomEditor.toSlateNode(editor, event.target)
 
-  if (Editor.isVoid(editor, node)) {
+  if (Element.isElement(node) && Editor.isVoid(editor, node)) {
     event.preventDefault()
   }
 }

@@ -4,7 +4,7 @@
  */
 
 import {
-  Editor, Element, Node, Operation, Path, Range, Text, Transforms,
+  Editor, Element, Node, Operation, Path, Point, Range, Text, Transforms,
 } from 'slate'
 
 import { IDomEditor } from '../..'
@@ -56,10 +56,42 @@ function insertElemToEditor(editor: IDomEditor, elem: Element) {
   }
 }
 
+function isSelectedAll(editor: IDomEditor): boolean {
+  const { selection } = editor
+
+  if (selection == null || Range.isCollapsed(selection)) { return false }
+
+  const [start, end] = Range.edges(selection)
+  const [editorStart, editorEnd] = Editor.edges(editor, [])
+
+  return Point.equals(start, editorStart) && Point.equals(end, editorEnd)
+}
+
+function ensureEmptyParagraph(editor: IDomEditor) {
+  const firstNode = editor.children[0]
+
+  if (editor.children.length !== 1) { return }
+  if (!Element.isElement(firstNode)) { return }
+  if (firstNode.type === 'paragraph' && Node.string(firstNode) === '') { return }
+  if (Node.string(firstNode) !== '') { return }
+
+  const initialEditorValue: Node[] = [
+    {
+      type: 'paragraph',
+      children: [{ text: '' }],
+    },
+  ]
+
+  Editor.withoutNormalizing(editor, () => {
+    Transforms.removeNodes(editor, { at: [0] })
+    Transforms.insertNodes(editor, initialEditorValue, { at: [0] })
+  })
+}
+
 export const withContent = <T extends Editor>(editor: T) => {
   const e = editor as T & IDomEditor
   const {
-    onChange, insertText, apply, deleteBackward,
+    onChange, insertText, apply, deleteBackward, deleteFragment,
   } = e
 
   e.insertText = (text: string) => {
@@ -141,7 +173,7 @@ export const withContent = <T extends Editor>(editor: T) => {
 
     if (editor.selection && Range.isCollapsed(editor.selection)) {
       const parentBlockEntry = Editor.above(editor, {
-        match: n => Editor.isBlock(editor, n),
+        match: n => Element.isElement(n) && Editor.isBlock(editor, n),
         at: editor.selection,
       })
 
@@ -159,6 +191,16 @@ export const withContent = <T extends Editor>(editor: T) => {
           Transforms.delete(editor, { at: currentLineRange })
         }
       }
+    }
+  }
+
+  e.deleteFragment = options => {
+    const shouldResetToParagraph = isSelectedAll(e)
+
+    deleteFragment(options)
+
+    if (shouldResetToParagraph) {
+      ensureEmptyParagraph(e)
     }
   }
 
@@ -304,7 +346,10 @@ export const withContent = <T extends Editor>(editor: T) => {
 
     if (e.children.length === 0) {
       Transforms.insertNodes(e, initialEditorValue)
+      return
     }
+
+    ensureEmptyParagraph(e)
   }
 
   e.getParentNode = (node: Node) => {

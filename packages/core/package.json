@@ -55,7 +55,7 @@
     "lodash.throttle": "^4.1.1",
     "lodash.toarray": "^4.4.0",
     "nanoid": "^5.0.0",
-    "slate": "^0.82.0",
+    "slate": "^0.123.0",
     "snabbdom": "^3.6.0"
   },
   "dependencies": {
@@ -64,7 +64,7 @@
     "html-void-elements": "^3.0.0",
     "i18next": "^23.0.0",
     "scroll-into-view-if-needed": "^3.0.0",
-    "slate-history": "^0.109.0"
+    "slate-history": "^0.115.0"
   },
   "devDependencies": {
     "@types/is-hotkey": "^0.1.2",

@@ -10,7 +10,10 @@ import {
 import { DomEditor } from '../../../src/editor/dom-editor'
 import handleBeforeInput from '../../../src/text-area/event-handlers/beforeInput'
 import * as helpers from '../../../src/text-area/helpers'
-import { EDITOR_TO_CAN_PASTE } from '../../../src/utils/weak-maps'
+import {
+  EDITOR_TO_CAN_PASTE,
+  EDITOR_TO_PENDING_COMPOSITION_END,
+} from '../../../src/utils/weak-maps'
 
 vi.mock('../../../src/utils/ua', () => ({
   HAS_BEFORE_INPUT_SUPPORT: true,
@@ -49,6 +52,33 @@ describe('handleBeforeInput', () => {
 
     expect(Editor.insertText).toHaveBeenCalledWith(editor, 'hello')
     expect(event.preventDefault).toHaveBeenCalled()
+  })
+
+  it('flushes DOM selection sync before handling input', () => {
+    const editor = {
+      selection: createSelection(false),
+      getConfig: () => ({ readOnly: false }),
+      insertData: vi.fn(),
+    } as any
+    const textarea = {
+      flushDOMSelectionChange: vi.fn(),
+    } as any
+    const event = {
+      inputType: 'insertText',
+      data: 'hello',
+      dataTransfer: null,
+      isComposing: false,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    handleBeforeInput(event, textarea, editor)
+
+    expect(textarea.flushDOMSelectionChange).toHaveBeenCalledTimes(1)
   })
 
   it('deletes backward for deleteContentBackward', () => {
@@ -123,5 +153,37 @@ describe('handleBeforeInput', () => {
 
     expect(Editor.insertText).not.toHaveBeenCalled()
     EDITOR_TO_CAN_PASTE.delete(editor)
+  })
+
+  it('marks insertFromComposition as already handled', () => {
+    const editor = {
+      selection: createSelection(false),
+      getConfig: () => ({ readOnly: false }),
+      insertData: vi.fn(),
+    } as any
+    const textarea = {
+      flushDOMSelectionChange: vi.fn(),
+      isComposing: true,
+    } as any
+    const event = {
+      inputType: 'insertFromComposition',
+      data: '拼',
+      dataTransfer: null,
+      isComposing: true,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    handleBeforeInput(event, textarea, editor)
+
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, '拼')
+    expect(textarea.isComposing).toBe(false)
+    expect(EDITOR_TO_PENDING_COMPOSITION_END.get(editor)).toBe(true)
+
+    EDITOR_TO_PENDING_COMPOSITION_END.delete(editor)
   })
 })
