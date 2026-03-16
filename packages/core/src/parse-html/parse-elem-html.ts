@@ -62,13 +62,13 @@ function parseElemHtml($elem: Dom7Array, editor: IDomEditor): Descendant | Desce
       return parseCommonElemHtml($elem, editor)
     }
 
-    const hasImgOrA = $elem.find('img, a').length > 0
+    const childNodes = Array.from($elem[0].childNodes)
+    const hasNonTextChild = childNodes.some(child => !isDOMText(child) && !isDOMComment(child))
 
-    if ($elem[0].childNodes.length > 1 || hasImgOrA) {
-      const childNodes = $elem[0].childNodes
+    if (hasNonTextChild) {
       const parentStyle = parseTextElemHtmlToStyle($($elem[0]), editor)
 
-      return Array.from(childNodes).flatMap(child => {
+      return childNodes.flatMap(child => {
         const parsed = parseChildNode($(child), parentStyle, editor)
 
         return parsed || []
@@ -94,10 +94,17 @@ function parseElemHtml($elem: Dom7Array, editor: IDomEditor): Descendant | Desce
 
   // 非 <code> ，正常处理
   if (TEXT_TAGS.includes(tagName)) {
-    if ($elem[0].childNodes.length > 0 && $elem[0].childNodes[0].nodeType !== Node.TEXT_NODE) {
-      const childNodes = $elem[0].childNodes
+    const childNodes = Array.from($elem[0].childNodes)
+    const hasNonTextChild = childNodes.some(child => !isDOMText(child) && !isDOMComment(child))
 
-      return { ...parseElemHtml($(childNodes[0]), editor), ...parseTextElemHtml($elem, editor) }
+    if (hasNonTextChild) {
+      const parentStyle = parseTextElemHtmlToStyle($($elem[0]), editor)
+
+      return childNodes.flatMap(child => {
+        const parsed = parseChildNode($(child), parentStyle, editor)
+
+        return parsed || []
+      })
     }
     // text node
     return parseTextElemHtml($elem, editor)
