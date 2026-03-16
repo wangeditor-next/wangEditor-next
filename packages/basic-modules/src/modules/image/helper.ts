@@ -4,7 +4,9 @@
  */
 
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
-import { Editor, Range, Transforms } from 'slate'
+import {
+  Editor, Element, Range, Transforms,
+} from 'slate'
 
 import { replaceSymbols } from '../../utils/util'
 import { ImageElement, ImageStyle } from './custom-types'
@@ -29,7 +31,7 @@ export function isInsertImageMenuDisabled(editor: IDomEditor): boolean {
       if (type === 'list-item') { return true } // list
       if (type.startsWith('header')) { return true } // 标题
       if (type === 'blockquote') { return true } // 引用
-      if (Editor.isVoid(editor, n)) { return true } // void
+      if (Element.isElement(n) && Editor.isVoid(editor, n)) { return true } // void
 
       return false
     },

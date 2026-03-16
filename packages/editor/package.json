@@ -71,7 +71,7 @@
     "lodash.throttle": "^4.1.1",
     "lodash.toarray": "^4.4.0",
     "nanoid": "^5.0.0",
-    "slate": "^0.82.0",
+    "slate": "^0.123.0",
     "snabbdom": "^3.6.0"
   },
   "devDependencies": {

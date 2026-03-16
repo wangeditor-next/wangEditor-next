@@ -36,23 +36,12 @@ const waitForMenuEnabled = async (page: Page, menuKey: string) => {
 
 const pasteText = async (page: Page, text: string) => {
   await clearEditor(page)
-  const editable = getEditable(page)
-
-  await editable.evaluate(
-    (node: HTMLElement, value: string) => {
-      const data = new DataTransfer()
-
-      data.setData('text/plain', value)
-      const event = new ClipboardEvent('paste', {
-        clipboardData: data,
-        bubbles: true,
-        cancelable: true,
-      })
-
-      node.dispatchEvent(event)
-    },
-    text,
-  )
+  await page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
+  await page.evaluate(async value => {
+    await navigator.clipboard.writeText(value)
+  }, text)
+  await focusEditor(page)
+  await page.keyboard.press('Control+V')
 }
 
 const dropImage = async (page: Page) => {

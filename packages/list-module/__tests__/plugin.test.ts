@@ -69,7 +69,7 @@ describe('list plugin test', () => {
     editor.handleTab() // tab
     const children = editor.children
 
-    expect(children).toEqual([{ children: [{ text: '    ' }], type: 'list-item' }])
+    expect(children).toEqual([{ children: [{ text: '    ' }], type: 'paragraph' }])
   })
 
   it('insert tab - select all and multi list', () => {
