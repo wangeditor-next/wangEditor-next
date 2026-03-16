@@ -1,5 +1,16 @@
 # Change Log
 
+## 1.7.46
+
+### Patch Changes
+
+- 943a933: Improve large multi-line plain-text paste performance by inserting pasted lines as a fragment instead of splitting and inserting each line one by one.
+- 1a859f0: Prevent the default browser paste when `customPaste` returns `false`, including plain-text paste flows.
+- 890a8b5: Ignore formatting newlines around nested inline html imports so Word superscript content does not introduce extra line breaks.
+- c10a734: Sanitize imported HTML by default for editor initialization, `setHtml`, and standard HTML paste flows before parsing it into editor content.
+- c47ad92: Improve HTML style parsing for nested and Office-like inline text styles so partial bold and superscript formatting do not expand to the whole text segment.
+- 56e2d9a: Preserve consecutive spaces when importing styled inline HTML so underlined whitespace does not collapse to a single space.
+
 ## 1.7.45
 
 ### Patch Changes

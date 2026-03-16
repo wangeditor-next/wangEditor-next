@@ -1,5 +1,19 @@
 # Change Log
 
+## 1.5.48
+
+### Patch Changes
+
+- c47ad92: Improve HTML style parsing for nested and Office-like inline text styles so partial bold and superscript formatting do not expand to the whole text segment.
+- b9b8d94: Fix the fullscreen menu to show the correct icon and title for the current editor state.
+- Updated dependencies [943a933]
+- Updated dependencies [1a859f0]
+- Updated dependencies [890a8b5]
+- Updated dependencies [c10a734]
+- Updated dependencies [c47ad92]
+- Updated dependencies [56e2d9a]
+  - @wangeditor-next/core@1.7.46
+
 ## 1.5.47
 
 ### Patch Changes
