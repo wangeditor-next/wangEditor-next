@@ -11,8 +11,24 @@ import { PRE_PARSE_HTML_CONF_LIST, TEXT_TAGS } from '../index'
 import {
   getTagName, isDOMComment, isDOMElement, isDOMText,
 } from '../utils/dom'
+import { deReplaceHtmlSpecialSymbols } from '../utils/util'
+import { replaceSpace160 } from './helper'
 import parseCommonElemHtml from './parse-common-elem-html'
 import parseTextElemHtml, { parseTextElemHtmlToStyle } from './parse-text-elem-html'
+
+function normalizeTextNodeContent(text: string, childNode: Node): string {
+  const parentElem = childNode.parentElement
+
+  if (parentElem == null) { return text }
+  if (parentElem.closest('pre') == null) {
+    text = text.replace(/[\r\n\t]+/g, '')
+  }
+
+  text = deReplaceHtmlSpecialSymbols(text)
+  text = replaceSpace160(text)
+
+  return text
+}
 
 function parseChildNode($childElem, parentStyle, editor) {
   const childNode = $childElem[0]
@@ -32,7 +48,7 @@ function parseChildNode($childElem, parentStyle, editor) {
   if (isDOMComment(childNode)) { return null } // 过滤掉注释节点
 
   const text = isDOMText(childNode)
-    ? { text: childNode.textContent || '' }
+    ? { text: normalizeTextNodeContent(childNode.textContent || '', childNode) }
     : parseTextElemHtml($childElem, editor)
 
   return [{ ...parentStyle, ...text }]

@@ -159,6 +159,24 @@ describe('parse style html', () => {
     ])
   })
 
+  it('it should ignore formatting newlines around nested superscript html imports', () => {
+    const nestedEditor = createEditor({
+      html: '<p><span>\nH<span style="vertical-align: super;">2</span>O\n</span></p>',
+    })
+
+    expect(nestedEditor.children).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'H' },
+          { text: '2', sup: true },
+          { text: 'O' },
+        ],
+      },
+    ])
+    expect(nestedEditor.getText()).toBe('H2O')
+  })
+
   it('it should preserve consecutive spaces in underlined html imports', () => {
     const underlinedSpaces = '        '
     const nestedEditor = createEditor({ html: `<p><u>${underlinedSpaces}</u></p>` })
