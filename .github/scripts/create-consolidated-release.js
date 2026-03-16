@@ -62,6 +62,7 @@ function parseChangelogSection(changelogPath, version, pkgName) {
   let inUpdatedDeps = false
   const changes = []
   let hasDirect = false
+  let currentEntry = null
 
   for (const line of lines) {
     if (/^## /.test(line)) {
@@ -73,10 +74,11 @@ function parseChangelogSection(changelogPath, version, pkgName) {
     // Detect "Updated dependencies" sub-section
     if (/^-\s+Updated dependencies/.test(line)) {
       inUpdatedDeps = true
+      currentEntry = null
       continue
     }
-    // Next bullet at same level ends the "Updated dependencies" block
-    if (inUpdatedDeps && /^-\s+[^-]/.test(line)) {
+    // Next top-level bullet ends the "Updated dependencies" block
+    if (inUpdatedDeps && /^-\s+[^-\s]/.test(line)) {
       inUpdatedDeps = false
     }
     if (inUpdatedDeps) continue
@@ -85,7 +87,15 @@ function parseChangelogSection(changelogPath, version, pkgName) {
     const m = line.match(/^-\s+([a-f0-9]{7,}): (.+)/)
     if (m) {
       hasDirect = true
-      changes.push({ hash: m[1], description: m[2], pkg: pkgName })
+      currentEntry = { hash: m[1], description: m[2], subBullets: [], pkg: pkgName }
+      changes.push(currentEntry)
+      continue
+    }
+
+    // Indented sub-bullet under a change entry: "  - <text>"
+    if (currentEntry) {
+      const sm = line.match(/^\s{2,}-\s+(.+)/)
+      if (sm) currentEntry.subBullets.push(sm[1])
     }
   }
 
@@ -96,15 +106,23 @@ function parseChangelogSection(changelogPath, version, pkgName) {
 // Deduplicate by commit hash so the same fix isn't listed multiple times
 // (changesets repeats dep-update hashes in child packages).
 const seenHashes = new Set()
+// allChanges: { description, pkg }  (hash used only for dedup)
 const allChanges = []
 
 for (const { name, version } of publishedPackages) {
   const changelog = path.join(pkgDir(name), 'CHANGELOG.md')
   const { changes } = parseChangelogSection(changelog, version, name)
   for (const c of changes) {
-    if (!seenHashes.has(c.hash)) {
-      seenHashes.add(c.hash)
-      allChanges.push(c)
+    if (seenHashes.has(c.hash)) continue
+    seenHashes.add(c.hash)
+
+    if (c.subBullets.length > 0) {
+      // Expand sub-bullets as individual flat items
+      for (const sub of c.subBullets) {
+        allChanges.push({ description: sub, pkg: c.pkg })
+      }
+    } else {
+      allChanges.push({ description: c.description, pkg: c.pkg })
     }
   }
 }
