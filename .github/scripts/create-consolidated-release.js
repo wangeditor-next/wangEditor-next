@@ -15,8 +15,7 @@ if (publishedPackages.length === 0) {
 }
 
 // ── Tag ────────────────────────────────────────────────────────────────────
-// Use @wangeditor-next/editor version when available, fall back to core,
-// then fall back to a date stamp.
+// Prefer @wangeditor-next/editor version as the release tag.
 function resolveTag(packages) {
   const priority = ['@wangeditor-next/editor', '@wangeditor-next/core']
   for (const name of priority) {
@@ -28,7 +27,6 @@ function resolveTag(packages) {
 
 let tag = resolveTag(publishedPackages)
 
-// Ensure tag is unique (append -2, -3 … if it already exists on GitHub)
 function tagExists(t) {
   try {
     execSync(`gh release view "${t}"`, { stdio: 'pipe' })
@@ -44,57 +42,130 @@ if (tagExists(tag)) {
   tag = `${tag}-${i}`
 }
 
-// ── CHANGELOG extraction ───────────────────────────────────────────────────
+// ── CHANGELOG helpers ──────────────────────────────────────────────────────
 function pkgDir(name) {
-  // @wangeditor-next/foo  →  packages/foo
   return name.replace('@wangeditor-next/', 'packages/')
 }
 
 /**
- * Extract the changelog block for `version` from `changelogPath`.
- * Returns the trimmed body text (without the "## <version>" heading line),
- * or null if not found.
+ * Parse a CHANGELOG.md section for `version`.
+ * Returns:
+ *   changes  – deduplicated actual changes (not "Updated dependencies" lines)
+ *              each entry: { hash, description, pkg }
+ *   hasDirect – true if this package has its own changes (vs. only dep bumps)
  */
-function extractChangelogSection(changelogPath, version) {
-  if (!fs.existsSync(changelogPath)) return null
+function parseChangelogSection(changelogPath, version, pkgName) {
+  if (!fs.existsSync(changelogPath)) return { changes: [], hasDirect: false }
+
   const lines = fs.readFileSync(changelogPath, 'utf8').split('\n')
   let inSection = false
-  const body = []
+  let inUpdatedDeps = false
+  const changes = []
+  let hasDirect = false
+
   for (const line of lines) {
     if (/^## /.test(line)) {
-      if (line.includes(version)) {
-        inSection = true
-        continue
-      }
+      if (line.includes(version)) { inSection = true; continue }
       if (inSection) break
     }
-    if (inSection) body.push(line)
+    if (!inSection) continue
+
+    // Detect "Updated dependencies" sub-section
+    if (/^-\s+Updated dependencies/.test(line)) {
+      inUpdatedDeps = true
+      continue
+    }
+    // Next bullet at same level ends the "Updated dependencies" block
+    if (inUpdatedDeps && /^-\s+[^-]/.test(line)) {
+      inUpdatedDeps = false
+    }
+    if (inUpdatedDeps) continue
+
+    // Actual change bullet: "- <hash>: <description>"
+    const m = line.match(/^-\s+([a-f0-9]{7,}): (.+)/)
+    if (m) {
+      hasDirect = true
+      changes.push({ hash: m[1], description: m[2], pkg: pkgName })
+    }
   }
-  return body.join('\n').trim() || null
+
+  return { changes, hasDirect }
 }
 
-// ── Build release body ─────────────────────────────────────────────────────
-const today = new Date().toISOString().slice(0, 10)
-const sections = []
+// ── Collect changes across all packages ───────────────────────────────────
+// Deduplicate by commit hash so the same fix isn't listed multiple times
+// (changesets repeats dep-update hashes in child packages).
+const seenHashes = new Set()
+const allChanges = []
 
 for (const { name, version } of publishedPackages) {
   const changelog = path.join(pkgDir(name), 'CHANGELOG.md')
-  const notes = extractChangelogSection(changelog, version)
-  sections.push(
-    notes
-      ? `## \`${name}@${version}\`\n\n${notes}`
-      : `## \`${name}@${version}\`\n\n_No changelog notes._`,
-  )
+  const { changes } = parseChangelogSection(changelog, version, name)
+  for (const c of changes) {
+    if (!seenHashes.has(c.hash)) {
+      seenHashes.add(c.hash)
+      allChanges.push(c)
+    }
+  }
 }
 
-const body = `> Published on ${today}\n\n${sections.join('\n\n---\n\n')}`
+// ── Build "What's Changed" section ────────────────────────────────────────
+// Group by source package, but only show package label when there are
+// changes from multiple packages to keep it readable.
+const byPkg = {}
+for (const c of allChanges) {
+  ;(byPkg[c.pkg] = byPkg[c.pkg] || []).push(c)
+}
+
+const multiPkg = Object.keys(byPkg).length > 1
+
+let changesSection = ''
+if (allChanges.length === 0) {
+  changesSection = '_No user-facing changes in this release._'
+} else if (!multiPkg) {
+  changesSection = allChanges.map(c => `- ${c.description}`).join('\n')
+} else {
+  // Show short package label (strip scope prefix) before each group
+  changesSection = Object.entries(byPkg)
+    .map(([pkg, items]) => {
+      const label = pkg.replace('@wangeditor-next/', '')
+      return items.map(c => `- **[${label}]** ${c.description}`).join('\n')
+    })
+    .join('\n')
+}
+
+// ── Build package versions table ──────────────────────────────────────────
+const versionRows = publishedPackages
+  .map(({ name, version }) => `| \`${name}\` | \`${version}\` |`)
+  .join('\n')
+
+const versionsTable =
+  `| Package | Version |\n` +
+  `| --- | --- |\n` +
+  versionRows
+
+// ── Compose full release body ──────────────────────────────────────────────
+const editorPkg = publishedPackages.find(p => p.name === '@wangeditor-next/editor')
+const title = editorPkg ? `v${editorPkg.version}` : tag
+
+const body = `## What's Changed
+
+${changesSection}
+
+<details>
+<summary>Package versions</summary>
+
+${versionsTable}
+
+</details>`
 
 const bodyFile = path.join(require('os').tmpdir(), 'release-body.md')
 fs.writeFileSync(bodyFile, body)
 
 // ── Create GitHub Release ──────────────────────────────────────────────────
-execSync(`gh release create "${tag}" --title "Release ${tag}" --notes-file "${bodyFile}"`, {
-  stdio: 'inherit',
-})
+execSync(
+  `gh release create "${tag}" --title "${title}" --notes-file "${bodyFile}"`,
+  { stdio: 'inherit' },
+)
 
 console.log(`\nConsolidated GitHub release created: ${tag}`)
