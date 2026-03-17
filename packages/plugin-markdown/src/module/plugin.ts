@@ -48,7 +48,7 @@ function getBeforeText(editor: IDomEditor): { beforeText: string; range: SlateRa
   const { anchor } = selection
   // 找到当前文本上面的 block 元素，如 header1 paragraph
   const block = SlateEditor.above(editor, {
-    match: n => SlateEditor.isBlock(editor, n),
+    match: n => SlateElement.isElement(n) && SlateEditor.isBlock(editor, n),
   })
 
   if (block == null) {
@@ -105,7 +105,7 @@ function withMarkdown<T extends IDomEditor>(editor: T) {
     }
 
     SlateTransforms.setNodes<SlateElement>(editor, props, {
-      match: n => SlateEditor.isBlock(editor, n),
+      match: n => SlateElement.isElement(n) && SlateEditor.isBlock(editor, n),
     })
 
     // 如果是 list-item ，则包裹一层 bulleted-list
@@ -210,7 +210,7 @@ function withMarkdown<T extends IDomEditor>(editor: T) {
     }
 
     SlateTransforms.setNodes<SlateElement>(editor, props, {
-      match: n => SlateEditor.isBlock(editor, n),
+      match: n => SlateElement.isElement(n) && SlateEditor.isBlock(editor, n),
     })
   }
 

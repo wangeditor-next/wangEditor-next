@@ -9,7 +9,10 @@ import { DomEditor } from '../../editor/dom-editor'
 import { IDomEditor } from '../../editor/interface'
 import { DOMStaticRange, isDataTransfer } from '../../utils/dom'
 import { HAS_BEFORE_INPUT_SUPPORT } from '../../utils/ua'
-import { EDITOR_TO_CAN_PASTE } from '../../utils/weak-maps'
+import {
+  EDITOR_TO_CAN_PASTE,
+  EDITOR_TO_PENDING_COMPOSITION_END,
+} from '../../utils/weak-maps'
 import { hasEditableTarget } from '../helpers'
 import TextArea from '../TextArea'
 
@@ -29,6 +32,9 @@ function handleBeforeInput(e: Event, textarea: TextArea, editor: IDomEditor) {
   if (!HAS_BEFORE_INPUT_SUPPORT) { return } // 有些浏览器完全不支持 beforeInput ，会用 keypress 和 keydown 兼容
   if (readOnly) { return }
   if (!hasEditableTarget(editor, event.target)) { return }
+
+  // 一些输入法和浏览器扩展会先改 DOM 选区，再触发 beforeinput
+  textarea.flushDOMSelectionChange?.()
 
   const { selection } = editor
   const { inputType: type } = event
@@ -144,10 +150,16 @@ function handleBeforeInput(e: Event, textarea: TextArea, editor: IDomEditor) {
     }
 
     case 'insertFromDrop':
+    case 'insertFromComposition':
     case 'insertFromPaste':
     case 'insertFromYank':
     case 'insertReplacementText':
     case 'insertText': {
+      if (type === 'insertFromComposition') {
+        textarea.isComposing = false
+        EDITOR_TO_PENDING_COMPOSITION_END.set(editor, true)
+      }
+
       if (type === 'insertFromPaste') {
         if (!EDITOR_TO_CAN_PASTE.get(editor)) { break } // 不可默认粘贴
       }

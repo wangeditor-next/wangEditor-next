@@ -43,6 +43,17 @@ import {
 } from '../utils/weak-maps'
 import type { IDomEditor } from './interface'
 
+const isBefore = (node: DOMNode, otherNode: DOMNode): boolean => {
+  // compareDocumentPosition returns bit flags; we only care about relative order.
+  // eslint-disable-next-line no-bitwise
+  return Boolean(node.compareDocumentPosition(otherNode) & DOMNode.DOCUMENT_POSITION_PRECEDING)
+}
+
+const isAfter = (node: DOMNode, otherNode: DOMNode): boolean => {
+  // eslint-disable-next-line no-bitwise
+  return Boolean(node.compareDocumentPosition(otherNode) & DOMNode.DOCUMENT_POSITION_FOLLOWING)
+}
+
 /**
  * 自定义全局 command
  */
@@ -236,6 +247,7 @@ export const DomEditor = {
         // （data-slate-zero-width、data-slate-string）判断一起出现，唯独此处欠缺，补全
         && (!editable
           || targetEl.isContentEditable
+          || targetEl.closest('[contenteditable="false"]') === editorEl
           || !!targetEl.getAttribute('data-slate-zero-width')))
       || !!targetEl.getAttribute('data-slate-string')
     )
@@ -364,7 +376,7 @@ export const DomEditor = {
     // If the drop target is inside a void node, move it into either the
     // next or previous node, depending on which side the `x` and `y`
     // coordinates are closest to.
-    if (Editor.isVoid(editor, node)) {
+    if (Element.isElement(node) && Editor.isVoid(editor, node)) {
       const rect = target.getBoundingClientRect()
       const isPrev = editor.isInline(node)
         ? x - rect.left < rect.left + rect.width - x
@@ -471,7 +483,16 @@ export const DomEditor = {
 
     const focus = isCollapsed
       ? anchor
-      : DomEditor.toSlatePoint(editor, [focusNode, focusOffset], { exactMatch, suppressThrow })
+      : DomEditor.toSlatePoint(editor, [focusNode, focusOffset], {
+        exactMatch,
+        suppressThrow,
+        searchDirection: (
+          isBefore(anchorNode as DOMNode, focusNode as DOMNode)
+          || (anchorNode === focusNode && focusOffset < anchorOffset)
+        )
+          ? 'forward'
+          : 'backward',
+      })
 
     if (!focus) {
       return null as T extends true ? Range | null : Range
@@ -506,16 +527,26 @@ export const DomEditor = {
     options: {
       exactMatch: T
       suppressThrow: T
+      searchDirection?: 'forward' | 'backward'
     },
   ): T extends true ? Point | null : Point {
     const { exactMatch, suppressThrow } = options
     const [nearestNode, nearestOffset] = exactMatch ? domPoint : normalizeDOMPoint(domPoint)
     const parentNode = nearestNode.parentNode as DOMElement
+    let searchDirection = options.searchDirection
     let textNode: DOMElement | null = null
     let offset = 0
 
     if (parentNode) {
-      const voidNode = parentNode.closest('[data-slate-void="true"]')
+      const editorEl = DomEditor.toDOMNode(editor, editor)
+      const potentialVoidNode = parentNode.closest('[data-slate-void="true"]')
+      const voidNode = potentialVoidNode && editorEl.contains(potentialVoidNode)
+        ? potentialVoidNode
+        : null
+      const potentialNonEditableNode = parentNode.closest('[contenteditable="false"]')
+      const nonEditableNode = potentialNonEditableNode && editorEl.contains(potentialNonEditableNode)
+        ? potentialNonEditableNode
+        : null
       let leafNode = parentNode.closest('[data-slate-leaf]')
       let domNode: DOMElement | null = null
 
@@ -550,7 +581,8 @@ export const DomEditor = {
       } else if (voidNode) {
         // For void nodes, the element with the offset key will be a cousin, not an
         // ancestor, so find it by going down from the nearest void parent.
-        leafNode = voidNode.querySelector('[data-slate-leaf]')!
+        leafNode = Array.from(voidNode.querySelectorAll('[data-slate-leaf]'))
+          .find(leaf => DomEditor.hasDOMNode(editor, leaf)) || null
 
         // COMPAT: In read-only editors the leaf is not rendered.
         if (!leafNode) {
@@ -562,6 +594,60 @@ export const DomEditor = {
           domNode.querySelectorAll('[data-slate-zero-width]').forEach(el => {
             offset -= el.textContent!.length
           })
+        }
+      } else if (nonEditableNode) {
+        const getLeafNodes = (node: DOMElement | null | undefined) => {
+          return node
+            ? Array.from(node.querySelectorAll('[data-slate-leaf]'))
+              .filter(leaf => DomEditor.hasDOMNode(editor, leaf))
+            : []
+        }
+        const elementNode = nonEditableNode.closest('[data-slate-node="element"]')
+
+        if (searchDirection === 'backward' || !searchDirection) {
+          const leafNodes = [
+            ...getLeafNodes(elementNode?.previousElementSibling as DOMElement | null),
+            ...getLeafNodes(elementNode),
+          ]
+
+          for (let i = leafNodes.length - 1; i >= 0; i -= 1) {
+            const currentLeaf = leafNodes[i]
+
+            if (isBefore(nonEditableNode, currentLeaf)) {
+              leafNode = currentLeaf
+              searchDirection = 'backward'
+              break
+            }
+          }
+        }
+
+        if (!leafNode && (searchDirection === 'forward' || !searchDirection)) {
+          const leafNodes = [
+            ...getLeafNodes(elementNode),
+            ...getLeafNodes(elementNode?.nextElementSibling as DOMElement | null),
+          ]
+
+          for (const currentLeaf of leafNodes) {
+            if (isAfter(nonEditableNode, currentLeaf)) {
+              leafNode = currentLeaf
+              searchDirection = 'forward'
+              break
+            }
+          }
+        }
+
+        if (leafNode) {
+          textNode = leafNode.closest('[data-slate-node="text"]')!
+          domNode = leafNode
+
+          if (searchDirection === 'forward') {
+            offset = 0
+          } else {
+            offset = domNode.textContent!.length
+            domNode.querySelectorAll('[data-slate-zero-width]').forEach(el => {
+              offset -= el.textContent!.length
+            })
+          }
         }
       }
 
@@ -594,7 +680,16 @@ export const DomEditor = {
     // the select event fires twice, once for the old editor's `element`
     // first, and then afterwards for the correct `element`. (2017/03/03)
     const slateNode = DomEditor.toSlateNode(editor, textNode!)
-    const path = DomEditor.findPath(editor, slateNode)
+    let path: Path
+
+    try {
+      path = DomEditor.findPath(editor, slateNode)
+    } catch (e) {
+      if (suppressThrow) {
+        return null as T extends true ? Point | null : Point
+      }
+      throw e
+    }
 
     return { path, offset } as T extends true ? Point | null : Point
   },

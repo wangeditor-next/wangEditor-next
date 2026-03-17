@@ -4,7 +4,7 @@
  */
 
 import { DomEditor, IButtonMenu, IDomEditor } from '@wangeditor-next/core'
-import { Editor, Element, Node } from 'slate'
+import { Editor, Element } from 'slate'
 
 abstract class BaseMenu implements IButtonMenu {
   abstract readonly title: string
@@ -27,8 +27,8 @@ abstract class BaseMenu implements IButtonMenu {
     if (editor.selection == null) { return true }
 
     const selectedElems = DomEditor.getSelectedElems(editor)
-    const notMatch = selectedElems.some((elem: Node) => {
-      const { type } = elem as unknown as Element
+    const notMatch = selectedElems.some((elem: Element) => {
+      const { type } = elem
 
       if (Editor.isVoid(editor, elem) && Editor.isBlock(editor, elem) && type !== 'video') { return true }
 

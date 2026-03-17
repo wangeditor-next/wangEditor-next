@@ -11,7 +11,11 @@ import {
 import { DomEditor } from '../../src/editor/dom-editor'
 import * as helpers from '../../src/text-area/helpers'
 import { DOMSelectionToEditor, editorSelectionToDOM } from '../../src/text-area/syncSelection'
-import { EDITOR_TO_ELEMENT, IS_FOCUSED } from '../../src/utils/weak-maps'
+import {
+  EDITOR_TO_ELEMENT,
+  EDITOR_TO_PENDING_SELECTION,
+  IS_FOCUSED,
+} from '../../src/utils/weak-maps'
 
 vi.mock('scroll-into-view-if-needed', () => ({
   default: vi.fn(),
@@ -22,8 +26,8 @@ vi.mock('../../src/utils/ua', () => ({
 }))
 
 vi.mock('../../src/text-area/helpers', () => ({
-  hasEditableTarget: vi.fn(),
-  isTargetInsideNonReadonlyVoid: vi.fn(),
+  hasSelectableTarget: vi.fn(),
+  hasTarget: vi.fn(),
 }))
 
 const createSelection = (backward = false) => ({
@@ -280,15 +284,63 @@ describe('editorSelectionToDOM', () => {
 })
 
 describe('DOMSelectionToEditor', () => {
-  it('returns early when editor is readonly', () => {
+  it('selects range when editor is readonly and dom selection stays in editor', () => {
     const editor = { getConfig: () => ({ readOnly: true }) } as any
     const textarea = { isComposing: false, isUpdatingSelection: false, isDraggingInternally: false } as any
 
-    const deselectSpy = vi.spyOn(Transforms, 'deselect')
+    const editorElement = document.createElement('div')
+    const domSelection = createDomSelection({
+      anchorNode: document.createTextNode('a'),
+      focusNode: document.createTextNode('b'),
+    })
+    const root = { activeElement: editorElement, getSelection: () => domSelection }
+    const range = createSelection()
+
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue(root as any)
+    vi.spyOn(DomEditor, 'toDOMNode').mockReturnValue(editorElement as any)
+    vi.spyOn(DomEditor, 'toSlateRange').mockReturnValue(range as any)
+
+    const hasSelectableTarget = helpers.hasSelectableTarget as unknown as vi.Mock
+    const hasTarget = helpers.hasTarget as unknown as vi.Mock
+
+    hasSelectableTarget.mockReturnValue(true)
+    hasTarget.mockReturnValue(true)
+
+    const selectSpy = vi.spyOn(Transforms, 'select').mockImplementation(() => {})
+    const deselectSpy = vi.spyOn(Transforms, 'deselect').mockImplementation(() => {})
 
     DOMSelectionToEditor(textarea, editor)
 
+    expect(selectSpy).toHaveBeenCalledWith(editor, range)
     expect(deselectSpy).not.toHaveBeenCalled()
+  })
+
+  it('deselects when readonly selection leaves the editor', () => {
+    const editor = {
+      deselect: vi.fn(),
+      getConfig: () => ({ readOnly: true }),
+    } as any
+    const textarea = { isComposing: false, isUpdatingSelection: false, isDraggingInternally: false } as any
+
+    const editorElement = document.createElement('div')
+    const domSelection = createDomSelection({
+      anchorNode: document.createTextNode('a'),
+      focusNode: document.createTextNode('b'),
+    })
+    const root = { activeElement: editorElement, getSelection: () => domSelection }
+
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue(root as any)
+    vi.spyOn(DomEditor, 'toDOMNode').mockReturnValue(editorElement as any)
+
+    const hasSelectableTarget = helpers.hasSelectableTarget as unknown as vi.Mock
+    const hasTarget = helpers.hasTarget as unknown as vi.Mock
+
+    hasSelectableTarget.mockReturnValue(false)
+    hasTarget.mockReturnValue(false)
+
+    DOMSelectionToEditor(textarea, editor)
+
+    expect(editor.deselect).toHaveBeenCalled()
   })
 
   it('deselects when editor is not active element', () => {
@@ -341,18 +393,80 @@ describe('DOMSelectionToEditor', () => {
     vi.spyOn(DomEditor, 'toDOMNode').mockReturnValue(editorElement as any)
     vi.spyOn(DomEditor, 'toSlateRange').mockReturnValue(range as any)
 
-    const hasEditableTarget = helpers.hasEditableTarget as unknown as vi.Mock
-    const isTargetInsideNonReadonlyVoid = helpers.isTargetInsideNonReadonlyVoid as unknown as vi.Mock
+    const hasSelectableTarget = helpers.hasSelectableTarget as unknown as vi.Mock
+    const hasTarget = helpers.hasTarget as unknown as vi.Mock
 
-    hasEditableTarget.mockReturnValue(true)
-    isTargetInsideNonReadonlyVoid.mockReturnValue(false)
+    hasSelectableTarget.mockReturnValue(true)
+    hasTarget.mockReturnValue(true)
 
     const selectSpy = vi.spyOn(Transforms, 'select').mockImplementation(() => {})
 
     DOMSelectionToEditor(textarea, editor)
 
     expect(selectSpy).toHaveBeenCalledWith(editor, range)
+    expect(DomEditor.toSlateRange).toHaveBeenCalledWith(editor, domSelection, {
+      exactMatch: false,
+      suppressThrow: true,
+    })
     expect(Range.isCollapsed(range)).toBe(false)
+  })
+
+  it('stores a pending selection instead of selecting while composing', () => {
+    const editor = { getConfig: () => ({ readOnly: false }) } as any
+    const textarea = { isComposing: true, isUpdatingSelection: false, isDraggingInternally: false } as any
+
+    const editorElement = document.createElement('div')
+    const domSelection = createDomSelection({
+      anchorNode: document.createTextNode('a'),
+      focusNode: document.createTextNode('b'),
+    })
+    const root = { activeElement: editorElement, getSelection: () => domSelection }
+    const range = createSelection()
+
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue(root as any)
+    vi.spyOn(DomEditor, 'toDOMNode').mockReturnValue(editorElement as any)
+    vi.spyOn(DomEditor, 'toSlateRange').mockReturnValue(range as any)
+
+    const hasSelectableTarget = helpers.hasSelectableTarget as unknown as vi.Mock
+    const hasTarget = helpers.hasTarget as unknown as vi.Mock
+
+    hasSelectableTarget.mockReturnValue(true)
+    hasTarget.mockReturnValue(true)
+
+    const selectSpy = vi.spyOn(Transforms, 'select').mockImplementation(() => {})
+
+    DOMSelectionToEditor(textarea, editor)
+
+    expect(selectSpy).not.toHaveBeenCalled()
+    expect(EDITOR_TO_PENDING_SELECTION.get(editor)).toEqual(range)
+  })
+
+  it('skips selection when slate range cannot be resolved during selectionchange', () => {
+    const editor = { getConfig: () => ({ readOnly: false }) } as any
+    const textarea = { isComposing: false, isUpdatingSelection: false, isDraggingInternally: false } as any
+
+    const editorElement = document.createElement('div')
+    const domSelection = createDomSelection({
+      anchorNode: document.createTextNode('a'),
+      focusNode: document.createTextNode('b'),
+    })
+    const root = { activeElement: editorElement, getSelection: () => domSelection }
+
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue(root as any)
+    vi.spyOn(DomEditor, 'toDOMNode').mockReturnValue(editorElement as any)
+    vi.spyOn(DomEditor, 'toSlateRange').mockReturnValue(null as any)
+
+    const hasSelectableTarget = helpers.hasSelectableTarget as unknown as vi.Mock
+    const hasTarget = helpers.hasTarget as unknown as vi.Mock
+
+    hasSelectableTarget.mockReturnValue(true)
+    hasTarget.mockReturnValue(true)
+
+    const selectSpy = vi.spyOn(Transforms, 'select').mockImplementation(() => {})
+
+    DOMSelectionToEditor(textarea, editor)
+
+    expect(selectSpy).not.toHaveBeenCalled()
   })
 
   it('skips selection when nodes are not selectable', () => {
@@ -369,11 +483,38 @@ describe('DOMSelectionToEditor', () => {
     vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue(root as any)
     vi.spyOn(DomEditor, 'toDOMNode').mockReturnValue(editorElement as any)
 
-    const hasEditableTarget = helpers.hasEditableTarget as unknown as vi.Mock
-    const isTargetInsideNonReadonlyVoid = helpers.isTargetInsideNonReadonlyVoid as unknown as vi.Mock
+    const hasSelectableTarget = helpers.hasSelectableTarget as unknown as vi.Mock
+    const hasTarget = helpers.hasTarget as unknown as vi.Mock
 
-    hasEditableTarget.mockReturnValue(false)
-    isTargetInsideNonReadonlyVoid.mockReturnValue(false)
+    hasSelectableTarget.mockReturnValue(false)
+    hasTarget.mockReturnValue(false)
+
+    const selectSpy = vi.spyOn(Transforms, 'select').mockImplementation(() => {})
+
+    DOMSelectionToEditor(textarea, editor)
+
+    expect(selectSpy).not.toHaveBeenCalled()
+  })
+
+  it('skips selection when focus node is outside editor even if anchor is selectable', () => {
+    const editor = { getConfig: () => ({ readOnly: false }) } as any
+    const textarea = { isComposing: false, isUpdatingSelection: false, isDraggingInternally: false } as any
+
+    const editorElement = document.createElement('div')
+    const domSelection = createDomSelection({
+      anchorNode: document.createTextNode('a'),
+      focusNode: document.createTextNode('b'),
+    })
+    const root = { activeElement: editorElement, getSelection: () => domSelection }
+
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue(root as any)
+    vi.spyOn(DomEditor, 'toDOMNode').mockReturnValue(editorElement as any)
+
+    const hasSelectableTarget = helpers.hasSelectableTarget as unknown as vi.Mock
+    const hasTarget = helpers.hasTarget as unknown as vi.Mock
+
+    hasSelectableTarget.mockReturnValue(true)
+    hasTarget.mockReturnValue(false)
 
     const selectSpy = vi.spyOn(Transforms, 'select').mockImplementation(() => {})
 

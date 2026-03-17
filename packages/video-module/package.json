@@ -49,7 +49,7 @@
     "@wangeditor-next/core": "1.7.46",
     "dom7": "^3.0.0 || ^4.0.0",
     "nanoid": "^5.0.0",
-    "slate": "^0.82.0",
+    "slate": "^0.123.0",
     "snabbdom": "^3.6.0"
   },
   "devDependencies": {

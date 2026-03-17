@@ -10,7 +10,9 @@ import { Range } from 'slate'
 import { EditorEvents } from '../config/interface'
 import { DomEditor } from '../editor/dom-editor'
 import { IDomEditor } from '../editor/interface'
-import $, { Dom7Array, DOMElement } from '../utils/dom'
+import $, {
+  Dom7Array, DOMElement, isDOMElement,
+} from '../utils/dom'
 import { promiseResolveThen } from '../utils/util'
 import { TEXTAREA_TO_EDITOR } from '../utils/weak-maps'
 import eventHandlerConf from './event-handlers/index'
@@ -21,6 +23,8 @@ import updateView from './update-view'
 let ID = 1
 
 class TextArea {
+  private selectionChangeRoot: Document | ShadowRoot | null = null
+
   // eslint-disable-next-line
   readonly id = ID++
 
@@ -72,14 +76,8 @@ class TextArea {
     // 异步，否则获取不到 editor 和 DOM
     promiseResolveThen(() => {
       const editor = this.editorInstance
-      const window = DomEditor.getWindow(editor)
 
-      // 监听 selection change
-      window.document.addEventListener('selectionchange', this.onDOMSelectionChange)
-      // editor 销毁时，解绑 selection change
-      editor.on(EditorEvents.DESTROYED, () => {
-        window.document.removeEventListener('selectionchange', this.onDOMSelectionChange)
-      })
+      this.bindSelectionChange(editor)
 
       // 点击编辑区域，关闭 panel
       $container.on('click', () => editor.hidePanelOrModal())
@@ -117,11 +115,44 @@ class TextArea {
     return editor
   }
 
-  private onDOMSelectionChange = throttle(() => {
+  private bindSelectionChange(editor: IDomEditor, retries = 5) {
+    if (this.selectionChangeRoot != null || editor.isDestroyed) { return }
+
+    try {
+      const root = DomEditor.findDocumentOrShadowRoot(editor)
+
+      root.addEventListener('selectionchange', this.onDOMSelectionChange)
+      this.selectionChangeRoot = root
+    } catch (ex) {
+      if (retries > 0) {
+        setTimeout(() => this.bindSelectionChange(editor, retries - 1), 0)
+        return
+      }
+
+      window.document.addEventListener('selectionchange', this.onDOMSelectionChange)
+      this.selectionChangeRoot = window.document
+    }
+
+    editor.on(EditorEvents.DESTROYED, () => {
+      this.selectionChangeRoot?.removeEventListener('selectionchange', this.onDOMSelectionChange)
+      this.selectionChangeRoot = null
+    })
+  }
+
+  private onDOMSelectionChange = throttle((event?: Event) => {
+    const targetElement = isDOMElement(event?.target) ? event.target : null
+    const targetTagName = targetElement?.tagName
+
+    if (targetTagName === 'INPUT' || targetTagName === 'TEXTAREA') { return }
+
     const editor = this.editorInstance
 
     DOMSelectionToEditor(this, editor)
   }, 100)
+
+  flushDOMSelectionChange() {
+    this.onDOMSelectionChange.flush()
+  }
 
   /**
    * 绑定事件，如 beforeinput onblur onfocus keydown click copy/paste drag/drop 等

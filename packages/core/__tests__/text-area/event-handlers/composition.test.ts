@@ -2,7 +2,7 @@
  * @description composition handlers test
  */
 
-import { Editor } from 'slate'
+import { Editor, Transforms } from 'slate'
 import {
   afterEach, describe, expect, it, vi,
 } from 'vitest'
@@ -17,6 +17,10 @@ import {
 import * as helpers from '../../../src/text-area/helpers'
 import { hidePlaceholder } from '../../../src/text-area/place-holder'
 import { editorSelectionToDOM } from '../../../src/text-area/syncSelection'
+import {
+  EDITOR_TO_PENDING_COMPOSITION_END,
+  EDITOR_TO_PENDING_SELECTION,
+} from '../../../src/utils/weak-maps'
 
 vi.mock('../../../src/utils/ua', () => ({
   IS_CHROME: true,
@@ -105,5 +109,69 @@ describe('composition handlers', () => {
     expect(DomEditor.setNewKey).toHaveBeenCalledWith(paragraph)
     expect(Editor.insertText).toHaveBeenCalledWith(editor, 'a')
     expect(textarea.changeViewState).toHaveBeenCalled()
+  })
+
+  it('skips duplicate insert when beforeinput already handled composition commit', () => {
+    const paragraph = { type: 'paragraph', children: [{ text: 'x' }] }
+    const editor = {
+      selection: createSelection(false),
+      getConfig: () => ({ maxLength: 0 }),
+    } as any
+    const textarea = { changeViewState: vi.fn() } as any
+    const event = { target: {}, data: '拼' } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'cleanExposedTexNodeInSelectionBlock').mockImplementation(() => {})
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue({ getSelection: () => null } as any)
+    vi.spyOn(Editor, 'node').mockImplementation((_ed, path) => {
+      if (path.length === 1) {
+        return [paragraph, path] as any
+      }
+
+      return [{ text: 'x' }, path] as any
+    })
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+    EDITOR_TO_PENDING_COMPOSITION_END.set(editor, true)
+
+    handleCompositionEnd(event, textarea, editor)
+
+    expect(DomEditor.cleanExposedTexNodeInSelectionBlock).toHaveBeenCalledWith(editor)
+    expect(Editor.insertText).not.toHaveBeenCalled()
+    expect(EDITOR_TO_PENDING_COMPOSITION_END.has(editor)).toBe(false)
+  })
+
+  it('applies pending selection before inserting committed composition text', () => {
+    const paragraph = { type: 'paragraph', children: [{ text: 'x' }] }
+    const pendingSelection = {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [0, 0], offset: 1 },
+    }
+    const editor = {
+      selection: createSelection(false),
+      getConfig: () => ({ maxLength: 0 }),
+    } as any
+    const textarea = { changeViewState: vi.fn() } as any
+    const event = { target: {}, data: '拼' } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'cleanExposedTexNodeInSelectionBlock').mockImplementation(() => {})
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue({ getSelection: () => null } as any)
+    vi.spyOn(Editor, 'node').mockImplementation((_ed, path) => {
+      if (path.length === 1) {
+        return [paragraph, path] as any
+      }
+
+      return [{ text: 'x' }, path] as any
+    })
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+    const selectSpy = vi.spyOn(Transforms, 'select').mockImplementation(() => {})
+
+    EDITOR_TO_PENDING_SELECTION.set(editor, pendingSelection as any)
+
+    handleCompositionEnd(event, textarea, editor)
+
+    expect(selectSpy).toHaveBeenCalledWith(editor, pendingSelection)
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, '拼')
+    expect(EDITOR_TO_PENDING_SELECTION.has(editor)).toBe(false)
   })
 })

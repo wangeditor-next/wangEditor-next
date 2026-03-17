@@ -10,6 +10,7 @@ import {
 import { DomEditor } from '../../src/editor/dom-editor'
 import {
   hasEditableTarget,
+  hasSelectableTarget,
   hasTarget,
   isDOMEventHandled,
   isRangeEqual,
@@ -85,10 +86,32 @@ describe('text-area helpers', () => {
     const target = { nodeType: 1 } as any
 
     vi.spyOn(DomEditor, 'hasDOMNode').mockReturnValue(true)
-    vi.spyOn(DomEditor, 'toSlateNode').mockReturnValue({ type: 'void' } as any)
+    vi.spyOn(DomEditor, 'toSlateNode').mockReturnValue({ type: 'void', children: [] } as any)
     vi.spyOn(Editor, 'isVoid').mockReturnValue(true)
 
     expect(isTargetInsideNonReadonlyVoid(editor, target)).toBe(true)
+  })
+
+  it('treats editable targets as selectable', () => {
+    const editor = {} as any
+    const target = { nodeType: 1 } as any
+
+    vi.spyOn(DomEditor, 'hasDOMNode').mockImplementation((_editor, _target, options) => {
+      return Boolean(options?.editable)
+    })
+
+    expect(hasSelectableTarget(editor, target)).toBe(true)
+  })
+
+  it('treats void targets as selectable even when not editable', () => {
+    const editor = { getConfig: () => ({ readOnly: false }) } as any
+    const target = { nodeType: 1 } as any
+
+    vi.spyOn(DomEditor, 'hasDOMNode').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'toSlateNode').mockReturnValue({ type: 'void', children: [] } as any)
+    vi.spyOn(Editor, 'isVoid').mockReturnValue(true)
+
+    expect(hasSelectableTarget(editor, target)).toBe(true)
   })
 
   it('returns false when editor is readonly', () => {

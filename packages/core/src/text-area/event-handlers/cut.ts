@@ -4,7 +4,7 @@
  */
 
 import {
-  Editor, Node, Range, Transforms,
+  Editor, Element, Node, Range, Transforms,
 } from 'slate'
 
 import { IDomEditor } from '../../editor/interface'
@@ -31,7 +31,7 @@ function handleOnCut(e: Event, textarea: TextArea, editor: IDomEditor) {
     } else {
       const node = Node.parent(editor, selection.anchor.path)
 
-      if (Editor.isVoid(editor, node)) {
+      if (Element.isElement(node) && Editor.isVoid(editor, node)) {
         Transforms.delete(editor)
       }
     }

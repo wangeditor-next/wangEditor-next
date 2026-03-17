@@ -16,6 +16,7 @@ import { IPositionStyle } from '../menus/interface'
 import { DOMElement } from '../utils/dom'
 
 export type ElementWithId = Element & { id: string }
+type MoveOptions = Parameters<Editor['move']>[0]
 
 export type getMenuConfigReturnType<K> = K extends keyof IMenuConfig ? IMenuConfig[K] : ISingleMenuConfig
 
@@ -69,7 +70,8 @@ export interface IDomEditor extends Editor {
   // selection 相关
   select: (at: Location) => void
   deselect: () => void
-  move: (distance: number, reverse?: boolean) => void
+  move(options?: MoveOptions): void
+  move(distance: number, reverse?: boolean): void
   moveReverse: (distance: number) => void
   restoreSelection: () => void
   getTableSelection?: () => NodeEntryWithContext[][] | null

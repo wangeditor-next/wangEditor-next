@@ -84,3 +84,9 @@ export const EDITOR_TO_EMITTER: WeakMap<Editor, Emitter> = new WeakMap()
 
 // editor 是否可执行粘贴
 export const EDITOR_TO_CAN_PASTE: WeakMap<Editor, boolean> = new WeakMap()
+
+// beforeinput 已处理 composition 提交，compositionend 需跳过重复插入
+export const EDITOR_TO_PENDING_COMPOSITION_END: WeakMap<Editor, boolean> = new WeakMap()
+
+// composing 期间暂存用户选区，composition 提交后再决定是否应用
+export const EDITOR_TO_PENDING_SELECTION: WeakMap<Editor, Range | null> = new WeakMap()

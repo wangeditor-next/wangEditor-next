@@ -49,7 +49,7 @@
   },
   "peerDependencies": {
     "@wangeditor-next/core": "1.7.46",
-    "slate": "^0.82.0",
+    "slate": "^0.123.0",
     "yjs": "^13.5.29"
   },
   "bugs": {
@@ -60,7 +60,7 @@
   },
   "devDependencies": {
     "@wangeditor-next-shared/rollup-config": "workspace:^",
-    "slate": "^0.82.0",
+    "slate": "^0.123.0",
     "typescript": "^5.0.0",
     "yjs": "^13.5.29"
   }
