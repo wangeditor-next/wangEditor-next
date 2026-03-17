@@ -422,12 +422,14 @@ function withTable<T extends IDomEditor>(editor: T): T {
     const path = DomEditor.findPath(newEditor, cell)
     const start = Editor.start(newEditor, path)
     const end = Editor.end(newEditor, path)
-    const newSelection = {
-      anchor: start,
-      focus: end,
+
+    // 已经选中了整个 cell —— 再按一次 Ctrl+A 升级为全文选区
+    if (Point.equals(anchor, start) && Point.equals(focus, end)) {
+      selectAll()
+      return
     }
 
-    newEditor.select(newSelection) // 选中 table-cell 内部的全部文字
+    newEditor.select({ anchor: start, focus: end }) // 选中 table-cell 内部的全部文字
   }
 
   /**

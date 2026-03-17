@@ -195,19 +195,23 @@ export const withContent = <T extends Editor>(editor: T) => {
   }
 
   e.deleteFragment = options => {
-    const shouldResetToParagraph = isSelectedAll(e)
+    if (isSelectedAll(e)) {
+      // When the entire document is selected, bypass deleteFragment (which cannot
+      // cleanly remove non-text structures like tables in one pass). Instead do a
+      // direct reset to a single empty paragraph.
+      const emptyParagraph: Node = { type: 'paragraph', children: [{ text: '' }] }
+
+      Editor.withoutNormalizing(e, () => {
+        for (let i = e.children.length - 1; i >= 0; i -= 1) {
+          Transforms.removeNodes(e, { at: [i] })
+        }
+        Transforms.insertNodes(e, emptyParagraph, { at: [0] })
+      })
+      Transforms.select(e, { path: [0, 0], offset: 0 })
+      return
+    }
 
     deleteFragment(options)
-
-    if (shouldResetToParagraph) {
-      ensureEmptyParagraph(e)
-
-      // ensureEmptyParagraph uses withoutNormalizing to replace non-paragraph
-      // empty nodes, which can leave the selection null. Restore it to start.
-      if (e.selection == null && e.children.length > 0) {
-        Transforms.select(e, Editor.start(e, []))
-      }
-    }
   }
 
   // 重写 onchange API
