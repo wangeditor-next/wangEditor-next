@@ -201,6 +201,12 @@ export const withContent = <T extends Editor>(editor: T) => {
 
     if (shouldResetToParagraph) {
       ensureEmptyParagraph(e)
+
+      // ensureEmptyParagraph uses withoutNormalizing to replace non-paragraph
+      // empty nodes, which can leave the selection null. Restore it to start.
+      if (e.selection == null && e.children.length > 0) {
+        Transforms.select(e, Editor.start(e, []))
+      }
     }
   }
 

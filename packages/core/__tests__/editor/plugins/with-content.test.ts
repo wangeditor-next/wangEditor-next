@@ -272,6 +272,10 @@ describe('editor content API', () => {
     editor.deleteFragment()
 
     expect(editor.children).toEqual([{ type: 'paragraph', children: [{ text: '' }] }])
+    expect(editor.selection).toEqual({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    })
   })
 
   it('insertBreak', () => {
