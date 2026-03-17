@@ -11,7 +11,7 @@
 ## Installation
 
 ```shell
-yarn add @wangeditor-next/plugin-link-card
+pnpm add @wangeditor-next/plugin-link-card
 ```
 
 ## Usage

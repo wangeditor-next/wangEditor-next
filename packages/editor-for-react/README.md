@@ -12,7 +12,7 @@
 1. 安装组件包
 
 ```shell
-yarn add @wangeditor-next/editor-for-react
+pnpm add @wangeditor-next/editor-for-react
 # 或者npm install @wangeditor-next/editor-for-react --save
 
 ```
@@ -20,7 +20,7 @@ yarn add @wangeditor-next/editor-for-react
 2. 安装核心包
 
 ```shell
-yarn add @wangeditor-next/editor
+pnpm add @wangeditor-next/editor
 
 # 或者 npm install @wangeditor-next/editor --save
 ```

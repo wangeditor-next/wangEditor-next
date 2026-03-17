@@ -11,8 +11,8 @@
 ## 安装
 
 ```shell
-yarn add katex
-yarn add @wangeditor-next/plugin-formula
+pnpm add katex
+pnpm add @wangeditor-next/plugin-formula
 ```
 
 ## 使用

@@ -11,7 +11,7 @@
 ## 安装
 
 ```shell
-yarn add @wangeditor-next/plugin-mention
+pnpm add @wangeditor-next/plugin-mention
 ```
 
 ## 使用

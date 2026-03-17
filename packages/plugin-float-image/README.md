@@ -21,7 +21,7 @@
 ## 安装
 
 ```shell
-yarn add @wangeditor-next/plugin-float-image
+pnpm add @wangeditor-next/plugin-float-image
 ```
 或者
 

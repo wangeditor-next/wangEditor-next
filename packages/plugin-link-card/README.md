@@ -11,7 +11,7 @@
 ## 安装
 
 ```shell
-yarn add @wangeditor-next/plugin-link-card
+pnpm add @wangeditor-next/plugin-link-card
 ```
 
 ## 使用
@@ -128,4 +128,3 @@ div[data-w-e-type="link-card"] .icon-container img {
 ## 其他
 
 支持 i18n 多语言
-

@@ -20,7 +20,7 @@ Use basic markdown syntax in [wangEditor-next](https://wangeditor-next.github.io
 ## Installation
 
 ```sh
-yarn add @wangeditor-next/plugin-markdown
+pnpm add @wangeditor-next/plugin-markdown
 ```
 
 ## Usage

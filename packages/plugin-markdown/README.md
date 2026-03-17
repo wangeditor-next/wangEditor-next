@@ -20,7 +20,7 @@
 ## 安装
 
 ```sh
-yarn add @wangeditor-next/plugin-markdown
+pnpm add @wangeditor-next/plugin-markdown
 ```
 
 ## 使用

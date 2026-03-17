@@ -21,12 +21,12 @@
 ## Installation
 
 ```shell
-yarn add wangeditor-plugin-float-image
+pnpm add @wangeditor-next/plugin-float-image
 ```
 or
 
 ```shell
-npm i wangeditor-plugin-float-image
+npm i @wangeditor-next/plugin-float-image
 ```
 
 ## Usage
