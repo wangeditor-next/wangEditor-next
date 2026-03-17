@@ -3,7 +3,9 @@
  * @author wangfupeng
  */
 
-import { Editor, Range, Transforms } from 'slate'
+import {
+  Editor, Point, Range, Transforms,
+} from 'slate'
 
 import { DomEditor } from '../../editor/dom-editor'
 import { IDomEditor } from '../../editor/interface'
@@ -34,7 +36,27 @@ function handleBeforeInput(e: Event, textarea: TextArea, editor: IDomEditor) {
   if (!hasEditableTarget(editor, event.target)) { return }
 
   // 一些输入法和浏览器扩展会先改 DOM 选区，再触发 beforeinput
-  textarea.flushDOMSelectionChange?.()
+  // 但如果 Slate 已选中全文（如 Ctrl+A），跳过同步：
+  // 浏览器无法表达跨 table 边界的 DOM 选区，且 editorSelectionToDOM 是异步的，
+  // 此时同步 DOM 选区会覆盖 Slate 的全文选区
+  const currentSel = editor.selection
+  let isFullDocSel = false
+
+  if (currentSel != null && !Range.isCollapsed(currentSel)) {
+    try {
+      const [selStart, selEnd] = Range.edges(currentSel)
+      const docStart = Editor.start(editor, [])
+      const docEnd = Editor.end(editor, [])
+
+      isFullDocSel = Point.equals(selStart, docStart) && Point.equals(selEnd, docEnd)
+    } catch {
+      // editor may be a partial mock (tests); skip the check
+    }
+  }
+
+  if (!isFullDocSel) {
+    textarea.flushDOMSelectionChange?.()
+  }
 
   const { selection } = editor
   const { inputType: type } = event
