@@ -190,12 +190,6 @@ class InsertTable implements IDropPanelMenu {
       Transforms.removeNodes(editor, { mode: 'highest' })
     }
 
-    if (editor.children.length === 0) {
-      // 在表格前插入空行，保证用户可以在表格前输入文字
-      const newElem = { type: 'paragraph', children: [{ text: '' }] }
-
-      Transforms.insertNodes(editor, newElem, { mode: 'highest' })
-    }
     // 插入表格
     const tableNode = genTableNode(editor, rowNum, colNum)
 
