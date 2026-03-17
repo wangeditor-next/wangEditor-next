@@ -29,9 +29,16 @@
     "e2e": "playwright test",
     "prepare": "husky install",
     "changeset": "changeset",
-    "example": "turbo run example --filter=@wangeditor-next/editor"
+    "example": "turbo run example --filter=@wangeditor-next/demo-html",
+    "demo:html": "pnpm example",
+    "demo:yjs:react": "pnpm --filter @wangeditor-next/demo-yjs-react run dev:all",
+    "demo:yjs:vue3": "pnpm --filter @wangeditor-next/demo-yjs-vue3 run dev:all",
+    "smoke:demo:yjs:react": "pnpm --filter @wangeditor-next/demo-yjs-react run smoke",
+    "smoke:demo:yjs:vue3": "pnpm --filter @wangeditor-next/demo-yjs-vue3 run smoke",
+    "smoke:demos": "pnpm run smoke:demo:yjs:react && pnpm run smoke:demo:yjs:vue3"
   },
   "workspaces": [
+    "apps/*",
     "shared/*",
     "packages/*"
   ],

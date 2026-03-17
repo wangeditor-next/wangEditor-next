@@ -1,0 +1,8 @@
+{
+  "name": "@wangeditor-next/demo-html",
+  "private": true,
+  "scripts": {
+    "example": "pnpm exec concurrently \"pnpm --dir ../../packages/editor dev-watch\" \"http-server ../../packages/editor -p 8881 -c-1\"",
+    "dev": "pnpm run example"
+  }
+}

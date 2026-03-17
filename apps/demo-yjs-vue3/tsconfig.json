@@ -22,7 +22,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@wangeditor-next/yjs-for-vue": ["../../../yjs-for-vue/dist/yjs-for-vue/src/index.d.ts"]
+      "@wangeditor-next/yjs-for-vue": ["../../packages/yjs-for-vue/dist/yjs-for-vue/src/index.d.ts"]
     },
 
     // 类型定义
@@ -37,7 +37,7 @@
     "src/**/*",
     "types/**/*.d.ts",
     "vite.config.ts",
-    "../../../yjs-for-vue/dist/yjs-for-vue/src/index.d.ts"
+    "../../packages/yjs-for-vue/dist/yjs-for-vue/src/index.d.ts"
   ],
   "exclude": [
     "node_modules",

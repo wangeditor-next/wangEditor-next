@@ -1,0 +1,79 @@
+name: Demo Smoke Test
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'master'
+      - 'dev'
+      - '^(dev-.*|dev/.*)$'
+      - '^(feature-.*|feature/.*)$'
+      - '^(fix-.*|fix/.*)$'
+      - '^(hotfix-.*|hotfix/.*)$'
+      - '^(refactor-.*|refactor/.*)$'
+      - '^(test-.*|test/.*)$'
+    paths:
+      - '.github/workflows/*'
+      - 'apps/**'
+      - 'packages/editor/**'
+      - 'packages/editor-for-react/**'
+      - 'packages/yjs/**'
+      - 'packages/yjs-for-react/**'
+      - 'packages/yjs-for-vue/**'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - 'pnpm-lock.yaml'
+      - 'turbo.json'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/*'
+      - 'apps/**'
+      - 'packages/editor/**'
+      - 'packages/editor-for-react/**'
+      - 'packages/yjs/**'
+      - 'packages/yjs-for-react/**'
+      - 'packages/yjs-for-vue/**'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - 'pnpm-lock.yaml'
+      - 'turbo.json'
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.13.0
+          registry-url: https://registry.npmjs.com
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Load cached dependencies
+        uses: actions/cache@v5.0.3
+        id: cache
+        with:
+          path: |
+            **/node_modules
+            **/.turbo
+            ~/.pnpm-store
+          key: ${{ runner.os }}-node-22.13.0-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Demo smoke tests
+        run: pnpm run smoke:demos

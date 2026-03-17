@@ -9,7 +9,7 @@ export default defineConfig({
     alias: {
       '@wangeditor-next/yjs-for-vue': resolve(
         __dirname,
-        '../../../yjs-for-vue/dist/index.mjs',
+        '../../packages/yjs-for-vue/dist/index.mjs',
       ),
     },
   },

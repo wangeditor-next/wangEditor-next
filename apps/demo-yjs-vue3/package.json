@@ -1,14 +1,14 @@
 {
-  "name": "@wangeditor-next/yjs-demo-vue3",
+  "name": "@wangeditor-next/demo-yjs-vue3",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "install:ignore-workspace": "pnpm install --ignore-workspace",
-    "yjs-for-vue:watch": "pnpm --dir ../../../yjs-for-vue run dev-watch",
     "dev-client": "vite --force",
+    "dev": "pnpm run dev-client",
     "dev-server": "pnpm exec y-websocket --port 1234 --path /wangeditor-next-yjs",
-    "dev:all": "pnpm run dev-server & pnpm run dev-client",
+    "dev:all": "pnpm exec concurrently \"pnpm --dir ../../packages/editor dev-watch\" \"pnpm --dir ../../packages/yjs dev-watch\" \"pnpm --dir ../../packages/yjs-for-vue dev-watch\" \"pnpm run dev-server\" \"pnpm run dev-client\"",
+    "smoke": "pnpm --dir ../../packages/editor build && pnpm --dir ../../packages/yjs build && pnpm --dir ../../packages/yjs-for-vue build && vite build",
     "eslint-fix": "pnpm exec eslint --fix src/   "
   },
   "dependencies": {
@@ -17,10 +17,10 @@
     "@fortawesome/free-regular-svg-icons": "^6.0.0",
     "@fortawesome/free-solid-svg-icons": "^6.0.0",
     "@fortawesome/vue-fontawesome": "^3.0.0",
-    "@wangeditor-next/editor": "latest",
+    "@wangeditor-next/editor": "workspace:*",
     "@wangeditor-next/editor-for-vue": "latest",
-    "@wangeditor-next/yjs": "latest",
-    "@wangeditor-next/yjs-for-vue": "portal:../../../yjs-for-vue",
+    "@wangeditor-next/yjs": "workspace:*",
+    "@wangeditor-next/yjs-for-vue": "workspace:*",
     "randomcolor": "^0.6.2",
     "vue": "^3.2.0",
     "y-protocols": "^1.0.6",
