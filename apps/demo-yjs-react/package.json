@@ -6,7 +6,8 @@
     "dev": "vite",
     "dev:server": "pnpm exec y-websocket --port 1234 --path /wangeditor-next-yjs",
     "dev:all": "pnpm exec concurrently \"pnpm --dir ../../packages/editor dev-watch\" \"pnpm --dir ../../packages/editor-for-react dev-watch\" \"pnpm --dir ../../packages/yjs dev-watch\" \"pnpm --dir ../../packages/yjs-for-react dev-watch\" \"pnpm run dev:server\" \"pnpm run dev\"",
-    "smoke": "pnpm --dir ../../packages/editor build && pnpm --dir ../../packages/editor-for-react build && pnpm --dir ../../packages/yjs build && pnpm --dir ../../packages/yjs-for-react build && vite build"
+    "build": "vite build",
+    "smoke": "pnpm --dir ../.. exec turbo build --filter=@wangeditor-next/demo-yjs-react"
   },
   "dependencies": {
     "@faker-js/faker": "^7.5.0",
