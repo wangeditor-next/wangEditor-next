@@ -96,7 +96,8 @@ function handleBeforeInput(e: Event, textarea: TextArea, editor: IDomEditor) {
     const isLastNotTableCell = selectedElems[selectedElems.length - 1].type !== 'table-cell'
 
     // 如果选中的是开头表格，并且最后不是 table-cell ，则不处理，防止选区包含部分 table 时误删 table 单元格
-    if (isTableSelected && isLastNotTableCell) { return }
+    // 但全选整个文档时（Ctrl+A 两次）应放行，允许清空编辑器
+    if (isTableSelected && isLastNotTableCell && !editor.isSelectedAll()) { return }
 
     // COMPAT: If the selection is expanded, even if the command seems like
     // a delete forward/backward command it should delete the selection.
