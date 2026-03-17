@@ -7,7 +7,8 @@ import {
   Ancestor, LeafPosition,
   Text as SlateText,
 } from 'slate'
-import { VNode } from 'snabbdom'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { jsx, VNode } from 'snabbdom'
 
 import { DomEditor } from '../../editor/dom-editor'
 import { IDomEditor } from '../../editor/interface'
