@@ -88,6 +88,23 @@ function ensureEmptyParagraph(editor: IDomEditor) {
   })
 }
 
+function resetToEmptyParagraph(editor: IDomEditor) {
+  const initialEditorValue: Node[] = [
+    {
+      type: 'paragraph',
+      children: [{ text: '' }],
+    },
+  ]
+
+  Editor.withoutNormalizing(editor, () => {
+    for (let i = editor.children.length - 1; i >= 0; i -= 1) {
+      Transforms.removeNodes(editor, { at: [i] })
+    }
+
+    Transforms.insertNodes(editor, initialEditorValue, { at: [0] })
+  })
+}
+
 export const withContent = <T extends Editor>(editor: T) => {
   const e = editor as T & IDomEditor
   const {
@@ -200,11 +217,9 @@ export const withContent = <T extends Editor>(editor: T) => {
     deleteFragment(options)
 
     if (shouldResetToParagraph) {
-      ensureEmptyParagraph(e)
+      resetToEmptyParagraph(e)
 
-      // ensureEmptyParagraph uses withoutNormalizing to replace non-paragraph
-      // empty nodes, which can leave the selection null. Restore it to start.
-      if (e.selection == null && e.children.length > 0) {
+      if (e.children.length > 0) {
         Transforms.select(e, Editor.start(e, []))
       }
     }

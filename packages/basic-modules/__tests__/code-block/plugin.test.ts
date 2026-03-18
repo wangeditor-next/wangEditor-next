@@ -162,4 +162,19 @@ describe('code-block plugin', () => {
 
     expect(preList.length).toBe(0)
   })
+
+  it('deleteFragment resets a full-document code block selection to an empty paragraph', () => {
+    editor = withCodeBlock(createEditor({
+      content: [{ type: 'pre', children: [{ type: 'code', children: [{ text: 'const a = 1' }], language: '' }] }],
+    }))
+
+    editor.select([])
+    editor.deleteFragment()
+
+    expect(editor.children).toEqual([{ type: 'paragraph', children: [{ text: '' }] }])
+    expect(editor.selection).toEqual({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    })
+  })
 })
