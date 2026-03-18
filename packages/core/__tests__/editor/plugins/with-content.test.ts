@@ -484,6 +484,26 @@ describe('editor content API', () => {
     expect(insertHtmlSpy).toHaveBeenCalledWith('<a href="https://example.com">safe</a>')
   })
 
+  it('insertData truncates html paste when maxLength is exceeded', () => {
+    const editor = createCoreEditor({
+      config: {
+        maxLength: 5,
+      },
+    })
+
+    editor.select(getStartLocation(editor))
+    editor.insertData({
+      getData(type: string) {
+        if (type === 'text/html') { return '<div><span>hello</span><span> world</span></div>' }
+        if (type === 'text/plain') { return 'hello world' }
+        return ''
+      },
+    } as DataTransfer)
+
+    expect(editor.getText()).toBe('hello')
+    expect(editor.getHtml()).toContain('hello')
+  })
+
   it('insertData inserts multiline plain text as paragraphs', () => {
     const editor = createEditor()
 
