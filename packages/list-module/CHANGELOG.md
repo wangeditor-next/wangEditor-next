@@ -1,5 +1,19 @@
 # Change Log
 
+## 1.1.54
+
+### Patch Changes
+
+- 5150062: Upgrade the Slate dependency line to `slate@^0.123.0` and `slate-history@^0.115.0`, and realign wangEditor's DOM bridge, selection sync, and composition handling with current Slate behavior.
+
+  This release also fixes regressions around full-document delete normalization, selectionchange handling in `Document | ShadowRoot`, and related list / paste / image / code-block flows covered by the workspace E2E suite.
+
+- Updated dependencies [f52436a]
+- Updated dependencies [f6836b6]
+- Updated dependencies [015c192]
+- Updated dependencies [5150062]
+  - @wangeditor-next/core@1.7.47
+
 ## 1.1.53
 
 ### Patch Changes
