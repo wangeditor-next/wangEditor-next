@@ -62,17 +62,14 @@ function createUploader(config: IUploadConfig): Uppy {
     headers,
     formData: true,
     fieldName,
-    bundle: true,
+    bundle: false,
     withCredentials,
     timeout,
     ...config.xhrConfig, // 支持传入更多 XHRUpload 配置项
   })
 
   // 各个 callback
-  // onSuccess 每个 file 上传成功都会触发，改用 complete 便于 files 上传
-  uppy.on('complete', result => {
-    const file = result.successful[0]
-    const { response } = file
+  uppy.on('upload-success', (file, response) => {
     const { body = {} } = response ?? {}
 
     try {
