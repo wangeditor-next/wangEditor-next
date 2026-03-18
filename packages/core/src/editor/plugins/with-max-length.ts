@@ -11,6 +11,90 @@ import { DomEditor, IDomEditor } from '../..'
 import { IGNORE_TAGS } from '../../constants'
 import { isDOMElement, isDOMText } from '../../utils/dom'
 
+function getTextLengthForMaxLength(text: string): number {
+  return text.replace(/\n\r|\r\n|\r|\n/g, '').length
+}
+
+function sliceTextForMaxLength(text: string, maxLength: number): string {
+  if (maxLength <= 0) { return '' }
+
+  let leftLength = maxLength
+  let result = ''
+
+  for (const char of text) {
+    if (/\r|\n/.test(char)) {
+      result += char
+      continue
+    }
+
+    if (leftLength <= 0) { break }
+
+    result += char
+    leftLength -= 1
+  }
+
+  return result
+}
+
+function truncateHtmlForMaxLength(html: string, maxLength: number): string {
+  if (maxLength <= 0) { return '' }
+
+  const div = document.createElement('div')
+
+  div.innerHTML = html
+  const removeNodes = (nodes: any[]) => {
+    nodes.forEach(node => node.remove())
+  }
+
+  const trimNodeChildren = (parent: any): boolean => {
+    const childNodes = Array.from(parent.childNodes) as any[]
+
+    for (let i = 0; i < childNodes.length; i += 1) {
+      const node = childNodes[i]
+
+      if (isDOMText(node)) {
+        const textContent = node.textContent || ''
+        const textLength = getTextLengthForMaxLength(textContent)
+
+        if (textLength <= maxLength) {
+          maxLength -= textLength
+          continue
+        }
+
+        node.textContent = sliceTextForMaxLength(textContent, maxLength)
+        maxLength = 0
+
+        removeNodes(childNodes.slice(i + 1))
+        return false
+      }
+
+      if (isDOMElement(node)) {
+        if (IGNORE_TAGS.has(node.nodeName.toLowerCase())) {
+          node.remove()
+          continue
+        }
+
+        const shouldContinue = trimNodeChildren(node)
+
+        if (!shouldContinue) {
+          removeNodes(childNodes.slice(i + 1))
+          return false
+        }
+
+        continue
+      }
+
+      node.remove()
+    }
+
+    return maxLength > 0
+  }
+
+  trimNodeChildren(div)
+
+  return div.innerHTML
+}
+
 export const withMaxLength = <T extends Editor>(editor: T) => {
   const e = editor as T & IDomEditor
   const {
@@ -116,33 +200,11 @@ export const withMaxLength = <T extends Editor>(editor: T) => {
       return
     }
 
-    // ------------- 把 html 转换为 DOM nodes -------------
-    const div = document.createElement('div')
+    const truncatedHtml = truncateHtmlForMaxLength(html, leftLength)
 
-    div.innerHTML = html
-    const text = Array.from(div.childNodes).reduce<string>((acc, node) => {
-      const { nodeName } = node
+    if (!truncatedHtml) { return }
 
-      if (!node) {
-        return acc
-      }
-      // Text Node
-      if (isDOMText(node)) { return acc + (node.textContent || '') }
-
-      // Element Node
-      if (isDOMElement(node)) {
-        // 过滤掉忽略的 tag
-        if (IGNORE_TAGS.has(nodeName.toLowerCase())) { return acc }
-        return acc + (node.textContent || '')
-      }
-      return acc
-    }, '')
-
-    if (leftLength < text.length) {
-      return
-    }
-
-    dangerouslyInsertHtml(html, isRecursive)
+    dangerouslyInsertHtml(truncatedHtml, isRecursive)
   }
 
   return e // 返回 editor 实例
