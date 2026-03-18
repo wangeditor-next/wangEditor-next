@@ -89,6 +89,48 @@ describe('uploader', () => {
     })
   })
 
+  test('it should invoke success callback for each file when uploading multiple files', () => {
+    nock(server)
+      .defaultReplyHeaders({
+        'access-control-allow-method': 'POST',
+        'access-control-allow-origin': '*',
+      })
+      .options('/')
+      .times(2)
+      .reply(200, {})
+      .post('/')
+      .times(2)
+      .reply(200, {})
+
+    const fn = vi.fn()
+    const uppy = createUploader({
+      server,
+      fieldName: 'file1',
+      metaWithUrl: false,
+      onSuccess: fn,
+      onFailed: (_file, _res) => { return undefined },
+      onError: (_file, _err, _res) => { return undefined },
+    })
+
+    uppy.addFile({
+      source: 'vi',
+      name: 'foo.jpg',
+      type: 'image/jpeg',
+      data: new Blob([Buffer.alloc(8192)]),
+    })
+    uppy.addFile({
+      source: 'vi',
+      name: 'bar.jpg',
+      type: 'image/jpeg',
+      data: new Blob([Buffer.alloc(8192)]),
+    })
+
+    return uppy.upload().then(() => {
+      expect(fn).toHaveBeenCalledTimes(2)
+      expect(fn.mock.calls.map(([file]) => file.name)).toEqual(['foo.jpg', 'bar.jpg'])
+    })
+  })
+
   test('it should invoke error callback if file be uploaded error', () => {
     nock(server)
       .defaultReplyHeaders({
