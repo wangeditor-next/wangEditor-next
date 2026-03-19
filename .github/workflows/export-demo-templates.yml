@@ -66,24 +66,37 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     needs: export
-    if: ${{ vars.DEMO_TEMPLATES_REPO != '' && secrets.DEMO_TEMPLATES_TOKEN != '' }}
+    env:
+      DEMO_TEMPLATES_BASE_DIR: ${{ vars.DEMO_TEMPLATES_BASE_DIR }}
+      DEMO_TEMPLATES_BRANCH: ${{ vars.DEMO_TEMPLATES_BRANCH }}
+      DEMO_TEMPLATES_REPO: ${{ vars.DEMO_TEMPLATES_REPO }}
+      DEMO_TEMPLATES_TOKEN: ${{ secrets.DEMO_TEMPLATES_TOKEN }}
 
     steps:
+      - name: Check sync configuration
+        id: config
+        run: |
+          if [ -z "$DEMO_TEMPLATES_REPO" ] || [ -z "$DEMO_TEMPLATES_TOKEN" ]; then
+            echo "sync_enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Template sync is not configured, skipping."
+            exit 0
+          fi
+
+          echo "sync_enabled=true" >> "$GITHUB_OUTPUT"
+
       - name: Download exported templates
+        if: steps.config.outputs.sync_enabled == 'true'
         uses: actions/download-artifact@v5
         with:
           path: .demo-templates
 
       - name: Checkout target repo
-        env:
-          DEMO_TEMPLATES_REPO: ${{ vars.DEMO_TEMPLATES_REPO }}
-          DEMO_TEMPLATES_TOKEN: ${{ secrets.DEMO_TEMPLATES_TOKEN }}
+        if: steps.config.outputs.sync_enabled == 'true'
         run: |
           git clone "https://x-access-token:${DEMO_TEMPLATES_TOKEN}@github.com/${DEMO_TEMPLATES_REPO}.git" target-repo
 
       - name: Copy templates into target repo
-        env:
-          DEMO_TEMPLATES_BASE_DIR: ${{ vars.DEMO_TEMPLATES_BASE_DIR }}
+        if: steps.config.outputs.sync_enabled == 'true'
         run: |
           TARGET_DIR="${DEMO_TEMPLATES_BASE_DIR:-.}"
           mkdir -p "target-repo/${TARGET_DIR}"
@@ -92,9 +105,8 @@ jobs:
           cp -R .demo-templates/demo-vue3-template "target-repo/${TARGET_DIR}/demo-vue3"
 
       - name: Commit and push template updates
+        if: steps.config.outputs.sync_enabled == 'true'
         working-directory: target-repo
-        env:
-          DEMO_TEMPLATES_BRANCH: ${{ vars.DEMO_TEMPLATES_BRANCH }}
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
