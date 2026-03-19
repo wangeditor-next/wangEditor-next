@@ -35,8 +35,8 @@ Yes/No
 <!--
 | HTML | [Reproduce on StackBlitz](https://stackblitz.com/edit/stackblitz-starters-xxqmwl) |
 | Vue 2 | [Reproduce on StackBlitz](https://stackblitz.com/edit/vue2-vite-starter-hkmsif) |
-| Vue 3 | [Reproduce on StackBlitz](https://stackblitz.com/edit/vue3-wangeditor-demo-8emmc7) |
-| React | [Reproduce on StackBlitz](https://stackblitz.com/edit/react-4osjqn) |
+| Vue 3 | [Reproduce on StackBlitz](https://stackblitz.com/fork/github/wangeditor-next/demo-templates/tree/main/demo-vue3?title=wangEditor%20Vue%203%20Demo&startScript=dev) |
+| React | [Reproduce on StackBlitz](https://stackblitz.com/fork/github/wangeditor-next/demo-templates/tree/main/demo-react?title=wangEditor%20React%20Demo&startScript=dev) |
  -->
 
 <!-- paste and replace your sandbox url -->

@@ -52,8 +52,8 @@ npm install @wangeditor-next/editor-for-react --save
 |------|------|
 | HTML | [在 StackBlitz 上试用](https://stackblitz.com/edit/stackblitz-starters-xxqmwl) |
 | Vue 2 | [在 StackBlitz 上试用](https://stackblitz.com/edit/vue2-vite-starter-hkmsif) |
-| Vue 3 | [在 StackBlitz 上试用](https://stackblitz.com/edit/vue3-wangeditor-demo-8emmc7) |
-| React | [在 StackBlitz 上试用](https://stackblitz.com/edit/react-4osjqn) |
+| Vue 3 | [在 StackBlitz 上试用](https://stackblitz.com/fork/github/wangeditor-next/demo-templates/tree/main/demo-vue3?title=wangEditor%20Vue%203%20Demo&startScript=dev) |
+| React | [在 StackBlitz 上试用](https://stackblitz.com/fork/github/wangeditor-next/demo-templates/tree/main/demo-react?title=wangEditor%20React%20Demo&startScript=dev) |
 
 仓库内 demo 的真实源码统一维护在 `apps/`：
 

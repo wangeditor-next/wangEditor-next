@@ -103,6 +103,21 @@ jobs:
           rm -rf "target-repo/${TARGET_DIR}/demo-react" "target-repo/${TARGET_DIR}/demo-vue3"
           cp -R .demo-templates/demo-react-template "target-repo/${TARGET_DIR}/demo-react"
           cp -R .demo-templates/demo-vue3-template "target-repo/${TARGET_DIR}/demo-vue3"
+          cat > "target-repo/${TARGET_DIR}/README.md" <<'EOF'
+          # wangEditor Demo Templates
+
+          Derived demo templates synced from `wangeditor-next/wangEditor-next`.
+
+          Available templates:
+
+          - `demo-react`
+          - `demo-vue3`
+
+          Open in StackBlitz:
+
+          - React: https://stackblitz.com/fork/github/wangeditor-next/demo-templates/tree/main/demo-react?title=wangEditor%20React%20Demo&startScript=dev
+          - Vue 3: https://stackblitz.com/fork/github/wangeditor-next/demo-templates/tree/main/demo-vue3?title=wangEditor%20Vue%203%20Demo&startScript=dev
+          EOF
 
       - name: Commit and push template updates
         if: steps.config.outputs.sync_enabled == 'true'

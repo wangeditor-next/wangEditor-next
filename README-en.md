@@ -44,10 +44,10 @@ Try it on StackBlitz: [HTML Example](https://stackblitz.com/edit/stackblitz-star
 Try it on StackBlitz: [Vue 2 Example](https://stackblitz.com/edit/vue2-vite-starter-hkmsif)
 
 ### Vue 3
-Try it on StackBlitz: [Vue 3 Example](https://stackblitz.com/edit/vue3-wangeditor-demo-8emmc7)
+Try it on StackBlitz: [Vue 3 Example](https://stackblitz.com/fork/github/wangeditor-next/demo-templates/tree/main/demo-vue3?title=wangEditor%20Vue%203%20Demo&startScript=dev)
 
 ### React
-Try it on StackBlitz: [React Example](https://stackblitz.com/edit/react-4osjqn)
+Try it on StackBlitz: [React Example](https://stackblitz.com/fork/github/wangeditor-next/demo-templates/tree/main/demo-react?title=wangEditor%20React%20Demo&startScript=dev)
 
 The source of truth for demos in this repository lives under `apps/`:
 
