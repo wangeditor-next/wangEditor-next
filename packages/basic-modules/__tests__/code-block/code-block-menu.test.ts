@@ -40,6 +40,34 @@ describe('code-block menu', () => {
     expect(menu.getValue(editor)).toBe('')
   })
 
+  it('uses selected code language as the default menu value and inserted language', () => {
+    const editor1 = createEditor({
+      config: {
+        MENU_CONF: {
+          codeSelectLang: {
+            codeLangs: [
+              { text: 'Plain text', value: '' },
+              { text: 'Javascript', value: 'javascript', selected: true },
+              { text: 'Typescript', value: 'typescript' },
+            ],
+          },
+        },
+      },
+    })
+
+    editor1.select(Editor.start(editor1, []))
+
+    expect(menu.isActive(editor1)).toBeFalsy()
+    expect(menu.getValue(editor1)).toBe('javascript')
+
+    menu.exec(editor1, menu.getValue(editor1))
+
+    const codeList = editor1.getElemsByTypePrefix('code') as any[]
+
+    expect(codeList.length).toBe(1)
+    expect(codeList[0].language).toBe('javascript')
+  })
+
   it('is disabled', () => {
     editor.select(startLocation)
     expect(menu.isDisabled(editor)).toBeFalsy()
