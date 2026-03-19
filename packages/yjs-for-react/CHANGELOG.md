@@ -1,5 +1,18 @@
 # @wangeditor-next/yjs-for-react
 
+## 0.1.62
+
+### Patch Changes
+
+- 5150062: Upgrade the Slate dependency line to `slate@^0.123.0` and `slate-history@^0.115.0`, and realign wangEditor's DOM bridge, selection sync, and composition handling with current Slate behavior.
+
+  This release also fixes regressions around full-document delete normalization, selectionchange handling in `Document | ShadowRoot`, and related list / paste / image / code-block flows covered by the workspace E2E suite.
+
+- Updated dependencies [015c192]
+- Updated dependencies [5150062]
+  - @wangeditor-next/editor@5.6.51
+  - @wangeditor-next/yjs@0.1.46
+
 ## 0.1.61
 
 ### Patch Changes

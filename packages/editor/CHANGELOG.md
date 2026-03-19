@@ -1,5 +1,26 @@
 # Change Log
 
+## 5.6.51
+
+### Patch Changes
+
+- 015c192: fix HTML paste truncation when maxLength is exceeded
+- 5150062: Upgrade the Slate dependency line to `slate@^0.123.0` and `slate-history@^0.115.0`, and realign wangEditor's DOM bridge, selection sync, and composition handling with current Slate behavior.
+
+  This release also fixes regressions around full-document delete normalization, selectionchange handling in `Document | ShadowRoot`, and related list / paste / image / code-block flows covered by the workspace E2E suite.
+
+- Updated dependencies [f52436a]
+- Updated dependencies [f6836b6]
+- Updated dependencies [015c192]
+- Updated dependencies [5150062]
+  - @wangeditor-next/core@1.7.47
+  - @wangeditor-next/basic-modules@1.5.49
+  - @wangeditor-next/list-module@1.1.54
+  - @wangeditor-next/table-module@1.6.62
+  - @wangeditor-next/code-highlight@1.3.45
+  - @wangeditor-next/video-module@1.3.53
+  - @wangeditor-next/upload-image-module@1.1.52
+
 ## 5.6.50
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # Change Log
 
+## 1.7.47
+
+### Patch Changes
+
+- f52436a: Fix full-document delete so clearing a code block resets the editor to a single empty paragraph and shows the placeholder immediately.
+- f6836b6: Fix default multi-file uploads to send one request per file and trigger success callbacks for every uploaded file.
+- 015c192: fix HTML paste truncation when maxLength is exceeded
+- 5150062: Upgrade the Slate dependency line to `slate@^0.123.0` and `slate-history@^0.115.0`, and realign wangEditor's DOM bridge, selection sync, and composition handling with current Slate behavior.
+
+  This release also fixes regressions around full-document delete normalization, selectionchange handling in `Document | ShadowRoot`, and related list / paste / image / code-block flows covered by the workspace E2E suite.
+
 ## 1.7.46
 
 ### Patch Changes
