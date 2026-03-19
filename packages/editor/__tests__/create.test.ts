@@ -173,4 +173,15 @@ describe('create editor and toolbar', () => {
       { type: 'paragraph', children: [{ text: '' }] },
     ])
   })
+
+  test('getHtml keeps images imported from span-wrapped html', () => {
+    const html = '<p><span><img src="https://example.com/test.png" alt="Image" width="836" height="435" /></span></p><p>123</p>'
+
+    const editor = customCreateEditor({ html })
+    const exportedHtml = editor.getHtml()
+
+    expect(exportedHtml).toContain('<img')
+    expect(exportedHtml).toContain('src="https://example.com/test.png"')
+    expect(exportedHtml).toContain('<p>123</p>')
+  })
 })
