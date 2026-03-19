@@ -97,4 +97,18 @@ describe('convert to html or text', () => {
 
     expect(editor.getText()).toBe('hello\nworld')
   })
+
+  it('does not warn when the editor container height is below 300px', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    createEditor({
+      selector: container,
+      content: [{ type: 'paragraph', children: [{ text: 'hello' }] }],
+    })
+
+    await Promise.resolve()
+
+    expect(warnSpy).not.toHaveBeenCalled()
+    warnSpy.mockRestore()
+  })
 })
