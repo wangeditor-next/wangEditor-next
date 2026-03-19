@@ -1,0 +1,96 @@
+:root {
+  color: #183153;
+  background: #f3f6fb;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+code,
+pre {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+}
+
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+  gap: 24px;
+  padding: 24px;
+}
+
+.panel {
+  border: 1px solid #d9e2f2;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 16px 50px rgba(35, 63, 105, 0.08);
+  overflow: hidden;
+}
+
+.hero {
+  padding: 24px 24px 0;
+}
+
+.hero h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+}
+
+.summary {
+  margin: 0 0 20px;
+  color: #56708f;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #2e5aac;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.editor-shell {
+  margin: 0 24px 24px;
+  border: 1px solid #d9e2f2;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.output {
+  padding: 24px;
+}
+
+.output pre {
+  margin: 0;
+  max-height: 520px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #183153;
+}
+
+@media (max-width: 960px) {
+  .page {
+    grid-template-columns: 1fr;
+  }
+}

@@ -49,6 +49,31 @@ Try it on StackBlitz: [Vue 3 Example](https://stackblitz.com/edit/vue3-wangedito
 ### React
 Try it on StackBlitz: [React Example](https://stackblitz.com/edit/react-4osjqn)
 
+The source of truth for demos in this repository lives under `apps/`:
+
+- `apps/demo-html`
+- `apps/demo-react`
+- `apps/demo-vue3`
+- `apps/demo-yjs-react`
+- `apps/demo-yjs-vue3`
+
+Run them locally:
+
+```sh
+pnpm demo:html
+pnpm demo:react
+pnpm demo:vue3
+pnpm demo:yjs:react
+pnpm demo:yjs:vue3
+```
+
+Notes:
+
+- StackBlitz links are for online reproduction and sharing
+- The maintained demo sources live in `apps/*`, not inside the remote sandboxes
+- Export a template from local source with `pnpm demo:export-template demo-react <output-dir>` or `pnpm demo:export-template demo-vue3 <output-dir>`
+- To sync templates automatically, configure the repo variables and secret used by `.github/workflows/export-demo-templates.yml`
+
 ## Communication
 
 - [Discuss issues and suggestions](https://github.com/wangeditor-next/wangEditor-next/issues)

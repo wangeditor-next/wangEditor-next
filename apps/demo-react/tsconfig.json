@@ -1,0 +1,15 @@
+{
+  "include": [
+    "src/**/*"
+  ],
+  "compilerOptions": {
+    "jsx": "react",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "composite": true,
+    "types": [
+      "vite/client"
+    ]
+  },
+  "references": []
+}

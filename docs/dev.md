@@ -36,6 +36,13 @@ pnpm build
 ### 运行 demo
 
 - 在仓库根目录执行 `pnpm example`，浏览器打开 `http://localhost:8881/examples/`
+- React demo：`pnpm demo:react`
+- Vue 3 demo：`pnpm demo:vue3`
+- React 协同 demo：`pnpm demo:yjs:react`
+- Vue 3 协同 demo：`pnpm demo:yjs:vue3`
+- 统一维护入口在仓库根目录的 `apps/`
+- 如需导出给外部模板仓库，可使用 `pnpm demo:export-template demo-react <output-dir>` 或 `pnpm demo:export-template demo-vue3 <output-dir>`
+- 如需自动同步模板仓库，可配置 `.github/workflows/export-demo-templates.yml` 使用的 `DEMO_TEMPLATES_REPO`、`DEMO_TEMPLATES_BRANCH`、`DEMO_TEMPLATES_BASE_DIR` 和 `DEMO_TEMPLATES_TOKEN`
 
 ## 注意事项
 

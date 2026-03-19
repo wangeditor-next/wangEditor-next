@@ -1,0 +1,23 @@
+{
+  "name": "@wangeditor-next/demo-react",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "dev:all": "pnpm exec concurrently \"pnpm --dir ../../packages/editor dev-watch\" \"pnpm --dir ../../packages/editor-for-react dev-watch\" \"pnpm run dev\"",
+    "build": "vite build",
+    "smoke": "pnpm --dir ../.. exec turbo build --filter=@wangeditor-next/demo-react"
+  },
+  "dependencies": {
+    "@wangeditor-next/editor": "workspace:*",
+    "@wangeditor-next/editor-for-react": "workspace:*",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.34",
+    "@types/react-dom": "^17.0.11",
+    "@vitejs/plugin-react": "^1.0.7",
+    "vite": "^2.6.13"
+  }
+}

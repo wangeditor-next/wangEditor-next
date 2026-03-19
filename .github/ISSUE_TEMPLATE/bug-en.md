@@ -29,6 +29,7 @@ Yes/No
 ## Online Demo
 
 <!-- If the official demo cannot reproduce the issue, please use an online sandbox to help us reproduce the bug at the lowest cost. -->
+<!-- The maintained demo sources in this repo live under apps/* . StackBlitz is mainly for online reproduction. -->
 <!-- Please fork and modify the following corresponding links and paste the modified sandbox link here -->
 
 <!--

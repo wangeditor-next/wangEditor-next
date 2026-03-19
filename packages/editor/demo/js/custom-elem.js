@@ -201,11 +201,11 @@ const MENU_CONF = [
   {
     'zh-CN': {
       text: 'Shadow DOM',
-      link: 'https://github.com/cycleccc/wangEditor/blob/master/packages/editor/examples/shadow-dom.html',
+      link: 'https://github.com/wangeditor-next/wangEditor-next/blob/master/apps/demo-html/examples/shadow-dom.html',
     },
     en: {
       text: 'Shadow DOM',
-      link: 'https://github.com/cycleccc/wangEditor/blob/master/packages/editor/examples/shadow-dom.html',
+      link: 'https://github.com/wangeditor-next/wangEditor-next/blob/master/apps/demo-html/examples/shadow-dom.html',
     },
   },
   {

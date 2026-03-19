@@ -1,0 +1,13 @@
+{
+  "include": [
+    "src/**/*"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "./dist",
+    "types": [
+      "vite/client"
+    ]
+  },
+  "references": []
+}

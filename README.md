@@ -55,6 +55,31 @@ npm install @wangeditor-next/editor-for-react --save
 | Vue 3 | [在 StackBlitz 上试用](https://stackblitz.com/edit/vue3-wangeditor-demo-8emmc7) |
 | React | [在 StackBlitz 上试用](https://stackblitz.com/edit/react-4osjqn) |
 
+仓库内 demo 的真实源码统一维护在 `apps/`：
+
+- `apps/demo-html`
+- `apps/demo-react`
+- `apps/demo-vue3`
+- `apps/demo-yjs-react`
+- `apps/demo-yjs-vue3`
+
+本地运行：
+
+```sh
+pnpm demo:html
+pnpm demo:react
+pnpm demo:vue3
+pnpm demo:yjs:react
+pnpm demo:yjs:vue3
+```
+
+说明：
+
+- README 中的 StackBlitz 链接用于在线复现和分享
+- 仓库内实际维护以 `apps/*` 为准，不建议直接把沙盒代码当成长期维护源
+- 如需导出模板，可使用 `pnpm demo:export-template demo-react <output-dir>` 或 `pnpm demo:export-template demo-vue3 <output-dir>`
+- 如需自动同步模板仓库，可配置 `.github/workflows/export-demo-templates.yml` 所需的 repo variables / secret
+
 
 ## 交流
 

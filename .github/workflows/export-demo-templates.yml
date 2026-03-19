@@ -1,0 +1,107 @@
+name: Export Demo Templates
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - '.github/workflows/*'
+      - 'apps/demo-react/**'
+      - 'apps/demo-vue3/**'
+      - 'scripts/export-demo-template.js'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+  workflow_dispatch:
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app:
+          - demo-react
+          - demo-vue3
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.13.0
+          registry-url: https://registry.npmjs.com
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Load cached dependencies
+        uses: actions/cache@v5.0.3
+        with:
+          path: |
+            **/node_modules
+            **/.turbo
+            ~/.pnpm-store
+          key: ${{ runner.os }}-node-22.13.0-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Export template
+        run: |
+          mkdir -p .demo-templates
+          pnpm demo:export-template ${{ matrix.app }} .demo-templates/${{ matrix.app }}
+
+      - name: Upload exported template
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.app }}-template
+          path: .demo-templates/${{ matrix.app }}
+
+  sync:
+    runs-on: ubuntu-latest
+    needs: export
+    if: ${{ vars.DEMO_TEMPLATES_REPO != '' && secrets.DEMO_TEMPLATES_TOKEN != '' }}
+
+    steps:
+      - name: Download exported templates
+        uses: actions/download-artifact@v5
+        with:
+          path: .demo-templates
+
+      - name: Checkout target repo
+        env:
+          DEMO_TEMPLATES_REPO: ${{ vars.DEMO_TEMPLATES_REPO }}
+          DEMO_TEMPLATES_TOKEN: ${{ secrets.DEMO_TEMPLATES_TOKEN }}
+        run: |
+          git clone "https://x-access-token:${DEMO_TEMPLATES_TOKEN}@github.com/${DEMO_TEMPLATES_REPO}.git" target-repo
+
+      - name: Copy templates into target repo
+        env:
+          DEMO_TEMPLATES_BASE_DIR: ${{ vars.DEMO_TEMPLATES_BASE_DIR }}
+        run: |
+          TARGET_DIR="${DEMO_TEMPLATES_BASE_DIR:-.}"
+          mkdir -p "target-repo/${TARGET_DIR}"
+          rm -rf "target-repo/${TARGET_DIR}/demo-react" "target-repo/${TARGET_DIR}/demo-vue3"
+          cp -R .demo-templates/demo-react-template "target-repo/${TARGET_DIR}/demo-react"
+          cp -R .demo-templates/demo-vue3-template "target-repo/${TARGET_DIR}/demo-vue3"
+
+      - name: Commit and push template updates
+        working-directory: target-repo
+        env:
+          DEMO_TEMPLATES_BRANCH: ${{ vars.DEMO_TEMPLATES_BRANCH }}
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add .
+          if git diff --cached --quiet; then
+            echo "No template changes to commit"
+            exit 0
+          fi
+          git commit -m "chore: sync wangEditor demo templates"
+          git push origin "HEAD:${DEMO_TEMPLATES_BRANCH:-main}"

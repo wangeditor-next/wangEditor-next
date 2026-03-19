@@ -31,11 +31,16 @@
     "changeset": "changeset",
     "example": "turbo run example --filter=@wangeditor-next/demo-html",
     "demo:html": "pnpm example",
+    "demo:react": "pnpm --filter @wangeditor-next/demo-react run dev:all",
+    "demo:vue3": "pnpm --filter @wangeditor-next/demo-vue3 run dev:all",
+    "demo:export-template": "node scripts/export-demo-template.js",
     "demo:yjs:react": "pnpm --filter @wangeditor-next/demo-yjs-react run dev:all",
     "demo:yjs:vue3": "pnpm --filter @wangeditor-next/demo-yjs-vue3 run dev:all",
+    "smoke:demo:react": "pnpm --filter @wangeditor-next/demo-react run smoke",
+    "smoke:demo:vue3": "pnpm --filter @wangeditor-next/demo-vue3 run smoke",
     "smoke:demo:yjs:react": "pnpm --filter @wangeditor-next/demo-yjs-react run smoke",
     "smoke:demo:yjs:vue3": "pnpm --filter @wangeditor-next/demo-yjs-vue3 run smoke",
-    "smoke:demos": "pnpm run smoke:demo:yjs:react && pnpm run smoke:demo:yjs:vue3"
+    "smoke:demos": "pnpm exec turbo build --filter=@wangeditor-next/demo-react --filter=@wangeditor-next/demo-vue3 --filter=@wangeditor-next/demo-yjs-react --filter=@wangeditor-next/demo-yjs-vue3"
   },
   "workspaces": [
     "apps/*",
