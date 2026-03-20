@@ -276,3 +276,34 @@ test.describe('Basic Editor', () => {
     await expect(textareaContainer).not.toHaveClass(/w-e-full-screen-container/)
   })
 })
+
+test.describe('Multi Editors', () => {
+  test('edits each editor independently', async ({ page }) => {
+    await page.goto('/examples/multi-editors.html')
+
+    const editor1 = page.locator('#editor-text-area-1 [contenteditable="true"]')
+    const editor2 = page.locator('#editor-text-area-2 [contenteditable="true"]')
+
+    await editor1.click()
+    await expect
+      .poll(async () => page.evaluate(() => ({
+        activeId: document.activeElement?.id,
+        rangeCount: document.getSelection()?.rangeCount ?? 0,
+      })))
+      .toEqual({ activeId: 'w-e-textarea-1', rangeCount: 1 })
+    await page.keyboard.type('abc')
+    await expect(page.locator('#content-view-1')).toContainText('编辑器1abc')
+    await expect(page.locator('#content-view-2')).toContainText('编辑器2')
+
+    await editor2.click()
+    await expect
+      .poll(async () => page.evaluate(() => ({
+        activeId: document.activeElement?.id,
+        rangeCount: document.getSelection()?.rangeCount ?? 0,
+      })))
+      .toEqual({ activeId: 'w-e-textarea-2', rangeCount: 1 })
+    await page.keyboard.type('xyz')
+    await expect(page.locator('#content-view-1')).toContainText('编辑器1abc')
+    await expect(page.locator('#content-view-2')).toContainText('编辑器2xyz')
+  })
+})
