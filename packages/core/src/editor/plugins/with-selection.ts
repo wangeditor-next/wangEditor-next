@@ -30,7 +30,12 @@ export const withSelection = <T extends Editor>(editor: T) => {
     const root = DomEditor.findDocumentOrShadowRoot(e)
     const domSelection = root.getSelection()
 
-    if (domSelection && domSelection.rangeCount > 0) {
+    const selectionBelongsToEditor = domSelection
+      && domSelection.rangeCount > 0
+      && DomEditor.hasDOMNode(e, domSelection.anchorNode as any)
+      && DomEditor.hasDOMNode(e, domSelection.focusNode as any)
+
+    if (selectionBelongsToEditor) {
       domSelection.removeAllRanges()
     }
 
