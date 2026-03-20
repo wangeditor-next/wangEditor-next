@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.7.49
+
+### Patch Changes
+
+- 00d1de8: Fix multi-editor pages losing the active caret when switching between editors.
+
 ## 1.7.48
 
 ### Patch Changes
