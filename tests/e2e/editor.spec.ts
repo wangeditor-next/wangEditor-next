@@ -285,11 +285,23 @@ test.describe('Multi Editors', () => {
     const editor2 = page.locator('#editor-text-area-2 [contenteditable="true"]')
 
     await editor1.click()
+    await expect
+      .poll(async () => page.evaluate(() => ({
+        activeId: document.activeElement?.id,
+        rangeCount: document.getSelection()?.rangeCount ?? 0,
+      })))
+      .toEqual({ activeId: 'w-e-textarea-1', rangeCount: 1 })
     await page.keyboard.type('abc')
     await expect(page.locator('#content-view-1')).toContainText('编辑器1abc')
-    await expect(page.locator('#content-view-2')).toBeEmpty()
+    await expect(page.locator('#content-view-2')).toContainText('编辑器2')
 
     await editor2.click()
+    await expect
+      .poll(async () => page.evaluate(() => ({
+        activeId: document.activeElement?.id,
+        rangeCount: document.getSelection()?.rangeCount ?? 0,
+      })))
+      .toEqual({ activeId: 'w-e-textarea-2', rangeCount: 1 })
     await page.keyboard.type('xyz')
     await expect(page.locator('#content-view-1')).toContainText('编辑器1abc')
     await expect(page.locator('#content-view-2')).toContainText('编辑器2xyz')
