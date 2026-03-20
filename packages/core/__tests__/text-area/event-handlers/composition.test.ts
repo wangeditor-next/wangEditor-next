@@ -140,7 +140,7 @@ describe('composition handlers', () => {
     expect(EDITOR_TO_PENDING_COMPOSITION_END.has(editor)).toBe(false)
   })
 
-  it('does not restore pending selection before inserting committed composition text', () => {
+  it('applies pending selection before inserting committed composition text', () => {
     const paragraph = { type: 'paragraph', children: [{ text: 'x' }] }
     const pendingSelection = {
       anchor: { path: [0, 0], offset: 1 },
@@ -170,7 +170,7 @@ describe('composition handlers', () => {
 
     handleCompositionEnd(event, textarea, editor)
 
-    expect(selectSpy).not.toHaveBeenCalled()
+    expect(selectSpy).toHaveBeenCalledWith(editor, pendingSelection)
     expect(Editor.insertText).toHaveBeenCalledWith(editor, '拼')
     expect(EDITOR_TO_PENDING_SELECTION.has(editor)).toBe(false)
   })

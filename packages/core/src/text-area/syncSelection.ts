@@ -12,6 +12,7 @@ import { DOMElement } from '../utils/dom'
 import { IS_FIREFOX } from '../utils/ua'
 import {
   EDITOR_TO_ELEMENT,
+  EDITOR_TO_PENDING_SELECTION,
   IS_FOCUSED,
 } from '../utils/weak-maps'
 import { hasSelectableTarget, hasTarget } from './helpers'
@@ -201,7 +202,18 @@ export function DOMSelectionToEditor(textarea: TextArea, editor: IDomEditor) {
   const anchorNodeSelectable = hasSelectableTarget(editor, anchorNode)
   const focusNodeInEditor = hasTarget(editor, focusNode)
 
-  if (isComposing) { return }
+  if (isComposing) {
+    if (anchorNodeSelectable && focusNodeInEditor) {
+      const range = DomEditor.toSlateRange(editor, domSelection, {
+        exactMatch: false,
+        suppressThrow: true,
+      })
+
+      EDITOR_TO_PENDING_SELECTION.set(editor, range)
+    }
+
+    return
+  }
 
   if (anchorNodeSelectable && focusNodeInEditor) {
     const range = DomEditor.toSlateRange(editor, domSelection, {

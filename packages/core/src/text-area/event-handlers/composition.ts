@@ -4,7 +4,7 @@
  */
 
 import {
-  Editor, Element, Range, Text,
+  Editor, Element, Range, Text, Transforms,
 } from 'slate'
 
 import { DomEditor } from '../../editor/dom-editor'
@@ -120,7 +120,16 @@ export function handleCompositionEnd(e: Event, textarea: TextArea, editor: IDomE
     EDITOR_TO_PENDING_COMPOSITION_END.delete(editor)
     EDITOR_TO_PENDING_SELECTION.delete(editor)
   } else {
+    const pendingSelection = EDITOR_TO_PENDING_SELECTION.get(editor)
+
     EDITOR_TO_PENDING_SELECTION.delete(editor)
+
+    if (
+      pendingSelection
+      && (!editor.selection || !Range.equals(editor.selection, pendingSelection))
+    ) {
+      Transforms.select(editor, pendingSelection)
+    }
   }
 
   const { selection } = editor

@@ -411,7 +411,7 @@ describe('DOMSelectionToEditor', () => {
     expect(Range.isCollapsed(range)).toBe(false)
   })
 
-  it('skips selection updates while composing', () => {
+  it('stores a pending selection instead of selecting while composing', () => {
     const editor = { getConfig: () => ({ readOnly: false }) } as any
     const textarea = { isComposing: true, isUpdatingSelection: false, isDraggingInternally: false } as any
 
@@ -438,7 +438,7 @@ describe('DOMSelectionToEditor', () => {
     DOMSelectionToEditor(textarea, editor)
 
     expect(selectSpy).not.toHaveBeenCalled()
-    expect(EDITOR_TO_PENDING_SELECTION.has(editor)).toBe(false)
+    expect(EDITOR_TO_PENDING_SELECTION.get(editor)).toEqual(range)
   })
 
   it('skips selection when slate range cannot be resolved during selectionchange', () => {

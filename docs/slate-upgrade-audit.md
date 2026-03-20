@@ -45,7 +45,7 @@
   - pending DOM selection sync is flushed before handling `beforeinput`.
   - `insertFromComposition` is handled explicitly.
   - `compositionend` skips duplicate insertion when the commit was already applied through `beforeinput`.
-  - selection changes that happen while composing are ignored so IME composition does not restore stale Slate selections on commit.
+  - selection changes that happen while composing are now stored as pending selection and can be applied at `compositionend`.
 - Regression coverage added for:
   - stale path resolution in `dom-editor`
   - non-editable neighbor point resolution
