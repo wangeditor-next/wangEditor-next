@@ -1,5 +1,19 @@
 # Change Log
 
+## 5.6.52
+
+### Patch Changes
+
+- 2d02268: Fix IME selection handling so composition does not restore stale selections on commit.
+- Updated dependencies [2d02268]
+  - @wangeditor-next/core@1.7.48
+  - @wangeditor-next/basic-modules@1.5.50
+  - @wangeditor-next/code-highlight@1.3.46
+  - @wangeditor-next/list-module@1.1.55
+  - @wangeditor-next/table-module@1.6.63
+  - @wangeditor-next/upload-image-module@1.1.53
+  - @wangeditor-next/video-module@1.3.54
+
 ## 5.6.51
 
 ### Patch Changes
