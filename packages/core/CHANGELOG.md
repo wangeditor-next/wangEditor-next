@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.7.48
+
+### Patch Changes
+
+- 2d02268: Fix IME selection handling so composition does not restore stale selections on commit.
+
 ## 1.7.47
 
 ### Patch Changes
