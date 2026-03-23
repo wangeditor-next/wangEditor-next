@@ -1,5 +1,23 @@
 # Change Log
 
+## 5.6.54
+
+### Patch Changes
+
+- 2da282d: Avoid throwing when an editor is destroyed before textarea async initialization completes.
+- 3bdc0b7: Preserve Excel-imported table cells that use `display:none` styles but still contain content.
+- 2c68112: Avoid restoring stale selections when `setHtml` replaces the entire document content.
+- Updated dependencies [2da282d]
+- Updated dependencies [3bdc0b7]
+- Updated dependencies [2c68112]
+  - @wangeditor-next/core@1.7.50
+  - @wangeditor-next/table-module@1.6.65
+  - @wangeditor-next/basic-modules@1.5.52
+  - @wangeditor-next/code-highlight@1.3.48
+  - @wangeditor-next/list-module@1.1.57
+  - @wangeditor-next/upload-image-module@1.1.55
+  - @wangeditor-next/video-module@1.3.56
+
 ## 5.6.53
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # Change Log
 
+## 1.6.65
+
+### Patch Changes
+
+- 3bdc0b7: Preserve Excel-imported table cells that use `display:none` styles but still contain content.
+- Updated dependencies [2da282d]
+- Updated dependencies [2c68112]
+  - @wangeditor-next/core@1.7.50
+
 ## 1.6.64
 
 ### Patch Changes
