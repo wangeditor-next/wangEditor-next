@@ -526,6 +526,7 @@ export const withContent = <T extends Editor>(editor: T) => {
 
     // 删除当前内容
     e.enable()
+    EDITOR_TO_SELECTION.delete(e)
     e.focus()
     // 需要标准的{anchor:xxx, focus: xxxx} 否则无法通过slate history的检查
     // 使用 e.select([]) e.selectAll() 生成的location不是标准的{anchor: xxxx, focus: xxx}形式
@@ -547,7 +548,13 @@ export const withContent = <T extends Editor>(editor: T) => {
     }
     if (e.isFocused()) {
       try {
-        e.select(JSON.parse(editorSelectionStr)) // 选中原来的位置
+        const previousSelection = JSON.parse(editorSelectionStr)
+
+        if (Range.isRange(previousSelection) && DomEditor.hasRange(e, previousSelection)) {
+          e.select(previousSelection) // 选中原来的位置
+        } else {
+          e.select(Editor.start(e, []))
+        }
       } catch (ex) {
         e.select(Editor.start(e, [])) // 选中开始
       }
