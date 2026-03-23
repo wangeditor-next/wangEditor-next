@@ -125,4 +125,78 @@ describe('Table Module Full Width Menu', () => {
 
     expect(fn).toBeCalled()
   })
+
+  test('exec scales column widths to container width and keeps the last column remainder', () => {
+    const fullWidthMenu = new FullWidth()
+    const editor = createEditor()
+    const tableNode = {
+      type: 'table',
+      columnWidths: [100, 200],
+      children: [],
+    } as any
+    const tableDom = document.createElement('div')
+    const container = document.createElement('div')
+
+    container.className = 'table-container'
+    Object.defineProperty(container, 'clientWidth', { value: 400 })
+    tableDom.append(container)
+
+    setEditorSelection(editor)
+    vi.spyOn(fullWidthMenu, 'isDisabled').mockReturnValue(false)
+    vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockReturnValue(tableNode)
+    vi.spyOn(core.DomEditor, 'toDOMNode').mockReturnValue(tableDom)
+    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
+
+    fullWidthMenu.exec(editor, '')
+
+    expect(setNodesSpy).toHaveBeenCalledWith(
+      editor,
+      {
+        width: 'auto',
+        columnWidths: [133, 266],
+      },
+      { mode: 'highest' },
+    )
+  })
+
+  test('exec enforces minWidth and shrinks oversized columns proportionally', () => {
+    const fullWidthMenu = new FullWidth()
+    const editor = createEditor({
+      config: {
+        MENU_CONF: {
+          insertTable: {
+            minWidth: 120,
+          },
+        },
+      },
+    })
+    const tableNode = {
+      type: 'table',
+      columnWidths: [60, 60],
+      children: [],
+    } as any
+    const tableDom = document.createElement('div')
+    const container = document.createElement('div')
+
+    container.className = 'table-container'
+    Object.defineProperty(container, 'clientWidth', { value: 200 })
+    tableDom.append(container)
+
+    setEditorSelection(editor)
+    vi.spyOn(fullWidthMenu, 'isDisabled').mockReturnValue(false)
+    vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockReturnValue(tableNode)
+    vi.spyOn(core.DomEditor, 'toDOMNode').mockReturnValue(tableDom)
+    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
+
+    fullWidthMenu.exec(editor, '')
+
+    expect(setNodesSpy).toHaveBeenCalledWith(
+      editor,
+      {
+        width: 'auto',
+        columnWidths: [120, 120],
+      },
+      { mode: 'highest' },
+    )
+  })
 })

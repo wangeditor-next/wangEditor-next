@@ -2,7 +2,7 @@
  * @description beforeinput handler test
  */
 
-import { Editor, Range } from 'slate'
+import { Editor, Range, Transforms } from 'slate'
 import {
   afterEach, describe, expect, it, vi,
 } from 'vitest'
@@ -10,6 +10,7 @@ import {
 import { DomEditor } from '../../../src/editor/dom-editor'
 import handleBeforeInput from '../../../src/text-area/event-handlers/beforeInput'
 import * as helpers from '../../../src/text-area/helpers'
+import * as domUtils from '../../../src/utils/dom'
 import {
   EDITOR_TO_CAN_PASTE,
   EDITOR_TO_PENDING_COMPOSITION_END,
@@ -185,5 +186,133 @@ describe('handleBeforeInput', () => {
     expect(EDITOR_TO_PENDING_COMPOSITION_END.get(editor)).toBe(true)
 
     EDITOR_TO_PENDING_COMPOSITION_END.delete(editor)
+  })
+
+  it('returns early when editor is readOnly', () => {
+    const editor = {
+      selection: createSelection(false),
+      getConfig: () => ({ readOnly: true }),
+    } as any
+    const event = {
+      inputType: 'insertText',
+      data: 'hello',
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    handleBeforeInput(event, {} as any, editor)
+
+    expect(event.preventDefault).not.toHaveBeenCalled()
+    expect(Editor.insertText).not.toHaveBeenCalled()
+  })
+
+  it('syncs the target range into editor selection before inserting text', () => {
+    const range = createSelection(false)
+    const editor = {
+      selection: null,
+      getConfig: () => ({ readOnly: false }),
+      insertData: vi.fn(),
+    } as any
+    const targetRange = { startContainer: document.createTextNode('x') }
+    const event = {
+      inputType: 'insertText',
+      data: 'hello',
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [targetRange],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'toSlateRange').mockReturnValue(range as any)
+    vi.spyOn(Transforms, 'select').mockImplementation(() => {})
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    handleBeforeInput(event, {} as any, editor)
+
+    expect(Transforms.select).toHaveBeenCalledWith(editor, range)
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, 'hello')
+  })
+
+  it('does not delete when selection partially covers a table', () => {
+    const editor = {
+      selection: createSelection(true),
+      getConfig: () => ({ readOnly: false }),
+    } as any
+    const event = {
+      inputType: 'deleteContentBackward',
+      data: null,
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'getSelectedElems').mockReturnValue([
+      { type: 'table' },
+      { type: 'paragraph' },
+    ] as any)
+    vi.spyOn(Editor, 'deleteFragment').mockImplementation(() => {})
+
+    handleBeforeInput(event, {} as any, editor)
+
+    expect(Editor.deleteFragment).not.toHaveBeenCalled()
+  })
+
+  it('deletes an entire soft line by calling backward and forward line deletion', () => {
+    const editor = {
+      selection: createSelection(false),
+      getConfig: () => ({ readOnly: false }),
+    } as any
+    const event = {
+      inputType: 'deleteEntireSoftLine',
+      data: null,
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(Editor, 'deleteBackward').mockImplementation(() => {})
+    vi.spyOn(Editor, 'deleteForward').mockImplementation(() => {})
+
+    handleBeforeInput(event, {} as any, editor)
+
+    expect(Editor.deleteBackward).toHaveBeenCalledWith(editor, { unit: 'line' })
+    expect(Editor.deleteForward).toHaveBeenCalledWith(editor, { unit: 'line' })
+  })
+
+  it('inserts transfer data for allowed paste events', () => {
+    const transfer = new DataTransfer()
+    const editor = {
+      selection: createSelection(false),
+      getConfig: () => ({ readOnly: false }),
+      insertData: vi.fn(),
+    } as any
+    const event = {
+      inputType: 'insertFromPaste',
+      data: null,
+      dataTransfer: transfer,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(domUtils, 'isDataTransfer').mockReturnValue(true)
+    EDITOR_TO_CAN_PASTE.set(editor, true)
+
+    handleBeforeInput(event, {} as any, editor)
+
+    expect(editor.insertData).toHaveBeenCalledWith(transfer)
+
+    EDITOR_TO_CAN_PASTE.delete(editor)
   })
 })
