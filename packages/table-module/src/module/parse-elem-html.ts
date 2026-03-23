@@ -15,6 +15,7 @@ function parseCellHtml(
   editor: IDomEditor,
 ): TableCellElement {
   const $elem = $(elem)
+  const cellText = $elem.text().replace(/\s+/gm, ' ').trim()
 
   children = children.filter(child => {
     if (DomEditor.getNodeType(child) === 'paragraph') { return true }
@@ -30,7 +31,7 @@ function parseCellHtml(
 
   const colSpan = parseInt($elem.attr('colSpan') || '1', 10)
   const rowSpan = parseInt($elem.attr('rowSpan') || '1', 10)
-  const hidden = getStyleValue($elem, 'display') === 'none'
+  const hidden = getStyleValue($elem, 'display') === 'none' && cellText.length === 0
   const width = $elem.attr('width') || 'auto'
 
   return {
