@@ -11,6 +11,7 @@ import { parseHtmlConf } from '../../../../basic-modules/src/modules/link/parse-
 import { registerParseElemHtmlConf } from '../../../src'
 import { IDomEditor } from '../../../src/editor/interface'
 import { withContent } from '../../../src/editor/plugins/with-content'
+import { EDITOR_TO_SELECTION } from '../../../src/utils/weak-maps'
 import createCoreEditor from '../../create-core-editor' // packages/core 不依赖 packages/editor ，不能使用后者的 createEditor
 
 function createEditor(...args) {
@@ -444,6 +445,64 @@ describe('editor content API', () => {
 
       expect(editor.getHtml()).toBe(newHtml)
       expect(editor.isDisabled()).toBe(true)
+    })
+
+    it('setHtml falls back to document start when previous selection is no longer valid', async () => {
+      const editor = createEditor({
+        content: [
+          { type: 'paragraph', children: [{ text: '' }] },
+          { type: 'paragraph', children: [{ text: 'middle' }] },
+          { type: 'paragraph', children: [{ text: 'tail' }] },
+        ],
+      })
+
+      let isFocused = true
+
+      vi.spyOn(editor, 'focus').mockImplementation(() => {})
+      vi.spyOn(editor, 'isFocused').mockImplementation(() => isFocused)
+      vi.spyOn(editor, 'select').mockImplementation((selection: any) => {
+        editor.selection = Editor.range(editor, selection)
+      })
+      setEditorSelection(editor, {
+        anchor: { path: [2, 0], offset: 2 },
+        focus: { path: [2, 0], offset: 2 },
+      })
+
+      expect(() => editor.setHtml('<div>world</div>')).not.toThrow()
+      expect(editor.getHtml()).toBe('<div>world</div>')
+      expect(editor.selection).toEqual({
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      })
+
+      isFocused = false
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    it('setHtml clears stale cached selection before focusing', () => {
+      const editor = createEditor({
+        content: [
+          { type: 'paragraph', children: [{ text: '' }] },
+          { type: 'paragraph', children: [{ text: 'middle' }] },
+          { type: 'paragraph', children: [{ text: 'tail' }] },
+        ],
+      })
+
+      editor.selection = null
+      EDITOR_TO_SELECTION.set(editor, {
+        anchor: { path: [2, 0], offset: 2 },
+        focus: { path: [2, 0], offset: 2 },
+      })
+
+      vi.spyOn(editor, 'focus').mockImplementation(() => {
+        if (EDITOR_TO_SELECTION.has(editor)) {
+          throw new Error('stale cached selection was restored before setHtml reset')
+        }
+      })
+
+      expect(() => editor.setHtml('<div>world</div>')).not.toThrow()
+      expect(EDITOR_TO_SELECTION.has(editor)).toBe(false)
     })
 
     it('setHtml uses sanitizeHtml config before parsing', () => {
