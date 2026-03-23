@@ -8,6 +8,7 @@ import {
 
 import flushPromises from '../../../../tests/utils/flush-promises'
 import { EditorEvents } from '../../src/config/interface'
+import createEditor from '../../src/create/create-editor'
 import { DomEditor } from '../../src/editor/dom-editor'
 import * as syncSelection from '../../src/text-area/syncSelection'
 import TextArea from '../../src/text-area/TextArea'
@@ -94,5 +95,24 @@ describe('TextArea', () => {
     selectionChangeHandler.flush()
 
     expect(syncSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not throw when destroyed before async initialization finishes', async () => {
+    document.body.innerHTML = '<div id="box"></div>'
+
+    const rejectionSpy = vi.fn()
+
+    process.once('unhandledRejection', rejectionSpy)
+
+    const editor = createEditor({
+      selector: '#box',
+      content: [{ type: 'paragraph', children: [{ text: '' }] }],
+    })
+
+    editor.destroy()
+    await flushPromises()
+    await flushPromises()
+
+    expect(rejectionSpy).not.toHaveBeenCalled()
   })
 })
