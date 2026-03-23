@@ -374,4 +374,107 @@ describe('Table Module Insert Col Menu', () => {
     expect(table.children[0].children[0].isHeader).toBe(true)
     expect(table.children[1].children).toHaveLength(3)
   })
+
+  test('isDisabled should fail closed when matrix inspection throws', () => {
+    const insertColMenu = new InsertCol()
+    const editor = createEditor()
+
+    setEditorSelection(editor)
+    vi.spyOn(slate.Range, 'isCollapsed').mockImplementation(() => true)
+    vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockImplementation(() => ({
+      columnWidths: [40],
+    }) as any)
+    vi.spyOn(slate.Editor, 'nodes').mockImplementation(() => {
+      throw new Error('lookup failed')
+    })
+
+    expect(insertColMenu.isDisabled(editor)).toBeTruthy()
+  })
+
+  test('exec should expand merged colSpan cells and skip duplicate inserts for covered rows', () => {
+    const insertColMenu = new InsertCol()
+    const editor = createEditor()
+
+    vi.spyOn(insertColMenu, 'isDisabled').mockReturnValue(false)
+    vi.spyOn(slate.Editor, 'nodes')
+      .mockReturnValueOnce((function* () {
+        yield [
+          { type: 'table-cell', children: [{ text: 'A' }] } as slate.Element,
+          [0, 0, 0],
+        ] as slate.NodeEntry<slate.Element>
+      }()))
+      .mockReturnValueOnce((function* () {
+        yield [
+          {
+            type: 'table',
+            columnWidths: [120, 80],
+            children: [],
+          } as slate.Element,
+          [0],
+        ] as slate.NodeEntry<slate.Element>
+      }()))
+    vi.spyOn(core.DomEditor, 'getParentNode')
+      .mockReturnValueOnce({ type: 'table-row', children: [] } as any)
+      .mockReturnValueOnce({
+        type: 'table',
+        columnWidths: [120, 80],
+        children: [
+          { type: 'table-row', children: [] },
+          { type: 'table-row', children: [] },
+        ],
+      } as any)
+    vi.spyOn(editor, 'getMenuConfig').mockReturnValue({ minWidth: '60' } as any)
+
+    mockedUtils.filledMatrix.mockReturnValue([
+      [
+        [
+          [{
+            type: 'table-cell', colSpan: 2, rowSpan: 2, children: [{ text: 'A' }],
+          }, [0, 0, 0]],
+          {
+            rtl: 1, ltr: 2, ttb: 1, btt: 2,
+          },
+        ],
+        [
+          [{
+            type: 'table-cell', colSpan: 2, rowSpan: 2, hidden: true, children: [{ text: '' }],
+          }, [0, 0, 0]],
+          {
+            rtl: 2, ltr: 1, ttb: 1, btt: 2,
+          },
+        ],
+      ],
+      [
+        [
+          [{
+            type: 'table-cell', colSpan: 2, rowSpan: 2, hidden: true, children: [{ text: '' }],
+          }, [0, 0, 0]],
+          {
+            rtl: 1, ltr: 2, ttb: 2, btt: 1,
+          },
+        ],
+        [
+          [{
+            type: 'table-cell', colSpan: 2, rowSpan: 2, hidden: true, children: [{ text: '' }],
+          }, [0, 0, 0]],
+          {
+            rtl: 2, ltr: 1, ttb: 2, btt: 1,
+          },
+        ],
+      ],
+    ] as any)
+
+    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
+    const insertNodesSpy = vi.spyOn(slate.Transforms, 'insertNodes').mockImplementation(() => {})
+
+    insertColMenu.exec(editor, '')
+
+    expect(setNodesSpy).toHaveBeenCalledWith(editor, { colSpan: 3 }, { at: [0, 0, 0] })
+    expect(insertNodesSpy).not.toHaveBeenCalledWith(
+      editor,
+      expect.anything(),
+      expect.objectContaining({ at: [0, 0, 0] }),
+    )
+    expect(setNodesSpy).toHaveBeenCalledWith(editor, { columnWidths: [60, 60, 80] }, { at: [0] })
+  })
 })

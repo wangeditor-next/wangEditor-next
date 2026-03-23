@@ -211,6 +211,29 @@ describe('handleBeforeInput', () => {
     expect(Editor.insertText).not.toHaveBeenCalled()
   })
 
+  it('returns early when the event target is not editable', () => {
+    const editor = {
+      selection: createSelection(false),
+      getConfig: () => ({ readOnly: false }),
+    } as any
+    const event = {
+      inputType: 'insertText',
+      data: 'hello',
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(false)
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    handleBeforeInput(event, {} as any, editor)
+
+    expect(event.preventDefault).not.toHaveBeenCalled()
+    expect(Editor.insertText).not.toHaveBeenCalled()
+  })
+
   it('syncs the target range into editor selection before inserting text', () => {
     const range = createSelection(false)
     const editor = {
@@ -237,6 +260,33 @@ describe('handleBeforeInput', () => {
 
     expect(Transforms.select).toHaveBeenCalledWith(editor, range)
     expect(Editor.insertText).toHaveBeenCalledWith(editor, 'hello')
+  })
+
+  it('does not reselect when target range already matches editor selection', () => {
+    const range = createSelection(false)
+    const editor = {
+      selection: range,
+      getConfig: () => ({ readOnly: false }),
+      insertData: vi.fn(),
+    } as any
+    const event = {
+      inputType: 'insertText',
+      data: 'same',
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [{ startContainer: document.createTextNode('x') }],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'toSlateRange').mockReturnValue(range as any)
+    vi.spyOn(Transforms, 'select').mockImplementation(() => {})
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    handleBeforeInput(event, {} as any, editor)
+
+    expect(Transforms.select).not.toHaveBeenCalled()
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, 'same')
   })
 
   it('does not delete when selection partially covers a table', () => {
@@ -287,6 +337,71 @@ describe('handleBeforeInput', () => {
 
     expect(Editor.deleteBackward).toHaveBeenCalledWith(editor, { unit: 'line' })
     expect(Editor.deleteForward).toHaveBeenCalledWith(editor, { unit: 'line' })
+  })
+
+  it('routes deleteByCut and deleteWordForward to the expected editor commands', () => {
+    const editor = {
+      selection: createSelection(false),
+      getConfig: () => ({ readOnly: false }),
+    } as any
+    const cutEvent = {
+      inputType: 'deleteByCut',
+      data: null,
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [],
+    } as any
+    const wordEvent = {
+      inputType: 'deleteWordForward',
+      data: null,
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(Editor, 'deleteFragment').mockImplementation(() => {})
+    vi.spyOn(Editor, 'deleteForward').mockImplementation(() => {})
+
+    handleBeforeInput(cutEvent, {} as any, editor)
+    handleBeforeInput(wordEvent, {} as any, editor)
+
+    expect(Editor.deleteFragment).toHaveBeenCalledWith(editor)
+    expect(Editor.deleteForward).toHaveBeenCalledWith(editor, { unit: 'word' })
+  })
+
+  it('inserts breaks for paragraph input and ignores composition-text mutations', () => {
+    const editor = {
+      selection: createSelection(false),
+      getConfig: () => ({ readOnly: false }),
+    } as any
+    const paragraphEvent = {
+      inputType: 'insertParagraph',
+      data: null,
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [],
+    } as any
+    const compositionEvent = {
+      inputType: 'insertCompositionText',
+      data: '拼',
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(Editor, 'insertBreak').mockImplementation(() => {})
+
+    handleBeforeInput(paragraphEvent, {} as any, editor)
+    handleBeforeInput(compositionEvent, {} as any, editor)
+
+    expect(Editor.insertBreak).toHaveBeenCalledWith(editor)
+    expect(compositionEvent.preventDefault).not.toHaveBeenCalled()
   })
 
   it('inserts transfer data for allowed paste events', () => {

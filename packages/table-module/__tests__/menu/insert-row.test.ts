@@ -22,6 +22,10 @@ function setEditorSelection(
   editor.selection = selection
 }
 describe('Table Module Insert Row Menu', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   test('it should create InsertRow object', () => {
     const insertRowMenu = new InsertRow()
     const editor = createEditor()
@@ -308,6 +312,75 @@ describe('Table Module Insert Row Menu', () => {
         children: expect.any(Array),
       }),
       expect.any(Object),
+    )
+  })
+
+  test('should extend rowspan cells and skip covered columns when inserting a row', () => {
+    const insertRowMenu = new InsertRow()
+    const editor = createEditor()
+
+    vi.spyOn(editor, 'getMenuConfig').mockReturnValue({ minRowHeight: 40 } as any)
+    vi.spyOn(insertRowMenu, 'isDisabled').mockReturnValue(false)
+    vi.spyOn(slate.Editor, 'nodes').mockReturnValue((function* () {
+      yield [
+        {
+          type: 'table-cell',
+          children: [{ text: 'merged' }],
+        } as slate.Element,
+        [0, 0, 0],
+      ] as slate.NodeEntry<slate.Element>
+    }()))
+    mockedUtils.filledMatrix.mockReturnValue([
+      [
+        [
+          [{ type: 'table-cell', rowSpan: 2, children: [{ text: 'merged' }] }, [0, 0, 0]],
+          {
+            rtl: 1, ltr: 1, ttb: 1, btt: 2,
+          },
+        ],
+        [
+          [{ type: 'table-cell', children: [{ text: 'B' }] }, [0, 0, 1]],
+          {
+            rtl: 1, ltr: 1, ttb: 1, btt: 1,
+          },
+        ],
+      ],
+      [
+        [
+          [{
+            type: 'table-cell', hidden: true, rowSpan: 2, children: [{ text: '' }],
+          }, [0, 0, 0]],
+          {
+            rtl: 1, ltr: 1, ttb: 2, btt: 1,
+          },
+        ],
+        [
+          [{ type: 'table-cell', children: [{ text: 'D' }] }, [0, 1, 1]],
+          {
+            rtl: 1, ltr: 1, ttb: 1, btt: 1,
+          },
+        ],
+      ],
+    ] as any)
+
+    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
+    const insertNodesSpy = vi.spyOn(slate.Transforms, 'insertNodes').mockImplementation(() => {})
+
+    insertRowMenu.exec(editor, '')
+
+    expect(setNodesSpy).toHaveBeenCalledWith(
+      editor,
+      { rowSpan: 3 },
+      { at: [0, 0, 0] },
+    )
+    expect(insertNodesSpy).toHaveBeenCalledWith(
+      editor,
+      expect.objectContaining({
+        type: 'table-row',
+        height: 40,
+        children: [{ type: 'table-cell', children: [{ text: '' }] }],
+      }),
+      { at: [0, 1] },
     )
   })
 })

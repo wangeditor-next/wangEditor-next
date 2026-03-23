@@ -57,6 +57,7 @@ function createContextSelection(editor, rows: number[][][]): NodeEntryWithContex
 describe('table property menus', () => {
   afterEach(() => {
     vi.useRealTimers()
+    vi.restoreAllMocks()
   })
 
   test('TableProperty updates the selected table and restores focus after submit', () => {
@@ -129,5 +130,42 @@ describe('table property menus', () => {
     expect(allCells.every(cell => cell.textAlign === 'right')).toBe(true)
     expect(allCells.every(cell => cell.backgroundColor === '#cccccc')).toBe(true)
     expect(focusSpy).toHaveBeenCalled()
+  })
+
+  test('TableProperty renders color panels and updates hidden values through the color picker', () => {
+    const editor = createEditor({ content: createTableContent() })
+    const menu = new TableProperty()
+
+    setSelectionInsideFirstCell(editor)
+    vi.spyOn(editor, 'getMenuConfig').mockImplementation((mark: string) => {
+      if (mark === 'color') { return { colors: ['#ff0000', '#00ff00'] } as any }
+      if (mark === 'bgColor') { return { colors: ['#cccccc'] } as any }
+      return {} as any
+    })
+
+    const elem = menu.getModalContentElem(editor) as HTMLDivElement
+    const borderColorTrigger = elem.querySelector('[data-mark="color"]') as HTMLElement
+    const borderColorInput = elem.querySelector('[name="borderColor"]') as HTMLInputElement
+
+    borderColorTrigger.click()
+
+    const panel = borderColorTrigger.querySelector('.w-e-drop-panel') as HTMLElement
+    const colorOption = panel.querySelector('li[data-value="#00ff00"]') as HTMLElement
+
+    expect(panel).not.toBeNull()
+    colorOption.click()
+
+    expect(borderColorInput.value).toBe('#00ff00')
+    expect((borderColorTrigger.querySelector('.color-group-block') as HTMLElement).style.backgroundColor)
+      .toContain('0, 255, 0')
+
+    const clearPanel = menu.getPanelContentElem(editor, {
+      mark: 'bgColor',
+      selectedColor: '#cccccc',
+      callback: vi.fn(),
+    })
+
+    expect(clearPanel.text()).toContain('清除')
+    expect(clearPanel.find('li.active').attr('data-value')).toBe('#cccccc')
   })
 })

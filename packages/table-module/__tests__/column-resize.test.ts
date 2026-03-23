@@ -73,6 +73,12 @@ describe('column resize module', () => {
     editor = createEditor()
   })
 
+  afterEach(() => {
+    document.body.style.cursor = ''
+    window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    vi.restoreAllMocks()
+  })
+
   test('getColumnWidthRatios returns normalized ratios', () => {
     expect(getColumnWidthRatios([100, 200, 100])).toEqual([0.25, 0.5, 0.25])
   })
@@ -160,5 +166,109 @@ describe('column resize module', () => {
     expect(() => {
       handleCellBorderMouseDown(editor, table)
     }).not.toThrow()
+  })
+
+  test('handleCellBorderVisible skips hover updates during selection operations', () => {
+    const table = createTable([80, 120, 100])
+    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes')
+    const cell = document.createElement('div')
+
+    cell.setAttribute('data-block-type', 'table-cell')
+    document.body.appendChild(cell)
+
+    cell.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 40 }))
+    handleCellBorderVisible(editor, table, {
+      clientX: 80,
+      target: document.createElement('div'),
+    } as MouseEvent, 300)
+
+    expect(setNodesSpy).not.toHaveBeenCalled()
+  })
+
+  test('dragging a resize handle updates column widths and clears cursor on mouseup', async () => {
+    const table = {
+      ...createTable([80, 120, 100]),
+      resizingIndex: 1,
+    }
+    const tableDom = document.createElement('div')
+    const innerTable = document.createElement('div')
+
+    innerTable.className = 'table'
+    vi.spyOn(innerTable, 'getBoundingClientRect').mockReturnValue({
+      x: 0,
+      y: 0,
+      top: 0,
+      left: 0,
+      width: 300,
+      height: 120,
+      bottom: 120,
+      right: 300,
+      toJSON: () => ({}),
+    } as DOMRect)
+    tableDom.appendChild(innerTable)
+
+    vi.spyOn(editor, 'getMenuConfig').mockReturnValue({ minWidth: 90 } as any)
+    vi.spyOn(slate.Editor, 'nodes').mockReturnValue((function* () {
+      yield [table, [0]] as slate.NodeEntry<slate.Node>
+    }()))
+    vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockReturnValue(table as any)
+    vi.spyOn(core.DomEditor, 'toDOMNode').mockReturnValue(tableDom)
+    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
+
+    handleCellBorderMouseDown(editor, table)
+
+    const resizeHandle = document.createElement('div')
+
+    resizeHandle.className = 'column-resizer-item'
+    document.body.appendChild(resizeHandle)
+    resizeHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 200 }))
+    window.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 260 }))
+    await new Promise(resolve => {
+      setTimeout(resolve, 120)
+    })
+
+    expect(document.body.style.cursor).toBe('col-resize')
+    expect(setNodesSpy).toHaveBeenCalledWith(
+      editor,
+      { columnWidths: [80, 180, 100] } as TableElement,
+      { mode: 'highest' },
+    )
+
+    window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+
+    expect(document.body.style.cursor).toBe('')
+  })
+
+  test('dragging falls back to simple width changes when table DOM is missing', async () => {
+    const table = {
+      ...createTable([80, 120, 100]),
+      resizingIndex: 0,
+    }
+
+    vi.spyOn(editor, 'getMenuConfig').mockReturnValue({ minWidth: 95 } as any)
+    vi.spyOn(slate.Editor, 'nodes').mockReturnValue((function* () {
+      yield [table, [0]] as slate.NodeEntry<slate.Node>
+    }()))
+    vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockReturnValue(table as any)
+    vi.spyOn(core.DomEditor, 'toDOMNode').mockReturnValue(document.createElement('div'))
+    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
+
+    handleCellBorderMouseDown(editor, table)
+
+    const resizeHandle = document.createElement('div')
+
+    resizeHandle.className = 'column-resizer-item'
+    document.body.appendChild(resizeHandle)
+    resizeHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 100 }))
+    window.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 20 }))
+    await new Promise(resolve => {
+      setTimeout(resolve, 120)
+    })
+
+    expect(setNodesSpy).toHaveBeenCalledWith(
+      editor,
+      { columnWidths: [95, 120, 100] } as TableElement,
+      { mode: 'highest' },
+    )
   })
 })

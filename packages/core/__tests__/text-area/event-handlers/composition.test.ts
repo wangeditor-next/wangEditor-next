@@ -79,6 +79,26 @@ describe('composition handlers', () => {
     expect(textarea.isComposing).toBe(true)
   })
 
+  it('ignores composition events from non-editable targets', () => {
+    const editor = {
+      selection: createSelection(true),
+    } as any
+    const textarea = { isComposing: false, changeViewState: vi.fn() } as any
+    const event = { target: {}, data: 'x' } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(false)
+    vi.spyOn(Editor, 'deleteFragment').mockImplementation(() => {})
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    handleCompositionStart(event, textarea, editor)
+    handleCompositionUpdate(event, textarea, editor)
+    handleCompositionEnd(event, textarea, editor)
+
+    expect(textarea.isComposing).toBe(false)
+    expect(Editor.deleteFragment).not.toHaveBeenCalled()
+    expect(Editor.insertText).not.toHaveBeenCalled()
+  })
+
   it('handles composition end with maxLength', () => {
     const paragraph = { type: 'paragraph', children: [{ text: 'x' }] }
     const codeNode = { type: 'code', children: [{ text: 'y' }] }
@@ -173,5 +193,84 @@ describe('composition handlers', () => {
     expect(selectSpy).not.toHaveBeenCalled()
     expect(Editor.insertText).toHaveBeenCalledWith(editor, '拼')
     expect(EDITOR_TO_PENDING_SELECTION.has(editor)).toBe(false)
+  })
+
+  it('maps the DOM selection back to Slate when composition commits between sibling text nodes', () => {
+    const paragraph = { type: 'paragraph', children: [{ text: 'a' }, { text: 'b' }] }
+    const mappedSelection = {
+      anchor: { path: [0, 1], offset: 0 },
+      focus: { path: [0, 1], offset: 0 },
+    }
+    const editor = {
+      selection: mappedSelection,
+      getConfig: () => ({ maxLength: 0 }),
+    } as any
+    const textarea = { changeViewState: vi.fn() } as any
+    const event = { target: {}, data: '拼' } as any
+    const domSelection = { type: 'Range' }
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'cleanExposedTexNodeInSelectionBlock').mockImplementation(() => {})
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue({ getSelection: () => domSelection } as any)
+    vi.spyOn(DomEditor, 'toSlateRange').mockReturnValue(mappedSelection as any)
+    vi.spyOn(Editor, 'node').mockImplementation((_ed, path) => {
+      if (JSON.stringify(path) === JSON.stringify([0])) {
+        return [paragraph, path] as any
+      }
+      if (JSON.stringify(path) === JSON.stringify([0, 1])) {
+        return [{ text: 'b' }, path] as any
+      }
+      return [{ text: 'a' }, path] as any
+    })
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    handleCompositionEnd(event, textarea, editor)
+
+    expect(DomEditor.toSlateRange).toHaveBeenCalledWith(editor, domSelection, {
+      exactMatch: false,
+      suppressThrow: false,
+    })
+    expect(editor.selection).toEqual(mappedSelection)
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, '拼')
+  })
+
+  it('restores the original text node when composition spans across DOM text nodes', async () => {
+    vi.useFakeTimers()
+    const selection = {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 0 },
+    }
+    const paragraph = { type: 'paragraph', children: [{ text: 'x' }] }
+    const oldStartContainer = { textContent: 'before' }
+    const currentStartContainer = { textContent: 'after' }
+    const editor = {
+      selection,
+      getConfig: () => ({ maxLength: 0 }),
+    } as any
+    const textarea = { isComposing: false, changeViewState: vi.fn() } as any
+    const event = { target: {}, data: '拼' } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'toDOMRange')
+      .mockReturnValueOnce({ startContainer: oldStartContainer } as any)
+      .mockReturnValueOnce({ startContainer: currentStartContainer } as any)
+    vi.spyOn(DomEditor, 'cleanExposedTexNodeInSelectionBlock').mockImplementation(() => {})
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue({ getSelection: () => null } as any)
+    vi.spyOn(Editor, 'node').mockImplementation((_ed, path) => {
+      if (JSON.stringify(path) === JSON.stringify([0])) {
+        return [paragraph, path] as any
+      }
+
+      return [{ text: 'x' }, path] as any
+    })
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    handleCompositionStart({ target: {} } as any, textarea, editor)
+    handleCompositionEnd(event, textarea, editor)
+    await Promise.resolve()
+    vi.runAllTimers()
+
+    expect(oldStartContainer.textContent).toBe('before')
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, '拼')
   })
 })

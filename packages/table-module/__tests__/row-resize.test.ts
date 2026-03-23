@@ -85,6 +85,12 @@ describe('Row Resize Module', () => {
     editor = createEditor()
   })
 
+  afterEach(() => {
+    document.body.style.cursor = ''
+    window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    vi.restoreAllMocks()
+  })
+
   describe('handleRowBorderVisible', () => {
     test('should not process if editor is disabled', () => {
       const table = createTableWithRows([30, 40, 50])
@@ -200,6 +206,146 @@ describe('Row Resize Module', () => {
       expect(() => {
         handleRowBorderMouseDown(editor, table)
       }).not.toThrow()
+    })
+
+    test('should update the selected row height during drag and reset cursor on mouseup', async () => {
+      const table = {
+        ...createTableWithRows([30, 40, 50]),
+        resizingRowIndex: 1,
+      }
+      const tableDom = document.createElement('div')
+      const innerTable = document.createElement('div')
+
+      innerTable.className = 'table'
+      vi.spyOn(innerTable, 'getBoundingClientRect').mockReturnValue({
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0,
+        width: 300,
+        height: 120,
+        bottom: 120,
+        right: 300,
+        toJSON: () => ({}),
+      } as DOMRect)
+      tableDom.appendChild(innerTable)
+
+      vi.spyOn(editor, 'getMenuConfig').mockReturnValue({ minRowHeight: 35 } as any)
+      vi.spyOn(slate.Editor, 'nodes').mockReturnValue((function* () {
+        yield [table, [0]] as slate.NodeEntry<slate.Node>
+      }()))
+      vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockReturnValue(table as any)
+      vi.spyOn(core.DomEditor, 'toDOMNode').mockReturnValue(tableDom)
+      vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([0])
+      const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
+
+      handleRowBorderMouseDown(editor, table)
+
+      const resizeHandle = document.createElement('div')
+
+      resizeHandle.className = 'row-resizer-item'
+      document.body.appendChild(resizeHandle)
+      resizeHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientY: 40 }))
+      window.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientY: 95 }))
+      await new Promise(resolve => {
+        setTimeout(resolve, 120)
+      })
+
+      expect(document.body.style.cursor).toBe('row-resize')
+      expect(setNodesSpy).toHaveBeenCalledWith(
+        editor,
+        { height: 65 } as TableRowElement,
+        { at: [0, 1] },
+      )
+
+      window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+
+      expect(document.body.style.cursor).toBe('')
+    })
+
+    test('should fall back to simple row height calculation when table DOM is missing', async () => {
+      const table = {
+        ...createTableWithRows([30, 40, 50]),
+        resizingRowIndex: 0,
+      }
+      const tableDom = document.createElement('div')
+
+      vi.spyOn(editor, 'getMenuConfig').mockReturnValue({ minRowHeight: 45 } as any)
+      vi.spyOn(slate.Editor, 'nodes').mockReturnValue((function* () {
+        yield [table, [0]] as slate.NodeEntry<slate.Node>
+      }()))
+      vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockReturnValue(table as any)
+      vi.spyOn(core.DomEditor, 'toDOMNode').mockReturnValue(tableDom)
+      vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([0])
+      const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
+
+      handleRowBorderMouseDown(editor, table)
+
+      const resizeHandle = document.createElement('div')
+
+      resizeHandle.className = 'row-resizer-item'
+      document.body.appendChild(resizeHandle)
+      resizeHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientY: 50 }))
+      window.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientY: 10 }))
+      await new Promise(resolve => {
+        setTimeout(resolve, 120)
+      })
+
+      expect(setNodesSpy).toHaveBeenCalledWith(
+        editor,
+        { height: 45 } as TableRowElement,
+        { at: [0, 0] },
+      )
+    })
+
+    test('should ignore missing row paths during drag updates', async () => {
+      const table = {
+        ...createTableWithRows([30, 40, 50]),
+        resizingRowIndex: 2,
+      }
+      const tableDom = document.createElement('div')
+      const innerTable = document.createElement('div')
+
+      innerTable.className = 'table'
+      vi.spyOn(innerTable, 'getBoundingClientRect').mockReturnValue({
+        x: 0,
+        y: 0,
+        top: 0,
+        left: 0,
+        width: 300,
+        height: 120,
+        bottom: 120,
+        right: 300,
+        toJSON: () => ({}),
+      } as DOMRect)
+      tableDom.appendChild(innerTable)
+
+      vi.spyOn(editor, 'getMenuConfig').mockReturnValue({ minRowHeight: 30 } as any)
+      vi.spyOn(slate.Editor, 'nodes').mockReturnValue((function* () {
+        yield [table, [0]] as slate.NodeEntry<slate.Node>
+      }()))
+      vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockReturnValue(table as any)
+      vi.spyOn(core.DomEditor, 'toDOMNode').mockReturnValue(tableDom)
+      vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([0])
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {
+        throw new Error('missing row path')
+      })
+
+      handleRowBorderMouseDown(editor, table)
+
+      const resizeHandle = document.createElement('div')
+
+      resizeHandle.className = 'row-resizer-item'
+      document.body.appendChild(resizeHandle)
+      resizeHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientY: 60 }))
+      window.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientY: 100 }))
+      await new Promise(resolve => {
+        setTimeout(resolve, 120)
+      })
+
+      expect(warnSpy).toHaveBeenCalled()
     })
   })
 
