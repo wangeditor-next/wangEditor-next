@@ -78,6 +78,31 @@ describe('table - pre parse html', () => {
       ].join(''),
     )
   })
+
+  it('should keep hidden cells that still contain copied spreadsheet content', () => {
+    const $table = $(
+      [
+        '<table><tbody><tr>',
+        '<td>col 1</td>',
+        '<td style="display:none;color:red">col 2</td>',
+        '<td style="display: none;background-color: yellow">col 3</td>',
+        '</tr></tbody></table>',
+      ].join(''),
+    )
+
+    const res = preParseTableHtmlConf.preParseHtml($table[0])
+    const cells = res.querySelectorAll('td')
+
+    expect(cells).toHaveLength(3)
+    expect(cells[0].textContent).toBe('col 1')
+    expect(cells[1].textContent).toBe('col 2')
+    expect(cells[1].style.display).toBe('')
+    expect(cells[1].style.color).toBe('red')
+    expect(cells[2].textContent).toBe('col 3')
+    expect(cells[2].style.display).toBe('')
+    expect(cells[2].style.backgroundColor).toBe('yellow')
+    expect(Array.from(cells).map(cell => cell.getAttribute('width'))).toEqual(['auto', 'auto', 'auto'])
+  })
 })
 
 describe('table - parse html', () => {
@@ -146,6 +171,51 @@ describe('table - parse html', () => {
           text: 'line 2',
           color: 'rgb(255, 0, 0)',
           bgColor: 'rgb(255, 255, 0)',
+        },
+      ],
+    })
+  })
+
+  it('table should keep spreadsheet columns hidden only by display style', () => {
+    const $table = $(
+      [
+        '<table><tbody><tr>',
+        '<td>col 1</td>',
+        '<td style="display:none;color:red">col 2</td>',
+        '<td style="display:none;background-color: yellow">col 3</td>',
+        '</tr></tbody></table>',
+      ].join(''),
+    )
+    const [table] = parseElemHtmlFromCore($($table[0]), editor) as any[]
+
+    expect(table).toMatchObject({
+      type: 'table',
+      width: 'auto',
+      height: 0,
+      columnWidths: [90, 90, 90],
+      children: [
+        {
+          type: 'table-row',
+          children: [
+            {
+              ...TABLE_CELL_BASE_PROPS,
+              borderWidth: '1px',
+              borderStyle: 'solid',
+              children: [{ text: 'col 1' }],
+            },
+            {
+              ...TABLE_CELL_BASE_PROPS,
+              borderWidth: '1px',
+              borderStyle: 'solid',
+              children: [{ text: 'col 2' }],
+            },
+            {
+              ...TABLE_CELL_BASE_PROPS,
+              borderWidth: '1px',
+              borderStyle: 'solid',
+              children: [{ text: 'col 3' }],
+            },
+          ],
         },
       ],
     })

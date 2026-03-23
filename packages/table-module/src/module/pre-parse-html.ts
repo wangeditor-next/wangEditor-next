@@ -5,6 +5,20 @@
 
 import $, { DOMElement, getTagName } from '../utils/dom'
 
+function hasMeaningfulCellContent(cellHtml: string): boolean {
+  const container = document.createElement('div')
+
+  container.innerHTML = cellHtml
+
+  const text = (container.textContent || '').replace(/\u00a0/g, ' ').trim()
+
+  if (text) { return true }
+
+  return (
+    container.querySelector('img,video,audio,iframe,canvas,svg,hr,input,table') != null
+  )
+}
+
 function normalizeCellParagraphs(cellHtml: string): string {
   const container = document.createElement('div')
 
@@ -87,7 +101,18 @@ function preParse(tableElem: DOMElement): DOMElement {
       const displayNoneRegex = /display\s*:\s*none/i
 
       if (displayNoneRegex.test(styleAttr)) {
-        $cell.remove()
+        if (hasMeaningfulCellContent($cell.html() || '')) {
+          const htmlCell = cell as HTMLElement
+
+          htmlCell.style.removeProperty('display')
+
+          if (!htmlCell.getAttribute('style')) {
+            $cell.removeAttr('style')
+          }
+        } else {
+          $cell.remove()
+          continue
+        }
       }
     }
     // 设置width属性为auto
