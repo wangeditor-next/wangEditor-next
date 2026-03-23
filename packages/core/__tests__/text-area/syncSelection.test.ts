@@ -317,8 +317,9 @@ describe('DOMSelectionToEditor', () => {
 
   it('deselects when readonly selection leaves the editor', () => {
     const editor = {
-      deselect: vi.fn(),
+      selection: createSelection(),
       getConfig: () => ({ readOnly: true }),
+      onChange: vi.fn(),
     } as any
     const textarea = { isComposing: false, isUpdatingSelection: false, isDraggingInternally: false } as any
 
@@ -340,11 +341,16 @@ describe('DOMSelectionToEditor', () => {
 
     DOMSelectionToEditor(textarea, editor)
 
-    expect(editor.deselect).toHaveBeenCalled()
+    expect(editor.selection).toBeNull()
+    expect(editor.onChange).toHaveBeenCalled()
   })
 
   it('deselects when editor is not active element', () => {
-    const editor = { getConfig: () => ({ readOnly: false }) } as any
+    const editor = {
+      selection: createSelection(),
+      getConfig: () => ({ readOnly: false }),
+      onChange: vi.fn(),
+    } as any
     const textarea = { isComposing: false, isUpdatingSelection: false, isDraggingInternally: false } as any
 
     const root = { activeElement: document.createElement('div'), getSelection: () => null }
@@ -352,17 +358,21 @@ describe('DOMSelectionToEditor', () => {
 
     vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue(root as any)
     vi.spyOn(DomEditor, 'toDOMNode').mockReturnValue(editorElement as any)
-    const deselectSpy = vi.spyOn(Transforms, 'deselect').mockImplementation(() => {})
 
     IS_FOCUSED.set(editor, true)
     DOMSelectionToEditor(textarea, editor)
 
     expect(IS_FOCUSED.has(editor)).toBe(false)
-    expect(deselectSpy).toHaveBeenCalled()
+    expect(editor.selection).toBeNull()
+    expect(editor.onChange).toHaveBeenCalled()
   })
 
   it('deselects when dom selection is missing', () => {
-    const editor = { getConfig: () => ({ readOnly: false }) } as any
+    const editor = {
+      selection: createSelection(),
+      getConfig: () => ({ readOnly: false }),
+      onChange: vi.fn(),
+    } as any
     const textarea = { isComposing: false, isUpdatingSelection: false, isDraggingInternally: false } as any
 
     const editorElement = document.createElement('div')
@@ -370,11 +380,38 @@ describe('DOMSelectionToEditor', () => {
 
     vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue(root as any)
     vi.spyOn(DomEditor, 'toDOMNode').mockReturnValue(editorElement as any)
-    const deselectSpy = vi.spyOn(Transforms, 'deselect').mockImplementation(() => {})
 
     DOMSelectionToEditor(textarea, editor)
 
-    expect(deselectSpy).toHaveBeenCalled()
+    expect(editor.selection).toBeNull()
+    expect(editor.onChange).toHaveBeenCalled()
+  })
+
+  it('does not clear another editor caret when a different editor becomes active', () => {
+    const editor = {
+      selection: createSelection(),
+      getConfig: () => ({ readOnly: false }),
+      onChange: vi.fn(),
+    } as any
+    const textarea = { isComposing: false, isUpdatingSelection: false, isDraggingInternally: false } as any
+
+    const activeEditorElement = document.createElement('div')
+    const domSelection = createDomSelection({
+      rangeCount: 1,
+      anchorNode: document.createTextNode('a'),
+      focusNode: document.createTextNode('a'),
+    })
+    const root = { activeElement: activeEditorElement, getSelection: () => domSelection }
+    const editorElement = document.createElement('div')
+
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue(root as any)
+    vi.spyOn(DomEditor, 'toDOMNode').mockReturnValue(editorElement as any)
+
+    DOMSelectionToEditor(textarea, editor)
+
+    expect(domSelection.removeAllRanges).not.toHaveBeenCalled()
+    expect(editor.selection).toBeNull()
+    expect(editor.onChange).toHaveBeenCalled()
   })
 
   it('selects range when anchor and focus are selectable', () => {

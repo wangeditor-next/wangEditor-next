@@ -17,6 +17,16 @@ import {
 import { hasSelectableTarget, hasTarget } from './helpers'
 import TextArea from './TextArea'
 
+function clearSelectionWithoutDomEffect(editor: IDomEditor) {
+  if (editor.selection == null) { return }
+
+  // Transforms.deselect ultimately calls editor.deselect(), which clears the
+  // shared DOM Selection. In multi-editor pages that can erase the active
+  // editor's caret, so only clear the Slate model selection here.
+  editor.selection = null
+  editor.onChange()
+}
+
 /**
  * editor onchange 时，将 editor selection 同步给 DOM
  * @param textarea textarea
@@ -188,12 +198,12 @@ export function DOMSelectionToEditor(textarea: TextArea, editor: IDomEditor) {
     IS_FOCUSED.set(editor, true)
   } else {
     IS_FOCUSED.delete(editor)
-    Transforms.deselect(editor)
+    clearSelectionWithoutDomEffect(editor)
     return
   }
 
   if (!domSelection) {
-    return Transforms.deselect(editor)
+    return clearSelectionWithoutDomEffect(editor)
   }
 
   const { anchorNode, focusNode } = domSelection
@@ -215,7 +225,7 @@ export function DOMSelectionToEditor(textarea: TextArea, editor: IDomEditor) {
       Transforms.select(editor, range)
     }
   } else if (config.readOnly) {
-    Transforms.deselect(editor)
+    clearSelectionWithoutDomEffect(editor)
   } else {
     // 禁用此行，让光标选区继续生效
     // Transforms.deselect(editor)
