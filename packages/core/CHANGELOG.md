@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.7.50
+
+### Patch Changes
+
+- 2da282d: Avoid throwing when an editor is destroyed before textarea async initialization completes.
+- 2c68112: Avoid restoring stale selections when `setHtml` replaces the entire document content.
+
 ## 1.7.49
 
 ### Patch Changes
