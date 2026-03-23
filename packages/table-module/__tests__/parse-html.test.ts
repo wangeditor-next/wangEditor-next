@@ -199,7 +199,16 @@ describe('table - parse html', () => {
       '</table>',
     ].join('')
     const $table = $(html)
-    const [table] = parseElemHtmlFromCore($($table[0]), editor) as any[]
+    const stubEditor = {
+      isInline: () => false,
+    } as any
+    const rows = Array.from($table.find('tr'))
+      .map(row => {
+        const cells = Array.from(row.children).map(cell => parseCellHtmlConf.parseElemHtml(cell as HTMLTableCellElement, [], stubEditor))
+
+        return parseRowHtmlConf.parseElemHtml(row as HTMLTableRowElement, cells, stubEditor)
+      })
+    const table = parseTableHtmlConf.parseElemHtml($table[0], rows as any, stubEditor)
 
     expect(table).toMatchObject({
       type: 'table',
@@ -211,9 +220,9 @@ describe('table - parse html', () => {
           type: 'table-row',
           height: 13,
           children: [
-            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '1' }] },
-            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '2' }] },
-            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '3' }] },
+            { ...TABLE_CELL_BASE_PROPS, width: '64', children: [{ text: '1' }] },
+            { ...TABLE_CELL_BASE_PROPS, width: '64', children: [{ text: '2' }] },
+            { ...TABLE_CELL_BASE_PROPS, width: '64', children: [{ text: '3' }] },
           ],
         },
         {
