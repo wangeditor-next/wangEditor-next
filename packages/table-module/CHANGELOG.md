@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.6.66
+
+### Patch Changes
+
+- 656898f: Fix pasted Excel and WPS tables dropping non-first columns when clipboard HTML uses
+  `<col span>` to describe repeated column widths.
+
 ## 1.6.65
 
 ### Patch Changes
