@@ -177,6 +177,66 @@ describe('table - parse html', () => {
     })
   })
 
+  it('table should parse microsoft excel clipboard html with all columns intact', () => {
+    const html = [
+      '<table border=0 cellpadding=0 cellspacing=0 width=192 style="border-collapse: collapse;width:144pt">',
+      '<col width=64 span=3 style="width:48pt">',
+      '<tr height=18 style="height:13.8pt">',
+      '<td height=18 align=right width=64 style="height:13.8pt;width:48pt">1</td>',
+      '<td align=right width=64 style="width:48pt">2</td>',
+      '<td align=right width=64 style="width:48pt">3</td>',
+      '</tr>',
+      '<tr height=18 style="height:13.8pt">',
+      '<td height=18 align=right style="height:13.8pt">4</td>',
+      '<td align=right>5</td>',
+      '<td align=right>6</td>',
+      '</tr>',
+      '<tr height=18 style="height:13.8pt">',
+      '<td height=18 align=right style="height:13.8pt">7</td>',
+      '<td align=right>8</td>',
+      '<td align=right>9</td>',
+      '</tr>',
+      '</table>',
+    ].join('')
+    const $table = $(html)
+    const [table] = parseElemHtmlFromCore($($table[0]), editor) as any[]
+
+    expect(table).toMatchObject({
+      type: 'table',
+      width: 'auto',
+      height: 0,
+      columnWidths: [64, 64, 64],
+      children: [
+        {
+          type: 'table-row',
+          height: 13,
+          children: [
+            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '1' }] },
+            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '2' }] },
+            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '3' }] },
+          ],
+        },
+        {
+          type: 'table-row',
+          height: 13,
+          children: [
+            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '4' }] },
+            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '5' }] },
+            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '6' }] },
+          ],
+        },
+        {
+          type: 'table-row',
+          height: 13,
+          children: [
+            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '7' }] },
+            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '8' }] },
+            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '9' }] },
+          ],
+        },
+      ],
+    })
+  })
   // ============== 测试table的border相关属性 start ==============
 
   it('table cell (TD) without border style should use default border (1px)', () => {

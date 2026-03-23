@@ -9,6 +9,28 @@ import { Descendant, Text } from 'slate'
 import $, { DOMElement, getStyleValue, getTagName } from '../utils/dom'
 import { TableCellElement, TableElement, TableRowElement } from './custom-types'
 
+function getColgroupWidths(colgroupElements: HTMLCollection | null): number[] {
+  if (!colgroupElements || colgroupElements.length === 0) { return [] }
+
+  const columnWidths: number[] = []
+
+  Array.from(colgroupElements).forEach((col: any) => {
+    const span = parseInt(col.getAttribute('span') || '1', 10)
+    const width = parseInt(
+      col.getAttribute('width') || getStyleValue($(col), 'width') || '90',
+      10,
+    )
+
+    if (Number.isNaN(width)) { return }
+
+    for (let i = 0; i < span; i += 1) {
+      columnWidths.push(width)
+    }
+  })
+
+  return columnWidths
+}
+
 function parseCellHtml(
   elem: DOMElement,
   children: Descendant[],
@@ -115,11 +137,7 @@ function parseTableHtml(
   }
   const tdList = $elem.find('tr')[0]?.children || []
   const colgroupElments: HTMLCollection = $elem.find('colgroup')[0]?.children || null
-  const colgroupWidths = colgroupElments
-    ? Array.from(colgroupElments)
-      .map((col: any) => parseInt(col.getAttribute('width'), 10))
-      .filter(width => !Number.isNaN(width))
-    : []
+  const colgroupWidths = getColgroupWidths(colgroupElments)
 
   if (colgroupWidths.length > 0) {
     tableELement.columnWidths = colgroupWidths
