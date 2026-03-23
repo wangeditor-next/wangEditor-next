@@ -53,7 +53,7 @@ function normalizeCellParagraphs(cellHtml: string): string {
 }
 
 /**
- * pre-prase table ，去掉 <tbody> 和处理单元格中的 <p> 标签，以及删除隐藏的单元格
+ * pre-prase table ，去掉 <tbody> 和处理单元格中的 <p> 标签
  * @param table table elem
  */
 function preParse(tableElem: DOMElement): DOMElement {
@@ -73,33 +73,14 @@ function preParse(tableElem: DOMElement): DOMElement {
   $table.append($tr)
   $tbody.remove()
 
-  // 删除带有 style="display:none" 的单元格（通常来自复制的隐藏内容）
-  const $allCells = $table.find('td, th')
-
-  for (let i = 0; i < $allCells.length; i += 1) {
-    const cell = $allCells[i]
-    const $cell = $(cell)
-    const styleAttr = $cell.attr('style')
-
-    // 检查style属性是否包含display:none或display: none
-    if (styleAttr) {
-      // 使用正则表达式匹配display:none，支持空格变化
-      const displayNoneRegex = /display\s*:\s*none/i
-
-      if (displayNoneRegex.test(styleAttr)) {
-        $cell.remove()
-      }
-    }
-    // 设置width属性为auto
-    $cell.attr('width', 'auto')
-  }
-
-  // 处理表格单元格中的 <p> 标签（通常来自Word复制）
   const $cells = $table.find('td, th')
 
   for (let i = 0; i < $cells.length; i += 1) {
     const cell = $cells[i]
     const $cell = $(cell)
+
+    // 设置 width 属性为 auto
+    $cell.attr('width', 'auto')
 
     // 直接处理单元格中的所有 <p> 标签
     let cellHtml = $cell.html() || ''

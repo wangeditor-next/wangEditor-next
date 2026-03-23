@@ -56,6 +56,18 @@ describe('table - pre parse html', () => {
     expect(res.outerHTML).toBe('<table><tr><td width="auto">hello</td></tr></table>')
   })
 
+  it('should preserve cells that use display:none but still contain imported content', () => {
+    const $table = $(
+      '<table><tbody><tr><td>A1</td><td style="display:none">B1</td><td style="display: none">C1</td></tr></tbody></table>',
+    )
+
+    const res = preParseTableHtmlConf.preParseHtml($table[0])
+
+    expect(res.outerHTML).toBe(
+      '<table><tr><td width="auto">A1</td><td style="display:none" width="auto">B1</td><td style="display: none" width="auto">C1</td></tr></table>',
+    )
+  })
+
   it('should preserve line breaks when flattening paragraphs inside cells', () => {
     const $table = $(
       [
@@ -117,6 +129,20 @@ describe('table - parse html', () => {
       width: 'auto',
       children,
       hidden: true,
+    })
+  })
+
+  it('table cell with display:none and actual content should still be imported', () => {
+    const $cell = $('<td style="display:none">visible from excel</td>')
+
+    expect(parseCellHtmlConf.parseElemHtml($cell[0], [], editor)).toEqual({
+      type: 'table-cell',
+      isHeader: false,
+      colSpan: 1,
+      rowSpan: 1,
+      width: 'auto',
+      children: [{ text: 'visible from excel' }],
+      hidden: false,
     })
   })
 
@@ -494,6 +520,30 @@ describe('table - parse html', () => {
       height: 124,
       children,
       columnWidths: [80, 80, 200],
+    })
+  })
+
+  it('table should keep columns from excel-like hidden-style cells when they contain text', () => {
+    const $table = $(
+      '<table><tr><td width="auto">A1</td><td style="display:none" width="auto">B1</td><td style="display: none" width="auto">C1</td></tr></table>',
+    )
+    const children = [
+      {
+        type: 'table-row',
+        children: [
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: 'A1' }] },
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: 'B1' }] },
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: 'C1' }] },
+        ],
+      },
+    ]
+
+    expect(parseTableHtmlConf.parseElemHtml($table[0], children as any, editor)).toEqual({
+      type: 'table',
+      width: 'auto',
+      height: 0,
+      children,
+      columnWidths: [90, 90, 90],
     })
   })
 })
