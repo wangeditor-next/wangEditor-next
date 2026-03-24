@@ -3,7 +3,6 @@ name: Export Demo Templates
 on:
   push:
     branches:
-      - main
       - master
     paths:
       - '.github/workflows/*'
@@ -13,6 +12,10 @@ on:
       - 'package.json'
       - 'pnpm-lock.yaml'
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   export:
@@ -29,24 +32,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22.13.0
-          registry-url: https://registry.npmjs.com
-
       - name: Install pnpm
         uses: pnpm/action-setup@v5
         with:
           version: 9.15.0
 
-      - name: Load cached dependencies
-        uses: actions/cache@v5.0.4
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          path: |
-            **/node_modules
-            ~/.pnpm-store
-          key: ${{ runner.os }}-node-22.13.0-${{ hashFiles('**/pnpm-lock.yaml') }}
+          node-version: 22.13.0
+          registry-url: https://registry.npmjs.com
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

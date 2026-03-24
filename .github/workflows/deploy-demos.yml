@@ -2,11 +2,11 @@
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
 # github actions 中文文档 https://docs.github.com/cn/actions/getting-started-with-github-actions
 
-name: deploy demos
+name: Deploy Demos
 
 on:
-  push:
-    branches: [ deploy-demos ] # 特定分支
+  workflow_dispatch:
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -40,5 +40,4 @@ jobs:
         echo "---------- end git push ----------"
     - name: delete ssh key # 删除 ssh key
       run: rm -rf ~/.ssh/id_rsa
-
 

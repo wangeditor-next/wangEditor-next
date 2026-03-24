@@ -4,8 +4,10 @@ on:
   push:
     branches:
       - master
+      - dev
       - develop
-      - '^(dev-.*|dev/.*)$'
+      - 'dev-*'
+      - 'dev/**'
   workflow_dispatch:
 
 permissions:
@@ -32,27 +34,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 设置 Node.js 版本
+      # 安装 pnpm
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9.15.0
+
+      # 设置 Node.js 版本并缓存 pnpm store
       - name: Setup Node ${{ matrix.node-version }}
         uses: actions/setup-node@v6
         with:
           node-version:  ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org/'
-
-      # 安装 pnpm
-      - name: Install pnpm
-        uses: pnpm/action-setup@v5
-
-      # 加载依赖缓存
-      - name: Load cached dependencies
-        uses: actions/cache@v5.0.4
-        id: cache
-        with:
-          path: |
-            **/node_modules
-            /home/runner/.cache/ms-playwright
-            ~/.pnpm-store
-          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package.json', '**/pnpm-lock.yaml') }}
+          cache: pnpm
 
       # 安装依赖
       - name: Install dependencies
