@@ -86,7 +86,7 @@ jobs:
 
       - name: Download exported templates
         if: steps.config.outputs.sync_enabled == 'true'
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           path: .demo-templates
 
