@@ -41,7 +41,7 @@ jobs:
 
       # 安装 pnpm
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
 
       # 加载依赖缓存
       - name: Load cached dependencies

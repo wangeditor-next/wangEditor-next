@@ -38,7 +38,7 @@ jobs:
 
       # 安装 pnpm
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         with:
           version: 9.15.0
 
