@@ -49,7 +49,6 @@ jobs:
         with:
           path: |
             **/node_modules
-            **/.turbo
             /home/runner/.cache/ms-playwright
             ~/.pnpm-store
           key: ${{ runner.os }}-node-22.13.0-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -57,7 +56,7 @@ jobs:
 
       # 安装项目依赖
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       # 先构建 editor 及其依赖，避免把冷构建时间算进 Playwright webServer 超时
       - name: Build editor packages

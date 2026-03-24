@@ -3,16 +3,16 @@
  * @author wangfupeng
  */
 
-import { ImageElement } from 'packages/basic-modules/src/modules/image/custom-types'
-import { VideoElement } from 'packages/video-module/src/module/custom-types'
-import {
+import type { ImageElement } from 'packages/basic-modules/src/modules/image/custom-types'
+import type { VideoElement } from 'packages/video-module/src/module/custom-types'
+import type {
   Descendant, Node, NodeEntry, Range,
 } from 'slate'
 
-import { IDomEditor } from '../editor/interface'
-import { IMenuGroup } from '../menus/interface'
-import { IUploadConfig } from '../upload'
-import { DOMElement } from '../utils/dom'
+import type { IDomEditor } from '../editor/interface'
+import type { IMenuGroup } from '../menus/interface'
+import type { IUploadConfig } from '../upload'
+import type { DOMElement } from '../utils/dom'
 
 interface IHoverbarConf {
   // key 即 element type

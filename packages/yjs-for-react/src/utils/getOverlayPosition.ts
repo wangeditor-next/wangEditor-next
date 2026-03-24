@@ -1,4 +1,5 @@
-import { DomEditor, IDomEditor } from '@wangeditor-next/editor'
+import type { IDomEditor } from '@wangeditor-next/editor'
+import { DomEditor } from '@wangeditor-next/editor'
 import {
   BaseRange, Editor, Path, Range, Text,
 } from 'slate'

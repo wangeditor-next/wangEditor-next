@@ -3,9 +3,9 @@
  * @author wangfupeng
  */
 
-import { UppyFile } from '@uppy/core'
+import type { UppyFile } from '@uppy/core'
 
-import { IDomEditor } from '../editor/interface'
+import type { IDomEditor } from '../editor/interface'
 
 type FilesType = { [key: string]: UppyFile<{}, {}> }
 type InsertFn = (

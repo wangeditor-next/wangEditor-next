@@ -9,6 +9,13 @@
         "targets": "ie 11"
       }
     ],
+    [
+      "@babel/preset-react",
+      {
+        "pragma": "jsx",
+        "runtime": "classic"
+      }
+    ],
     "@babel/preset-typescript"
   ],
   "plugins": [

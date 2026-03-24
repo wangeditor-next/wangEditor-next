@@ -21,6 +21,17 @@ import Boot from './Boot'
 export { Boot }
 
 // 导出 core API 和接口（注意，此处按需导出，不可直接用 `*` ）
+export type {
+  IButtonMenu,
+  IDomEditor,
+  IDropPanelMenu,
+  IEditorConfig,
+  IModalMenu,
+  IModuleConf,
+  ISelectMenu,
+  IToolbarConfig,
+  IUploadConfig,
+} from '@wangeditor-next/core'
 export {
   // 第三方模块 - 上传时用到
   createUploader,
@@ -33,26 +44,18 @@ export {
   // 第三方模块 - 多语言
   i18nChangeLanguage,
   i18nGetResources,
-  IButtonMenu,
-  IDomEditor,
-  IDropPanelMenu,
-  IEditorConfig,
-  IModalMenu,
-  // 第三方模块 - 接口
-  IModuleConf,
-  ISelectMenu,
-  IToolbarConfig,
-  IUploadConfig,
   t,
   Toolbar,
 } from '@wangeditor-next/core'
 
 // 导出 slate API 和接口 （需重命名，加 `Slate` 前缀）
-export {
+export type {
   Descendant as SlateDescendant,
+  Location as SlateLocation,
+} from 'slate'
+export {
   Editor as SlateEditor,
   Element as SlateElement,
-  Location as SlateLocation,
   Node as SlateNode,
   Path as SlatePath,
   Point as SlatePoint,

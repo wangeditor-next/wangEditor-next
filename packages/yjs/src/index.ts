@@ -1,15 +1,8 @@
-import { RelativeRange } from './module/custom-types'
 import {
   CursorEditor,
-  CursorState,
-  CursorStateChangeEvent,
-  RemoteCursorChangeEventListener,
   withCursors,
-  WithCursorsOptions,
   withYHistory,
-  WithYHistoryOptions,
   withYjs,
-  WithYjsOptions,
   YHistoryEditor,
   YjsEditor,
 } from './plugins'
@@ -24,24 +17,27 @@ import {
 export {
   // Base cursor plugin
   CursorEditor,
-  CursorState,
-  CursorStateChangeEvent,
   relativePositionToSlatePoint,
   // Utils
-  RelativeRange,
   relativeRangeToSlateRange,
-  RemoteCursorChangeEventListener,
   slateNodesToInsertDelta,
   slatePointToRelativePosition,
   slateRangeToRelativeRange,
   withCursors,
-  WithCursorsOptions,
   // History plugin
   withYHistory,
-  WithYHistoryOptions,
   withYjs,
-  WithYjsOptions,
   YHistoryEditor,
   YjsEditor,
   yTextToSlateElement,
 }
+
+export type { RelativeRange } from './module/custom-types'
+export type {
+  CursorState,
+  CursorStateChangeEvent,
+  RemoteCursorChangeEventListener,
+  WithCursorsOptions,
+  WithYHistoryOptions,
+  WithYjsOptions,
+} from './plugins'

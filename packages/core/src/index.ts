@@ -5,17 +5,17 @@
 
 import './assets/index.less'
 
-import { IDomEditor } from './editor/interface'
-import { IRegisterMenuConf } from './menus/index'
-import { IParseElemHtmlConf, IPreParseHtmlConf, ParseStyleHtmlFnType } from './parse-html/index'
-import { IRenderElemConf, RenderStyleFnType } from './render/index'
-import { IElemToHtmlConf, styleToHtmlFnType } from './to-html/index'
+import type { IDomEditor } from './editor/interface'
+import type { IRegisterMenuConf } from './menus/index'
+import type { IParseElemHtmlConf, IPreParseHtmlConf, ParseStyleHtmlFnType } from './parse-html/index'
+import type { IRenderElemConf, RenderStyleFnType } from './render/index'
+import type { IElemToHtmlConf, styleToHtmlFnType } from './to-html/index'
 
 // 创建
 export * from './create/index'
 
 // config
-export {
+export type {
   IEditorConfig, IToolbarConfig, IUploadImageConfig, IUploadVideoConfig,
 } from './config/interface'
 

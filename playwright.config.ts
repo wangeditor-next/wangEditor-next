@@ -1,8 +1,12 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const webServerCommand = process.env.PLAYWRIGHT_SKIP_BUILD
-  ? 'pnpm --filter @wangeditor-next/demo-html run serve'
-  : 'pnpm turbo build --filter=@wangeditor-next/editor && pnpm --filter @wangeditor-next/demo-html run serve'
+let webServerCommand = 'pnpm turbo build --filter=@wangeditor-next/editor && pnpm --filter @wangeditor-next/demo-html run serve'
+
+if (process.env.PLAYWRIGHT_SKIP_BUILD) {
+  webServerCommand = 'pnpm --filter @wangeditor-next/demo-html run serve'
+} else if (process.env.CI) {
+  webServerCommand = 'pnpm turbo build --force --filter=@wangeditor-next/editor && pnpm --filter @wangeditor-next/demo-html run serve'
+}
 
 export default defineConfig({
   testDir: './tests/e2e',

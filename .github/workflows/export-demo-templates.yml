@@ -45,12 +45,11 @@ jobs:
         with:
           path: |
             **/node_modules
-            **/.turbo
             ~/.pnpm-store
           key: ${{ runner.os }}-node-22.13.0-${{ hashFiles('**/pnpm-lock.yaml') }}
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Export template
         run: |

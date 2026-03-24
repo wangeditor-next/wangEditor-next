@@ -3,8 +3,9 @@
  * @author wangfupeng
  */
 
+import type { IDomEditor, IEditorConfig } from '@wangeditor-next/editor'
 import {
-  createEditor, IDomEditor, IEditorConfig, SlateDescendant,
+  createEditor, SlateDescendant,
 } from '@wangeditor-next/editor'
 import React, { useEffect, useRef, useState } from 'react'
 

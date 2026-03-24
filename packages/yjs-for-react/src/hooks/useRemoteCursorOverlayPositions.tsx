@@ -1,8 +1,9 @@
-import { CursorState } from '@wangeditor-next/yjs'
+import type { CursorState } from '@wangeditor-next/yjs'
+import type { RefObject } from 'react'
 import {
-  RefObject, useCallback, useLayoutEffect, useMemo, useRef, useState,
+  useCallback, useLayoutEffect, useMemo, useRef, useState,
 } from 'react'
-import { BaseRange, NodeMatch, Text } from 'slate'
+import type { BaseRange, NodeMatch, Text } from 'slate'
 
 import { getCursorRange } from '../utils/getCursorRange'
 import {

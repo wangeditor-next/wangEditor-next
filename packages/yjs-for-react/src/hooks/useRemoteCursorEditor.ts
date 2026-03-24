@@ -1,4 +1,4 @@
-import { IDomEditor } from '@wangeditor-next/editor'
+import type { IDomEditor } from '@wangeditor-next/editor'
 import { CursorEditor } from '@wangeditor-next/yjs'
 
 import { useEditorStatic } from './use-editor-static'

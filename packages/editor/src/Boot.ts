@@ -3,21 +3,21 @@
  * @author wangfupeng
  */
 
-import {
-  IDomEditor,
-  // 配置
+import type {
   IEditorConfig,
-  // to html
   IElemToHtmlConf,
   IModuleConf,
   IParseElemHtmlConf,
   IPreParseHtmlConf,
-  // 注册菜单
   IRegisterMenuConf,
-  // 渲染 modal -> view
   IRenderElemConf,
   IToolbarConfig,
   ParseStyleHtmlFnType,
+  RenderStyleFnType,
+  styleToHtmlFnType,
+} from '@wangeditor-next/core'
+import {
+  IDomEditor,
   // parseHtml
   registerElemToHtmlConf,
   registerMenu,
@@ -27,10 +27,8 @@ import {
   registerRenderElemConf,
   registerStyleHandler,
   registerStyleToHtmlHandler,
-  RenderStyleFnType,
-  styleToHtmlFnType,
 } from '@wangeditor-next/core'
-import { ISingleMenuConfig } from 'packages/core/src/config/interface'
+import type { ISingleMenuConfig } from 'packages/core/src/config/interface'
 
 import registerModule from './register-builtin-modules/register'
 

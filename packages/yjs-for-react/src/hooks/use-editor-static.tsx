@@ -1,4 +1,4 @@
-import { IDomEditor } from '@wangeditor-next/editor'
+import type { IDomEditor } from '@wangeditor-next/editor'
 import { createContext, useContext } from 'react'
 
 export const EditorContext = createContext<IDomEditor | null>(null)
