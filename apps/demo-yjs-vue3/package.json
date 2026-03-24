@@ -1,7 +1,7 @@
 {
   "name": "@wangeditor-next/demo-yjs-vue3",
   "private": true,
-  "version": "0.0.4",
+  "version": "0.0.5",
   "type": "module",
   "scripts": {
     "dev-client": "vite --force",

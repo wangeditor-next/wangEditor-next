@@ -1,5 +1,11 @@
 # @wangeditor-next/yjs-for-react
 
+## 0.1.66
+
+### Patch Changes
+
+- @wangeditor-next/editor@5.6.55
+
 ## 0.1.65
 
 ### Patch Changes
