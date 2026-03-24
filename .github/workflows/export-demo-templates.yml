@@ -58,7 +58,7 @@ jobs:
           pnpm demo:export-template ${{ matrix.app }} .demo-templates/${{ matrix.app }}
 
       - name: Upload exported template
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.app }}-template
           path: .demo-templates/${{ matrix.app }}
