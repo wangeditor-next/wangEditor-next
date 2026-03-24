@@ -63,7 +63,7 @@ jobs:
           version: 9.15.0
 
       - name: Load cached dependencies
-        uses: actions/cache@v5.0.3
+        uses: actions/cache@v5.0.4
         id: cache
         with:
           path: |
