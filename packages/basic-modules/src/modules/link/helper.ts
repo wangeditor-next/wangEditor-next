@@ -8,6 +8,7 @@ import { Editor, Range, Transforms } from 'slate'
 
 import { replaceSymbols } from '../../utils/util'
 import { LinkElement } from './custom-types'
+import { normalizeLinkUrl } from './url'
 
 /**
  * 校验 link
@@ -22,10 +23,11 @@ async function check(
   text: string,
   url: string,
 ): Promise<boolean> {
+  const normalizedUrl = normalizeLinkUrl(url)
   const { checkLink } = editor.getMenuConfig(menuKey)
 
   if (checkLink) {
-    const res = await checkLink(text, url)
+    const res = await checkLink(text, normalizedUrl)
 
     if (typeof res === 'string') {
       // 检验未通过，提示信息
@@ -49,14 +51,15 @@ async function check(
  * @returns parsedUrl
  */
 async function parse(menuKey: string, editor: IDomEditor, url: string): Promise<string> {
+  const normalizedUrl = normalizeLinkUrl(url)
   const { parseLinkUrl } = editor.getMenuConfig(menuKey)
 
   if (parseLinkUrl) {
-    const newUrl = await parseLinkUrl(url)
+    const newUrl = await parseLinkUrl(normalizedUrl)
 
-    return newUrl
+    return normalizeLinkUrl(newUrl)
   }
-  return url
+  return normalizedUrl
 }
 
 export function isMenuDisabled(editor: IDomEditor): boolean {

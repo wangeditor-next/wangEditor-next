@@ -96,6 +96,19 @@ describe('link module helper', () => {
     expect(linkElem.url).toBe(url)
   })
 
+  it('insert link should normalize whitespace in url', async () => {
+    editor.select(startLocation)
+
+    await insertLink(editor, 'hello', ' \nhttps://wangeditor-next.github.io/docs/a b\t ')
+
+    const links = editor.getElemsByTypePrefix('link')
+
+    expect(links.length).toBe(1)
+    const linkElem = links[0]
+
+    expect(linkElem.url).toBe('https://wangeditor-next.github.io/docs/a%20b')
+  })
+
   it('insert link with collapsed max length', async () => {
     editor.select(startLocation)
     editor.insertText('1234456789012')
@@ -241,5 +254,27 @@ describe('link module helper', () => {
     const linkElem = links[0]
 
     expect(linkElem.url).toBe(newUrl)
+  })
+
+  it('update link should normalize whitespace in url', async () => {
+    editor.select(startLocation)
+
+    const url = 'https://wangeditor-next.github.io/docs/'
+
+    await insertLink(editor, 'hello', url)
+
+    editor.select({
+      path: [0, 1, 0],
+      offset: 3,
+    })
+
+    await updateLink(editor, '', ' \nhttps://wangeditor-next.github.io/docs/a b\t ')
+
+    const links = editor.getElemsByTypePrefix('link')
+
+    expect(links.length).toBe(1)
+    const linkElem = links[0]
+
+    expect(linkElem.url).toBe('https://wangeditor-next.github.io/docs/a%20b')
   })
 })
