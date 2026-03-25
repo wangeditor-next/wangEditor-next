@@ -184,4 +184,23 @@ describe('create editor and toolbar', () => {
     expect(exportedHtml).toContain('src="https://example.com/test.png"')
     expect(exportedHtml).toContain('<p>123</p>')
   })
+
+  test('getHtml exports explicit table width when imported table uses colgroup widths', () => {
+    const html = `<table style="width: auto;table-layout: fixed;height:auto">
+      <colgroup contentEditable="false">
+        <col width="120"></col>
+        <col width="80"></col>
+      </colgroup>
+      <tbody>
+        <tr><td>A</td><td>B</td></tr>
+      </tbody>
+    </table>`
+
+    const editor = customCreateEditor({ html })
+    const exportedHtml = editor.getHtml()
+
+    expect(exportedHtml).toContain('style="width: 200px;table-layout: fixed;')
+    expect(exportedHtml).not.toContain('height:NaN')
+    expect(exportedHtml).toContain('<colgroup contentEditable="false"><col width=120></col><col width=80></col></colgroup>')
+  })
 })

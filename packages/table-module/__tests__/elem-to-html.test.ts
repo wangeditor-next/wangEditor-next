@@ -111,6 +111,20 @@ describe('TableModule module', () => {
       )
     })
 
+    test('tableToHtmlConf should export explicit pixel width when columnWidths are present', () => {
+      const element = {
+        type: 'table',
+        width: 'auto',
+        columnWidths: [120, 80],
+        children: [],
+      }
+      const res = tableToHtmlConf.elemToHtml(element, '<tr><td>123</td><td>456</td></tr>')
+
+      expect(res).toBe(
+        '<table style="width: 200px;table-layout: fixed;height:auto"><colgroup contentEditable="false"><col width=120></col><col width=80></col></colgroup><tbody><tr><td>123</td><td>456</td></tr></tbody></table>',
+      )
+    })
+
     test('tableToHtmlConf should return html table string with full width style if element is set fullWith value true', () => {
       const element = {
         type: 'table',

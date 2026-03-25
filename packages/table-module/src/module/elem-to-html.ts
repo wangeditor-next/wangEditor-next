@@ -7,8 +7,29 @@ import { Element } from 'slate'
 
 import { TableCellElement, TableElement, TableRowElement } from './custom-types'
 
+function getExportTableWidth(tableNode: TableElement): string {
+  const { width = 'auto', columnWidths = [] } = tableNode
+
+  if (width && width !== 'auto') {
+    return width
+  }
+
+  const totalWidth = columnWidths.reduce((sum, columnWidth) => {
+    if (!Number.isFinite(columnWidth)) { return sum }
+    if (columnWidth <= 0) { return sum }
+    return sum + columnWidth
+  }, 0)
+
+  if (totalWidth > 0) {
+    return `${totalWidth}px`
+  }
+
+  return 'auto'
+}
+
 function tableToHtml(elemNode: Element, childrenHtml: string): string {
-  const { width = 'auto', columnWidths, height = 'auto' } = elemNode as TableElement
+  const tableNode = elemNode as TableElement
+  const { columnWidths, height = 'auto' } = tableNode
   const cols = columnWidths
     ?.map(colWidth => {
       return `<col width=${colWidth}></col>`
@@ -16,8 +37,9 @@ function tableToHtml(elemNode: Element, childrenHtml: string): string {
     .join('')
 
   const colgroupStr = cols ? `<colgroup contentEditable="false">${cols}</colgroup>` : ''
+  const exportedWidth = getExportTableWidth(tableNode)
 
-  return `<table style="width: ${width};table-layout: fixed;height:${height}">${colgroupStr}<tbody>${childrenHtml}</tbody></table>`
+  return `<table style="width: ${exportedWidth};table-layout: fixed;height:${height}">${colgroupStr}<tbody>${childrenHtml}</tbody></table>`
 }
 
 function tableRowToHtml(elem: Element, childrenHtml: string): string {
