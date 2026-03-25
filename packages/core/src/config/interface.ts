@@ -199,6 +199,10 @@ export interface IMenuConfig {
   codeSelectLang: ICodeLangConfig;
 }
 
+export type IMenuConfigUpdate = {
+  [K in keyof IMenuConfig]?: Partial<IMenuConfig[K]>
+}
+
 /**
  * editor config
  */
@@ -237,7 +241,7 @@ export interface IEditorConfig {
   maxLength?: number
 
   // 各个 menu 的配置汇总，可以通过 key 获取单个 menu 的配置
-  MENU_CONF?: Partial<IMenuConfig>
+  MENU_CONF?: IMenuConfigUpdate
 
   // 悬浮菜单栏 menu
   hoverbarKeys?: IHoverbarConf
