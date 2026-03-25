@@ -8,6 +8,7 @@ import { Descendant, Text } from 'slate'
 
 import $, { DOMElement } from '../../utils/dom'
 import { LinkElement } from './custom-types'
+import { normalizeLinkUrl } from './url'
 
 function parseHtml(elem: DOMElement, children: Descendant[], editor: IDomEditor): LinkElement {
   const $elem = $(elem)
@@ -25,7 +26,7 @@ function parseHtml(elem: DOMElement, children: Descendant[], editor: IDomEditor)
 
   return {
     type: 'link',
-    url: $elem.attr('href') || '',
+    url: normalizeLinkUrl($elem.attr('href') || ''),
     target: $elem.attr('target') || '',
     // @ts-ignore
     children,

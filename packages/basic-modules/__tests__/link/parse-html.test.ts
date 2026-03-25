@@ -57,4 +57,18 @@ describe('link - parse html', () => {
       children: [{ text: 'hello ' }, { text: 'world', bold: true }],
     })
   })
+
+  it('should normalize href formatting whitespace from imported html', () => {
+    const $link = $('<a href=" \nhttps://localhost/a b\t\r " target="_blank">hello</a>')
+    const children = [{ text: 'hello' }]
+
+    const res = parseHtmlConf.parseElemHtml($link[0], children, editor)
+
+    expect(res).toEqual({
+      type: 'link',
+      url: 'https://localhost/a%20b',
+      target: '_blank',
+      children: [{ text: 'hello' }],
+    })
+  })
 })
