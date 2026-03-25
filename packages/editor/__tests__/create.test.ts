@@ -200,6 +200,7 @@ describe('create editor and toolbar', () => {
     const exportedHtml = editor.getHtml()
 
     expect(exportedHtml).toContain('style="width: 200px;table-layout: fixed;')
+    expect(exportedHtml).not.toContain('height:NaN')
     expect(exportedHtml).toContain('<colgroup contentEditable="false"><col width=120></col><col width=80></col></colgroup>')
   })
 })

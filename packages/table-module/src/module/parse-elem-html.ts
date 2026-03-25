@@ -9,6 +9,16 @@ import { Descendant, Text } from 'slate'
 import $, { DOMElement, getStyleValue, getTagName } from '../utils/dom'
 import { TableCellElement, TableElement, TableRowElement } from './custom-types'
 
+function parsePixelSize(value: string | null | undefined, fallback = 0): number {
+  const parsedValue = parseInt(value || '', 10)
+
+  if (Number.isNaN(parsedValue)) {
+    return fallback
+  }
+
+  return parsedValue
+}
+
 function getColgroupWidths(colgroupElements: HTMLCollection | null): number[] {
   if (!colgroupElements || colgroupElements.length === 0) { return [] }
 
@@ -98,7 +108,7 @@ function parseRowHtml(
   }
 
   // 解析行高度
-  const height = parseInt(getStyleValue($elem, 'height') || '0', 10) || undefined
+  const height = parsePixelSize(getStyleValue($elem, 'height')) || undefined
 
   return {
     type: 'table-row',
@@ -126,7 +136,7 @@ function parseTableHtml(
   if ($elem.attr('width') === '100%') { tableWidth = '100%' } // 兼容 v4 格式
 
   // 计算高度
-  const height = parseInt(getStyleValue($elem, 'height') || '0', 10)
+  const height = parsePixelSize(getStyleValue($elem, 'height'))
 
   const tableELement: TableElement = {
     type: 'table',

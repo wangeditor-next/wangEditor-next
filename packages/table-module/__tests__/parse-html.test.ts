@@ -592,6 +592,28 @@ describe('table - parse html', () => {
     })
   })
 
+  it('table should fallback auto height to 0 instead of NaN', () => {
+    const $table = $(
+      '<table style="width: auto;table-layout: fixed;height:auto"><tr><td width="auto">A</td></tr></table>',
+    )
+    const children = [
+      {
+        type: 'table-row',
+        children: [
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: 'A' }] },
+        ],
+      },
+    ]
+
+    expect(parseTableHtmlConf.parseElemHtml($table[0], children as any, editor)).toEqual({
+      type: 'table',
+      width: 'auto',
+      height: 0,
+      children,
+      columnWidths: [90],
+    })
+  })
+
   it('table should keep columns from excel-like hidden-style cells when they contain text', () => {
     const $table = $(
       '<table><tr><td width="auto">A1</td><td style="display:none" width="auto">B1</td><td style="display: none" width="auto">C1</td></tr></table>',
