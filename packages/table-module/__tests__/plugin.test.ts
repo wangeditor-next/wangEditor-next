@@ -34,7 +34,43 @@ describe('TableModule module', () => {
 
       newEditor.insertBreak()
 
-      expect(mockFn).toBeCalledWith('\n\r')
+      expect(mockFn).toBeCalledWith('\n')
+    })
+
+    test('use withTable plugin when insertBreak in a table cell should insert a standard line break and keep selection valid', () => {
+      const editor = createEditor({
+        content: [
+          {
+            type: 'table',
+            width: 'auto',
+            children: [
+              {
+                type: 'table-row',
+                children: [
+                  { type: 'table-cell', children: [{ text: 'a' }] },
+                ],
+              },
+            ],
+            columnWidths: [100],
+          },
+          { type: 'paragraph', children: [{ text: '' }] },
+        ],
+      })
+
+      editor.selection = {
+        anchor: { path: [0, 0, 0, 0], offset: 1 },
+        focus: { path: [0, 0, 0, 0], offset: 1 },
+      }
+
+      editor.insertBreak()
+
+      expect((slate.Node.get(editor, [0, 0, 0, 0]) as slate.Text).text).toBe('a\n')
+      expect(editor.selection).toEqual({
+        anchor: { path: [0, 0, 0, 0], offset: 2 },
+        focus: { path: [0, 0, 0, 0], offset: 2 },
+      })
+      expect(editor.getHtml()).toContain('a<br>')
+      expect(editor.getText()).not.toContain('\r')
     })
 
     test('use withTable plugin when insertData should insertText to cell', () => {
@@ -295,7 +331,7 @@ describe('TableModule module', () => {
       })
     })
 
-    test('use withTable plugin when deleteFragment should expand half-break selections inside a cell', () => {
+    test('use withTable plugin when deleteBackward should remove a table cell line break as a single standard character', () => {
       const editor = createEditor({
         content: [
           {
@@ -305,7 +341,7 @@ describe('TableModule module', () => {
               {
                 type: 'table-row',
                 children: [
-                  { type: 'table-cell', children: [{ text: 'a\n\rb' }] },
+                  { type: 'table-cell', children: [{ text: 'a\nb' }] },
                 ],
               },
             ],
@@ -313,21 +349,52 @@ describe('TableModule module', () => {
           },
         ],
       })
-      const originalDeleteFragment = vi.fn()
 
-      editor.deleteFragment = originalDeleteFragment as any
-      const wrappedEditor = withTable(editor)
-      const setSelectionSpy = vi.spyOn(slate.Transforms, 'setSelection')
-
-      wrappedEditor.selection = {
+      editor.selection = {
         anchor: { path: [0, 0, 0, 0], offset: 2 },
         focus: { path: [0, 0, 0, 0], offset: 2 },
       }
 
-      wrappedEditor.deleteFragment('character')
+      editor.deleteBackward('character')
 
-      expect(setSelectionSpy).toHaveBeenCalled()
-      expect(originalDeleteFragment).toHaveBeenCalledWith('character')
+      expect((slate.Node.get(editor, [0, 0, 0, 0]) as slate.Text).text).toBe('ab')
+      expect(editor.selection).toEqual({
+        anchor: { path: [0, 0, 0, 0], offset: 1 },
+        focus: { path: [0, 0, 0, 0], offset: 1 },
+      })
+    })
+
+    test('use withTable plugin when deleteForward should remove a table cell line break as a single standard character', () => {
+      const editor = createEditor({
+        content: [
+          {
+            type: 'table',
+            width: 'auto',
+            children: [
+              {
+                type: 'table-row',
+                children: [
+                  { type: 'table-cell', children: [{ text: 'a\nb' }] },
+                ],
+              },
+            ],
+            columnWidths: [100],
+          },
+        ],
+      })
+
+      editor.selection = {
+        anchor: { path: [0, 0, 0, 0], offset: 1 },
+        focus: { path: [0, 0, 0, 0], offset: 1 },
+      }
+
+      editor.deleteForward('character')
+
+      expect((slate.Node.get(editor, [0, 0, 0, 0]) as slate.Text).text).toBe('ab')
+      expect(editor.selection).toEqual({
+        anchor: { path: [0, 0, 0, 0], offset: 1 },
+        focus: { path: [0, 0, 0, 0], offset: 1 },
+      })
     })
 
     test('use withTable plugin when normalizeNode should append a trailing paragraph after the last table', () => {
