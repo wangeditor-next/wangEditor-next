@@ -83,25 +83,28 @@ function deleteCellBreak(newEditor: IDomEditor, unit: Parameters<IDomEditor['del
   if (!Text.isText(targetNode[0]) || targetNode[0].text.length < CELL_BREAK.length) { return false }
 
   // 处理光标在换行符首/尾的情况,|表示光标  |\n   \n|
-  const parameters: Parameters<typeof String.prototype.slice> = direction === 'backward'
-    ? [targetPoint.offset - CELL_BREAK.length, targetPoint.offset]
-    : [targetPoint.offset, targetPoint.offset + CELL_BREAK.length]
+  const startOffset = direction === 'backward'
+    ? targetPoint.offset - CELL_BREAK.length
+    : targetPoint.offset
+  const endOffset = direction === 'backward'
+    ? targetPoint.offset
+    : targetPoint.offset + CELL_BREAK.length
 
-  if (parameters[0] < 0) { return false }
+  if (startOffset < 0) { return false }
 
   const nodeText = Node.string(targetNode[0])
-  const isBreak = nodeText.slice(...parameters) === CELL_BREAK
+  const isBreak = nodeText.slice(startOffset, endOffset) === CELL_BREAK
 
   if (isBreak) {
-    Transforms.insertText(newEditor, nodeText.slice(0, parameters[0]) + nodeText.slice(parameters[1]), {
+    Transforms.insertText(newEditor, nodeText.slice(0, startOffset) + nodeText.slice(endOffset), {
       at: {
         anchor: Editor.start(newEditor, targetPoint.path),
         focus: Editor.end(newEditor, targetPoint.path),
       },
     })
     Transforms.select(newEditor, {
-      anchor: { path: targetPoint.path, offset: parameters[0] },
-      focus: { path: targetPoint.path, offset: parameters[0] },
+      anchor: { path: targetPoint.path, offset: startOffset },
+      focus: { path: targetPoint.path, offset: startOffset },
     })
     return true
   }
