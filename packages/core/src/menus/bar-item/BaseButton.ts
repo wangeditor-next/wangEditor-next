@@ -3,17 +3,20 @@
  * @author wangfupeng
  */
 
-import { IButtonMenu, IDropPanelMenu, IModalMenu } from '../interface'
 import $, { Dom7Array } from '../../utils/dom'
-import { IBarItem, getEditorInstance } from './index'
-import { clearSvgStyle } from '../helpers/helpers'
 import { promiseResolveThen } from '../../utils/util'
+import { clearSvgStyle } from '../helpers/helpers'
+import { IButtonMenu, IDropPanelMenu, IModalMenu } from '../interface'
+import { getEditorInstance, IBarItem } from './index'
 import { addTooltip } from './tooltip'
 
 abstract class BaseButton implements IBarItem {
-  readonly $elem: Dom7Array = $(`<div class="w-e-bar-item"></div>`)
-  protected readonly $button: Dom7Array = $(`<button type="button"></button>`)
+  readonly $elem: Dom7Array = $('<div class="w-e-bar-item"></div>')
+
+  protected readonly $button: Dom7Array = $('<button type="button"></button>')
+
   menu: IButtonMenu | IDropPanelMenu | IModalMenu
+
   private disabled = false
 
   constructor(key: string, menu: IButtonMenu | IDropPanelMenu | IModalMenu, inGroup = false) {
@@ -21,13 +24,16 @@ abstract class BaseButton implements IBarItem {
 
     // 验证 tag
     const { tag, width } = menu
-    if (tag !== 'button') throw new Error(`Invalid tag '${tag}', expected 'button'`)
+
+    if (tag !== 'button') { throw new Error(`Invalid tag '${tag}', expected 'button'`) }
 
     // ----------------- 初始化 dom -----------------
     const { title, hotkey = '', iconSvg = '' } = menu
     const { $button } = this
+
     if (iconSvg) {
       const $svg = $(iconSvg)
+
       clearSvgStyle($svg) // 清理 svg 样式（扩展的菜单，svg 是不可控的，所以要清理一下）
       $button.append($svg)
     } else {
@@ -62,7 +68,7 @@ abstract class BaseButton implements IBarItem {
 
       editor.hidePanelOrModal() // 隐藏当前的各种 panel
 
-      if (this.disabled) return
+      if (this.disabled) { return }
 
       this.exec() // 执行 menu.exec
       this.onButtonClick() // 执行其他的逻辑
@@ -76,9 +82,9 @@ abstract class BaseButton implements IBarItem {
     const editor = getEditorInstance(this)
     const menu = this.menu
     const value = menu.getValue(editor)
-    this.setIcon()
-    this.setTooltip()
+
     menu.exec(editor, value)
+    this.changeMenuState()
   }
 
   // 交给子类去扩展
@@ -90,6 +96,7 @@ abstract class BaseButton implements IBarItem {
     const active = this.menu.isActive(editor)
 
     const className = 'active'
+
     if (active) {
       // 设置为 active
       $button.addClass(className)
@@ -110,9 +117,10 @@ abstract class BaseButton implements IBarItem {
     }
 
     // 永远 enable
-    if (this.menu.alwaysEnable) disabled = false
+    if (this.menu.alwaysEnable) { disabled = false }
 
     const className = 'disabled'
+
     if (disabled) {
       // 设置为 disabled
       $button.addClass(className)
@@ -127,12 +135,14 @@ abstract class BaseButton implements IBarItem {
   private setIcon() {
     const editor = getEditorInstance(this)
     const { $button } = this
-    if (!this.menu.getIcon) return
+
+    if (!this.menu.getIcon) { return }
     const iconSvg = this.menu.getIcon(editor)
 
     if (iconSvg) {
       $button.find('svg').remove()
       const $svg = $(iconSvg)
+
       clearSvgStyle($svg)
       $button.append($svg)
     }
@@ -141,9 +151,11 @@ abstract class BaseButton implements IBarItem {
   private setTooltip() {
     const editor = getEditorInstance(this)
     const { $button } = this
-    if (!this.menu.getTitle) return
+
+    if (!this.menu.getTitle) { return }
     const title = this.menu.getTitle(editor)
     const iconSvg = this.menu.iconSvg
+
     if (title && iconSvg) {
       addTooltip($button, iconSvg, title)
     }
@@ -152,6 +164,8 @@ abstract class BaseButton implements IBarItem {
   changeMenuState() {
     this.setActive()
     this.setDisabled()
+    this.setIcon()
+    this.setTooltip()
   }
 }
 

@@ -1,8 +1,11 @@
 import { Editor, Text } from 'slate'
 
+import { EditorEvents } from '../../src/config/interface'
 import { DomEditor } from '../../src/editor/dom-editor'
 import { i18nChangeLanguage } from '../../src/i18n'
 import HoverBar from '../../src/menus/bar/HoverBar'
+import Toolbar from '../../src/menus/bar/Toolbar'
+import BaseButton from '../../src/menus/bar-item/BaseButton'
 import DropPanelButton from '../../src/menus/bar-item/DropPanelButton'
 import ModalButton from '../../src/menus/bar-item/ModalButton'
 import * as positionHelpers from '../../src/menus/helpers/position'
@@ -11,6 +14,7 @@ import $ from '../../src/utils/dom'
 import {
   BAR_ITEM_TO_EDITOR,
   HOVER_BAR_TO_EDITOR,
+  TOOLBAR_TO_EDITOR,
 } from '../../src/utils/weak-maps'
 
 function createEditorStub() {
@@ -33,6 +37,10 @@ function createEditorStub() {
 async function flushMicrotasks() {
   await Promise.resolve()
   await Promise.resolve()
+}
+
+class TestButton extends BaseButton {
+  onButtonClick() {}
 }
 
 describe('bar item lifecycle', () => {
@@ -136,6 +144,87 @@ describe('bar item lifecycle', () => {
     (button as any).$button[0].click()
 
     expect((button as any).dropPanel.isShow).toBe(false)
+  })
+
+  test('BaseButton.changeMenuState refreshes icon and tooltip from the latest menu state', async () => {
+    const editor = createEditorStub()
+    let isFullScreen = false
+    const fullScreenSvg = '<svg><path d="M1 1"></path></svg>'
+    const cancelFullScreenSvg = '<svg><path d="M2 2"></path></svg>'
+    const menu = {
+      title: 'Full screen',
+      tag: 'button',
+      iconSvg: fullScreenSvg,
+      getValue: () => '',
+      isActive: () => isFullScreen,
+      isDisabled: () => false,
+      getIcon: () => (isFullScreen
+        ? cancelFullScreenSvg
+        : fullScreenSvg),
+      getTitle: () => (isFullScreen ? 'Cancel full screen' : 'Full screen'),
+      exec: vi.fn(),
+    }
+
+    const button = new TestButton('fullScreen', menu as any)
+
+    BAR_ITEM_TO_EDITOR.set(button as any, editor)
+    await flushMicrotasks()
+
+    isFullScreen = true
+    button.changeMenuState()
+
+    expect((button as any).$button.find('path').attr('d')).toBe('M2 2')
+    expect((button as any).$button.attr('data-tooltip')).toBe('Cancel full screen')
+  })
+
+  test('BaseButton click uses the post-exec state to refresh icon and tooltip', async () => {
+    const editor = createEditorStub()
+    let isFullScreen = false
+    const fullScreenSvg = '<svg><path d="M1 1"></path></svg>'
+    const cancelFullScreenSvg = '<svg><path d="M2 2"></path></svg>'
+    const menu = {
+      title: 'Full screen',
+      tag: 'button',
+      iconSvg: fullScreenSvg,
+      getValue: () => '',
+      isActive: () => isFullScreen,
+      isDisabled: () => false,
+      getIcon: () => (isFullScreen
+        ? cancelFullScreenSvg
+        : fullScreenSvg),
+      getTitle: () => (isFullScreen ? 'Cancel full screen' : 'Full screen'),
+      exec: vi.fn(() => {
+        isFullScreen = !isFullScreen
+      }),
+    }
+
+    const button = new TestButton('fullScreen', menu as any)
+
+    BAR_ITEM_TO_EDITOR.set(button as any, editor)
+    await flushMicrotasks();
+    (button as any).$button[0].click()
+
+    expect(menu.exec).toHaveBeenCalledTimes(1)
+    expect((button as any).$button.find('path').attr('d')).toBe('M2 2')
+    expect((button as any).$button.attr('data-tooltip')).toBe('Cancel full screen')
+  })
+
+  test('Toolbar listens to fullscreen events and keeps menu state synced', async () => {
+    const editor = createEditorStub()
+    const container = document.createElement('div')
+
+    document.body.appendChild(container)
+
+    const toolbar = new Toolbar(container, { toolbarKeys: [] })
+
+    TOOLBAR_TO_EDITOR.set(toolbar as any, editor)
+    await flushMicrotasks()
+
+    expect(editor.on).toHaveBeenCalledWith(EditorEvents.CHANGE, expect.any(Function))
+    expect(editor.on).toHaveBeenCalledWith(EditorEvents.FULLSCREEN, expect.any(Function))
+    expect(editor.on).toHaveBeenCalledWith(EditorEvents.UNFULLSCREEN, expect.any(Function))
+
+    toolbar.destroy()
   })
 
   test('HoverBar updates state for new selections and skips re-render for the same inline path', async () => {
