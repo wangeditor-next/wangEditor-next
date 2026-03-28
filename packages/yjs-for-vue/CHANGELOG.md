@@ -1,5 +1,12 @@
 # @wangeditor-next/yjs-for-vue
 
+## 0.1.10
+
+### Patch Changes
+
+- @wangeditor-next/editor@5.6.56
+- @wangeditor-next/yjs@0.1.50
+
 ## 0.1.9
 
 ### Patch Changes

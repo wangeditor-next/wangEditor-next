@@ -1,5 +1,20 @@
 # Change Log
 
+## 5.6.56
+
+### Patch Changes
+
+- Updated dependencies [e8ba2d8]
+- Updated dependencies [b260572]
+- Updated dependencies [de690f3]
+  - @wangeditor-next/table-module@1.6.67
+  - @wangeditor-next/core@1.7.51
+  - @wangeditor-next/basic-modules@1.5.53
+  - @wangeditor-next/code-highlight@1.3.49
+  - @wangeditor-next/list-module@1.1.58
+  - @wangeditor-next/upload-image-module@1.1.56
+  - @wangeditor-next/video-module@1.3.57
+
 ## 5.6.55
 
 ### Patch Changes
