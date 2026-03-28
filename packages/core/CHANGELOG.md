@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.7.51
+
+### Patch Changes
+
+- b260572: Allow `MENU_CONF` overrides to provide partial nested menu configs so TypeScript users can set
+  only `customUpload` for upload menus without re-declaring the merged default fields.
+
 ## 1.7.50
 
 ### Patch Changes

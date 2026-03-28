@@ -1,5 +1,16 @@
 # Change Log
 
+## 1.6.67
+
+### Patch Changes
+
+- e8ba2d8: Export fixed-layout tables with an explicit table width when column widths are known, so `colgroup`
+  constraints continue to work after rendering the HTML outside the editor.
+- de690f3: Normalize table-cell soft line breaks to use standard `\n` handling so pressing `Enter` in a cell
+  keeps the caret visible, serializes back to `<br>`, and avoids leaking `\r` into editor content.
+- Updated dependencies [b260572]
+  - @wangeditor-next/core@1.7.51
+
 ## 1.6.66
 
 ### Patch Changes
