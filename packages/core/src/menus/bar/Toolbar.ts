@@ -63,6 +63,8 @@ class Toolbar {
       const editor = this.getEditorInstance()
 
       editor.on(EditorEvents.CHANGE, this.changeToolbarState)
+      editor.on(EditorEvents.FULLSCREEN, this.syncToolbarState)
+      editor.on(EditorEvents.UNFULLSCREEN, this.syncToolbarState)
     })
   }
 
@@ -256,13 +258,17 @@ class Toolbar {
     return editor
   }
 
+  private syncToolbarState = () => {
+    this.toolbarItems.forEach(toolbarItem => {
+      toolbarItem.changeMenuState()
+    })
+  }
+
   /**
    * editor onChange 时触发（涉及 DOM 操作，加防抖）
    */
   changeToolbarState = debounce(() => {
-    this.toolbarItems.forEach(toolbarItem => {
-      toolbarItem.changeMenuState()
-    })
+    this.syncToolbarState()
   }, 200)
 
   /**
