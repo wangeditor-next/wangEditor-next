@@ -2,5 +2,89 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "timezone": "Asia/Shanghai",
+  "labels": [
+    "dependencies"
+  ],
+  "assignees": [
+    "cycleccc"
+  ],
+  "dependencyDashboard": true,
+  "prConcurrentLimit": 8,
+  "prHourlyLimit": 2,
+  "minimumReleaseAge": "3 days",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "before 5am on monday"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": "Keep major upgrades isolated and manually approved",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": true,
+      "addLabels": [
+        "major"
+      ]
+    },
+    {
+      "description": "Group low-risk dev tooling updates to reduce PR noise",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "matchPackageNames": [
+        "@babel/**",
+        "@changesets/**",
+        "@rollup/**",
+        "@typescript-eslint/**",
+        "@vitest/**",
+        "eslint**",
+        "prettier",
+        "rollup",
+        "rollup-plugin**",
+        "turbo",
+        "typescript",
+        "vitest"
+      ],
+      "groupName": "dev tooling (minor/patch)"
+    },
+    {
+      "description": "Group runtime dependency minor/patch updates by default",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchDepTypes": [
+        "dependencies",
+        "peerDependencies",
+        "optionalDependencies"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "runtime deps (minor/patch)"
+    },
+    {
+      "description": "Batch GitHub Actions updates on a weekly window",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "groupName": "github actions",
+      "schedule": [
+        "before 5am on monday"
+      ],
+      "minimumReleaseAge": "1 day"
+    }
   ]
 }
