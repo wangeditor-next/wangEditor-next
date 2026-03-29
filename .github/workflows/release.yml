@@ -84,6 +84,7 @@ jobs:
           # Disable per-package releases; a single consolidated release is
           # created by the step below instead.
           createGithubReleases: false
+          version: pnpm run version:release
           publish: pnpm changeset publish --access=public
           title: >-
             ${{ github.ref_name == 'master' && 'Publish a new stable version' || 'Publish a new pre-release version' }}

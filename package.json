@@ -29,6 +29,7 @@
     "e2e": "playwright test",
     "prepare": "husky install",
     "changeset": "changeset",
+    "version:release": "pnpm changeset version && pnpm install --lockfile-only --no-frozen-lockfile",
     "example": "turbo run example --filter=@wangeditor-next/demo-html",
     "demo:html": "pnpm example",
     "demo:react": "pnpm --filter @wangeditor-next/demo-react run dev:all",
