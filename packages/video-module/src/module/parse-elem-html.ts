@@ -61,7 +61,7 @@ function parseHtml(elem: DOMElement, _children: Descendant[], _editor: IDomEdito
   let poster = ''
   let width = 'auto'
   let height = 'auto'
-  let style = {}
+  let style: videoStyle = {}
   let textAlign = 'center'
   // <iframe> 形式
   const $iframe = $elem.find('iframe')
@@ -69,8 +69,9 @@ function parseHtml(elem: DOMElement, _children: Descendant[], _editor: IDomEdito
   if ($iframe.length > 0) {
     width = $iframe.attr('width') || 'auto'
     height = $iframe.attr('height') || 'auto'
-    style = $iframe.attr('style') || ''
-    style = styleStringToObject(style)
+    const iframeStyleStr = $iframe.attr('style') || ''
+
+    style = styleStringToObject(iframeStyleStr) as videoStyle
     const iframeStyleWidth = $iframe.attr('data-w-e-style-width') || ''
     const iframeStyleHeight = $iframe.attr('data-w-e-style-height') || ''
 
@@ -95,8 +96,9 @@ function parseHtml(elem: DOMElement, _children: Descendant[], _editor: IDomEdito
   width = $video.attr('width') || 'auto'
   height = $video.attr('height') || 'auto'
   poster = $video.attr('poster') || ''
-  style = $video.attr('style') || ''
-  style = styleStringToObject(style)
+  const videoStyleStr = $video.attr('style') || ''
+
+  style = styleStringToObject(videoStyleStr) as videoStyle
   const videoStyleWidth = $video.attr('data-w-e-style-width') || ''
   const videoStyleHeight = $video.attr('data-w-e-style-height') || ''
 
