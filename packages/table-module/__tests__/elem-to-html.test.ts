@@ -94,6 +94,23 @@ describe('TableModule module', () => {
       expect(res).toBe('<tr style="height: 50px"><td>123</td></tr>')
     })
 
+    test('tableRowToHtmlConf elemToHtml should avoid inline style in class mode', () => {
+      const element = {
+        type: 'table-row',
+        height: 50,
+        children: [],
+      }
+      const mockEditor = {
+        getConfig() {
+          return { textStyleMode: 'class' }
+        },
+      } as any
+      const res = tableRowToHtmlConf.elemToHtml(element, '<td>123</td>', mockEditor)
+
+      expect(res).toBe('<tr height="50" data-w-e-row-height="50px"><td>123</td></tr>')
+      expect(res).not.toContain('style=')
+    })
+
     test('tableToHtmlConf should return object that include "type" and "elemToHtml" property', () => {
       expect(tableToHtmlConf.type).toBe('table')
       expect(typeof tableToHtmlConf.elemToHtml).toBe('function')
@@ -137,6 +154,26 @@ describe('TableModule module', () => {
       expect(res).toBe(
         '<table style="width: 100%;table-layout: fixed;height:60px"><tbody><tr><td>123</td></tr></tbody></table>',
       )
+    })
+
+    test('tableToHtmlConf should avoid inline style in class mode', () => {
+      const element = {
+        type: 'table',
+        width: '100%',
+        height: '60px',
+        children: [],
+      }
+      const mockEditor = {
+        getConfig() {
+          return { textStyleMode: 'class' }
+        },
+      } as any
+      const res = tableToHtmlConf.elemToHtml(element, '<tr><td>123</td></tr>', mockEditor)
+
+      expect(res).toBe(
+        '<table class="w-e-table-layout-fixed" width="100%" height="60px" data-w-e-table-height="60px"><tbody><tr><td>123</td></tr></tbody></table>',
+      )
+      expect(res).not.toContain('style=')
     })
   })
 })

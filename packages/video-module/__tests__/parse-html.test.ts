@@ -23,7 +23,7 @@ describe('video - pre parse html', () => {
     const res = preParseHtmlConf.preParseHtml($iframe[0])
 
     expect(res.outerHTML).toBe(
-      '<div data-w-e-type="video" data-w-e-is-void="" style="text-align: center;"><iframe></iframe></div>',
+      '<div data-w-e-type="video" data-w-e-is-void="" class="w-e-video-align-center" data-w-e-text-align="center"><iframe></iframe></div>',
     )
   })
 
@@ -37,7 +37,7 @@ describe('video - pre parse html', () => {
     const res = preParseHtmlConf.preParseHtml($video[0])
 
     expect(res.outerHTML).toBe(
-      '<div data-w-e-type="video" data-w-e-is-void="" style="text-align: center;"><video></video></div>',
+      '<div data-w-e-type="video" data-w-e-is-void="" class="w-e-video-align-center" data-w-e-text-align="center"><video></video></div>',
     )
   })
 
@@ -51,7 +51,7 @@ describe('video - pre parse html', () => {
     const res = preParseHtmlConf.preParseHtml($video[0])
 
     expect(res.outerHTML).toBe(
-      '<div data-w-e-type="video" data-w-e-is-void="" style="text-align: center;"><video></video></div>',
+      '<div data-w-e-type="video" data-w-e-is-void="" class="w-e-video-align-center" data-w-e-text-align="center"><video></video></div>',
     )
   })
 })
@@ -106,6 +106,31 @@ describe('video - parse html', () => {
       style: {},
       textAlign: 'center',
       children: [{ text: '' }], // void 元素有一个空 text
+    })
+  })
+
+  it('class attrs', () => {
+    const src = 'xxx.mp4'
+    const poster = 'xxx.png'
+    const videoHtml = `<video poster="${poster}" width="640" height="360" data-w-e-style-width="640px" data-w-e-style-height="360px"><source src="${src}"/></video>`
+    const $container = $(
+      `<div data-w-e-type="video" data-w-e-is-void class="w-e-video-align-right" data-w-e-text-align="right">${videoHtml}</div>`,
+    )
+
+    expect($container[0].matches(parseHtmlConf.selector)).toBeTruthy()
+
+    expect(parseHtmlConf.parseElemHtml($container[0], [], editor)).toEqual({
+      type: 'video',
+      src,
+      poster,
+      width: '640',
+      height: '360',
+      style: {
+        width: '640px',
+        height: '360px',
+      },
+      textAlign: 'right',
+      children: [{ text: '' }],
     })
   })
 })

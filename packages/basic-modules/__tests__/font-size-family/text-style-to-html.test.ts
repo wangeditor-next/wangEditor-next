@@ -28,4 +28,22 @@ describe('font size and family - text style to html', () => {
       `<span style="font-size: ${fontSize}; font-family: ${fontFamily};"><p>hello</p></span>`,
     )
   })
+
+  it('text style to html with class mode', () => {
+    const fontSize = '20px'
+    const fontFamily = '黑体'
+    const textNode = { text: '', fontSize, fontFamily }
+    const editor = {
+      getConfig() {
+        return { textStyleMode: 'class' as const }
+      },
+    }
+
+    const html = styleToHtml(textNode, '<span>hello</span>', editor as any)
+
+    expect(html).toContain('class="')
+    expect(html).toContain('data-w-e-font-size="20px"')
+    expect(html).toContain('data-w-e-font-family="黑体"')
+    expect(html).not.toContain('style="')
+  })
 })

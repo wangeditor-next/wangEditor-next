@@ -25,4 +25,22 @@ describe('color - text style to html', () => {
       `<span style="color: ${color}; background-color: ${bgColor};"><p>hello</p></span>`,
     )
   })
+
+  it('color to html with class mode', () => {
+    const color = 'rgb(51, 51, 51)'
+    const bgColor = 'rgb(204, 204, 204)'
+    const textNode = { text: '', color, bgColor }
+    const editor = {
+      getConfig() {
+        return { textStyleMode: 'class' as const }
+      },
+    }
+
+    const html = styleToHtml(textNode, '<span>hello</span>', editor as any)
+
+    expect(html).toContain('class="')
+    expect(html).toContain('data-w-e-color="rgb(51, 51, 51)"')
+    expect(html).toContain('data-w-e-bg-color="rgb(204, 204, 204)"')
+    expect(html).not.toContain('style="')
+  })
 })

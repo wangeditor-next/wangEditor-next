@@ -37,6 +37,7 @@
     "demo:export-template": "node scripts/export-demo-template.js",
     "demo:yjs:react": "pnpm --filter @wangeditor-next/demo-yjs-react run dev:all",
     "demo:yjs:vue3": "pnpm --filter @wangeditor-next/demo-yjs-vue3 run dev:all",
+    "gen:style-class": "node scripts/generate-style-class-less.js",
     "smoke:demo:react": "pnpm --filter @wangeditor-next/demo-react run smoke",
     "smoke:demo:vue3": "pnpm --filter @wangeditor-next/demo-vue3 run smoke",
     "smoke:demo:yjs:react": "pnpm --filter @wangeditor-next/demo-yjs-react run smoke",

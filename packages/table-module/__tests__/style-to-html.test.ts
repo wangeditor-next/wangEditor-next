@@ -45,4 +45,37 @@ describe('table styleToHtml', () => {
     expect(styled).toContain('text-align: center;')
     expect(styled).not.toContain('border-style:')
   })
+
+  test('class mode should avoid inline style', () => {
+    const html = '<td>a</td>'
+    const mockEditor = {
+      getConfig() {
+        return { textStyleMode: 'class' }
+      },
+    } as any
+    const styled = styleToHtml(
+      {
+        type: 'table-cell',
+        backgroundColor: '#fff',
+        borderWidth: '2',
+        borderStyle: 'dashed',
+        borderColor: '#000',
+        textAlign: 'center',
+      },
+      html,
+      mockEditor,
+    )
+
+    expect(styled).toContain('bgcolor="#fff"')
+    expect(styled).toContain('border="2"')
+    expect(styled).toContain('bordercolor="#000"')
+    expect(styled).toContain('align="center"')
+    expect(styled).toContain('data-w-e-background-color="#fff"')
+    expect(styled).toContain('data-w-e-border-width="2"')
+    expect(styled).toContain('data-w-e-border-line="dashed"')
+    expect(styled).toContain('data-w-e-border-color="#000"')
+    expect(styled).toContain('data-w-e-text-align="center"')
+    expect(styled).toContain('class="w-e-table-border-style-dashed"')
+    expect(styled).not.toMatch(/\sstyle=/)
+  })
 })

@@ -21,4 +21,25 @@ describe('font size and family - render text style', () => {
     expect(newVnode.data.style.fontSize).toBe(fontSize)
     expect(newVnode.data.style.fontFamily).toBe(fontFamily)
   })
+
+  it('render font class in class mode', () => {
+    const fontSize = '20px'
+    const fontFamily = '黑体'
+    const textNode = { text: 'hello', fontSize, fontFamily }
+    const vnode = <span>hello</span>
+    const editor = {
+      getConfig() {
+        return { textStyleMode: 'class' as const }
+      },
+    }
+
+    // @ts-ignore 忽略 vnode 格式检查
+    const newVnode = renderStyle(textNode, vnode, editor) as any
+
+    expect(newVnode.data.style).toBeUndefined()
+    expect(newVnode.data.props.className).toContain('w-e-font-size-')
+    expect(newVnode.data.props.className).toContain('w-e-font-family-')
+    expect(newVnode.data.dataset.wEFontSize).toBe(fontSize)
+    expect(newVnode.data.dataset.wEFontFamily).toBe(fontFamily)
+  })
 })

@@ -37,7 +37,7 @@ function renderText(textNode: SlateText, parent: Ancestor, editor: IDomEditor): 
     const isLast = position?.isLast ?? leaves.length === 1
     let strVnode = genTextVnode(leaf, isLast, textNode, parent, editor)
 
-    strVnode = addTextVnodeStyle(leaf, strVnode)
+    strVnode = addTextVnodeStyle(leaf, strVnode, editor)
     // 生成每一个 leaf 节点
     return <span data-slate-leaf>{strVnode}</span>
   })

@@ -6,7 +6,7 @@
 import { IDomEditor } from '@wangeditor-next/core'
 import { Descendant } from 'slate'
 
-import $, { DOMElement } from '../utils/dom'
+import $, { Dom7Array, DOMElement } from '../utils/dom'
 import { styleStringToObject } from '../utils/util'
 import { VideoElement, videoStyle } from './custom-types'
 
@@ -30,6 +30,31 @@ function genVideoElem(
   }
 }
 
+function getTextAlign($elem: Dom7Array): string {
+  const styleAlign = styleStringToObject($elem.attr('style') || '')['text-align']
+
+  if (styleAlign) { return styleAlign }
+
+  const dataAlign = ($elem.attr('data-w-e-text-align') || '').trim()
+
+  if (dataAlign) { return dataAlign }
+
+  const classAttr = $elem.attr('class') || ''
+  const classList = classAttr.trim().split(/\s+/).filter(Boolean)
+
+  for (let i = 0; i < classList.length; i += 1) {
+    const className = classList[i]
+
+    if (!className.startsWith('w-e-video-align-')) { continue }
+
+    const align = className.replace('w-e-video-align-', '')
+
+    if (align) { return align }
+  }
+
+  return 'center'
+}
+
 function parseHtml(elem: DOMElement, _children: Descendant[], _editor: IDomEditor): VideoElement {
   const $elem = $(elem)
   let src = ''
@@ -46,8 +71,13 @@ function parseHtml(elem: DOMElement, _children: Descendant[], _editor: IDomEdito
     height = $iframe.attr('height') || 'auto'
     style = $iframe.attr('style') || ''
     style = styleStringToObject(style)
+    const iframeStyleWidth = $iframe.attr('data-w-e-style-width') || ''
+    const iframeStyleHeight = $iframe.attr('data-w-e-style-height') || ''
+
+    if (!style.width && iframeStyleWidth) { style.width = iframeStyleWidth }
+    if (!style.height && iframeStyleHeight) { style.height = iframeStyleHeight }
     src = $iframe[0].outerHTML
-    textAlign = styleStringToObject($elem.attr('style') || '')['text-align'] || 'center'
+    textAlign = getTextAlign($elem)
     return genVideoElem(src, poster, width, height, style, textAlign)
   }
 
@@ -67,7 +97,12 @@ function parseHtml(elem: DOMElement, _children: Descendant[], _editor: IDomEdito
   poster = $video.attr('poster') || ''
   style = $video.attr('style') || ''
   style = styleStringToObject(style)
-  textAlign = styleStringToObject($elem.attr('style') || '')['text-align'] || 'center'
+  const videoStyleWidth = $video.attr('data-w-e-style-width') || ''
+  const videoStyleHeight = $video.attr('data-w-e-style-height') || ''
+
+  if (!style.width && videoStyleWidth) { style.width = videoStyleWidth }
+  if (!style.height && videoStyleHeight) { style.height = videoStyleHeight }
+  textAlign = getTextAlign($elem)
   return genVideoElem(src, poster, width, height, style, textAlign)
 }
 

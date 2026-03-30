@@ -170,4 +170,18 @@ describe('editor config', () => {
     await flushPromises()
     expect(onBlur).toHaveBeenCalledWith(editor)
   })
+
+  it('textStyleMode defaults to inline and can be overridden', () => {
+    const editor = createCoreEditor()
+
+    expect(editor.getConfig().textStyleMode).toBe('inline')
+
+    const classModeEditor = createCoreEditor({
+      config: {
+        textStyleMode: 'class',
+      },
+    })
+
+    expect(classModeEditor.getConfig().textStyleMode).toBe('class')
+  })
 })

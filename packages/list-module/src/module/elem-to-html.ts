@@ -3,7 +3,7 @@
  * @author wangfupeng
  */
 
-import { DomEditor } from '@wangeditor-next/core'
+import { DomEditor, IDomEditor } from '@wangeditor-next/core'
 import { Editor, Element, Path } from 'slate'
 
 import { ELEM_TO_EDITOR } from '../utils/maps'
@@ -136,9 +136,36 @@ function getEndContainerTagNumber(elem: Element): number {
 // ol ul 栈
 const CONTAINER_TAG_STACK: Array<string> = []
 
+function normalizeColorValue(value: string): string {
+  return (value || '').trim().replace(/\s+/g, '').toLowerCase()
+}
+
+function hashStyleValue(input: string): string {
+  const MOD = 2147483647 // 2^31 - 1
+  let hash = 7
+
+  for (const char of input) {
+    hash = (hash * 31 + (char.codePointAt(0) || 0)) % MOD
+  }
+
+  return hash.toString(36)
+}
+
+function genColorClassName(color: string): string {
+  const normalized = normalizeColorValue(color)
+
+  return `w-e-color-${hashStyleValue(`color:${normalized}`)}`
+}
+
+function getTextStyleMode(editor?: IDomEditor): 'inline' | 'class' {
+  if (!editor) { return 'inline' }
+  return editor.getConfig().textStyleMode === 'class' ? 'class' : 'inline'
+}
+
 function elemToHtml(
   elem: Element,
   childrenHtml: string,
+  editor?: IDomEditor,
 ): {
   html: string
   prefix?: string
@@ -173,10 +200,21 @@ function elemToHtml(
 
   // 获取前缀颜色
   const prefixColor = getListItemColor(elem)
-  const colorStyle = prefixColor ? ` style="color:${prefixColor}"` : ''
+  const textStyleMode = getTextStyleMode(editor)
+  let colorAttr = ''
+
+  if (prefixColor) {
+    if (textStyleMode === 'class') {
+      const colorClass = genColorClassName(prefixColor)
+
+      colorAttr = ` class="${colorClass}" data-w-e-color="${prefixColor}"`
+    } else {
+      colorAttr = ` style="color:${prefixColor}"`
+    }
+  }
 
   return {
-    html: `<li${colorStyle}>${childrenHtml}</li>`,
+    html: `<li${colorAttr}>${childrenHtml}</li>`,
     prefix: startContainerStr,
     suffix: endContainerStr,
   }

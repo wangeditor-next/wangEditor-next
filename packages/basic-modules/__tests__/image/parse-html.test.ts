@@ -40,4 +40,28 @@ describe('image - parse html', () => {
       children: [{ text: '' }],
     })
   })
+
+  it('parse html - class mode attrs', () => {
+    const $img = $(
+      '<img src="hello.png" alt="hello" data-href="http://localhost/" width="120px" height="90px" data-w-e-style-width="120px" data-w-e-style-height="90px"/>',
+    )
+
+    expect($img[0].matches(parseHtmlConf.selector)).toBeTruthy()
+
+    const res = parseHtmlConf.parseElemHtml($img[0], [], editor)
+
+    expect(res).toEqual({
+      type: 'image',
+      src: 'hello.png',
+      alt: 'hello',
+      href: 'http://localhost/',
+      width: '120px',
+      height: '90px',
+      style: {
+        width: '120px',
+        height: '90px',
+      },
+      children: [{ text: '' }],
+    })
+  })
 })

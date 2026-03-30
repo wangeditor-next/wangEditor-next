@@ -446,6 +446,17 @@ describe('table - parse html', () => {
     })
   })
 
+  it('table row - class mode attrs', () => {
+    const $tr = $('<tr height="60" data-w-e-row-height="60px"></tr>')
+    const children = [{ type: 'table-cell', children: [{ text: '123' }] }]
+
+    expect(parseRowHtmlConf.parseElemHtml($tr[0], children, editor)).toEqual({
+      type: 'table-row',
+      height: 60,
+      children,
+    })
+  })
+
   it('table', () => {
     const $table = $('<table style="width: 100%;"></table>')
     const children = [
@@ -636,5 +647,44 @@ describe('table - parse html', () => {
       children,
       columnWidths: [90, 90, 90],
     })
+  })
+
+  it('table - class mode attrs', () => {
+    const $table = $(
+      '<table class="w-e-table-layout-fixed" width="320px" height="124" data-w-e-table-height="124"><tr><td width="auto">A</td></tr></table>',
+    )
+    const children = [
+      {
+        type: 'table-row',
+        children: [{ ...TABLE_CELL_BASE_PROPS, children: [{ text: 'A' }] }],
+      },
+    ]
+
+    expect(parseTableHtmlConf.parseElemHtml($table[0], children as any, editor)).toEqual({
+      type: 'table',
+      width: '320px',
+      height: 124,
+      children,
+      columnWidths: [90],
+    })
+  })
+
+  it('table cell style - class mode attrs', () => {
+    const $cell = $(
+      '<td bgcolor="#fff" border="2" bordercolor="#000" align="center" class="w-e-table-border-style-dashed" data-w-e-border-line="dashed">Cell Z</td>',
+    )
+    const children = [{ text: 'Cell Z' }]
+
+    expect(parseElemHtmlFromCore($($cell[0]), editor)).toEqual([
+      {
+        ...TABLE_CELL_BASE_PROPS,
+        children,
+        backgroundColor: '#fff',
+        borderWidth: '2',
+        borderStyle: 'dashed',
+        borderColor: '#000',
+        textAlign: 'center',
+      },
+    ])
   })
 })

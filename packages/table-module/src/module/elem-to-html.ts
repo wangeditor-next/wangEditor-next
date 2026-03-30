@@ -3,9 +3,15 @@
  * @author wangfupeng
  */
 
+import { IDomEditor } from '@wangeditor-next/core'
 import { Element } from 'slate'
 
 import { TableCellElement, TableElement, TableRowElement } from './custom-types'
+
+function getTextStyleMode(editor?: IDomEditor): 'inline' | 'class' {
+  if (!editor) { return 'inline' }
+  return editor.getConfig().textStyleMode === 'class' ? 'class' : 'inline'
+}
 
 function getExportTableWidth(tableNode: TableElement): string {
   const { width = 'auto', columnWidths = [] } = tableNode
@@ -27,7 +33,7 @@ function getExportTableWidth(tableNode: TableElement): string {
   return 'auto'
 }
 
-function tableToHtml(elemNode: Element, childrenHtml: string): string {
+function tableToHtml(elemNode: Element, childrenHtml: string, editor?: IDomEditor): string {
   const tableNode = elemNode as TableElement
   const { columnWidths, height = 'auto' } = tableNode
   const cols = columnWidths
@@ -38,12 +44,31 @@ function tableToHtml(elemNode: Element, childrenHtml: string): string {
 
   const colgroupStr = cols ? `<colgroup contentEditable="false">${cols}</colgroup>` : ''
   const exportedWidth = getExportTableWidth(tableNode)
+  const textStyleMode = getTextStyleMode(editor)
+
+  if (textStyleMode === 'class') {
+    const widthAttr = exportedWidth ? ` width="${exportedWidth}"` : ''
+    const heightValue = String(height || '').trim()
+    const heightAttr = heightValue && heightValue !== 'auto' ? ` height="${heightValue}"` : ''
+    const heightDataAttr = heightValue ? ` data-w-e-table-height="${heightValue}"` : ''
+
+    return `<table class="w-e-table-layout-fixed"${widthAttr}${heightAttr}${heightDataAttr}>${colgroupStr}<tbody>${childrenHtml}</tbody></table>`
+  }
 
   return `<table style="width: ${exportedWidth};table-layout: fixed;height:${height}">${colgroupStr}<tbody>${childrenHtml}</tbody></table>`
 }
 
-function tableRowToHtml(elem: Element, childrenHtml: string): string {
+function tableRowToHtml(elem: Element, childrenHtml: string, editor?: IDomEditor): string {
   const { height } = elem as TableRowElement
+  const textStyleMode = getTextStyleMode(editor)
+
+  if (textStyleMode === 'class') {
+    if (height) {
+      return `<tr height="${height}" data-w-e-row-height="${height}px">${childrenHtml}</tr>`
+    }
+    return `<tr>${childrenHtml}</tr>`
+  }
+
   const heightStyle = height ? ` style="height: ${height}px"` : ''
 
   return `<tr${heightStyle}>${childrenHtml}</tr>`

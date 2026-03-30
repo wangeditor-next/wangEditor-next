@@ -12,6 +12,10 @@ import { ImageElement } from './custom-types'
 function parseHtml(elem: DOMElement, _children: Descendant[], _editor: IDomEditor): ImageElement {
   const $elem = $(elem)
   let href = $elem.attr('data-href') || ''
+  const widthAttr = $elem.attr('width') || ''
+  const heightAttr = $elem.attr('height') || ''
+  const styleWidth = getStyleValue($elem, 'width') || $elem.attr('data-w-e-style-width') || widthAttr
+  const styleHeight = getStyleValue($elem, 'height') || $elem.attr('data-w-e-style-height') || heightAttr
 
   href = decodeURIComponent(href) // 兼容 V4
 
@@ -21,11 +25,11 @@ function parseHtml(elem: DOMElement, _children: Descendant[], _editor: IDomEdito
     alt: $elem.attr('alt') || '',
     href,
     style: {
-      width: getStyleValue($elem, 'width'),
-      height: getStyleValue($elem, 'height'),
+      width: styleWidth,
+      height: styleHeight,
     },
-    width: $elem.attr('width') || '',
-    height: $elem.attr('height') || '',
+    width: widthAttr,
+    height: heightAttr,
     children: [{ text: '' }], // void node 有一个空白 text
   }
 }

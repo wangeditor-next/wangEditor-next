@@ -97,6 +97,34 @@ describe('module elem-to-html', () => {
 
     expect(tagName).toBe('')
   })
+
+  test('prefix color in class mode', () => {
+    const color = 'rgb(235, 144, 58)'
+    const colorElem = {
+      type: 'list-item',
+      children: [{ text: 'hello', color }],
+    }
+    const colorEditor = createEditor({
+      content: [colorElem],
+    })
+
+    ELEM_TO_EDITOR.set(colorElem, colorEditor)
+
+    const { elemToHtml } = listItemToHtmlConf
+    const mockEditor = {
+      getConfig() {
+        return { textStyleMode: 'class' }
+      },
+    } as any
+
+    const res = elemToHtml(colorElem, childrenHtml, mockEditor)
+
+    expect(res).toEqual({
+      html: '<li class="w-e-color-xx8cx7" data-w-e-color="rgb(235, 144, 58)"><span>hello</span></li>',
+      prefix: '<ul>',
+      suffix: '</ul>',
+    })
+  })
 })
 
 describe('module elem-to-html complex list', () => {

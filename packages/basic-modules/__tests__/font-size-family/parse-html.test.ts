@@ -8,6 +8,7 @@ import { $ } from 'dom7'
 import createEditor from '../../../../tests/utils/create-editor'
 import { parseStyleHtml } from '../../src/modules/font-size-family/parse-style-html'
 import { preParseHtmlConf } from '../../src/modules/font-size-family/pre-parse-html'
+import { genStyleClassName } from '../../src/utils/style-class'
 
 describe('font size family - pre parse html', () => {
   it('pre parse html', () => {
@@ -35,6 +36,24 @@ describe('font size family - parse style html', () => {
     const textNode = { text: 'hello' }
 
     // parse style
+    const res = parseStyleHtml($span[0], textNode, editor)
+
+    expect(res).toEqual({
+      text: 'hello',
+      fontSize: '12px',
+      fontFamily: '黑体',
+    })
+  })
+
+  it('parse class html', () => {
+    const fontSize = '12px'
+    const fontFamily = '黑体'
+    const fontSizeClass = genStyleClassName('fontSize', fontSize)
+    const fontFamilyClass = genStyleClassName('fontFamily', fontFamily)
+    const $span = $(
+      `<span class="${fontSizeClass} ${fontFamilyClass}" data-w-e-font-size="${fontSize}" data-w-e-font-family="${fontFamily}"></span>`,
+    )
+    const textNode = { text: 'hello' }
     const res = parseStyleHtml($span[0], textNode, editor)
 
     expect(res).toEqual({

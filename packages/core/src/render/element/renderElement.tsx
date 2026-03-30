@@ -110,7 +110,7 @@ function renderElement(elemNode: SlateElement, editor: IDomEditor): VNode {
   // 添加文本相关的样式，如 text-align
   if (!isVoid && !isInline) {
     // 非 void + 非 inline
-    vnode = renderStyle(elemNode, vnode)
+    vnode = renderStyle(elemNode, vnode, editor)
   }
 
   // 更新 element 相关的 weakMap

@@ -23,6 +23,7 @@ interface IHoverbarConf {
 }
 
 export type AlertType = 'success' | 'info' | 'warning' | 'error'
+export type TextStyleMode = 'inline' | 'class'
 
 /**
  * EditorEvents 包含所有编辑器的生命周期事件。
@@ -231,6 +232,12 @@ export interface IEditorConfig {
    * 返回值会继续进入编辑器的 HTML 解析流程。
    */
   sanitizeHtml?: (html: string) => string
+  /**
+   * 文本/段落样式（color/bgColor/fontSize/fontFamily/textAlign/lineHeight/indent）导出模式。
+   * - `inline`: 输出 style 属性（默认）
+   * - `class`: 输出 class + data-w-e-*，便于严格 CSP 场景使用
+   */
+  textStyleMode?: TextStyleMode
 
   // edit state
   scroll: boolean

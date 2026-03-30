@@ -3,16 +3,43 @@
  * @author cycleccc
  */
 
-import { SlateElement } from '@wangeditor-next/editor'
+import { IDomEditor, SlateElement } from '@wangeditor-next/editor'
 
 import { ImageElement } from './custom-types'
 
+function getTextStyleMode(editor?: IDomEditor): 'inline' | 'class' {
+  if (!editor) { return 'inline' }
+  return editor.getConfig().textStyleMode === 'class' ? 'class' : 'inline'
+}
+
+function getFloatClass(float: string): string {
+  const val = (float || '').trim().toLowerCase()
+
+  if (val === 'left') { return 'w-e-float-image-left' }
+  if (val === 'right') { return 'w-e-float-image-right' }
+  if (val === 'none') { return 'w-e-float-image-none' }
+
+  return ''
+}
+
 // 生成 html 的函数
-function imageToHtml(elem: SlateElement, _childrenHtml: string): string {
+function imageToHtml(elem: SlateElement, _childrenHtml: string, editor?: IDomEditor): string {
   const {
     src, alt = '', href = '', style = {},
   } = elem as ImageElement
   const { width = '', height = '', float = '' } = style
+  const mode = getTextStyleMode(editor)
+
+  if (mode === 'class') {
+    const widthData = width ? ` data-w-e-style-width="${width}"` : ''
+    const heightData = height ? ` data-w-e-style-height="${height}"` : ''
+    const floatData = float ? ` data-w-e-style-float="${float}"` : ''
+    const floatClass = getFloatClass(float)
+    const classAttr = floatClass ? ` class="${floatClass}"` : ''
+
+    return `<img src="${src}" alt="${alt}" data-href="${href}" width="${width}" height="${height}"${classAttr}${widthData}${heightData}${floatData}/>`
+  }
+
   let styleStr = ''
 
   if (width) { styleStr += `width: ${width};` }

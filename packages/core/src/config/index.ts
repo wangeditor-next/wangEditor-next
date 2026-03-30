@@ -40,6 +40,7 @@ export function genEditorConfig(userConfig: Partial<IEditorConfig> = {}): IEdito
     hoverbarKeys: {
       // 'link': { menuKeys: ['editLink', 'unLink', 'viewLink'] },
     },
+    textStyleMode: 'inline',
     sanitizeHtml: defaultSanitizeHtml,
     customAlert(info: string, type: string) {
       window.alert(`${type}:\n${info}`)

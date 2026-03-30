@@ -107,8 +107,11 @@ function parseRowHtml(
     }
   }
 
-  // 解析行高度
-  const height = parsePixelSize(getStyleValue($elem, 'height')) || undefined
+  // 解析行高度（style / class-mode data attr / legacy attr）
+  const rowHeightRaw = getStyleValue($elem, 'height')
+    || $elem.attr('data-w-e-row-height')
+    || $elem.attr('height')
+  const height = parsePixelSize(rowHeightRaw) || undefined
 
   return {
     type: 'table-row',
@@ -132,11 +135,21 @@ function parseTableHtml(
   // 计算宽度
   let tableWidth = 'auto'
 
-  if (getStyleValue($elem, 'width') === '100%') { tableWidth = '100%' }
+  const styleWidth = getStyleValue($elem, 'width')
+  const widthAttr = $elem.attr('width') || ''
+  const isClassModeTable = $elem.hasClass('w-e-table-layout-fixed') || !!$elem.attr('data-w-e-table-height')
+
+  if (styleWidth === '100%') { tableWidth = '100%' }
   if ($elem.attr('width') === '100%') { tableWidth = '100%' } // 兼容 v4 格式
+  if (isClassModeTable && widthAttr && widthAttr !== 'auto' && widthAttr !== '100%') {
+    tableWidth = widthAttr
+  }
 
   // 计算高度
-  const height = parsePixelSize(getStyleValue($elem, 'height'))
+  const tableHeightRaw = getStyleValue($elem, 'height')
+    || $elem.attr('data-w-e-table-height')
+    || $elem.attr('height')
+  const height = parsePixelSize(tableHeightRaw)
 
   const tableELement: TableElement = {
     type: 'table',
