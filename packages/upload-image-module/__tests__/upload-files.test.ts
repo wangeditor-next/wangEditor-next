@@ -25,11 +25,13 @@ describe('Upload image menu upload files util', () => {
 
   test('uploadImages should invoke customUpload if give customUpload to config', async () => {
     const fn = vi.fn()
+    const uploadAdapter = vi.fn()
     const editor = createEditor({
       config: {
         MENU_CONF: {
           uploadImage: {
             customUpload: fn,
+            uploadAdapter,
           },
         },
       },
@@ -38,6 +40,7 @@ describe('Upload image menu upload files util', () => {
     await uploadImages(editor, [mockFile('test.jpg')] as unknown as FileList)
 
     expect(fn).toBeCalled()
+    expect(uploadAdapter).not.toBeCalled()
   })
 
   test('uploadImages should insert image with base64 string if file size less than base64LimitSize config', async () => {
@@ -62,7 +65,6 @@ describe('Upload image menu upload files util', () => {
 
   test('uploadImages should invoke core createUploader if not give customUpload to config', async () => {
     const fn = vi.fn().mockImplementation(() => ({
-      // 这里需要返回一个 duck 类型的 uppy 对象，防止后面代码执行报错
       addFile: vi.fn(),
       addFiles: vi.fn(),
       upload: vi.fn(),
@@ -74,6 +76,34 @@ describe('Upload image menu upload files util', () => {
     await uploadImages(editor, [mockFile('test.jpg')] as unknown as FileList)
 
     expect(fn).toBeCalled()
+  })
+
+  test('uploadImages should invoke uploadAdapter if configured', async () => {
+    const addFiles = vi.fn()
+    const upload = vi.fn(async () => undefined)
+    const uploadAdapter = vi.fn(() => ({ addFiles, upload }))
+    const file = mockFile('adapter.jpg')
+    const editor = createEditor({
+      config: {
+        MENU_CONF: {
+          uploadImage: {
+            uploadAdapter,
+          },
+        },
+      },
+    })
+
+    await uploadImages(editor, [file] as unknown as FileList)
+
+    expect(uploadAdapter).toHaveBeenCalledWith({
+      config: expect.objectContaining({ uploadAdapter }),
+      editor,
+    })
+    expect(addFiles).toHaveBeenCalledWith([expect.objectContaining({
+      name: 'adapter.jpg',
+      data: file,
+    })])
+    expect(upload).toHaveBeenCalledTimes(1)
   })
 
   test('uploadImages reuses cached uppy instance for the same editor', async () => {
@@ -111,7 +141,7 @@ describe('Upload image menu upload files util', () => {
 
     editor.showProgressBar = showProgressBar
 
-    const insertImageNodeSpy = vi.spyOn(basicModules, 'insertImageNode').mockImplementation(() => {})
+    const insertImageNodeSpy = vi.spyOn(basicModules, 'insertImageNode').mockImplementation(async () => {})
 
     vi.spyOn(core, 'createUploader').mockImplementation((options: any) => ({
       addFiles: vi.fn(),
@@ -164,7 +194,7 @@ describe('Upload image menu upload files util', () => {
       },
     })
 
-    const insertImageNodeSpy = vi.spyOn(basicModules, 'insertImageNode').mockImplementation(() => {})
+    const insertImageNodeSpy = vi.spyOn(basicModules, 'insertImageNode').mockImplementation(async () => {})
 
     vi.spyOn(core, 'createUploader').mockImplementation((options: any) => ({
       addFiles: vi.fn(),
@@ -200,7 +230,7 @@ describe('Upload image menu upload files util', () => {
         },
       },
     })
-    const insertImageNodeSpy = vi.spyOn(basicModules, 'insertImageNode').mockImplementation(() => {})
+    const insertImageNodeSpy = vi.spyOn(basicModules, 'insertImageNode').mockImplementation(async () => {})
 
     vi.spyOn(core, 'createUploader').mockImplementation((options: any) => ({
       addFiles: vi.fn(),
