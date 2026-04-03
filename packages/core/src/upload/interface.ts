@@ -5,7 +5,7 @@
 
 import type { IDomEditor } from '../editor/interface'
 
-export type IUploadHeaders = Headers | Record<string, string>
+export type IUploadHeaders = Record<string, string | number>
 
 export interface IUploadResultFile {
   name: string
