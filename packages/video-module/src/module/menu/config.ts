@@ -50,6 +50,9 @@ export function genUploadVideoMenuConfig(): IUploadVideoConfig {
     // 自定义上传视频，用户配置
     // customUpload: (file, insertFn) => {},
 
+    // 自定义上传适配器，默认仍使用内置 Uppy
+    // uploadAdapter: ({ config, editor }) => ({ addFiles() {}, upload: async () => {} }),
+
     // 自定义选择，并上传视频，如：图床 （用户配置）
     // customBrowseAndUpload: insertFn => {},
   }

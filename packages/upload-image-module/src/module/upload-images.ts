@@ -3,25 +3,26 @@
  * @author wangfupeng
  */
 
-import Uppy, { UppyFile } from '@uppy/core'
 import { insertImageNode } from '@wangeditor-next/basic-modules'
-import { createUploader, IDomEditor } from '@wangeditor-next/core'
+import {
+  createUploader, IDomEditor, IUploader,
+  IUploadFile, IUploadResultFile,
+} from '@wangeditor-next/core'
 
-// 存储 editor uppy 的关系 - 缓存 uppy ，不重复创建
-const EDITOR_TO_UPPY_MAP = new WeakMap<IDomEditor, Uppy>()
+// 存储 editor uploader 的关系 - 缓存 uploader ，不重复创建
+const EDITOR_TO_UPLOADER_MAP = new WeakMap<IDomEditor, IUploader>()
 
 function getMenuConfig(editor: IDomEditor) {
   return editor.getMenuConfig('uploadImage')
 }
 /**
- * 获取 uppy 实例（并通过 editor 缓存）
+ * 获取 uploader 实例（并通过 editor 缓存）
  * @param editor editor
  */
-function getUppy(editor: IDomEditor): Uppy {
-  // 从缓存中获取
-  let uppy = EDITOR_TO_UPPY_MAP.get(editor)
+function getUploader(editor: IDomEditor): IUploader {
+  let uploader = EDITOR_TO_UPLOADER_MAP.get(editor)
 
-  if (uppy != null) { return uppy }
+  if (uploader != null) { return uploader }
 
   const menuConfig = getMenuConfig(editor)
   const {
@@ -29,7 +30,7 @@ function getUppy(editor: IDomEditor): Uppy {
   } = menuConfig
 
   // 上传完成之后
-  const successHandler = (file: UppyFile, res: any) => {
+  const successHandler = (file: IUploadResultFile, res: any) => {
     // 预期 res 格式：
     // 成功：{ errno: 0, data: { url, alt, href } } —— 注意，旧版的 data 是数组，要兼容一下
     // 失败：{ errno: !0, message: '失败信息' }
@@ -83,17 +84,15 @@ function getUppy(editor: IDomEditor): Uppy {
     onError(file, err, res)
   }
 
-  // 创建 uppy
-  uppy = createUploader({
+  uploader = createUploader({
     ...menuConfig,
     onProgress: progressHandler,
     onSuccess: successHandler,
     onError: errorHandler,
-  })
-  // 缓存 uppy
-  EDITOR_TO_UPPY_MAP.set(editor, uppy)
+  }, editor)
+  EDITOR_TO_UPLOADER_MAP.set(editor, uploader)
 
-  return uppy
+  return uploader
 }
 
 /**
@@ -126,16 +125,16 @@ async function insertBase64(editor: IDomEditor, file: File) {
  * @param file file
  */
 async function uploadFile(editor: IDomEditor, files: File[]) {
-  const uppy = getUppy(editor)
-  const uploadList = files.map(file => ({
+  const uploader = getUploader(editor)
+  const uploadList: IUploadFile[] = files.map(file => ({
     name: file.name,
     type: file.type,
     size: file.size,
     data: file,
   }))
 
-  uppy.addFiles(uploadList)
-  await uppy.upload()
+  uploader.addFiles(uploadList)
+  await uploader.upload()
 }
 
 /**

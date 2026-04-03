@@ -100,11 +100,13 @@ describe('Video module helper', () => {
 
     test('it should invoke customUpload if give the option when create editor', async () => {
       const fn = vi.fn()
+      const uploadAdapter = vi.fn()
       const editor = createEditor({
         config: {
           MENU_CONF: {
             uploadVideo: {
               customUpload: fn,
+              uploadAdapter,
             },
           },
         },
@@ -113,6 +115,35 @@ describe('Video module helper', () => {
       await uploadVideos(editor, [new File(['123'], 'test.png')] as unknown as FileList)
 
       expect(fn).toBeCalled()
+      expect(uploadAdapter).not.toBeCalled()
+    })
+
+    test('it should invoke uploadAdapter if configured', async () => {
+      const addFiles = vi.fn()
+      const upload = vi.fn(async () => undefined)
+      const uploadAdapter = vi.fn(() => ({ addFiles, upload }))
+      const file = new File(['123'], 'adapter.mp4')
+      const editor = createEditor({
+        config: {
+          MENU_CONF: {
+            uploadVideo: {
+              uploadAdapter,
+            },
+          },
+        },
+      })
+
+      await uploadVideos(editor, [file] as unknown as FileList)
+
+      expect(uploadAdapter).toHaveBeenCalledWith({
+        config: expect.objectContaining({ uploadAdapter }),
+        editor,
+      })
+      expect(addFiles).toHaveBeenCalledWith([expect.objectContaining({
+        name: 'adapter.mp4',
+        data: file,
+      })])
+      expect(upload).toHaveBeenCalledTimes(1)
     })
 
     test('it should invoke onSuccess callback if give the option when create editor', async () => {

@@ -48,6 +48,9 @@ export function genUploadImageConfig(): IUploadImageConfig {
     // 自定义上传图片，用户配置
     // customUpload: (file, insertFn) => {},
 
+    // 自定义上传适配器，默认仍使用内置 Uppy
+    // uploadAdapter: ({ config, editor }) => ({ addFiles() {}, upload: async () => {} }),
+
     // 小于 xxx 就插入 base64
     base64LimitSize: 0,
 
