@@ -1,5 +1,18 @@
 # Change Log
 
+## 2.0.0
+
+### Minor Changes
+
+- fe22817: feat(upload): add upload adapter layer with default uppy implementation
+
+### Patch Changes
+
+- Updated dependencies [fe22817]
+- Updated dependencies [d51d961]
+  - @wangeditor-next/core@1.8.0
+  - @wangeditor-next/basic-modules@2.0.0
+
 ## 1.1.56
 
 ### Patch Changes
