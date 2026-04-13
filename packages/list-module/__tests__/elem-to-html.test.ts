@@ -120,10 +120,96 @@ describe('module elem-to-html', () => {
     const res = elemToHtml(colorElem, childrenHtml, mockEditor)
 
     expect(res).toEqual({
-      html: '<li class="w-e-color-xx8cx7" data-w-e-color="rgb(235, 144, 58)"><span>hello</span></li>',
+      html: '<li class="w-e-list-color-xx8cx7" data-w-e-color="rgb(235, 144, 58)"><span>hello</span></li>',
       prefix: '<ul>',
       suffix: '</ul>',
     })
+  })
+
+  test('unknown color in class mode keeps data by default', () => {
+    const color = 'rgb(1, 2, 3)'
+    const colorElem = {
+      type: 'list-item',
+      children: [{ text: 'hello', color }],
+    }
+    const colorEditor = createEditor({
+      content: [colorElem],
+    })
+
+    ELEM_TO_EDITOR.set(colorElem, colorEditor)
+
+    const { elemToHtml } = listItemToHtmlConf
+    const mockEditor = {
+      getConfig() {
+        return { textStyleMode: 'class' }
+      },
+    } as any
+
+    const res = elemToHtml(colorElem, childrenHtml, mockEditor)
+
+    expect(res).toEqual({
+      html: '<li data-w-e-color="rgb(1, 2, 3)"><span>hello</span></li>',
+      prefix: '<ul>',
+      suffix: '</ul>',
+    })
+  })
+
+  test('unknown color in class mode falls back to inline when policy is fallback-inline', () => {
+    const color = 'rgb(1, 2, 3)'
+    const colorElem = {
+      type: 'list-item',
+      children: [{ text: 'hello', color }],
+    }
+    const colorEditor = createEditor({
+      content: [colorElem],
+    })
+
+    ELEM_TO_EDITOR.set(colorElem, colorEditor)
+
+    const { elemToHtml } = listItemToHtmlConf
+    const mockEditor = {
+      getConfig() {
+        return {
+          textStyleMode: 'class',
+          classStylePolicy: 'fallback-inline',
+        }
+      },
+    } as any
+
+    const res = elemToHtml(colorElem, childrenHtml, mockEditor)
+
+    expect(res).toEqual({
+      html: '<li data-w-e-color="rgb(1, 2, 3)" style="color:rgb(1, 2, 3)"><span>hello</span></li>',
+      prefix: '<ul>',
+      suffix: '</ul>',
+    })
+  })
+
+  test('unknown color in class mode throws when policy is strict', () => {
+    const color = 'rgb(1, 2, 3)'
+    const colorElem = {
+      type: 'list-item',
+      children: [{ text: 'hello', color }],
+    }
+    const colorEditor = createEditor({
+      content: [colorElem],
+    })
+
+    ELEM_TO_EDITOR.set(colorElem, colorEditor)
+
+    const { elemToHtml } = listItemToHtmlConf
+    const mockEditor = {
+      getConfig() {
+        return {
+          textStyleMode: 'class',
+          classStylePolicy: 'strict',
+        }
+      },
+    } as any
+
+    expect(() => elemToHtml(colorElem, childrenHtml, mockEditor)).toThrow(
+      '[wangeditor] Unsupported list color class token color=rgb(1, 2, 3). policy=strict',
+    )
   })
 })
 

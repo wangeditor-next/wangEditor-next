@@ -76,4 +76,33 @@ describe('plugin-float-image elem/parse html', () => {
       children: [{ text: '' }],
     })
   })
+
+  it('class mode html should be stable after parse -> toHtml round-trip', () => {
+    const mockEditor = {
+      getConfig() {
+        return { textStyleMode: 'class' }
+      },
+    } as any
+    const elem = {
+      type: 'image',
+      src: 'https://example.com/a.png',
+      alt: 'a',
+      href: 'https://example.com',
+      style: {
+        width: '100px',
+        height: '80px',
+        float: 'right',
+      },
+      children: [{ text: '' }],
+    } as any
+
+    const firstHtml = elemToHtmlConf.elemToHtml(elem, '', mockEditor)
+    const $img = $(firstHtml)
+    const parsedElem = parseHtmlConf.parseElemHtml($img[0], [], {} as any)
+    const roundTripHtml = elemToHtmlConf.elemToHtml(parsedElem as any, '', mockEditor)
+
+    expect(roundTripHtml).toBe(firstHtml)
+    expect(roundTripHtml).toContain('class="w-e-float-image-right"')
+    expect(roundTripHtml).not.toContain('style=')
+  })
 })
