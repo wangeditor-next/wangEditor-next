@@ -3,15 +3,10 @@
  * @author wangfupeng
  */
 
-import { IDomEditor } from '@wangeditor-next/core'
+import { getTextStyleMode, IDomEditor } from '@wangeditor-next/core'
 import { Element } from 'slate'
 
 import { TableCellElement, TableElement, TableRowElement } from './custom-types'
-
-function getTextStyleMode(editor?: IDomEditor): 'inline' | 'class' {
-  if (!editor) { return 'inline' }
-  return editor.getConfig().textStyleMode === 'class' ? 'class' : 'inline'
-}
 
 function getExportTableWidth(tableNode: TableElement): string {
   const { width = 'auto', columnWidths = [] } = tableNode

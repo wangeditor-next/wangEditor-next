@@ -3,14 +3,9 @@
  * @author cycleccc
  */
 
-import { IDomEditor, SlateElement } from '@wangeditor-next/editor'
+import { getTextStyleMode, IDomEditor, SlateElement } from '@wangeditor-next/editor'
 
 import { ImageElement } from './custom-types'
-
-function getTextStyleMode(editor?: IDomEditor): 'inline' | 'class' {
-  if (!editor) { return 'inline' }
-  return editor.getConfig().textStyleMode === 'class' ? 'class' : 'inline'
-}
 
 function getFloatClass(float: string): string {
   const val = (float || '').trim().toLowerCase()

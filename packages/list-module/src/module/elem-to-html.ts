@@ -3,13 +3,14 @@
  * @author wangfupeng
  */
 
-import { DomEditor, IDomEditor } from '@wangeditor-next/core'
+import { DomEditor, getTextStyleMode, IDomEditor } from '@wangeditor-next/core'
 import { Editor, Element, Path } from 'slate'
 
 import { ELEM_TO_EDITOR } from '../utils/maps'
 import { getListItemColor } from '../utils/util'
 import { ListItemElement } from './custom-types'
 import { hasSameOrderWithBrother } from './helpers'
+import { genListColorClassName, resolveListColorAction } from './style-class'
 
 /**
  * 当前 list-item 前面需要拼接几个 <ol> 或 <ul>
@@ -136,32 +137,6 @@ function getEndContainerTagNumber(elem: Element): number {
 // ol ul 栈
 const CONTAINER_TAG_STACK: Array<string> = []
 
-function normalizeColorValue(value: string): string {
-  return (value || '').trim().replace(/\s+/g, '').toLowerCase()
-}
-
-function hashStyleValue(input: string): string {
-  const MOD = 2147483647 // 2^31 - 1
-  let hash = 7
-
-  for (const char of input) {
-    hash = (hash * 31 + (char.codePointAt(0) || 0)) % MOD
-  }
-
-  return hash.toString(36)
-}
-
-function genColorClassName(color: string): string {
-  const normalized = normalizeColorValue(color)
-
-  return `w-e-color-${hashStyleValue(`color:${normalized}`)}`
-}
-
-function getTextStyleMode(editor?: IDomEditor): 'inline' | 'class' {
-  if (!editor) { return 'inline' }
-  return editor.getConfig().textStyleMode === 'class' ? 'class' : 'inline'
-}
-
 function elemToHtml(
   elem: Element,
   childrenHtml: string,
@@ -201,20 +176,27 @@ function elemToHtml(
   // 获取前缀颜色
   const prefixColor = getListItemColor(elem)
   const textStyleMode = getTextStyleMode(editor)
-  let colorAttr = ''
+  let colorStyle = ''
+  let colorClass = ''
+  let colorData = ''
 
   if (prefixColor) {
     if (textStyleMode === 'class') {
-      const colorClass = genColorClassName(prefixColor)
+      colorData = ` data-w-e-color="${prefixColor}"`
+      const action = resolveListColorAction(editor, prefixColor)
 
-      colorAttr = ` class="${colorClass}" data-w-e-color="${prefixColor}"`
+      if (action === 'class') {
+        colorClass = ` class="${genListColorClassName(prefixColor)}"`
+      } else if (action === 'inline') {
+        colorStyle = ` style="color:${prefixColor}"`
+      }
     } else {
-      colorAttr = ` style="color:${prefixColor}"`
+      colorStyle = ` style="color:${prefixColor}"`
     }
   }
 
   return {
-    html: `<li${colorAttr}>${childrenHtml}</li>`,
+    html: `<li${colorClass}${colorData}${colorStyle}>${childrenHtml}</li>`,
     prefix: startContainerStr,
     suffix: endContainerStr,
   }

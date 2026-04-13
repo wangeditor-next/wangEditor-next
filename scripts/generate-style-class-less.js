@@ -9,7 +9,8 @@ const rootDir = path.resolve(__dirname, '..')
 const colorConfigPath = path.join(rootDir, 'packages/basic-modules/src/modules/color/menu/config.ts')
 const fontConfigPath = path.join(rootDir, 'packages/basic-modules/src/modules/font-size-family/menu/config.ts')
 const lineHeightConfigPath = path.join(rootDir, 'packages/basic-modules/src/modules/line-height/menu/config.ts')
-const outputPath = path.join(rootDir, 'packages/basic-modules/src/assets/style-class.less')
+const basicOutputPath = path.join(rootDir, 'packages/basic-modules/src/assets/style-class.less')
+const listOutputPath = path.join(rootDir, 'packages/list-module/src/assets/style-class.less')
 
 function extractArrayLiteral(content, marker) {
   const markerIndex = content.indexOf(marker)
@@ -71,7 +72,7 @@ function hashStyleValue(input) {
   return hash.toString(36)
 }
 
-function className(type, value) {
+function className(type, value, customPrefixMap = {}) {
   const prefix = {
     color: 'w-e-color',
     bgColor: 'w-e-bg-color',
@@ -80,6 +81,7 @@ function className(type, value) {
     textAlign: 'w-e-text-align',
     lineHeight: 'w-e-line-height',
     indent: 'w-e-indent',
+    ...customPrefixMap,
   }[type]
 
   return `${prefix}-${hashStyleValue(`${type}:${normalize(type, value)}`)}`
@@ -105,9 +107,16 @@ function getIndentValues(fontSizes) {
   return Array.from(values)
 }
 
-function appendRules(lines, values, type, cssProp, formatter = value => value) {
+function appendRules(
+  lines,
+  values,
+  type,
+  cssProp,
+  formatter = value => value,
+  customPrefixMap = {},
+) {
   values.forEach(value => {
-    lines.push(`.${className(type, value)} { ${cssProp}: ${formatter(value)}; }`)
+    lines.push(`.${className(type, value, customPrefixMap)} { ${cssProp}: ${formatter(value)}; }`)
   })
   lines.push('')
 }
@@ -126,24 +135,38 @@ function run() {
   const textAlignList = ['left', 'center', 'right', 'justify']
   const indentValues = getIndentValues(fontSizes)
 
-  const lines = [
+  const basicLines = [
     '/**',
     ' * @description class-based text style rules for strict CSP mode',
     ' */',
     '',
   ]
 
-  appendRules(lines, colors, 'color', 'color')
-  appendRules(lines, colors, 'bgColor', 'background-color')
-  appendRules(lines, fontSizes, 'fontSize', 'font-size')
-  appendRules(lines, fontFamilies, 'fontFamily', 'font-family', quoteFontFamily)
-  appendRules(lines, textAlignList, 'textAlign', 'text-align')
-  appendRules(lines, lineHeights, 'lineHeight', 'line-height')
-  appendRules(lines, indentValues, 'indent', 'text-indent')
+  appendRules(basicLines, colors, 'color', 'color')
+  appendRules(basicLines, colors, 'bgColor', 'background-color')
+  appendRules(basicLines, fontSizes, 'fontSize', 'font-size')
+  appendRules(basicLines, fontFamilies, 'fontFamily', 'font-family', quoteFontFamily)
+  appendRules(basicLines, textAlignList, 'textAlign', 'text-align')
+  appendRules(basicLines, lineHeights, 'lineHeight', 'line-height')
+  appendRules(basicLines, indentValues, 'indent', 'text-indent')
 
-  fs.writeFileSync(outputPath, `${lines.join('\n')}\n`)
+  const listLines = [
+    '/**',
+    ' * @description class-based list marker color rules for strict CSP mode',
+    ' */',
+    '',
+  ]
+
+  appendRules(listLines, colors, 'color', 'color', value => value, {
+    color: 'w-e-list-color',
+  })
+
+  fs.writeFileSync(basicOutputPath, `${basicLines.join('\n')}\n`)
+  fs.writeFileSync(listOutputPath, `${listLines.join('\n')}\n`)
   // eslint-disable-next-line no-console
-  console.log(`Generated ${path.relative(rootDir, outputPath)}`)
+  console.log(`Generated ${path.relative(rootDir, basicOutputPath)}`)
+  // eslint-disable-next-line no-console
+  console.log(`Generated ${path.relative(rootDir, listOutputPath)}`)
 }
 
 run()

@@ -3,20 +3,80 @@
  * @author hsuna
  */
 
-import { IDomEditor } from '@wangeditor-next/core'
+import {
+  getClassStylePolicy,
+  getTextStyleMode,
+  IDomEditor,
+  reportUnsupportedClassStyle,
+} from '@wangeditor-next/core'
 
 import $, { getOuterHTML } from '../utils/dom'
 
-function getTextStyleMode(editor?: IDomEditor): 'inline' | 'class' {
-  if (!editor) { return 'inline' }
-  return editor.getConfig().textStyleMode === 'class' ? 'class' : 'inline'
-}
+const SUPPORTED_TABLE_BORDER_STYLE = new Set([
+  'solid',
+  'dotted',
+  'dashed',
+  'double',
+  'groove',
+  'ridge',
+  'inset',
+  'outset',
+])
+const REPORTED_UNSUPPORTED_BORDER_STYLE = new Set<string>()
 
 function getBorderStyleClass(borderStyle: string): string {
   const val = (borderStyle || '').trim().toLowerCase()
 
   if (!val || val === 'none') { return '' }
   return `w-e-table-border-style-${val}`
+}
+
+function normalizeBorderStyle(borderStyle: string): string {
+  return `${borderStyle || ''}`.trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+function resolveBorderStyleAction(
+  editor: IDomEditor | undefined,
+  borderStyle: string,
+): 'skip' | 'class' | 'inline' | 'preserve-data' {
+  const normalized = normalizeBorderStyle(borderStyle)
+
+  if (!normalized || normalized === 'none') { return 'skip' }
+  if (SUPPORTED_TABLE_BORDER_STYLE.has(normalized)) { return 'class' }
+
+  const policy = getClassStylePolicy(editor)
+  let fallback: 'preserve-data' | 'inline' | 'throw' = 'preserve-data'
+
+  if (policy === 'fallback-inline') {
+    fallback = 'inline'
+  }
+  if (policy === 'strict') {
+    fallback = 'throw'
+  }
+
+  const message = `[wangeditor] Unsupported table border-style token "${normalized}" in class mode. policy=${policy}`
+  const reportKey = `${normalized}|${fallback}`
+
+  if (!REPORTED_UNSUPPORTED_BORDER_STYLE.has(reportKey)) {
+    REPORTED_UNSUPPORTED_BORDER_STYLE.add(reportKey)
+    reportUnsupportedClassStyle(editor, {
+      type: 'table-border-style',
+      value: normalized,
+      scene: 'toHtml',
+      fallback,
+      message,
+    })
+  }
+
+  if (fallback === 'throw') {
+    throw new Error(message)
+  }
+
+  if (fallback === 'inline') {
+    return 'inline'
+  }
+
+  return 'preserve-data'
 }
 
 export function styleToHtml(node, elemHtml, editor?: IDomEditor) {
@@ -47,11 +107,17 @@ export function styleToHtml(node, elemHtml, editor?: IDomEditor) {
     }
 
     if (borderStyle) {
-      const normalizedBorderStyle = borderStyle === 'none' ? '' : `${borderStyle}`.trim()
+      const normalizedBorderStyle = normalizeBorderStyle(borderStyle)
+      const borderStyleAction = resolveBorderStyleAction(editor, normalizedBorderStyle)
 
-      if (normalizedBorderStyle) {
-        $elem.addClass(getBorderStyleClass(normalizedBorderStyle))
+      if (borderStyleAction !== 'skip') {
         $elem.attr('data-w-e-border-line', normalizedBorderStyle)
+      }
+
+      if (borderStyleAction === 'class') {
+        $elem.addClass(getBorderStyleClass(normalizedBorderStyle))
+      } else if (borderStyleAction === 'inline') {
+        $elem.css('border-style', normalizedBorderStyle)
       }
     }
 

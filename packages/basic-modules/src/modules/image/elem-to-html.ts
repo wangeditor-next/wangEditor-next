@@ -3,15 +3,10 @@
  * @author wangfupeng
  */
 
-import { IDomEditor } from '@wangeditor-next/core'
+import { getTextStyleMode, IDomEditor } from '@wangeditor-next/core'
 import { Element } from 'slate'
 
 import { ImageElement } from './custom-types'
-
-function getTextStyleMode(editor?: IDomEditor): 'inline' | 'class' {
-  if (!editor) { return 'inline' }
-  return editor.getConfig().textStyleMode === 'class' ? 'class' : 'inline'
-}
 
 function imageToHtml(elemNode: Element, _childrenHtml: string, editor?: IDomEditor): string {
   const {
