@@ -16,8 +16,16 @@ export * from './create/index'
 
 // config
 export type {
-  IEditorConfig, IToolbarConfig, IUploadImageConfig, IUploadVideoConfig,
+  ClassStylePolicy,
+  IClassStyleUnsupportedPayload,
+  IEditorConfig,
+  IToolbarConfig,
+  IUploadImageConfig,
+  IUploadVideoConfig,
+  StyleClassTokenType,
+  TextStyleMode,
 } from './config/interface'
+export * from './config/style-mode'
 
 // editor 接口和 command
 export * from './editor/dom-editor'

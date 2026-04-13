@@ -3,13 +3,14 @@
  * @author wangfupeng
  */
 
-import { DomEditor } from '@wangeditor-next/core'
+import { DomEditor, getTextStyleMode, IDomEditor } from '@wangeditor-next/core'
 import { Editor, Element, Path } from 'slate'
 
 import { ELEM_TO_EDITOR } from '../utils/maps'
 import { getListItemColor } from '../utils/util'
 import { ListItemElement } from './custom-types'
 import { hasSameOrderWithBrother } from './helpers'
+import { genListColorClassName, resolveListColorAction } from './style-class'
 
 /**
  * 当前 list-item 前面需要拼接几个 <ol> 或 <ul>
@@ -139,6 +140,7 @@ const CONTAINER_TAG_STACK: Array<string> = []
 function elemToHtml(
   elem: Element,
   childrenHtml: string,
+  editor?: IDomEditor,
 ): {
   html: string
   prefix?: string
@@ -173,10 +175,28 @@ function elemToHtml(
 
   // 获取前缀颜色
   const prefixColor = getListItemColor(elem)
-  const colorStyle = prefixColor ? ` style="color:${prefixColor}"` : ''
+  const textStyleMode = getTextStyleMode(editor)
+  let colorStyle = ''
+  let colorClass = ''
+  let colorData = ''
+
+  if (prefixColor) {
+    if (textStyleMode === 'class') {
+      colorData = ` data-w-e-color="${prefixColor}"`
+      const action = resolveListColorAction(editor, prefixColor)
+
+      if (action === 'class') {
+        colorClass = ` class="${genListColorClassName(prefixColor)}"`
+      } else if (action === 'inline') {
+        colorStyle = ` style="color:${prefixColor}"`
+      }
+    } else {
+      colorStyle = ` style="color:${prefixColor}"`
+    }
+  }
 
   return {
-    html: `<li${colorStyle}>${childrenHtml}</li>`,
+    html: `<li${colorClass}${colorData}${colorStyle}>${childrenHtml}</li>`,
     prefix: startContainerStr,
     suffix: endContainerStr,
   }

@@ -40,7 +40,7 @@ function preParse(elem: DOMElement): DOMElement {
   if ($parent.attr('data-w-e-type') === 'video') { return $video[0] }
 
   const $container = $(
-    '<div data-w-e-type="video" data-w-e-is-void style="text-align: center;"></div>',
+    '<div data-w-e-type="video" data-w-e-is-void class="w-e-video-align-center" data-w-e-text-align="center"></div>',
   )
 
   $container.append($video)

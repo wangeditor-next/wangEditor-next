@@ -47,7 +47,7 @@ function textToHtml(textNode: Text, editor: IDomEditor): string {
   }
 
   // 增加文本样式，如 color bgColor
-  STYLE_TO_HTML_FN_LIST.forEach(fn => (textHtml = fn(textNode, textHtml)))
+  STYLE_TO_HTML_FN_LIST.forEach(fn => (textHtml = fn(textNode, textHtml, editor)))
 
   return textHtml
 }

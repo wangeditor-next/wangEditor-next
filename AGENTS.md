@@ -34,6 +34,8 @@
 - Lint/格式化：`pnpm lint`、`pnpm lint:fix`、`pnpm format`
 - 单测：`pnpm test`，覆盖率 `pnpm test-c`
 - E2E：`pnpm e2e:dev`、`pnpm e2e`
+- 跨浏览器冒烟：`pnpm e2e:matrix`（Chromium / Firefox / WebKit）
+- 性能基准：`pnpm e2e:perf`（Chromium，阈值可通过 `PERF_*` 环境变量覆盖）
 - Changeset：`npx changeset`
 
 ## 测试注意

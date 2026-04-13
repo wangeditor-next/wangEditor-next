@@ -3,18 +3,21 @@
  * @author wangfupeng
  */
 
+import { IDomEditor } from '@wangeditor-next/core'
 import { Descendant, Text } from 'slate'
 
 import $, { getOuterHTML, getTagName, isPlainText } from '../../utils/dom'
+import { appendStyleClassAndData, getTextStyleMode } from '../../utils/style-class'
 import { FontSizeAndFamilyText } from './custom-types'
 
 /**
  * style to html
  * @param textNode slate text node
  * @param textHtml text html
+ * @param editor editor instance
  * @returns styled html
  */
-export function styleToHtml(textNode: Descendant, textHtml: string): string {
+export function styleToHtml(textNode: Descendant, textHtml: string, editor?: IDomEditor): string {
   if (!Text.isText(textNode)) { return textHtml }
 
   const { fontSize, fontFamily } = textNode as FontSizeAndFamilyText
@@ -37,8 +40,23 @@ export function styleToHtml(textNode: Descendant, textHtml: string): string {
     }
   }
 
-  if (fontSize) { $text.css('font-size', fontSize) }
-  if (fontFamily) { $text.css('font-family', fontFamily) }
+  const textStyleMode = getTextStyleMode(editor)
+
+  if (textStyleMode === 'class') {
+    if (fontSize) {
+      appendStyleClassAndData($text, 'fontSize', fontSize, editor, 'toHtml', () => {
+        $text.css('font-size', fontSize)
+      })
+    }
+    if (fontFamily) {
+      appendStyleClassAndData($text, 'fontFamily', fontFamily, editor, 'toHtml', () => {
+        $text.css('font-family', fontFamily)
+      })
+    }
+  } else {
+    if (fontSize) { $text.css('font-size', fontSize) }
+    if (fontFamily) { $text.css('font-family', fontFamily) }
+  }
 
   return getOuterHTML($text)
 }

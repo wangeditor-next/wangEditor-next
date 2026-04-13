@@ -105,6 +105,11 @@
 
     // create
     let editor, toolbar
+    window.wangEditorExampleBridge = {
+      editor: undefined,
+      toolbar: undefined
+    }
+
     document.getElementById('btn-create').addEventListener('click', () => {
       editor = E.createEditor({
         selector: '#editor-text-area',
@@ -119,6 +124,9 @@
         // selector: document.getElementById('editor-toolbar')
         config: toolbarConfig
       })
+
+      window.wangEditorExampleBridge.editor = editor
+      window.wangEditorExampleBridge.toolbar = toolbar
     })
     console.log(`如果页面没有编辑器，点击 'create' 按钮创建`)
 
@@ -139,6 +147,9 @@
     document.getElementById('btn-destroy').addEventListener('click', () => {
       editor.destroy()
       editor = undefined
+      toolbar = undefined
+      window.wangEditorExampleBridge.editor = undefined
+      window.wangEditorExampleBridge.toolbar = undefined
     })
   </script>
 </body>

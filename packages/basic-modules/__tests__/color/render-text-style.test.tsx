@@ -22,4 +22,26 @@ describe('color - render text style', () => {
     expect(newVnode.data.style.color).toBe(color)
     expect(newVnode.data.style.backgroundColor).toBe(bgColor)
   })
+
+  it('render color class in class mode', () => {
+    const color = 'rgb(66, 144, 247)'
+    const bgColor = 'rgb(231, 246, 213)'
+    const textNode = { text: 'hello', color, bgColor }
+    const vnode = <span>hello</span>
+    const editor = {
+      getConfig() {
+        return { textStyleMode: 'class' as const }
+      },
+    }
+
+    // @ts-ignore
+    const newVnode = renderStyle(textNode, vnode, editor) as any
+
+    expect(newVnode.sel).toBe('span')
+    expect(newVnode.data.style).toBeUndefined()
+    expect(newVnode.data.props.className).toContain('w-e-color-')
+    expect(newVnode.data.props.className).toContain('w-e-bg-color-')
+    expect(newVnode.data.dataset.wEColor).toBe(color)
+    expect(newVnode.data.dataset.wEBgColor).toBe(bgColor)
+  })
 })

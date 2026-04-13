@@ -55,16 +55,27 @@ export function genSizeStyledIframeHtml(
   width = 'auto',
   height = 'auto',
   style: videoStyle = {},
+  classMode = false,
 ): string {
   const $iframe = $(iframeHtml)
   const { width: styleWidth = '', height: styleHeight = '' } = style
-  let styleStr = ''
+  const widthData = styleWidth ? `data-w-e-style-width="${styleWidth}"` : ''
+  const heightData = styleHeight ? `data-w-e-style-height="${styleHeight}"` : ''
 
-  if (styleWidth) { styleStr += `width: ${styleWidth};` }
-  if (styleHeight) { styleStr += `height: ${styleHeight};` }
   $iframe.attr('width', width)
   $iframe.attr('height', height)
-  $iframe.attr('style', styleStr)
+
+  if (!classMode) {
+    let styleStr = ''
+
+    if (styleWidth) { styleStr += `width: ${styleWidth};` }
+    if (styleHeight) { styleStr += `height: ${styleHeight};` }
+    $iframe.attr('style', styleStr)
+  } else {
+    if (widthData) { $iframe.attr('data-w-e-style-width', styleWidth) }
+    if (heightData) { $iframe.attr('data-w-e-style-height', styleHeight) }
+    $iframe.removeAttr('style')
+  }
   return $iframe[0].outerHTML
 }
 export {

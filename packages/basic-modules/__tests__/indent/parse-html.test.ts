@@ -8,6 +8,7 @@ import { $ } from 'dom7'
 import createEditor from '../../../../tests/utils/create-editor'
 import { parseStyleHtml } from '../../src/modules/indent/parse-style-html'
 import { preParseHtmlConf } from '../../src/modules/indent/pre-parse-html'
+import { genStyleClassName } from '../../src/utils/style-class'
 
 describe('indent - parse style', () => {
   let editor: ReturnType<typeof createEditor>
@@ -21,6 +22,20 @@ describe('indent - parse style', () => {
     const paragraph = { type: 'paragraph', children: [{ text: 'hello' }] }
 
     // parse
+    const res = parseStyleHtml($p[0], paragraph, editor)
+
+    expect(res).toEqual({
+      type: 'paragraph',
+      indent: '2em',
+      children: [{ text: 'hello' }],
+    })
+  })
+
+  it('parse class', () => {
+    const indent = '2em'
+    const indentClass = genStyleClassName('indent', indent)
+    const $p = $(`<p class="${indentClass}" data-w-e-indent="${indent}"></p>`)
+    const paragraph = { type: 'paragraph', children: [{ text: 'hello' }] }
     const res = parseStyleHtml($p[0], paragraph, editor)
 
     expect(res).toEqual({

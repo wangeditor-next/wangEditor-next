@@ -43,5 +43,32 @@ describe('videoModule module', () => {
         '<div data-w-e-type="video" data-w-e-is-void style="text-align: center;">\n<iframe src="test.mp4" width="500" height="300" style=""></iframe>\n</div>',
       )
     })
+
+    test('videoToHtmlConf elemToHtml - class mode should not output inline style', () => {
+      const element = {
+        type: 'video',
+        src: 'test.mp4',
+        poster: 'xxx.png',
+        width: '640',
+        height: '360',
+        style: {
+          width: '640px',
+          height: '360px',
+        },
+        textAlign: 'right',
+        children: [],
+      }
+      const mockEditor = {
+        getConfig() {
+          return { textStyleMode: 'class' }
+        },
+      } as any
+      const res = videoToHtmlConf.elemToHtml(element, '', mockEditor)
+
+      expect(res).toEqual(
+        '<div data-w-e-type="video" data-w-e-is-void class="w-e-video-align-right" data-w-e-text-align="right">\n<video poster="xxx.png" controls="true" width="640" height="360" data-w-e-style-width="640px" data-w-e-style-height="360px"><source src="test.mp4" type="video/mp4"/></video>\n</div>',
+      )
+      expect(res).not.toContain('style=')
+    })
   })
 })

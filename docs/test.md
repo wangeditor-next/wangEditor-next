@@ -43,3 +43,24 @@ pnpm exec playwright install
 pnpm e2e
 ```
 Playwright 会在后台运行所有测试，并不会打开 UI 界面和浏览器。
+
+### 跨浏览器冒烟（桌面）
+跨浏览器冒烟用例位于 `tests/e2e/*.smoke.spec.ts`，用于在 Chromium / Firefox / WebKit 上验证核心交互链路。
+```bash
+pnpm e2e:matrix
+```
+如本机未安装对应浏览器，请先执行：
+```bash
+pnpm exec playwright install
+```
+
+### 性能基准（Chromium）
+性能基准用例位于 `tests/e2e/*.perf.spec.ts`，用于评估创建、`setHtml`、`getHtml`、批量输入等关键路径的中位耗时。
+```bash
+pnpm e2e:perf
+```
+支持通过环境变量覆盖阈值（单位毫秒）：
+- `PERF_CREATE_MS`
+- `PERF_SET_HTML_MS`
+- `PERF_GET_HTML_MS`
+- `PERF_INSERT_TEXT_MS`
