@@ -23,28 +23,6 @@ An open-source web rich text editor that is ready to use out of the box with sim
 - **Customizable**: Highly customizable to fit your needs.
 - **Lightweight**: Minimal footprint with high performance.
 
-## Strict CSP Mode (Class-Based Styles)
-
-For strict CSP environments that disallow inline styles, enable `textStyleMode: 'class'`:
-
-```ts
-const editorConfig = {
-  textStyleMode: 'class',
-  classStylePolicy: 'preserve-data', // preserve-data | fallback-inline | strict
-  styleClassTokens: {
-    color: ['rgb(1, 2, 3)'],
-  },
-  onClassStyleUnsupported(payload) {
-    // log or report unsupported tokens
-  },
-}
-```
-
-- Default remains `inline`, so existing integrations keep working.
-- In class mode, built-in token classes are provided by the bundled stylesheet.
-- If you extend `styleClassTokens`, you need to provide matching CSS in your app.
-- See [docs/class-style-mode.md](./docs/class-style-mode.md) for full behavior details.
-
 ## Installation
 
 ### For Vue or React

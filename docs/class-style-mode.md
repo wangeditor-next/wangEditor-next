@@ -21,22 +21,6 @@ const editorConfig = {
 }
 ```
 
-## 快速接入
-
-1. 启用 `textStyleMode: 'class'`。
-2. 选择 `classStylePolicy`（建议从 `preserve-data` 开始）。
-3. 确保已引入编辑器样式：
-   - 例如 React/Vue 项目可引入 `@wangeditor-next/editor/dist/css/style.css`。
-4. 如使用 `styleClassTokens` 扩展 token，需业务侧补充 CSS。
-
-自定义 token 建议优先基于 `data-w-e-*` 写样式，而不是依赖 hash class 名：
-
-```css
-[data-w-e-color="rgb(1, 2, 3)"] { color: rgb(1, 2, 3); }
-[data-w-e-font-size="20px"] { font-size: 20px; }
-[data-w-e-line-height="2"] { line-height: 2; }
-```
-
 - `textStyleMode`
   - `inline`（默认）：输出内联样式。
   - `class`：输出 `class + data-w-e-*`。
