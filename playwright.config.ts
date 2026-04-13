@@ -30,10 +30,43 @@ export default defineConfig({
     stderr: 'inherit',
     timeout: 180_000,
   },
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-  ],
+  projects: (() => {
+    const projects: any[] = [
+      {
+        name: 'chromium',
+        use: { ...devices['Desktop Chrome'] },
+        testIgnore: ['**/*.smoke.spec.ts', '**/*.perf.spec.ts'],
+      },
+    ]
+
+    if (process.env.PLAYWRIGHT_CROSS_BROWSER) {
+      projects.push(
+        {
+          name: 'chromium-smoke',
+          use: { ...devices['Desktop Chrome'] },
+          testMatch: '**/*.smoke.spec.ts',
+        },
+        {
+          name: 'firefox-smoke',
+          use: { ...devices['Desktop Firefox'] },
+          testMatch: '**/*.smoke.spec.ts',
+        },
+        {
+          name: 'webkit-smoke',
+          use: { ...devices['Desktop Safari'] },
+          testMatch: '**/*.smoke.spec.ts',
+        },
+      )
+    }
+
+    if (process.env.PLAYWRIGHT_INCLUDE_PERF) {
+      projects.push({
+        name: 'chromium-perf',
+        use: { ...devices['Desktop Chrome'] },
+        testMatch: '**/*.perf.spec.ts',
+      })
+    }
+
+    return projects
+  })(),
 })

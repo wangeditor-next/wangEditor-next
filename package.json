@@ -27,6 +27,8 @@
     "prettier": "prettier --ignore-path .gitignore \"packages/*/+(src|__tests__)/**/*.+(ts|tsx)\"  --cache",
     "e2e:dev": "playwright test --ui",
     "e2e": "playwright test",
+    "e2e:matrix": "cross-env PLAYWRIGHT_CROSS_BROWSER=1 playwright test --project=chromium-smoke --project=firefox-smoke --project=webkit-smoke",
+    "e2e:perf": "cross-env PLAYWRIGHT_INCLUDE_PERF=1 playwright test --project=chromium-perf",
     "prepare": "husky install",
     "changeset": "changeset",
     "version:release": "pnpm changeset version && pnpm install --lockfile-only --no-frozen-lockfile",
