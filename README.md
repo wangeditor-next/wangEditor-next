@@ -28,6 +28,28 @@
 - **可定制**：高度可定制，满足您的需求。
 - **轻量级**：占用空间小，性能高。
 
+## CSP 严格模式（class 样式输出）
+
+在禁止内联样式的 CSP 场景，可开启 `textStyleMode: 'class'`：
+
+```ts
+const editorConfig = {
+  textStyleMode: 'class',
+  classStylePolicy: 'preserve-data', // preserve-data | fallback-inline | strict
+  styleClassTokens: {
+    color: ['rgb(1, 2, 3)'],
+  },
+  onClassStyleUnsupported(payload) {
+    // 记录日志或上报监控
+  },
+}
+```
+
+- 默认仍是 `inline`，现有项目无须改动即可继续使用。
+- class 模式下，默认 token 的 class 样式由内置样式表提供。
+- 若扩展了 `styleClassTokens`，需业务侧补充对应 CSS。
+- 详细行为和兼容性说明见 [docs/class-style-mode.md](./docs/class-style-mode.md)。
+
 ## 安装
 
 ### 对于 Vue 或 React
