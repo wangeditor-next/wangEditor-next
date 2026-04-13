@@ -30,8 +30,9 @@ function EditorComponent(props: Partial<IProps>) {
     defaultContent = [], onCreated, defaultHtml = '', value = '', onChange, defaultConfig = {}, mode = 'default', style = {}, className,
   } = props
   const ref = useRef<HTMLDivElement>(null)
+  const latestHtmlRef = useRef('')
+  const isSyncingFromPropsRef = useRef(false)
   const [editor, setEditor] = useState<ICustomDomEditor | null>(null)
-  const [curValue, setCurValue] = useState('')
 
   const handleCreated = (createdEditor: IDomEditor) => {
     // 组件属性 onCreated
@@ -57,7 +58,16 @@ function EditorComponent(props: Partial<IProps>) {
 
     // eslint-disable-next-line no-underscore-dangle
     editor.__react_on_change = (e: IDomEditor) => {
-      setCurValue(e.getHtml()) // 记录当前 html 值
+      const latestHtml = e.getHtml()
+      const prevHtml = latestHtmlRef.current
+
+      latestHtmlRef.current = latestHtml // 记录当前 html 值
+
+      // 由 props 同步触发 setHtml 时，不向外触发 onChange，避免受控场景产生回环
+      if (isSyncingFromPropsRef.current) { return }
+
+      // 仅在内容发生变化时触发，对齐输入控件 onChange 语义（忽略选区/焦点变化）
+      if (latestHtml === prevHtml) { return }
 
       // 组件属性 onChange
       if (onChange) { onChange(e) }
@@ -67,22 +77,29 @@ function EditorComponent(props: Partial<IProps>) {
 
       if (onChangeFromConfig) { onChangeFromConfig(e) }
     }
-  }, [editor, defaultConfig])
+    return () => {
+      // eslint-disable-next-line no-underscore-dangle
+      editor.__react_on_change = undefined
+    }
+  }, [editor, defaultConfig, onChange])
 
   // value 变化，重置 HTML
   useEffect(() => {
     if (editor == null) { return }
 
-    if (value === curValue) { return } // 如果和当前 html 值相等，则忽略
+    if (value === latestHtmlRef.current) { return } // 如果和当前 html 值相等，则忽略
 
     // ------ 重新设置 HTML ------
     try {
+      isSyncingFromPropsRef.current = true
       editor.setHtml(value)
+      latestHtmlRef.current = editor.getHtml()
     } catch (error) {
       console.error(error)
+    } finally {
+      isSyncingFromPropsRef.current = false
     }
-
-  }, [value])
+  }, [editor, value])
 
   useEffect(() => {
     if (ref.current == null) { return }
@@ -104,6 +121,7 @@ function EditorComponent(props: Partial<IProps>) {
       mode,
     })as ICustomDomEditor
 
+    latestHtmlRef.current = newEditor.getHtml()
     setEditor(newEditor)
   }, [editor])
 
