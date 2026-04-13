@@ -175,13 +175,32 @@ describe('editor config', () => {
     const editor = createCoreEditor()
 
     expect(editor.getConfig().textStyleMode).toBe('inline')
+    expect(editor.getConfig().classStylePolicy).toBe('preserve-data')
 
     const classModeEditor = createCoreEditor({
       config: {
         textStyleMode: 'class',
+        classStylePolicy: 'strict',
       },
     })
 
     expect(classModeEditor.getConfig().textStyleMode).toBe('class')
+    expect(classModeEditor.getConfig().classStylePolicy).toBe('strict')
+  })
+
+  it('class style extension config should be retained', () => {
+    const onClassStyleUnsupported = vi.fn()
+    const editor = createCoreEditor({
+      config: {
+        textStyleMode: 'class',
+        styleClassTokens: {
+          color: ['rgb(1, 2, 3)'],
+        },
+        onClassStyleUnsupported,
+      },
+    })
+
+    expect(editor.getConfig().styleClassTokens?.color).toEqual(['rgb(1, 2, 3)'])
+    expect(editor.getConfig().onClassStyleUnsupported).toBe(onClassStyleUnsupported)
   })
 })

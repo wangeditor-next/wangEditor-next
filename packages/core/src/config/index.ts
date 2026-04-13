@@ -41,6 +41,7 @@ export function genEditorConfig(userConfig: Partial<IEditorConfig> = {}): IEdito
       // 'link': { menuKeys: ['editLink', 'unLink', 'viewLink'] },
     },
     textStyleMode: 'inline',
+    classStylePolicy: 'preserve-data',
     sanitizeHtml: defaultSanitizeHtml,
     customAlert(info: string, type: string) {
       window.alert(`${type}:\n${info}`)

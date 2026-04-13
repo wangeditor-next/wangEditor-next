@@ -22,7 +22,9 @@ export { Boot }
 
 // 导出 core API 和接口（注意，此处按需导出，不可直接用 `*` ）
 export type {
+  ClassStylePolicy,
   IButtonMenu,
+  IClassStyleUnsupportedPayload,
   IDomEditor,
   IDropPanelMenu,
   IEditorConfig,
@@ -31,6 +33,8 @@ export type {
   ISelectMenu,
   IToolbarConfig,
   IUploadConfig,
+  StyleClassTokenType,
+  TextStyleMode,
 } from '@wangeditor-next/core'
 export {
   // 第三方模块 - 上传时用到
@@ -40,6 +44,7 @@ export {
   genModalInputElems,
   // 第三方模块 - modal 中用到的 API
   genModalTextareaElems,
+  getTextStyleMode,
   i18nAddResources,
   // 第三方模块 - 多语言
   i18nChangeLanguage,
