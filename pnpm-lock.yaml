@@ -846,8 +846,8 @@ importers:
         specifier: workspace:^
         version: link:../../shared/rollup-config
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       typescript:
         specifier: ^5.0.0
         version: 5.7.2
@@ -5751,6 +5751,9 @@ packages:
 
   slate@0.123.0:
     resolution: {integrity: sha512-Oon3HR/QzJQBjuOUJT1jGGlp8Ff7t3Bkr/rJ2lDqxNT4H+cBnXpEVQ/si6hn1ZCHhD2xY/2N91PQoH/rD7kxTg==}
+
+  slate@0.124.1:
+    resolution: {integrity: sha512-ii7DwezgvbLAyKtHBIunjTR1kzbNfYLCUKLMzJELlbTZkvHzX4DzN7HKIwcakf6dPxO6AoeT/P7kHOcyTym/hA==}
 
   slice-ansi@5.0.0:
     resolution: {integrity: sha512-FC+lgizVPfie0kkhqUScwRu1O/lF6NOgJmlCgK+/LYxDCTk8sGelYaHDhFcDN+Sn3Cv+3VSa4Byeo+IMCzpMgQ==}
@@ -11881,6 +11884,8 @@ snapshots:
       slate: 0.123.0
 
   slate@0.123.0: {}
+
+  slate@0.124.1: {}
 
   slice-ansi@5.0.0:
     dependencies:

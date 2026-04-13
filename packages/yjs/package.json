@@ -60,7 +60,7 @@
   },
   "devDependencies": {
     "@wangeditor-next-shared/rollup-config": "workspace:^",
-    "slate": "^0.123.0",
+    "slate": "^0.124.0",
     "typescript": "^5.0.0",
     "yjs": "^13.5.29"
   }
