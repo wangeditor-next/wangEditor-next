@@ -20,7 +20,9 @@ export function styleToHtml(node: Descendant, elemHtml: string, editor?: IDomEdi
   const $elem = $(elemHtml)
 
   if (getTextStyleMode(editor) === 'class') {
-    appendStyleClassAndData($elem, 'textAlign', textAlign)
+    appendStyleClassAndData($elem, 'textAlign', textAlign, editor, 'toHtml', () => {
+      $elem.css('text-align', textAlign)
+    })
   } else {
     // 设置样式
     $elem.css('text-align', textAlign)

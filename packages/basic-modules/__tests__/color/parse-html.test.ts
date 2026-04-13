@@ -92,5 +92,6 @@ describe('color - parse style html', () => {
     expect(html).not.toMatch(/style="[^"]*text-align:/)
     expect(html).not.toMatch(/style="[^"]*line-height:/)
     expect(html).not.toMatch(/style="[^"]*text-indent:/)
+    expect(html).not.toContain('w-e-font-size-')
   })
 })

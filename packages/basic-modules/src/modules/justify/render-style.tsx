@@ -7,8 +7,8 @@ import { IDomEditor } from '@wangeditor-next/core'
 import { Descendant, Element } from 'slate'
 import { VNode } from 'snabbdom'
 
-import { genStyleClassName, getStyleDatasetKey, getTextStyleMode } from '../../utils/style-class'
-import { addVnodeClassName, addVnodeDataset, addVnodeStyle } from '../../utils/vdom'
+import { appendVnodeStyleClassAndData, getTextStyleMode } from '../../utils/style-class'
+import { addVnodeStyle } from '../../utils/vdom'
 import { JustifyElement } from './custom-types'
 
 /**
@@ -26,8 +26,9 @@ export function renderStyle(node: Descendant, vnode: VNode, editor?: IDomEditor)
 
   if (textAlign) {
     if (getTextStyleMode(editor) === 'class') {
-      addVnodeClassName(styleVnode, genStyleClassName('textAlign', textAlign))
-      addVnodeDataset(styleVnode, { [getStyleDatasetKey('textAlign')]: textAlign })
+      appendVnodeStyleClassAndData(styleVnode, 'textAlign', textAlign, editor, 'render', {
+        textAlign,
+      })
     } else {
       addVnodeStyle(styleVnode, { textAlign })
     }

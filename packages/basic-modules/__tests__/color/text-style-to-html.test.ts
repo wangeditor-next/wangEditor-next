@@ -27,8 +27,8 @@ describe('color - text style to html', () => {
   })
 
   it('color to html with class mode', () => {
-    const color = 'rgb(51, 51, 51)'
-    const bgColor = 'rgb(204, 204, 204)'
+    const color = 'rgb(66, 144, 247)'
+    const bgColor = 'rgb(231, 246, 213)'
     const textNode = { text: '', color, bgColor }
     const editor = {
       getConfig() {
@@ -39,8 +39,8 @@ describe('color - text style to html', () => {
     const html = styleToHtml(textNode, '<span>hello</span>', editor as any)
 
     expect(html).toContain('class="')
-    expect(html).toContain('data-w-e-color="rgb(51, 51, 51)"')
-    expect(html).toContain('data-w-e-bg-color="rgb(204, 204, 204)"')
+    expect(html).toContain('data-w-e-color="rgb(66, 144, 247)"')
+    expect(html).toContain('data-w-e-bg-color="rgb(231, 246, 213)"')
     expect(html).not.toContain('style="')
   })
 })

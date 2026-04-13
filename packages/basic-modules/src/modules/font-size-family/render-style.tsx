@@ -7,8 +7,8 @@ import { IDomEditor } from '@wangeditor-next/core'
 import { Descendant } from 'slate'
 import { VNode } from 'snabbdom'
 
-import { genStyleClassName, getStyleDatasetKey, getTextStyleMode } from '../../utils/style-class'
-import { addVnodeClassName, addVnodeDataset, addVnodeStyle } from '../../utils/vdom'
+import { appendVnodeStyleClassAndData, getTextStyleMode } from '../../utils/style-class'
+import { addVnodeStyle } from '../../utils/vdom'
 import { FontSizeAndFamilyText } from './custom-types'
 
 /**
@@ -25,12 +25,14 @@ export function renderStyle(node: Descendant, vnode: VNode, editor?: IDomEditor)
 
   if (textStyleMode === 'class') {
     if (fontSize) {
-      addVnodeClassName(styleVnode, genStyleClassName('fontSize', fontSize))
-      addVnodeDataset(styleVnode, { [getStyleDatasetKey('fontSize')]: fontSize })
+      appendVnodeStyleClassAndData(styleVnode, 'fontSize', fontSize, editor, 'render', {
+        fontSize,
+      })
     }
     if (fontFamily) {
-      addVnodeClassName(styleVnode, genStyleClassName('fontFamily', fontFamily))
-      addVnodeDataset(styleVnode, { [getStyleDatasetKey('fontFamily')]: fontFamily })
+      appendVnodeStyleClassAndData(styleVnode, 'fontFamily', fontFamily, editor, 'render', {
+        fontFamily,
+      })
     }
   } else {
     if (fontSize) {

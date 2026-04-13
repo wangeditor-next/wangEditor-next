@@ -1,25 +1,24 @@
 /**
  * @description text style class utils
- * @author Codex
  */
 
-import { IDomEditor } from '@wangeditor-next/core'
+import {
+  getClassStylePolicy,
+  getTextStyleMode as getCoreTextStyleMode,
+  IDomEditor,
+  reportUnsupportedClassStyle,
+  StyleClassTokenType,
+} from '@wangeditor-next/core'
+import { VNode, VNodeStyle } from 'snabbdom'
 
 import { genColors } from '../modules/color/menu/config'
 import { genFontSizeConfig, getFontFamilyConfig } from '../modules/font-size-family/menu/config'
 import { genLineHeightConfig } from '../modules/line-height/menu/config'
 import { Dom7Array } from './dom'
+import { addVnodeClassName, addVnodeDataset, addVnodeStyle } from './vdom'
 
-export type TextStyleType =
-  | 'color'
-  | 'bgColor'
-  | 'fontSize'
-  | 'fontFamily'
-  | 'textAlign'
-  | 'lineHeight'
-  | 'indent'
-
-type TextStyleMode = 'inline' | 'class'
+export type TextStyleType = StyleClassTokenType
+export type ClassStyleScene = 'render' | 'toHtml'
 
 const CLASS_NAME_PREFIX: Record<TextStyleType, string> = {
   color: 'w-e-color',
@@ -50,6 +49,8 @@ const DATASET_KEY: Record<TextStyleType, string> = {
   lineHeight: 'wELineHeight',
   indent: 'wEIndent',
 }
+
+const REPORTED_UNSUPPORTED_CLASS_STYLE = new Set<string>()
 
 function normalizeStyleValue(type: TextStyleType, value: string): string {
   const trimmed = (value || '').trim()
@@ -95,78 +96,203 @@ function getFontFamilyValues() {
   })
 }
 
-function getIndentValues() {
-  const defaultValue = '2em'
-  const values = new Set<string>([defaultValue])
+function getIndentValues(fontSizeList: string[]) {
+  const values = new Set<string>(['2em'])
 
-  genFontSizeConfig().forEach(item => {
-    const fontSize = typeof item === 'string' ? item : item.value
-    const size = parseInt(fontSize, 10)
-    const unit = fontSize.replace(`${size}`, '')
+  fontSizeList.forEach(fontSize => {
+    const trimmed = `${fontSize || ''}`.trim()
+    const match = trimmed.match(/^(-?\d+(\.\d+)?)([a-z%]+)$/i)
 
-    if (size > 0 && unit) {
-      values.add(`${size * 2}${unit}`)
-    }
+    if (!match) { return }
+    const size = parseFloat(match[1])
+    const unit = match[3]
+
+    if (!Number.isFinite(size) || size <= 0 || !unit) { return }
+
+    values.add(`${size * 2}${unit}`)
   })
 
   return Array.from(values)
 }
 
-function createDefaultClassMap() {
-  const values: Record<TextStyleType, string[]> = {
+function getDefaultTokenValues(): Record<TextStyleType, string[]> {
+  const fontSizeValues = getFontSizeValues()
+
+  return {
     color: genColors(),
     bgColor: genColors(),
-    fontSize: getFontSizeValues(),
+    fontSize: fontSizeValues,
     fontFamily: getFontFamilyValues(),
     textAlign: ['left', 'center', 'right', 'justify'],
     lineHeight: genLineHeightConfig(),
-    indent: getIndentValues(),
+    indent: getIndentValues(fontSizeValues),
   }
+}
 
-  const classMap: Record<TextStyleType, Record<string, string>> = {
-    color: {},
-    bgColor: {},
-    fontSize: {},
-    fontFamily: {},
-    textAlign: {},
-    lineHeight: {},
-    indent: {},
-  }
+function getExtraTokenValues(editor: IDomEditor | undefined, type: TextStyleType): string[] {
+  const extra = editor?.getConfig().styleClassTokens?.[type]
 
-  const types = Object.keys(values) as TextStyleType[]
+  if (!Array.isArray(extra)) { return [] }
+  return extra
+}
 
-  types.forEach(type => {
-    values[type].forEach(value => {
-      classMap[type][genStyleClassName(type, value)] = value
-    })
+export function getRegisteredStyleTokenValues(
+  editor: IDomEditor | undefined,
+  type: TextStyleType,
+): string[] {
+  const defaultValues = getDefaultTokenValues()[type]
+  const extraValues = getExtraTokenValues(editor, type)
+  const merged = [...defaultValues, ...extraValues]
+  const uniq = new Set<string>()
+
+  merged.forEach(value => {
+    const normalized = `${value || ''}`.trim()
+
+    if (!normalized) { return }
+    uniq.add(normalized)
   })
 
-  return classMap
+  return Array.from(uniq)
 }
 
-const DEFAULT_CLASS_TO_VALUE_MAP = createDefaultClassMap()
+function hasRegisteredStyleToken(editor: IDomEditor | undefined, type: TextStyleType, value: string): boolean {
+  const normalized = normalizeStyleValue(type, value)
 
-export function getTextStyleMode(editor?: IDomEditor): TextStyleMode {
-  if (!editor) { return 'inline' }
+  if (!normalized) { return false }
 
-  const mode = editor.getConfig().textStyleMode
+  const values = getRegisteredStyleTokenValues(editor, type)
 
-  if (mode === 'class') { return 'class' }
-  return 'inline'
+  for (let i = 0; i < values.length; i += 1) {
+    if (normalizeStyleValue(type, values[i]) === normalized) {
+      return true
+    }
+  }
+
+  return false
 }
 
-export function appendStyleClassAndData($text: Dom7Array, type: TextStyleType, value: string) {
-  const className = genStyleClassName(type, value)
+type ClassStyleAction = 'class' | 'preserve-data' | 'inline'
 
-  $text.addClass(className)
-  $text.attr(DATA_ATTR_NAME[type], value)
+function resolveClassStyleAction(
+  editor: IDomEditor | undefined,
+  type: TextStyleType,
+  value: string,
+  scene: ClassStyleScene,
+): ClassStyleAction {
+  if (hasRegisteredStyleToken(editor, type, value)) {
+    return 'class'
+  }
+
+  const policy = getClassStylePolicy(editor)
+  let fallback: 'preserve-data' | 'inline' | 'throw' = 'preserve-data'
+
+  if (policy === 'fallback-inline') {
+    fallback = 'inline'
+  }
+  if (policy === 'strict') {
+    fallback = 'throw'
+  }
+
+  const message = `[wangeditor] Unsupported class style token "${type}=${value}" in ${scene}. policy=${policy}`
+  const reportKey = `${type}|${value}|${scene}|${fallback}`
+
+  if (!REPORTED_UNSUPPORTED_CLASS_STYLE.has(reportKey)) {
+    REPORTED_UNSUPPORTED_CLASS_STYLE.add(reportKey)
+    reportUnsupportedClassStyle(editor, {
+      type,
+      value,
+      scene,
+      fallback,
+      message,
+    })
+  }
+
+  if (fallback === 'throw') {
+    throw new Error(message)
+  }
+
+  if (fallback === 'inline') {
+    return 'inline'
+  }
+
+  return 'preserve-data'
 }
 
-export function getStyleDatasetKey(type: TextStyleType): string {
-  return DATASET_KEY[type]
+export function getTextStyleMode(editor?: IDomEditor) {
+  return getCoreTextStyleMode(editor)
 }
 
-export function getStyleValueFromDataOrClass($text: Dom7Array, type: TextStyleType): string {
+export function appendStyleClassAndData(
+  $text: Dom7Array,
+  type: TextStyleType,
+  value: string,
+  editor?: IDomEditor,
+  scene?: ClassStyleScene,
+  inlineFallback?: () => void,
+) {
+  const trimmed = `${value || ''}`.trim()
+
+  if (!trimmed) { return }
+
+  $text.attr(DATA_ATTR_NAME[type], trimmed)
+
+  const action = resolveClassStyleAction(editor, type, trimmed, scene || 'toHtml')
+
+  if (action === 'class') {
+    $text.addClass(genStyleClassName(type, trimmed))
+    return
+  }
+
+  if (action === 'inline' && inlineFallback) {
+    inlineFallback()
+  }
+}
+
+export function appendVnodeStyleClassAndData(
+  vnode: VNode,
+  type: TextStyleType,
+  value: string,
+  editor?: IDomEditor,
+  scene?: ClassStyleScene,
+  inlineFallback?: VNodeStyle,
+) {
+  const trimmed = `${value || ''}`.trim()
+
+  if (!trimmed) { return }
+
+  addVnodeDataset(vnode, { [DATASET_KEY[type]]: trimmed })
+
+  const action = resolveClassStyleAction(editor, type, trimmed, scene || 'render')
+
+  if (action === 'class') {
+    addVnodeClassName(vnode, genStyleClassName(type, trimmed))
+    return
+  }
+
+  if (action === 'inline' && inlineFallback) {
+    addVnodeStyle(vnode, inlineFallback)
+  }
+}
+
+function createClassToValueMap(
+  editor: IDomEditor | undefined,
+  type: TextStyleType,
+): Record<string, string> {
+  const values = getRegisteredStyleTokenValues(editor, type)
+  const map: Record<string, string> = {}
+
+  values.forEach(value => {
+    map[genStyleClassName(type, value)] = value
+  })
+
+  return map
+}
+
+export function getStyleValueFromDataOrClass(
+  $text: Dom7Array,
+  type: TextStyleType,
+  editor?: IDomEditor,
+): string {
   const dataValue = $text.attr(DATA_ATTR_NAME[type]) || ''
 
   if (dataValue) { return dataValue }
@@ -174,13 +300,14 @@ export function getStyleValueFromDataOrClass($text: Dom7Array, type: TextStyleTy
   const classAttr = $text.attr('class') || ''
   const classList = classAttr.trim().split(/\s+/).filter(Boolean)
   const prefix = `${CLASS_NAME_PREFIX[type]}-`
+  const classToValueMap = createClassToValueMap(editor, type)
 
   for (let i = 0; i < classList.length; i += 1) {
     const className = classList[i]
 
     if (!className.startsWith(prefix)) { continue }
 
-    const value = DEFAULT_CLASS_TO_VALUE_MAP[type][className]
+    const value = classToValueMap[className]
 
     if (value) { return value }
   }

@@ -19,7 +19,7 @@ export function parseStyleHtml(text: DOMElement, node: Descendant, _editor: IDom
 
   let color = getStyleValue($text, 'color')
 
-  if (!color) { color = getStyleValueFromDataOrClass($text, 'color') }
+  if (!color) { color = getStyleValueFromDataOrClass($text, 'color', _editor) }
 
   if (color) {
     textNode.color = color
@@ -28,7 +28,7 @@ export function parseStyleHtml(text: DOMElement, node: Descendant, _editor: IDom
   let bgColor = getStyleValue($text, 'background-color')
 
   if (!bgColor) { bgColor = getStyleValue($text, 'background') } // word 背景色
-  if (!bgColor) { bgColor = getStyleValueFromDataOrClass($text, 'bgColor') }
+  if (!bgColor) { bgColor = getStyleValueFromDataOrClass($text, 'bgColor', _editor) }
   if (bgColor) {
     textNode.bgColor = bgColor
   }

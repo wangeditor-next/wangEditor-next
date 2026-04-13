@@ -43,8 +43,16 @@ export function styleToHtml(textNode: Descendant, textHtml: string, editor?: IDo
   const textStyleMode = getTextStyleMode(editor)
 
   if (textStyleMode === 'class') {
-    if (fontSize) { appendStyleClassAndData($text, 'fontSize', fontSize) }
-    if (fontFamily) { appendStyleClassAndData($text, 'fontFamily', fontFamily) }
+    if (fontSize) {
+      appendStyleClassAndData($text, 'fontSize', fontSize, editor, 'toHtml', () => {
+        $text.css('font-size', fontSize)
+      })
+    }
+    if (fontFamily) {
+      appendStyleClassAndData($text, 'fontFamily', fontFamily, editor, 'toHtml', () => {
+        $text.css('font-family', fontFamily)
+      })
+    }
   } else {
     if (fontSize) { $text.css('font-size', fontSize) }
     if (fontFamily) { $text.css('font-family', fontFamily) }

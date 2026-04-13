@@ -18,7 +18,7 @@ export function parseStyleHtml(elem: DOMElement, node: Descendant, editor: IDomE
   const elemNode = node as LineHeightElement
 
   const { lineHeightList = [] } = editor.getMenuConfig('lineHeight')
-  const lineHeight = getStyleValue($elem, 'line-height') || getStyleValueFromDataOrClass($elem, 'lineHeight')
+  const lineHeight = getStyleValue($elem, 'line-height') || getStyleValueFromDataOrClass($elem, 'lineHeight', editor)
 
   if (lineHeight && lineHeightList.includes(lineHeight)) {
     elemNode.lineHeight = lineHeight

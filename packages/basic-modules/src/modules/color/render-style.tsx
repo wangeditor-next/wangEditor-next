@@ -7,8 +7,8 @@ import { IDomEditor } from '@wangeditor-next/core'
 import { Descendant } from 'slate'
 import { VNode } from 'snabbdom'
 
-import { genStyleClassName, getStyleDatasetKey, getTextStyleMode } from '../../utils/style-class'
-import { addVnodeClassName, addVnodeDataset, addVnodeStyle } from '../../utils/vdom'
+import { appendVnodeStyleClassAndData, getTextStyleMode } from '../../utils/style-class'
+import { addVnodeStyle } from '../../utils/vdom'
 import { ColorText } from './custom-types'
 
 /**
@@ -25,12 +25,12 @@ export function renderStyle(node: Descendant, vnode: VNode, editor?: IDomEditor)
 
   if (textStyleMode === 'class') {
     if (color) {
-      addVnodeClassName(styleVnode, genStyleClassName('color', color))
-      addVnodeDataset(styleVnode, { [getStyleDatasetKey('color')]: color })
+      appendVnodeStyleClassAndData(styleVnode, 'color', color, editor, 'render', { color })
     }
     if (bgColor) {
-      addVnodeClassName(styleVnode, genStyleClassName('bgColor', bgColor))
-      addVnodeDataset(styleVnode, { [getStyleDatasetKey('bgColor')]: bgColor })
+      appendVnodeStyleClassAndData(styleVnode, 'bgColor', bgColor, editor, 'render', {
+        backgroundColor: bgColor,
+      })
     }
   } else {
     if (color) {

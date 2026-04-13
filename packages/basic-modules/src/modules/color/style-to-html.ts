@@ -43,8 +43,16 @@ export function styleToHtml(textNode: Descendant, textHtml: string, editor?: IDo
   const textStyleMode = getTextStyleMode(editor)
 
   if (textStyleMode === 'class') {
-    if (color) { appendStyleClassAndData($text, 'color', color) }
-    if (bgColor) { appendStyleClassAndData($text, 'bgColor', bgColor) }
+    if (color) {
+      appendStyleClassAndData($text, 'color', color, editor, 'toHtml', () => {
+        $text.css('color', color)
+      })
+    }
+    if (bgColor) {
+      appendStyleClassAndData($text, 'bgColor', bgColor, editor, 'toHtml', () => {
+        $text.css('background-color', bgColor)
+      })
+    }
   } else {
     // 设置样式
     if (color) { $text.css('color', color) }

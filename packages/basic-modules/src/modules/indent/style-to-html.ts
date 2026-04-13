@@ -20,7 +20,9 @@ export function styleToHtml(node: Descendant, elemHtml: string, editor?: IDomEdi
   const $elem = $(elemHtml)
 
   if (getTextStyleMode(editor) === 'class') {
-    appendStyleClassAndData($elem, 'indent', indent)
+    appendStyleClassAndData($elem, 'indent', indent, editor, 'toHtml', () => {
+      $elem.css('text-indent', indent)
+    })
   } else {
     // 设置样式
     $elem.css('text-indent', indent)

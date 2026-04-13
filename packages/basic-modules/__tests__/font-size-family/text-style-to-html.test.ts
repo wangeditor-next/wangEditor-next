@@ -7,7 +7,7 @@ import { styleToHtml } from '../../src/modules/font-size-family/style-to-html'
 
 describe('font size and family - text style to html', () => {
   it('text style to html', () => {
-    const fontSize = '20px'
+    const fontSize = '24px'
     const fontFamily = '黑体'
     const textNode = { text: '', fontSize, fontFamily }
 
@@ -30,7 +30,7 @@ describe('font size and family - text style to html', () => {
   })
 
   it('text style to html with class mode', () => {
-    const fontSize = '20px'
+    const fontSize = '24px'
     const fontFamily = '黑体'
     const textNode = { text: '', fontSize, fontFamily }
     const editor = {
@@ -42,8 +42,25 @@ describe('font size and family - text style to html', () => {
     const html = styleToHtml(textNode, '<span>hello</span>', editor as any)
 
     expect(html).toContain('class="')
-    expect(html).toContain('data-w-e-font-size="20px"')
+    expect(html).toContain('data-w-e-font-size="24px"')
     expect(html).toContain('data-w-e-font-family="黑体"')
+    expect(html).not.toContain('style="')
+  })
+
+  it('text style to html with unsupported value keeps data by default', () => {
+    const fontSize = '20px'
+    const fontFamily = '黑体'
+    const textNode = { text: '', fontSize, fontFamily }
+    const editor = {
+      getConfig() {
+        return { textStyleMode: 'class' as const }
+      },
+    }
+
+    const html = styleToHtml(textNode, '<span>hello</span>', editor as any)
+
+    expect(html).toContain('data-w-e-font-size="20px"')
+    expect(html).not.toContain('w-e-font-size-')
     expect(html).not.toContain('style="')
   })
 })

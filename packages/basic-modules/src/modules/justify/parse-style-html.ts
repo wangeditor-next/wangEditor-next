@@ -17,7 +17,7 @@ export function parseStyleHtml(elem: DOMElement, node: Descendant, _editor: IDom
 
   const elemNode = node as JustifyElement
 
-  const textAlign = getStyleValue($elem, 'text-align') || getStyleValueFromDataOrClass($elem, 'textAlign')
+  const textAlign = getStyleValue($elem, 'text-align') || getStyleValueFromDataOrClass($elem, 'textAlign', _editor)
 
   if (textAlign) {
     elemNode.textAlign = textAlign

@@ -20,7 +20,9 @@ export function styleToHtml(node: Descendant, elemHtml: string, editor?: IDomEdi
   const $elem = $(elemHtml)
 
   if (getTextStyleMode(editor) === 'class') {
-    appendStyleClassAndData($elem, 'lineHeight', lineHeight)
+    appendStyleClassAndData($elem, 'lineHeight', lineHeight, editor, 'toHtml', () => {
+      $elem.css('line-height', lineHeight)
+    })
   } else {
     // 设置样式
     $elem.css('line-height', lineHeight)

@@ -26,7 +26,7 @@ export function parseStyleHtml(
   // -------- 处理 font-size --------
   let fontSize = getStyleValue($text, 'font-size')
 
-  if (!fontSize) { fontSize = getStyleValueFromDataOrClass($text, 'fontSize') }
+  if (!fontSize) { fontSize = getStyleValueFromDataOrClass($text, 'fontSize', _editor) }
 
   if (fontSize) {
     textNode.fontSize = fontSize
@@ -34,7 +34,7 @@ export function parseStyleHtml(
 
   // 这里需要替换掉 "， css 设置 font-family，会将有空格的字体使用 " 包裹
   const styleFontFamily = getStyleValue($text, 'font-family')
-  const classFontFamily = getStyleValueFromDataOrClass($text, 'fontFamily')
+  const classFontFamily = getStyleValueFromDataOrClass($text, 'fontFamily', _editor)
   const fontFamily = (styleFontFamily || classFontFamily).replace(/"/g, '')
 
   if (fontFamily) {
