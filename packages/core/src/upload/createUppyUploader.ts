@@ -3,7 +3,9 @@
  * @author wangfupeng
  */
 
+// @ts-ignore Uppy v5 types are not resolvable under current TS moduleResolution=node
 import Uppy from '@uppy/core'
+// @ts-ignore Uppy v5 types are not resolvable under current TS moduleResolution=node
 import XHRUpload from '@uppy/xhr-upload'
 
 import { addQueryToUrl } from '../utils/util'

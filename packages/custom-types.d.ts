@@ -104,20 +104,4 @@ declare module 'slate' {
   }
 }
 
-// NOTE:
-// Uppy v5 types are published behind package exports that are not fully
-// resolved by the current TS "moduleResolution: node" in this repo.
-// Keep runtime imports unchanged and provide minimal ambient typings here.
-declare module '@uppy/core' {
-  const Uppy: any
-
-  export default Uppy
-}
-
-declare module '@uppy/xhr-upload' {
-  const XHRUpload: any
-
-  export default XHRUpload
-}
-
 export { BaseElement, CustomElement, ElementType }
