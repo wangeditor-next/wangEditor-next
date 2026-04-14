@@ -53,8 +53,8 @@
     "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
   },
   "dependencies": {
-    "@uppy/core": "^2.1.1",
-    "@uppy/xhr-upload": "^2.0.3",
+    "@uppy/core": "^5.0.0",
+    "@uppy/xhr-upload": "^5.0.0",
     "@wangeditor-next/basic-modules": "2.0.0",
     "@wangeditor-next/code-highlight": "2.0.0",
     "@wangeditor-next/core": "1.8.0",
