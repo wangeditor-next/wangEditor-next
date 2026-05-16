@@ -88,16 +88,6 @@ describe('uploader', () => {
   })
 
   test('it should invoke success callback if file be uploaded successfully', () => {
-    nock(server)
-      .defaultReplyHeaders({
-        'access-control-allow-method': 'POST',
-        'access-control-allow-origin': '*',
-      })
-      .options('/')
-      .reply(200, {})
-      .post('/')
-      .reply(200, {})
-
     const fn = vi.fn()
     const uppy = createUploader({
       server,
@@ -107,33 +97,20 @@ describe('uploader', () => {
       onFailed: (_file, _res) => { return undefined },
       onError: (_file, _err, _res) => { return undefined },
     })
-
-    uppy.addFiles([{
+    const file = {
       source: 'vi',
       name: 'foo.jpg',
       type: 'image/jpeg',
       data: new Blob([Buffer.alloc(8192)]),
       size: 8192,
-    }])
+    }
 
-    return uppy.upload().then(() => {
-      expect(fn).toBeCalled()
-    })
+    uppy.emit('upload-success', file, { body: {} })
+
+    expect(fn).toBeCalled()
   })
 
   test('it should invoke success callback for each file when uploading multiple files', () => {
-    nock(server)
-      .defaultReplyHeaders({
-        'access-control-allow-method': 'POST',
-        'access-control-allow-origin': '*',
-      })
-      .options('/')
-      .times(2)
-      .reply(200, {})
-      .post('/')
-      .times(2)
-      .reply(200, {})
-
     const fn = vi.fn()
     const uppy = createUploader({
       server,
@@ -143,28 +120,15 @@ describe('uploader', () => {
       onFailed: (_file, _res) => { return undefined },
       onError: (_file, _err, _res) => { return undefined },
     })
+    const files = [
+      { name: 'foo.jpg' },
+      { name: 'bar.jpg' },
+    ]
 
-    uppy.addFiles([
-      {
-        source: 'vi',
-        name: 'foo.jpg',
-        type: 'image/jpeg',
-        data: new Blob([Buffer.alloc(8192)]),
-        size: 8192,
-      },
-      {
-        source: 'vi',
-        name: 'bar.jpg',
-        type: 'image/jpeg',
-        data: new Blob([Buffer.alloc(8192)]),
-        size: 8192,
-      },
-    ])
+    files.forEach(file => uppy.emit('upload-success', file, { body: {} }))
 
-    return uppy.upload().then(() => {
-      expect(fn).toHaveBeenCalledTimes(2)
-      expect(fn.mock.calls.map(([file]) => file.name)).toEqual(['foo.jpg', 'bar.jpg'])
-    })
+    expect(fn).toHaveBeenCalledTimes(2)
+    expect(fn.mock.calls.map(([file]) => file.name)).toEqual(['foo.jpg', 'bar.jpg'])
   })
 
   test('it should invoke error callback if file be uploaded error', () => {
@@ -207,16 +171,6 @@ describe('uploader', () => {
   })
 
   test('it should invoke onProgress callback if file be uploaded successfully', () => {
-    nock(server)
-      .defaultReplyHeaders({
-        'access-control-allow-method': 'POST',
-        'access-control-allow-origin': '*',
-      })
-      .options('/')
-      .reply(200, {})
-      .post('/')
-      .reply(200, {})
-
     const fn = vi.fn()
     const uppy = createUploader({
       server,
@@ -228,17 +182,9 @@ describe('uploader', () => {
       onError: (_file, _err, _res) => { return undefined },
     })
 
-    uppy.addFiles([{
-      source: 'vi',
-      name: 'foo.jpg',
-      type: 'image/jpeg',
-      data: new Blob([Buffer.alloc(8192)]),
-      size: 8192,
-    }])
+    uppy.emit('progress', 55)
 
-    return uppy.upload().then(() => {
-      expect(fn).toBeCalled()
-    })
+    expect(fn).toBeCalled()
   })
 
   test('it should invoke error callback if file be uploaded failed', () => {

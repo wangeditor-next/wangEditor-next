@@ -1,3 +1,4 @@
+import * as uploadCore from '@wangeditor-next/core/upload'
 import nock from 'nock'
 import * as slate from 'slate'
 
@@ -149,15 +150,12 @@ describe('Video module helper', () => {
     test('it should invoke onSuccess callback if give the option when create editor', async () => {
       const fn = vi.fn()
 
-      nock(server)
-        .defaultReplyHeaders({
-          'access-control-allow-method': 'POST',
-          'access-control-allow-origin': '*',
-        })
-        .options('/')
-        .reply(200, {})
-        .post('/')
-        .reply(200, { errno: 0 })
+      vi.spyOn(uploadCore, 'createUploader').mockImplementation((options: any) => ({
+        addFiles: vi.fn(),
+        upload: vi.fn(async () => {
+          options.onSuccess({ name: 'foo.jpg' }, { errno: 0, data: { url: 'test.mp4' } })
+        }),
+      }) as any)
 
       const editor = createEditor({
         config: {
@@ -178,15 +176,12 @@ describe('Video module helper', () => {
     test('it should invoke onProgress callback and show progress bar if uploading', async () => {
       const mockOnProgress = vi.fn()
 
-      nock(server)
-        .defaultReplyHeaders({
-          'access-control-allow-method': 'POST',
-          'access-control-allow-origin': '*',
-        })
-        .options('/')
-        .reply(200, {})
-        .post('/')
-        .reply(200, { errno: 0 })
+      vi.spyOn(uploadCore, 'createUploader').mockImplementation((options: any) => ({
+        addFiles: vi.fn(),
+        upload: vi.fn(async () => {
+          options.onProgress(66)
+        }),
+      }) as any)
 
       const editor = createEditor({
         config: {
@@ -241,15 +236,12 @@ describe('Video module helper', () => {
     test('it should invoke onFail callback if upload result with error', async () => {
       const fn = vi.fn()
 
-      nock(server)
-        .defaultReplyHeaders({
-          'access-control-allow-method': 'POST',
-          'access-control-allow-origin': '*',
-        })
-        .options('/')
-        .reply(200, {})
-        .post('/')
-        .reply(200, { error: 1 })
+      vi.spyOn(uploadCore, 'createUploader').mockImplementation((options: any) => ({
+        addFiles: vi.fn(),
+        upload: vi.fn(async () => {
+          options.onSuccess({ name: 'foo.jpg' }, { errno: 1, message: 'failed' })
+        }),
+      }) as any)
 
       const editor = createEditor({
         config: {
@@ -270,15 +262,12 @@ describe('Video module helper', () => {
     test('it should invoke customInsert callback if upload successfully', async () => {
       const fn = vi.fn()
 
-      nock(server)
-        .defaultReplyHeaders({
-          'access-control-allow-method': 'POST',
-          'access-control-allow-origin': '*',
-        })
-        .options('/')
-        .reply(200, {})
-        .post('/')
-        .reply(200, { error: 0 })
+      vi.spyOn(uploadCore, 'createUploader').mockImplementation((options: any) => ({
+        addFiles: vi.fn(),
+        upload: vi.fn(async () => {
+          options.onSuccess({ name: 'foo.jpg' }, { errno: 0, data: { url: 'test.mp4' } })
+        }),
+      }) as any)
 
       const editor = createEditor({
         config: {

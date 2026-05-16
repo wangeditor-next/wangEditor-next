@@ -1,63 +1,106 @@
 import '@wangeditor-next/editor/dist/css/style.css'
-
-import {
-  IDomEditor, IEditorConfig, IToolbarConfig,
-} from '@wangeditor-next/editor'
-import { Editor, Toolbar } from '@wangeditor-next/editor-for-react'
-import React, { useEffect, useState } from 'react'
-
 import './styles.css'
 
-const toolbarConfig: Partial<IToolbarConfig> = {}
+import basicModules from '@wangeditor-next/basic-modules'
+import {
+  createEditorFactory,
+  IDomEditor,
+  IEditorConfig,
+  IToolbarConfig,
+  Toolbar,
+} from '@wangeditor-next/editor/core'
+import wangEditorListModule from '@wangeditor-next/list-module'
+import React, { useEffect, useRef, useState } from 'react'
 
-const editorConfig: Partial<IEditorConfig> = {
-  placeholder: '请输入内容...',
+const toolbarConfig: Partial<IToolbarConfig> = {
+  toolbarKeys: [
+    'headerSelect',
+    'bold',
+    'italic',
+    'underline',
+    '|',
+    'bulletedList',
+    'numberedList',
+    '|',
+    'undo',
+    'redo',
+  ],
 }
 
+const editorFactory = createEditorFactory({
+  extensions: [...basicModules, wangEditorListModule],
+  toolbarConfig,
+})
+
 const initialHtml = [
-  '<h2>React Demo</h2>',
-  '<p>这个 demo 的源码位于 <code>apps/demo-react</code>。</p>',
-  '<p>后续若需要同步 StackBlitz，应从这里派生模板，而不是直接在沙盒里维护。</p>',
+  '<h2>React On-Demand Demo</h2>',
+  '<p>这个示例使用 <code>@wangeditor-next/editor/core</code> + <code>createEditorFactory</code>。</p>',
+  '<p>当前仅组合 <code>basic-modules</code> 和 <code>list-module</code>，用于演示按需加载。</p>',
 ].join('')
 
 export default function App() {
-  const [editor, setEditor] = useState<IDomEditor | null>(null)
+  const editorRef = useRef<IDomEditor | null>(null)
+  const toolbarRef = useRef<Toolbar | null>(null)
+  const editorContainerRef = useRef<HTMLDivElement | null>(null)
+  const toolbarContainerRef = useRef<HTMLDivElement | null>(null)
   const [html, setHtml] = useState(initialHtml)
 
   useEffect(() => {
-    return () => {
-      if (editor == null) return
-      editor.destroy()
-      setEditor(null)
+    const editorContainer = editorContainerRef.current
+    const toolbarContainer = toolbarContainerRef.current
+
+    if (!editorContainer || !toolbarContainer) { return }
+
+    const editorConfig: Partial<IEditorConfig> = {
+      placeholder: '请输入内容...',
+      onChange: editor => setHtml(editor.getHtml()),
     }
-  }, [editor])
+
+    const { editor, toolbar } = editorFactory.create({
+      editor: {
+        selector: editorContainer,
+        html: initialHtml,
+        config: editorConfig,
+      },
+      toolbar: {
+        selector: toolbarContainer,
+      },
+    })
+
+    editorRef.current = editor
+    toolbarRef.current = toolbar
+    setHtml(editor.getHtml())
+
+    return () => {
+      const currentToolbar = toolbarRef.current
+      const currentEditor = editorRef.current
+
+      if (currentToolbar) {
+        currentToolbar.destroy()
+        toolbarRef.current = null
+      }
+
+      if (currentEditor) {
+        currentEditor.destroy()
+        editorRef.current = null
+      }
+    }
+  }, [])
 
   return (
     <div className="page">
       <section className="panel">
         <header className="hero">
           <p className="eyebrow">apps/demo-react</p>
-          <h1>wangEditor React Demo</h1>
+          <h1>wangEditor React On-Demand Demo</h1>
           <p className="summary">
-            这是主仓库里的 React 示例源码，用来替代分散维护的在线沙盒。
+            只注册所需模块，避免默认入口一次性加载全部内置能力。
           </p>
         </header>
 
         <div className="editor-shell">
-          <Toolbar
-            editor={editor}
-            defaultConfig={toolbarConfig}
-            mode="default"
-            style={{ borderBottom: '1px solid #d9e2f2' }}
-          />
-          <Editor
-            defaultConfig={editorConfig}
-            value={html}
-            mode="default"
-            onCreated={setEditor}
-            onChange={innerEditor => setHtml(innerEditor.getHtml())}
-            style={{ height: '360px', overflowY: 'hidden' }}
-          />
+          <div ref={toolbarContainerRef} style={{ borderBottom: '1px solid #d9e2f2' }} />
+          <div ref={editorContainerRef} style={{ height: '360px', overflowY: 'hidden' }} />
         </div>
       </section>
 

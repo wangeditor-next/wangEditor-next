@@ -5,9 +5,10 @@
 
 import { insertImageNode } from '@wangeditor-next/basic-modules'
 import {
-  createUploader, IDomEditor, IUploader,
+  IDomEditor, IUploader,
   IUploadFile, IUploadResultFile,
 } from '@wangeditor-next/core'
+import { createUploader } from '@wangeditor-next/core/upload'
 
 // 存储 editor uploader 的关系 - 缓存 uploader ，不重复创建
 const EDITOR_TO_UPLOADER_MAP = new WeakMap<IDomEditor, IUploader>()

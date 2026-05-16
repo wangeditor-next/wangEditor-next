@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "serve": "node ./serve.js",
-    "example": "pnpm exec concurrently \"pnpm --dir ../../packages/editor dev-watch\" \"pnpm run serve\"",
+    "example": "pnpm exec concurrently \"pnpm --dir ../../packages/core dev-watch\" \"pnpm --dir ../../packages/editor dev-watch\" \"pnpm run serve\"",
     "dev": "pnpm run example"
   }
 }

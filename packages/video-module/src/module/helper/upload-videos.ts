@@ -4,9 +4,10 @@
  */
 
 import {
-  createUploader, IDomEditor, IUploader,
+  IDomEditor, IUploader,
   IUploadFile, IUploadResultFile,
 } from '@wangeditor-next/core'
+import { createUploader } from '@wangeditor-next/core/upload'
 
 import insertVideo from './insert-video'
 

@@ -22,6 +22,16 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
+    "./core": {
+      "types": "./dist/editor/src/core.d.ts",
+      "import": "./dist/core.mjs",
+      "require": "./dist/core.js"
+    },
+    "./upload": {
+      "types": "./dist/editor/src/upload.d.ts",
+      "import": "./dist/upload.mjs",
+      "require": "./dist/upload.js"
+    },
     "./package.json": "./package.json",
     "./dist/css/style.css": "./dist/css/style.css"
   },

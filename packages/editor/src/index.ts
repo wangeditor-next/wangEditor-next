@@ -30,6 +30,7 @@ export type {
   IEditorConfig,
   IModalMenu,
   IModuleConf,
+  IOption,
   ISelectMenu,
   IToolbarConfig,
   IUploadConfig,
@@ -37,21 +38,22 @@ export type {
   TextStyleMode,
 } from '@wangeditor-next/core'
 export {
-  // 第三方模块 - 上传时用到
-  createUploader,
   DomEditor,
   genModalButtonElems,
   genModalInputElems,
   // 第三方模块 - modal 中用到的 API
   genModalTextareaElems,
+  getClassStylePolicy,
   getTextStyleMode,
   i18nAddResources,
   // 第三方模块 - 多语言
   i18nChangeLanguage,
   i18nGetResources,
+  reportUnsupportedClassStyle,
   t,
   Toolbar,
 } from '@wangeditor-next/core'
+export { createUploader } from '@wangeditor-next/core/upload'
 
 // 导出 slate API 和接口 （需重命名，加 `Slate` 前缀）
 export type {

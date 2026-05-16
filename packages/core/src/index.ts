@@ -43,8 +43,15 @@ export * from './parse-html/index'
 // menu 的接口、注册、方法等
 export * from './menus/index'
 
-// upload
-export * from './upload/index'
+// upload types only. Runtime uploader APIs are exported from `@wangeditor-next/core/upload`.
+export type {
+  IUploadAdapter,
+  IUploadAdapterContext,
+  IUploadConfig,
+  IUploader,
+  IUploadFile,
+  IUploadResultFile,
+} from './upload/interface'
 
 // i18n
 export * from './i18n/index'
