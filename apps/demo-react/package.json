@@ -9,8 +9,10 @@
     "smoke": "pnpm --dir ../.. exec turbo build --filter=@wangeditor-next/demo-react"
   },
   "dependencies": {
+    "@wangeditor-next/basic-modules": "workspace:*",
     "@wangeditor-next/editor": "workspace:*",
     "@wangeditor-next/editor-for-react": "workspace:*",
+    "@wangeditor-next/list-module": "workspace:*",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },

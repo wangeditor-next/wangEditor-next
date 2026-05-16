@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>on-demand load</title>
+  <link href="https://cdn.bootcdn.net/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet">
+  <link href="./css/view.css" rel="stylesheet">
+  <link href="./css/editor.css" rel="stylesheet">
+  <link href="../dist/css/style.css" rel="stylesheet">
+</head>
+<body>
+  <div style="width: 1000px; margin: 0 auto;">
+    <p><b>on-demand load 按需加载（运行示例）</b></p>
+    <p>
+      使用 <code>@wangeditor-next/editor/core</code> + <code>createEditorFactory</code>，
+      只组合当前页面需要的模块（此处仅组合一个自定义菜单）。
+    </p>
+    <p>
+      <button id="btn-create">create editor</button>
+      <button id="btn-destroy">destroy editor</button>
+    </p>
+
+    <div>
+      <div id="editor-toolbar" class="editor-toolbar"></div>
+      <div id="editor-text-area" class="editor-text-area"></div>
+    </div>
+
+    HTML字符:
+    <div id="editor-html-view" class="editor-html-view"></div>
+  </div>
+
+  <script src="../core-dist/index.js"></script>
+  <script src="../dist/core.js"></script>
+  <script>
+    const E = window.wangEditorCore
+
+    class InsertHelloMenu {
+      constructor() {
+        this.title = 'Insert Hello'
+        this.tag = 'button'
+      }
+      getValue() {
+        return ''
+      }
+      isActive() {
+        return false
+      }
+      isDisabled() {
+        return false
+      }
+      exec(editor) {
+        const currentHtml = editor.getHtml()
+        editor.setHtml(currentHtml + '<div>Hello from on-demand module.</div>')
+      }
+    }
+
+    const helloModule = {
+      menus: [
+        {
+          key: 'insert-hello',
+          factory() {
+            return new InsertHelloMenu()
+          },
+        },
+      ],
+      renderStyle(_textNode, textVNode) {
+        return textVNode
+      },
+      renderElems: [],
+      styleToHtml(_textNode, textHtml) {
+        return textHtml
+      },
+      elemsToHtml: [],
+      preParseHtml: [],
+      parseStyleHtml(_domElem, textNode) {
+        return textNode
+      },
+      parseElemsHtml: [],
+      editorPlugin(editor) {
+        return editor
+      },
+    }
+
+    const factory = E.createEditorFactory({
+      extensions: [
+        {
+          key: 'hello-module',
+          module: helloModule,
+        },
+      ],
+      toolbarConfig: {
+        toolbarKeys: ['insert-hello'],
+      },
+    })
+
+    let editor
+    let toolbar
+
+    document.getElementById('btn-create').addEventListener('click', () => {
+      if (editor) return
+
+      const created = factory.create({
+        editor: {
+          selector: '#editor-text-area',
+          html: '<p>on-demand demo</p>',
+          config: {
+            placeholder: '输入内容，点击 Insert Hello 试试...',
+            onChange(editor) {
+              document.getElementById('editor-html-view').innerText = `${editor.getHtml()}`
+            },
+          },
+        },
+        toolbar: {
+          selector: '#editor-toolbar',
+        },
+      })
+      editor = created.editor
+      toolbar = created.toolbar
+
+      document.getElementById('editor-html-view').innerText = `${editor.getHtml()}`
+    })
+
+    document.getElementById('btn-destroy').addEventListener('click', () => {
+      if (!editor) return
+
+      toolbar.destroy()
+      editor.destroy()
+      toolbar = null
+      editor = null
+
+      document.getElementById('editor-html-view').innerText = ''
+    })
+  </script>
+</body>
+</html>

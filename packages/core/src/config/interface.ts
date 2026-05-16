@@ -11,7 +11,7 @@ import type {
 
 import type { IDomEditor } from '../editor/interface'
 import type { IMenuGroup } from '../menus/interface'
-import type { IUploadConfig } from '../upload'
+import type { IUploadConfig } from '../upload/interface'
 import type { DOMElement } from '../utils/dom'
 
 interface IHoverbarConf {

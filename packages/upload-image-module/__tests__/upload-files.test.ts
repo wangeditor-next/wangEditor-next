@@ -1,5 +1,5 @@
 import * as basicModules from '@wangeditor-next/basic-modules'
-import * as core from '@wangeditor-next/core'
+import * as uploadCore from '@wangeditor-next/core/upload'
 import { afterEach } from 'vitest'
 
 import createEditor from '../../../tests/utils/create-editor'
@@ -63,7 +63,7 @@ describe('Upload image menu upload files util', () => {
     expect(mockReadAsDataURL).toBeCalled()
   })
 
-  test('uploadImages should invoke core createUploader if not give customUpload to config', async () => {
+  test('uploadImages should invoke upload createUploader if not give customUpload to config', async () => {
     const fn = vi.fn().mockImplementation(() => ({
       addFile: vi.fn(),
       addFiles: vi.fn(),
@@ -71,7 +71,7 @@ describe('Upload image menu upload files util', () => {
     }) as any)
     const editor = createEditor()
 
-    vi.spyOn(core, 'createUploader').mockImplementation(fn)
+    vi.spyOn(uploadCore, 'createUploader').mockImplementation(fn)
 
     await uploadImages(editor, [mockFile('test.jpg')] as unknown as FileList)
 
@@ -113,7 +113,7 @@ describe('Upload image menu upload files util', () => {
     }))
     const editor = createEditor()
 
-    vi.spyOn(core, 'createUploader').mockImplementation(createUploader)
+    vi.spyOn(uploadCore, 'createUploader').mockImplementation(createUploader)
 
     await uploadImages(editor, [mockFile('first.jpg')] as unknown as FileList)
     await uploadImages(editor, [mockFile('second.jpg')] as unknown as FileList)
@@ -143,7 +143,7 @@ describe('Upload image menu upload files util', () => {
 
     const insertImageNodeSpy = vi.spyOn(basicModules, 'insertImageNode').mockImplementation(async () => {})
 
-    vi.spyOn(core, 'createUploader').mockImplementation((options: any) => ({
+    vi.spyOn(uploadCore, 'createUploader').mockImplementation((options: any) => ({
       addFiles: vi.fn(),
       upload: vi.fn(async () => {
         options.onProgress(55)
@@ -196,7 +196,7 @@ describe('Upload image menu upload files util', () => {
 
     const insertImageNodeSpy = vi.spyOn(basicModules, 'insertImageNode').mockImplementation(async () => {})
 
-    vi.spyOn(core, 'createUploader').mockImplementation((options: any) => ({
+    vi.spyOn(uploadCore, 'createUploader').mockImplementation((options: any) => ({
       addFiles: vi.fn(),
       upload: vi.fn(async () => {
         options.onSuccess({ name: file.name } as any, {
@@ -232,7 +232,7 @@ describe('Upload image menu upload files util', () => {
     })
     const insertImageNodeSpy = vi.spyOn(basicModules, 'insertImageNode').mockImplementation(async () => {})
 
-    vi.spyOn(core, 'createUploader').mockImplementation((options: any) => ({
+    vi.spyOn(uploadCore, 'createUploader').mockImplementation((options: any) => ({
       addFiles: vi.fn(),
       upload: vi.fn(async () => {
         options.onSuccess({ name: file.name } as any, {

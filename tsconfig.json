@@ -25,6 +25,10 @@
       "@wangeditor-next/*": [
         "packages/*/src",
         "packages/*/dist"
+      ],
+      "@wangeditor-next/core/upload": [
+        "packages/core/src/upload",
+        "packages/core/dist/core/src/upload"
       ]
     },
     "types": [

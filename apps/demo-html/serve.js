@@ -5,6 +5,7 @@ const path = require('node:path')
 const port = Number(process.env.PORT || 8881)
 const examplesDir = path.join(__dirname, 'examples')
 const editorDistDir = path.join(__dirname, '../../packages/editor/dist')
+const coreDistDir = path.join(__dirname, '../../packages/core/dist')
 
 const contentTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -49,11 +50,16 @@ function resolvePath(urlPath) {
     return { filePath: path.join(editorDistDir, urlPath.replace('/dist/', '')) }
   }
 
+  if (urlPath.startsWith('/core-dist/')) {
+    return { filePath: path.join(coreDistDir, urlPath.replace('/core-dist/', '')) }
+  }
+
   return { notFound: true }
 }
 
 function isSafePath(baseDir, filePath) {
   const relativePath = path.relative(baseDir, filePath)
+
   return relativePath && !relativePath.startsWith('..') && !path.isAbsolute(relativePath)
 }
 
@@ -73,7 +79,13 @@ const server = http.createServer((req, res) => {
     return
   }
 
-  const baseDir = requestUrl.pathname.startsWith('/dist/') ? editorDistDir : examplesDir
+  let baseDir = examplesDir
+
+  if (requestUrl.pathname.startsWith('/dist/')) {
+    baseDir = editorDistDir
+  } else if (requestUrl.pathname.startsWith('/core-dist/')) {
+    baseDir = coreDistDir
+  }
   if (!isSafePath(baseDir, filePath) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' })
     res.end('Not Found')

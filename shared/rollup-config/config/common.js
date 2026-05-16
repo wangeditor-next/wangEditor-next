@@ -41,7 +41,9 @@ function genCommonConf(format) {
         mainFields: format === 'esm' ? ['module', 'main'] : ['main'],
         extensions,
       }),
-      commonjs(),
+      commonjs({
+        esmExternals: id => id === 'nanoid/non-secure',
+      }),
       replace({
         'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
         preventAssignment: true,
