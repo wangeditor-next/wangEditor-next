@@ -94,6 +94,50 @@ test.describe('Basic Editor', () => {
     await expect(page.getByTestId('editor-html')).toContainText('e2e-text')
   })
 
+  test('regression #813: select-all then composition should not throw and should hide placeholder', async ({ page }) => {
+    const pageErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.message || String(err))
+    })
+
+    await typeInEditor(page, 'abc')
+    await selectAll(page)
+
+    await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="editor-textarea"] [contenteditable="true"]')
+
+      if (!el) {
+        throw new Error('editable not found')
+      }
+
+      const fire = (event: Event) => el.dispatchEvent(event)
+
+      fire(new CompositionEvent('compositionstart', { data: '' }))
+      fire(new InputEvent('beforeinput', {
+        inputType: 'insertCompositionText',
+        data: 'ni',
+        bubbles: true,
+        cancelable: true,
+      }))
+      fire(new InputEvent('input', {
+        inputType: 'insertCompositionText',
+        data: 'ni',
+        bubbles: true,
+      }))
+      fire(new CompositionEvent('compositionupdate', { data: 'ni' }))
+      fire(new CompositionEvent('compositionend', { data: '你' }))
+    })
+
+    await page.waitForTimeout(500)
+
+    const placeholder = page.locator('.w-e-text-placeholder')
+
+    await expect(placeholder).toBeHidden()
+    await expect(page.getByTestId('editor-html')).toContainText('<p>你</p>')
+    expect(pageErrors).toEqual([])
+  })
+
   test('does not execute script when importing untrusted html', async ({ page }) => {
     const dialogs: string[] = []
 

@@ -8,7 +8,7 @@ import { Range, Transforms } from 'slate'
 
 import { DomEditor } from '../editor/dom-editor'
 import { IDomEditor } from '../editor/interface'
-import { DOMElement } from '../utils/dom'
+import { DOMElement, DOMRange } from '../utils/dom'
 import { IS_FIREFOX } from '../utils/ua'
 import {
   EDITOR_TO_ELEMENT,
@@ -106,7 +106,7 @@ export function editorSelectionToDOM(textarea: TextArea, editor: IDomEditor, foc
   if (selection && !DomEditor.hasRange(editor, selection)) {
     editor.selection = DomEditor.toSlateRange(editor, domSelection, {
       exactMatch: false,
-      suppressThrow: false,
+      suppressThrow: true,
     })
     return
   }
@@ -114,7 +114,16 @@ export function editorSelectionToDOM(textarea: TextArea, editor: IDomEditor, foc
   // Otherwise the DOM selection is out of sync, so update it.
   textarea.isUpdatingSelection = true
 
-  const newDomRange = selection && DomEditor.toDOMRange(editor, selection)
+  let newDomRange: DOMRange | null = null
+
+  try {
+    newDomRange = selection && DomEditor.toDOMRange(editor, selection)
+  } catch (error) {
+    // Align with Slate Editable behavior: during composition the Slate tree can
+    // briefly lead DOM mapping updates, so selection sync should tolerate that
+    // transient mismatch and retry on subsequent updates.
+    newDomRange = null
+  }
 
   if (newDomRange) {
     if (Range.isBackward(selection!)) {
