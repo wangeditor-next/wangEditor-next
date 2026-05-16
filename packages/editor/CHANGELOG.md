@@ -1,5 +1,38 @@
 # Change Log
 
+## 5.7.1
+
+### Patch Changes
+
+- 148253e: Add a lightweight subpath `@wangeditor-next/editor/core` for on-demand module composition,
+  and a separate `@wangeditor-next/editor/upload` entry for uploader APIs. The core subpath avoids
+  auto-registering built-in modules and does not include upload runtime code.
+
+  Align Babel transpilation targets with the repository browserslist (drop hardcoded `ie 11`
+  target) to reduce bundle size.
+
+  Add a tiptap-like composition API for the `@wangeditor-next/editor/core` subpath via extensions
+  and factory-based creation helpers.
+
+  Keep backward compatibility for legacy `createUploader` / `createUppyUploader` imports from
+  `@wangeditor-next/core`, and mark them as deprecated in favor of `@wangeditor-next/core/upload`.
+
+- 0c091d0: Fix IME composition after select-all so `compositionstart/compositionend` no longer throw
+  `Cannot resolve a DOM node from Slate node` in transient Slate-DOM sync windows.
+
+  Align selection syncing with Slate behavior by tolerating temporary DOM mapping lag, and
+  add an E2E regression case for issue #813 (`select all -> composition input`).
+
+- Updated dependencies [148253e]
+- Updated dependencies [0c091d0]
+  - @wangeditor-next/core@1.8.1
+  - @wangeditor-next/basic-modules@2.0.1
+  - @wangeditor-next/code-highlight@2.0.1
+  - @wangeditor-next/list-module@2.0.1
+  - @wangeditor-next/table-module@2.0.1
+  - @wangeditor-next/upload-image-module@2.0.1
+  - @wangeditor-next/video-module@2.0.1
+
 ## 5.7.0
 
 ### Minor Changes
