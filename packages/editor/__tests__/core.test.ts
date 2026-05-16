@@ -4,7 +4,7 @@
 
 import type { IDomEditor, IModuleConf } from '@wangeditor-next/core'
 
-import { createEditorFactory, registerExtensions } from '../../../packages/editor/src/core'
+import { Boot, createEditorFactory, registerExtensions } from '../../../packages/editor/src/core'
 
 let sequence = 0
 
@@ -99,15 +99,22 @@ describe('core composition API', () => {
 
   test('registerExtensions skips duplicate extension references', () => {
     const extension = createHelloModule(nextKey('duplicate-ref-menu'))
+    const registerSpy = vi.spyOn(Boot, 'registerModule')
+    const before = registerSpy.mock.calls.length
 
     expect(() => {
       registerExtensions([extension])
       registerExtensions([extension])
     }).not.toThrow()
+
+    expect(registerSpy.mock.calls.length - before).toBe(1)
+    registerSpy.mockRestore()
   })
 
   test('registerExtensions skips duplicate extension keys', () => {
     const extensionKey = nextKey('duplicate-extension-key')
+    const registerSpy = vi.spyOn(Boot, 'registerModule')
+    const before = registerSpy.mock.calls.length
 
     expect(() => {
       registerExtensions([
@@ -117,5 +124,8 @@ describe('core composition API', () => {
         { key: extensionKey, module: createHelloModule(nextKey('duplicate-key-menu-b')) },
       ])
     }).not.toThrow()
+
+    expect(registerSpy.mock.calls.length - before).toBe(1)
+    registerSpy.mockRestore()
   })
 })

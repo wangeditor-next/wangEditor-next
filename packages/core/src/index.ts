@@ -10,6 +10,9 @@ import type { IRegisterMenuConf } from './menus/index'
 import type { IParseElemHtmlConf, IPreParseHtmlConf, ParseStyleHtmlFnType } from './parse-html/index'
 import type { IRenderElemConf, RenderStyleFnType } from './render/index'
 import type { IElemToHtmlConf, styleToHtmlFnType } from './to-html/index'
+import createUploaderRuntime from './upload/createUploader'
+import createUppyUploaderRuntime from './upload/createUppyUploader'
+import type { IUploadConfig } from './upload/interface'
 
 // 创建
 export * from './create/index'
@@ -52,6 +55,42 @@ export type {
   IUploadFile,
   IUploadResultFile,
 } from './upload/interface'
+
+let hasWarnedCreateUploader = false
+let hasWarnedCreateUppyUploader = false
+
+function warnDeprecatedUploadApi(apiName: string) {
+  if (typeof console === 'undefined' || typeof console.warn !== 'function') { return }
+
+  console.warn(
+    `[wangeditor-next] \`@wangeditor-next/core\` export \`${apiName}\` is deprecated.`
+    + ' Please import it from `@wangeditor-next/core/upload`.',
+  )
+}
+
+/**
+ * @deprecated Please import from `@wangeditor-next/core/upload`.
+ */
+export const createUploader: typeof createUploaderRuntime = (config, editor) => {
+  if (!hasWarnedCreateUploader) {
+    hasWarnedCreateUploader = true
+    warnDeprecatedUploadApi('createUploader')
+  }
+
+  return createUploaderRuntime(config, editor)
+}
+
+/**
+ * @deprecated Please import from `@wangeditor-next/core/upload`.
+ */
+export function createUppyUploader(config: IUploadConfig) {
+  if (!hasWarnedCreateUppyUploader) {
+    hasWarnedCreateUppyUploader = true
+    warnDeprecatedUploadApi('createUppyUploader')
+  }
+
+  return createUppyUploaderRuntime(config)
+}
 
 // i18n
 export * from './i18n/index'

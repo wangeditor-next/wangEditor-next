@@ -13,5 +13,5 @@ target) to reduce bundle size.
 Add a tiptap-like composition API for the `@wangeditor-next/editor/core` subpath via extensions
 and factory-based creation helpers.
 
-Mark Uppy peer dependencies in `@wangeditor-next/core` as optional so lightweight installs do not
-need upload runtime packages unless upload APIs are used.
+Keep backward compatibility for legacy `createUploader` / `createUppyUploader` imports from
+`@wangeditor-next/core`, and mark them as deprecated in favor of `@wangeditor-next/core/upload`.
