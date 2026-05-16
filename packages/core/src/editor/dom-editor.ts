@@ -213,6 +213,39 @@ export const DomEditor = {
   },
 
   /**
+   * Check if a Slate node currently has a mapped DOM node.
+   * During IME/composition transitions the Slate tree can update before DOM patching finishes.
+   */
+  hasDOMNodeBySlateNode(editor: IDomEditor, node: Node): boolean {
+    if (Editor.isEditor(node)) {
+      return !!EDITOR_TO_ELEMENT.get(editor)
+    }
+
+    const key = DomEditor.findKey(editor, node)
+
+    return !!KEY_TO_ELEMENT.get(key)
+  },
+
+  /**
+   * Check if both range endpoints can be resolved to DOM nodes right now.
+   */
+  canResolveDOMRange(editor: IDomEditor, range: Range): boolean {
+    try {
+      const [anchorNode] = Editor.node(editor, range.anchor.path)
+      const [focusNode] = Range.isCollapsed(range)
+        ? [anchorNode]
+        : Editor.node(editor, range.focus.path)
+
+      return (
+        DomEditor.hasDOMNodeBySlateNode(editor, anchorNode)
+        && DomEditor.hasDOMNodeBySlateNode(editor, focusNode)
+      )
+    } catch (error) {
+      return false
+    }
+  },
+
+  /**
    * Check if a DOM node is within the editor.
    */
   hasDOMNode(editor: IDomEditor, target: DOMNode, options: { editable?: boolean } = {}): boolean {
@@ -853,6 +886,10 @@ export const DomEditor = {
     for (const nodeEntry of nodeEntries) {
       if (nodeEntry != null) {
         const n = nodeEntry[0]
+
+        if (!DomEditor.hasDOMNodeBySlateNode(editor, n)) {
+          continue
+        }
         const elem = DomEditor.toDOMNode(editor, n)
 
         // 只遍历 elem 范围，考虑性能
