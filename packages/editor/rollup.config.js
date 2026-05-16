@@ -28,8 +28,9 @@ function createDualFormatConfig(input, umdFile, esmFile, name) {
   configList.push(esmConf)
 }
 
-createDualFormatConfig('src/index.ts', pkg.main, pkg.module, 'wangEditor')
 createDualFormatConfig('src/core.ts', 'dist/core.js', 'dist/core.mjs', 'wangEditorCore')
 createDualFormatConfig('src/upload.ts', 'dist/upload.js', 'dist/upload.mjs', 'wangEditorUpload')
+// Keep default entry last so dist/css/style.css stays aligned with @wangeditor-next/editor.
+createDualFormatConfig('src/index.ts', pkg.main, pkg.module, 'wangEditor')
 
 export default configList
