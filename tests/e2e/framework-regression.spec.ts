@@ -27,16 +27,27 @@ const targets: Target[] = [
   },
 ]
 
+const WRAPPER_READY_TIMEOUT = process.env.CI ? 90_000 : 60_000
+
 const getEditable = (page: Page) => page.locator('[data-testid="editor-textarea"] [contenteditable="true"]')
 
 const getToolbarMenu = (page: Page, menuKey: string) => page.locator(`[data-testid="editor-toolbar"] [data-menu-key="${menuKey}"]`)
 
 async function openTarget(page: Page, target: Target) {
-  await page.goto(target.url)
+  const isExternalWrapper = !target.needCreate && /^http:\/\/127\.0\.0\.1:31\d{2}\//.test(target.url)
+
+  await page.goto(target.url, {
+    // Vite wrapper demos may spend noticeable time on first module transform in CI.
+    // Waiting for "commit" avoids hard-failing on a delayed full load event.
+    waitUntil: isExternalWrapper ? 'commit' : 'load',
+    timeout: isExternalWrapper ? WRAPPER_READY_TIMEOUT : 30_000,
+  })
   if (target.needCreate) {
     await page.getByTestId('btn-create').click()
   }
-  await expect(getEditable(page)).toBeVisible()
+  await expect(getEditable(page)).toBeVisible({
+    timeout: isExternalWrapper ? WRAPPER_READY_TIMEOUT : 10_000,
+  })
 }
 
 async function focusEditable(page: Page) {
@@ -135,6 +146,8 @@ async function dragLastTableFirstBorder(page: Page, deltaX: number) {
 }
 
 test.describe('Framework parity regression', () => {
+  test.describe.configure({ timeout: process.env.CI ? 120_000 : 90_000 })
+
   for (const target of targets) {
     test(`${target.name}: ime composition should not throw`, async ({ page }) => {
       const pageErrors: string[] = []
