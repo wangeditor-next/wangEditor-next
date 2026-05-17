@@ -1,0 +1,302 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - paragraph [ref=e3]:
+    - button "create editor" [ref=e4]
+    - button "disable/enable" [ref=e5]
+    - button "destroy editor" [ref=e6]
+  - generic [ref=e7]:
+    - generic [ref=e9]:
+      - button "正文" [ref=e11]:
+        - text: 正文
+        - img [ref=e12]
+      - button [ref=e15]:
+        - img [ref=e16]
+      - button [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+      - button [ref=e24] [cursor=pointer]:
+        - img [ref=e25]
+      - button [ref=e28] [cursor=pointer]:
+        - img [ref=e29]
+      - button [ref=e32] [cursor=pointer]:
+        - img [ref=e33]
+        - img [ref=e37]
+      - button [ref=e40] [cursor=pointer]:
+        - img [ref=e41]
+        - img [ref=e43]
+      - button [ref=e46] [cursor=pointer]:
+        - img [ref=e47]
+        - img [ref=e49]
+      - button "默认字号" [ref=e53] [cursor=pointer]:
+        - text: 默认字号
+        - img [ref=e54]
+      - button "默认字体" [ref=e57] [cursor=pointer]:
+        - text: 默认字体
+        - img [ref=e58]
+      - button "默认行高" [ref=e61]:
+        - text: 默认行高
+        - img [ref=e62]
+      - button [ref=e66]:
+        - img [ref=e67]
+      - button [ref=e70]:
+        - img [ref=e71]
+      - button [ref=e74]:
+        - img [ref=e75]
+      - button [ref=e78] [cursor=pointer]:
+        - img [ref=e79]
+        - img [ref=e81]
+      - button [ref=e84]:
+        - img [ref=e85]
+        - img [ref=e87]
+      - button [ref=e91] [cursor=pointer]:
+        - img [ref=e92]
+        - img [ref=e94]
+      - button [ref=e97] [cursor=pointer]:
+        - img [ref=e98]
+      - button [ref=e102] [cursor=pointer]:
+        - img [ref=e103]
+        - img [ref=e105]
+      - button [ref=e108] [cursor=pointer]:
+        - img [ref=e109]
+        - img [ref=e111]
+      - button [ref=e114]:
+        - img [ref=e115]
+        - img [ref=e117]
+      - button [ref=e120]:
+        - img [ref=e121]
+      - button [ref=e124]:
+        - img [ref=e125]
+      - button [ref=e133] [cursor=pointer]:
+        - img [ref=e134]
+      - button [ref=e137] [cursor=pointer]:
+        - img [ref=e138]
+      - button [ref=e142] [cursor=pointer]:
+        - img [ref=e143]
+      - button [ref=e146] [cursor=pointer]:
+        - img [ref=e147]
+    - generic [ref=e150]:
+      - generic [active] [ref=e152]:
+        - heading "一行标题" [level=1] [ref=e153]:
+          - generic [ref=e155]: 一行标题
+        - paragraph [ref=e156]:
+          - generic [ref=e158]: hello world ~~~
+          - link "slate examples" [ref=e159]:
+            - /url: https://www.slatejs.org/examples/links
+            - generic [ref=e161]: slate examples
+          - generic [ref=e163]: "!"
+        - code [ref=e165]:
+          - generic [ref=e166]:
+            - generic [ref=e167]: const
+            - generic [ref=e168]: a
+            - generic [ref=e169]: =
+            - generic [ref=e171]: "100"
+            - generic [ref=e172]: ;
+        - paragraph [ref=e173]:
+          - generic [ref=e175]: 图片
+          - generic [ref=e179]: image
+        - paragraph [ref=e180]:
+          - generic [ref=e182]: 结束
+        - paragraph [ref=e183]:
+          - generic [ref=e185]: 一行文字
+        - heading "二级标题" [level=2] [ref=e186]:
+          - generic [ref=e188]: 二级标题
+        - code [ref=e190]:
+          - generic [ref=e191]:
+            - generic [ref=e192]: <div>
+            - generic [ref=e193]: text
+            - generic [ref=e194]: </div>
+        - paragraph [ref=e195]:
+          - generic [ref=e197]: 一行文字
+        - paragraph [ref=e198]:
+          - generic [ref=e200]: 一行文字
+          - img "百度" [ref=e203]
+          - generic [ref=e205]: 一行文字
+        - table [ref=e208]:
+          - rowgroup [ref=e212]:
+            - row [ref=e213]:
+              - columnheader [ref=e214]
+              - columnheader [ref=e215]
+        - table [ref=e218]:
+          - rowgroup [ref=e226]:
+            - row [ref=e227]:
+              - columnheader [ref=e228]
+              - columnheader [ref=e229]
+              - columnheader [ref=e230]
+              - columnheader [ref=e231]
+              - columnheader [ref=e232]
+              - columnheader [ref=e233]
+            - row [ref=e234]:
+              - cell [ref=e235]
+              - cell [ref=e236]
+              - cell [ref=e237]
+              - cell [ref=e238]
+              - cell [ref=e239]
+              - cell [ref=e240]
+            - row [ref=e241]:
+              - cell [ref=e242]
+              - cell [ref=e243]
+              - cell [ref=e244]
+              - cell [ref=e245]
+              - cell [ref=e246]
+              - cell [ref=e247]
+            - row [ref=e248]:
+              - cell [ref=e249]
+              - cell [ref=e250]
+              - cell [ref=e251]
+              - cell [ref=e252]
+              - cell [ref=e253]
+              - cell [ref=e254]
+            - row [ref=e255]:
+              - cell [ref=e256]
+              - cell [ref=e257]
+              - cell [ref=e258]
+              - cell [ref=e259]
+              - cell [ref=e260]
+              - cell [ref=e261]
+            - row [ref=e262]:
+              - cell [ref=e263]
+              - cell [ref=e264]
+              - cell [ref=e265]
+              - cell [ref=e266]
+              - cell [ref=e267]
+              - cell [ref=e268]
+            - row [ref=e269]:
+              - cell [ref=e270]
+              - cell [ref=e271]
+              - cell [ref=e272]
+              - cell [ref=e273]
+              - cell [ref=e274]
+              - cell [ref=e275]
+        - table [ref=e278]:
+          - rowgroup [ref=e282]:
+            - row [ref=e283]:
+              - cell [ref=e284]
+              - cell [ref=e285]
+        - blockquote [ref=e286]:
+          - generic [ref=e288]: 一行文字
+        - paragraph [ref=e289]:
+          - generic [ref=e291]: 一行文字
+        - separator [ref=e294]
+        - heading "三级标题" [level=3] [ref=e295]:
+          - generic [ref=e297]: 三级标题
+        - paragraph [ref=e298]:
+          - generic [ref=e300]: 一行文字
+        - paragraph [ref=e301]:
+          - generic [ref=e303]: 一行文字
+      - generic [ref=e304]:
+        - button [ref=e306] [cursor=pointer]:
+          - img [ref=e307]
+        - button [ref=e310] [cursor=pointer]:
+          - img [ref=e311]
+        - button [ref=e314] [cursor=pointer]:
+          - img [ref=e315]
+        - button [ref=e318] [cursor=pointer]:
+          - img [ref=e319]
+        - button [ref=e322] [cursor=pointer]:
+          - img [ref=e323]
+        - button [ref=e326] [cursor=pointer]:
+          - img [ref=e327]
+        - button [ref=e330] [cursor=pointer]:
+          - img [ref=e331]
+        - button [ref=e334] [cursor=pointer]:
+          - img [ref=e335]
+        - button [ref=e339]:
+          - img [ref=e340]
+        - button [ref=e343]:
+          - img [ref=e344]
+        - button [ref=e348] [cursor=pointer]:
+          - img [ref=e349]
+        - button [ref=e353] [cursor=pointer]:
+          - img [ref=e354]
+  - paragraph [ref=e357]:
+    - text: "当前文字数量：131； 当前选区：{\"anchor\":{\"path\":[11,6,5,0],\"offset\":0},\"focus\":{\"path\":[11,6,5,0],\"offset\":0}}； 选中文字数量：0； 选中文字：\""
+    - text: "\""
+  - text: "HTML字符:"
+  - generic [ref=e358]: "<h1 style=\"text-align: center;\">一行标题</h1><p>hello world ~~~ <a href=\"https://www.slatejs.org/examples/links\" target=\"_blank\">slate examples</a>!</p><pre><code class=\"language-javascript\">const a = 100;</code></pre><p>图片<img src=\"https://www.wangeditor.com/imgs/logo.png\" alt=\"\" data-href=\"\" width=\"\" height=\"\" style=\"\"/>image</p><p>结束</p><p>一行文字</p><h2>二级标题</h2><pre><code class=\"language-html\">&lt;div&gt;text&lt;/div&gt;</code></pre><p>一行文字</p><p>一行文字<img src=\"https://www.baidu.com/img/flexible/logo/pc/result@2.png\" alt=\"百度\" data-href=\"\" width=\"\" height=\"\" style=\"width: 101px;height: 33px;\"/>一行文字</p><table style=\"width: 120px;table-layout: fixed;height:62\"><colgroup contentEditable=\"false\"><col width=60></col><col width=60></col></colgroup><tbody><tr style=\"height: 30px\"><th colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></th><th colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></th></tr></tbody></table><table style=\"width: 360px;table-layout: fixed;height:31\"><colgroup contentEditable=\"false\"><col width=60></col><col width=60></col><col width=60></col><col width=60></col><col width=60></col><col width=60></col></colgroup><tbody><tr style=\"height: 30px\"><th colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></th><th colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></th><th colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></th><th colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></th><th colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></th><th colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></th></tr><tr style=\"height: 30px\"><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td></tr><tr style=\"height: 30px\"><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td></tr><tr style=\"height: 30px\"><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td></tr><tr style=\"height: 30px\"><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td></tr><tr style=\"height: 30px\"><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td></tr><tr style=\"height: 30px\"><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td></tr></tbody></table><table style=\"width: 120px;table-layout: fixed;height:62\"><colgroup contentEditable=\"false\"><col width=60></col><col width=60></col></colgroup><tbody><tr style=\"height: 30px\"><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td><td colSpan=\"1\" rowSpan=\"1\" width=\"auto\"></td></tr></tbody></table><blockquote>一行文字</blockquote><p>一行文字</p><hr/><h3>三级标题</h3><p>一行文字</p><p>一行文字</p>"
+  - generic [ref=e359]:
+    - heading "一行标题" [level=1] [ref=e360]
+    - paragraph [ref=e361]:
+      - text: hello world ~~~
+      - link "slate examples" [ref=e362] [cursor=pointer]:
+        - /url: https://www.slatejs.org/examples/links
+      - text: "!"
+    - code [ref=e364]: const a = 100;
+    - paragraph [ref=e365]: 图片image
+    - paragraph [ref=e366]: 结束
+    - paragraph [ref=e367]: 一行文字
+    - heading "二级标题" [level=2] [ref=e368]
+    - code [ref=e370]: <div>text</div>
+    - paragraph [ref=e371]: 一行文字
+    - paragraph [ref=e372]:
+      - text: 一行文字
+      - img "百度" [ref=e373]
+      - text: 一行文字
+    - table [ref=e374]:
+      - rowgroup [ref=e378]:
+        - row [ref=e379]:
+          - columnheader [ref=e380]
+          - columnheader [ref=e381]
+    - table [ref=e382]:
+      - rowgroup [ref=e390]:
+        - row [ref=e391]:
+          - columnheader [ref=e392]
+          - columnheader [ref=e393]
+          - columnheader [ref=e394]
+          - columnheader [ref=e395]
+          - columnheader [ref=e396]
+          - columnheader [ref=e397]
+        - row [ref=e398]:
+          - cell [ref=e399]
+          - cell [ref=e400]
+          - cell [ref=e401]
+          - cell [ref=e402]
+          - cell [ref=e403]
+          - cell [ref=e404]
+        - row [ref=e405]:
+          - cell [ref=e406]
+          - cell [ref=e407]
+          - cell [ref=e408]
+          - cell [ref=e409]
+          - cell [ref=e410]
+          - cell [ref=e411]
+        - row [ref=e412]:
+          - cell [ref=e413]
+          - cell [ref=e414]
+          - cell [ref=e415]
+          - cell [ref=e416]
+          - cell [ref=e417]
+          - cell [ref=e418]
+        - row [ref=e419]:
+          - cell [ref=e420]
+          - cell [ref=e421]
+          - cell [ref=e422]
+          - cell [ref=e423]
+          - cell [ref=e424]
+          - cell [ref=e425]
+        - row [ref=e426]:
+          - cell [ref=e427]
+          - cell [ref=e428]
+          - cell [ref=e429]
+          - cell [ref=e430]
+          - cell [ref=e431]
+          - cell [ref=e432]
+        - row [ref=e433]:
+          - cell [ref=e434]
+          - cell [ref=e435]
+          - cell [ref=e436]
+          - cell [ref=e437]
+          - cell [ref=e438]
+          - cell [ref=e439]
+    - table [ref=e440]:
+      - rowgroup [ref=e444]:
+        - row [ref=e445]:
+          - cell [ref=e446]
+          - cell [ref=e447]
+    - blockquote [ref=e448]: 一行文字
+    - paragraph [ref=e449]: 一行文字
+    - separator [ref=e450]
+    - heading "三级标题" [level=3] [ref=e451]
+    - paragraph [ref=e452]: 一行文字
+    - paragraph [ref=e453]: 一行文字
+```
