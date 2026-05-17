@@ -1,5 +1,13 @@
 # @wangeditor-next/yjs
 
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [148253e]
+- Updated dependencies [0c091d0]
+  - @wangeditor-next/core@1.8.1
+
 ## 1.0.0
 
 ### Patch Changes
