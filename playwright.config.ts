@@ -1,6 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 
 let webServerCommand = 'pnpm turbo build --filter=@wangeditor-next/editor && pnpm --filter @wangeditor-next/demo-html run serve'
+const reactDemoCommand = 'pnpm --filter @wangeditor-next/demo-react exec vite --host 127.0.0.1 --port 3102 --strictPort'
+const vue3DemoCommand = 'pnpm --filter @wangeditor-next/demo-vue3 exec vite --force --host 127.0.0.1 --port 3103 --strictPort'
 
 if (process.env.PLAYWRIGHT_SKIP_BUILD) {
   webServerCommand = 'pnpm --filter @wangeditor-next/demo-html run serve'
@@ -22,14 +24,32 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
-  webServer: {
-    command: webServerCommand,
-    url: 'http://127.0.0.1:8881/examples/default-mode.html',
-    reuseExistingServer: false,
-    stdout: 'inherit',
-    stderr: 'inherit',
-    timeout: 180_000,
-  },
+  webServer: [
+    {
+      command: webServerCommand,
+      url: 'http://127.0.0.1:8881/examples/default-mode.html',
+      reuseExistingServer: true,
+      stdout: 'inherit',
+      stderr: 'inherit',
+      timeout: 180_000,
+    },
+    {
+      command: reactDemoCommand,
+      url: 'http://127.0.0.1:3102',
+      reuseExistingServer: true,
+      stdout: 'inherit',
+      stderr: 'inherit',
+      timeout: 120_000,
+    },
+    {
+      command: vue3DemoCommand,
+      url: 'http://127.0.0.1:3103',
+      reuseExistingServer: true,
+      stdout: 'inherit',
+      stderr: 'inherit',
+      timeout: 120_000,
+    },
+  ],
   projects: (() => {
     const projects: any[] = [
       {

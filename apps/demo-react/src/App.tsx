@@ -1,106 +1,88 @@
 import '@wangeditor-next/editor/dist/css/style.css'
 import './styles.css'
 
-import basicModules from '@wangeditor-next/basic-modules'
-import {
-  createEditorFactory,
-  IDomEditor,
-  IEditorConfig,
-  IToolbarConfig,
-  Toolbar,
-} from '@wangeditor-next/editor/core'
-import wangEditorListModule from '@wangeditor-next/list-module'
+import type { IDomEditor, IEditorConfig, IToolbarConfig } from '@wangeditor-next/editor'
+import { Editor, Toolbar } from '@wangeditor-next/editor-for-react'
 import React, { useEffect, useRef, useState } from 'react'
 
 const toolbarConfig: Partial<IToolbarConfig> = {
-  toolbarKeys: [
-    'headerSelect',
-    'bold',
-    'italic',
-    'underline',
-    '|',
-    'bulletedList',
-    'numberedList',
-    '|',
-    'undo',
-    'redo',
-  ],
+  toolbarKeys: ['headerSelect', 'bold', 'italic', '|', 'insertTable', '|', 'undo', 'redo'],
 }
 
-const editorFactory = createEditorFactory({
-  extensions: [...basicModules, wangEditorListModule],
-  toolbarConfig,
-})
-
 const initialHtml = [
-  '<h2>React On-Demand Demo</h2>',
-  '<p>这个示例使用 <code>@wangeditor-next/editor/core</code> + <code>createEditorFactory</code>。</p>',
-  '<p>当前仅组合 <code>basic-modules</code> 和 <code>list-module</code>，用于演示按需加载。</p>',
+  '<h2>React Wrapper Demo</h2>',
+  '<p>该示例使用 <code>@wangeditor-next/editor-for-react</code>。</p>',
+  '<p>用于跨框架 IME / table 回归验证。</p>',
 ].join('')
+
+const setGlobalReactEditor = (value: IDomEditor | null) => {
+  const globalWindow = window as unknown as { reactEditor?: IDomEditor | null }
+
+  globalWindow.reactEditor = value
+}
 
 export default function App() {
   const editorRef = useRef<IDomEditor | null>(null)
-  const toolbarRef = useRef<Toolbar | null>(null)
-  const editorContainerRef = useRef<HTMLDivElement | null>(null)
-  const toolbarContainerRef = useRef<HTMLDivElement | null>(null)
+  const [editor, setEditor] = useState<IDomEditor | null>(null)
   const [html, setHtml] = useState(initialHtml)
+  const editorConfig: Partial<IEditorConfig> = {
+    placeholder: '请输入内容...',
+  }
 
   useEffect(() => {
-    const editorContainer = editorContainerRef.current
-    const toolbarContainer = toolbarContainerRef.current
-
-    if (!editorContainer || !toolbarContainer) { return }
-
-    const editorConfig: Partial<IEditorConfig> = {
-      placeholder: '请输入内容...',
-      onChange: editor => setHtml(editor.getHtml()),
-    }
-
-    const { editor, toolbar } = editorFactory.create({
-      editor: {
-        selector: editorContainer,
-        html: initialHtml,
-        config: editorConfig,
-      },
-      toolbar: {
-        selector: toolbarContainer,
-      },
-    })
-
-    editorRef.current = editor
-    toolbarRef.current = toolbar
-    setHtml(editor.getHtml())
-
     return () => {
-      const currentToolbar = toolbarRef.current
       const currentEditor = editorRef.current
-
-      if (currentToolbar) {
-        currentToolbar.destroy()
-        toolbarRef.current = null
-      }
 
       if (currentEditor) {
         currentEditor.destroy()
+        setGlobalReactEditor(null)
         editorRef.current = null
+        setEditor(null)
       }
     }
   }, [])
+
+  const handleCreated = (createdEditor: IDomEditor) => {
+    editorRef.current = createdEditor
+    setEditor(createdEditor)
+    setGlobalReactEditor(createdEditor)
+  }
+
+  const handleChanged = (changedEditor: IDomEditor) => {
+    setHtml(changedEditor.getHtml())
+  }
 
   return (
     <div className="page">
       <section className="panel">
         <header className="hero">
           <p className="eyebrow">apps/demo-react</p>
-          <h1>wangEditor React On-Demand Demo</h1>
+          <h1>wangEditor React Wrapper Demo</h1>
           <p className="summary">
-            只注册所需模块，避免默认入口一次性加载全部内置能力。
+            该页面用于验证 React 适配层与 core 行为一致性。
           </p>
         </header>
 
         <div className="editor-shell">
-          <div ref={toolbarContainerRef} style={{ borderBottom: '1px solid #d9e2f2' }} />
-          <div ref={editorContainerRef} style={{ height: '360px', overflowY: 'hidden' }} />
+          <div data-testid="editor-toolbar">
+            <Toolbar
+              editor={editor}
+              defaultConfig={toolbarConfig}
+              mode="default"
+              style={{ borderBottom: '1px solid #d9e2f2' }}
+            />
+          </div>
+          <div data-testid="editor-textarea">
+            <Editor
+              defaultConfig={editorConfig}
+              defaultHtml={initialHtml}
+              mode="default"
+              onCreated={handleCreated}
+              onChange={handleChanged}
+              style={{ height: '360px', overflowY: 'hidden' }}
+              value={html}
+            />
+          </div>
         </div>
       </section>
 
