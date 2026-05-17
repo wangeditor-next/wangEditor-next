@@ -50,4 +50,5 @@ export type TableElement = {
   resizingRowIndex?: number // 用于标记正在调整的行索引
   isResizingRow?: boolean | null // 用于设置行 resize-bar 的 highlight 属性
   isHoverRowBorder?: boolean // 用于设置行 resize-bar 的 visible 属性
+  rowHeights?: number[] // 实际 DOM 行高快照（仅用于行拖拽热区与 UI 对齐）
 }

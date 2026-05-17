@@ -41,18 +41,31 @@ export function getColumnWidthRatios(columnWidths: number[]) {
  */
 let resizeObserver: ResizeObserver | null = null
 
+function getTableRowHeights(table: Element): number[] {
+  const tableRows = Array.from(table.querySelectorAll('tr'))
+
+  return tableRows.map(row => {
+    const rowRect = row.getBoundingClientRect()
+
+    return Math.max(1, Math.round(rowRect.height * 100) / 100)
+  })
+}
+
 export function observerTableResize(editor: IDomEditor, elm: Node | undefined) {
   if (isHTMLElememt(elm)) {
     const table = elm.querySelector('table')
 
     if (table) {
       resizeObserver = new ResizeObserver(([{ contentRect }]) => {
+        const rowHeights = getTableRowHeights(table)
+
         // 当非拖动引起的宽度变化，需要调整 columnWidths
         Transforms.setNodes(
           editor,
           {
             scrollWidth: contentRect.width,
             height: contentRect.height,
+            rowHeights,
           } as TableElement,
           { mode: 'highest' },
         )

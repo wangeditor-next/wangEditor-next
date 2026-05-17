@@ -287,6 +287,91 @@ test.describe('Basic Editor', () => {
     ).toHaveCount(1)
   })
 
+  test('regression #811: row resize hotzone should follow rendered row border after content expands', async ({ page }) => {
+    await clearEditor(page)
+    await page.keyboard.type('table-resize-probe')
+
+    await waitForMenuEnabled(page, 'insertTable')
+    await getToolbarMenu(page, 'insertTable').click()
+    await page.locator('.w-e-panel-content-table').waitFor({ state: 'visible' })
+    await page.locator('.w-e-panel-content-table td[data-x="1"][data-y="1"]').click()
+
+    await page.locator('[data-testid="editor-textarea"] table tr')
+      .first()
+      .locator('th, td')
+      .first()
+      .click()
+    await page.keyboard.type('这是用于复现811的超长文本'.repeat(20))
+    await page.waitForTimeout(500)
+
+    const metrics = await page.evaluate(() => {
+      const table = document.querySelector('[data-testid="editor-textarea"] table.table') as HTMLElement | null
+      const rows = Array.from(document.querySelectorAll('[data-testid="editor-textarea"] table tr')) as HTMLElement[]
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!table || rows.length < 2 || !editor) {
+        throw new Error('table/rows/editor not ready')
+      }
+      table.scrollIntoView({ block: 'center', inline: 'nearest' })
+
+      const tableNode = editor.children.find((n: any) => n?.type === 'table')
+
+      if (!tableNode) {
+        throw new Error('table node not found in model')
+      }
+
+      const modelRowHeights = tableNode.children.map((row: any) => row?.height || 30)
+      const domRowHeights = rows.map(row => row.getBoundingClientRect().height)
+
+      const tableRect = table.getBoundingClientRect()
+      const firstRowRect = rows[0].getBoundingClientRect()
+
+      return {
+        modelRowHeights,
+        domRowHeights,
+        domFirstBorderOffset: firstRowRect.bottom - tableRect.top,
+        tableLeft: tableRect.left,
+        tableTop: tableRect.top,
+        tableWidth: tableRect.width,
+      }
+    })
+
+    const sampleX = metrics.tableLeft + Math.min(30, metrics.tableWidth / 3)
+    const hoverAtDomBorder = await page.evaluate(async ({ x, y }) => {
+      const table = document.querySelector('[data-testid="editor-textarea"] table.table') as HTMLElement | null
+      const editor = (window as any).wangEditorExampleBridge?.editor
+      const tableNode = editor?.children?.find((n: any) => n?.type === 'table')
+
+      if (!table || !tableNode) {
+        throw new Error('table or model table node missing')
+      }
+
+      table.dispatchEvent(new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        clientX: x,
+        clientY: y,
+      }))
+      await new Promise(resolve => {
+        setTimeout(resolve, 120)
+      })
+
+      const currentTableNode = editor?.children?.find((n: any) => n?.type === 'table')
+
+      return {
+        isHoverRowBorder: !!currentTableNode?.isHoverRowBorder,
+        resizingRowIndex: currentTableNode?.resizingRowIndex ?? -1,
+      }
+    }, {
+      x: sampleX,
+      y: metrics.tableTop + metrics.domFirstBorderOffset + 1,
+    })
+
+    expect(metrics.domRowHeights[0] - metrics.modelRowHeights[0]).toBeGreaterThan(20)
+    expect(hoverAtDomBorder.isHoverRowBorder).toBe(true)
+    expect(hoverAtDomBorder.resizingRowIndex).toBe(0)
+  })
+
   test('pastes plain text', async ({ page }) => {
     await pasteText(page, 'pasted text')
 
