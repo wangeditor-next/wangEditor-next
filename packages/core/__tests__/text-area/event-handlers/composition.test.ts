@@ -114,7 +114,12 @@ describe('composition handlers', () => {
     vi.spyOn(DomEditor, 'cleanExposedTexNodeInSelectionBlock').mockImplementation(() => {})
     vi.spyOn(DomEditor, 'setNewKey').mockImplementation(() => {})
     vi.spyOn(DomEditor, 'getLeftLengthOfMaxLength').mockReturnValue(1)
-    vi.spyOn(DomEditor, 'toDOMRange').mockReturnValue({ startContainer } as any)
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue({
+      getSelection: () => ({
+        rangeCount: 1,
+        getRangeAt: () => ({ startContainer }),
+      }),
+    } as any)
     vi.spyOn(Editor, 'node').mockImplementation((_ed, path) => {
       if (path.length === 1) {
         return [paragraph, path] as any
@@ -127,6 +132,36 @@ describe('composition handlers', () => {
 
     expect(DomEditor.cleanExposedTexNodeInSelectionBlock).toHaveBeenCalledWith(editor)
     expect(DomEditor.setNewKey).toHaveBeenCalledWith(paragraph)
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, 'a')
+    expect(textarea.changeViewState).toHaveBeenCalled()
+  })
+
+  it('handles composition end with maxLength when DOM selection cannot be resolved', () => {
+    const paragraph = { type: 'paragraph', children: [{ text: 'x' }] }
+    const codeNode = { type: 'code', children: [{ text: 'y' }] }
+    const editor = {
+      selection: createSelection(false),
+      getConfig: () => ({ maxLength: 2 }),
+    } as any
+    const textarea = { changeViewState: vi.fn() } as any
+    const event = { target: {}, data: 'abc' } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'cleanExposedTexNodeInSelectionBlock').mockImplementation(() => {})
+    vi.spyOn(DomEditor, 'setNewKey').mockImplementation(() => {})
+    vi.spyOn(DomEditor, 'getLeftLengthOfMaxLength').mockReturnValue(1)
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockImplementation(() => {
+      throw new Error('dom root not mounted')
+    })
+    vi.spyOn(Editor, 'node').mockImplementation((_ed, path) => {
+      if (path.length === 1) {
+        return [paragraph, path] as any
+      }
+      return [codeNode, path] as any
+    })
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    expect(() => handleCompositionEnd(event, textarea, editor)).not.toThrow()
     expect(Editor.insertText).toHaveBeenCalledWith(editor, 'a')
     expect(textarea.changeViewState).toHaveBeenCalled()
   })
@@ -251,11 +286,19 @@ describe('composition handlers', () => {
     const event = { target: {}, data: '拼' } as any
 
     vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
-    vi.spyOn(DomEditor, 'toDOMRange')
-      .mockReturnValueOnce({ startContainer: oldStartContainer } as any)
-      .mockReturnValueOnce({ startContainer: currentStartContainer } as any)
+    const getSelection = vi.fn()
+      .mockReturnValueOnce({
+        rangeCount: 1,
+        getRangeAt: () => ({ startContainer: oldStartContainer }),
+      })
+      .mockReturnValueOnce(null)
+      .mockReturnValueOnce({
+        rangeCount: 1,
+        getRangeAt: () => ({ startContainer: currentStartContainer }),
+      })
+
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue({ getSelection } as any)
     vi.spyOn(DomEditor, 'cleanExposedTexNodeInSelectionBlock').mockImplementation(() => {})
-    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue({ getSelection: () => null } as any)
     vi.spyOn(Editor, 'node').mockImplementation((_ed, path) => {
       if (JSON.stringify(path) === JSON.stringify([0])) {
         return [paragraph, path] as any
@@ -271,6 +314,7 @@ describe('composition handlers', () => {
     vi.runAllTimers()
 
     expect(oldStartContainer.textContent).toBe('before')
+    expect(getSelection).toHaveBeenCalledTimes(3)
     expect(Editor.insertText).toHaveBeenCalledWith(editor, '拼')
   })
 })

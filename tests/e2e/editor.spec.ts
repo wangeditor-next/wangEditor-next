@@ -138,6 +138,60 @@ test.describe('Basic Editor', () => {
     expect(pageErrors).toEqual([])
   })
 
+  test('regression #793: repeated composition on long text should not throw DOM point error', async ({ page }) => {
+    const pageErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.stack || err?.message || String(err))
+    })
+
+    await typeInEditor(page, 'abcdefghijklmnopqrstuvwxyz1234')
+
+    await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="editor-textarea"] [contenteditable="true"]')
+
+      if (!el) {
+        throw new Error('editable not found')
+      }
+
+      const fire = (event: Event) => el.dispatchEvent(event)
+      const seq: Array<{ pinyin: string, text: string }> = [
+        { pinyin: 'ni', text: '你' },
+        { pinyin: 'hao', text: '好' },
+        { pinyin: 'zhong', text: '中' },
+        { pinyin: 'wen', text: '文' },
+        { pinyin: 'shu', text: '输' },
+        { pinyin: 'ru', text: '入' },
+      ]
+
+      for (const item of seq) {
+        fire(new CompositionEvent('compositionstart', { data: '' }))
+        fire(new InputEvent('beforeinput', {
+          inputType: 'insertCompositionText',
+          data: item.pinyin,
+          bubbles: true,
+          cancelable: true,
+        }))
+        fire(new InputEvent('input', {
+          inputType: 'insertCompositionText',
+          data: item.pinyin,
+          bubbles: true,
+        }))
+        fire(new CompositionEvent('compositionupdate', { data: item.pinyin }))
+        fire(new CompositionEvent('compositionend', { data: item.text }))
+      }
+    })
+
+    await page.waitForTimeout(800)
+
+    await expect(page.getByTestId('editor-html')).toContainText('abcdefghijklmnopqrstuvwxyz1234')
+    await expect(page.getByTestId('editor-html')).toContainText('你好中文输入')
+
+    const domPointErrors = pageErrors.filter(msg => msg.includes('Cannot resolve a DOM point from Slate point'))
+
+    expect(domPointErrors).toEqual([])
+  })
+
   test('does not execute script when importing untrusted html', async ({ page }) => {
     const dialogs: string[] = []
 

@@ -23,12 +23,26 @@ import TextArea from '../TextArea'
 const EDITOR_TO_TEXT: WeakMap<IDomEditor, string> = new WeakMap()
 const EDITOR_TO_START_CONTAINER: WeakMap<IDomEditor, DOMNode> = new WeakMap()
 
-function getDOMRangeIfReady(editor: IDomEditor, selection: Range) {
-  if (!DomEditor.canResolveDOMRange(editor, selection)) {
+function getDOMSelectionStartContainer(editor: IDomEditor): DOMNode | null {
+  let root: Document | ShadowRoot
+
+  try {
+    root = DomEditor.findDocumentOrShadowRoot(editor)
+  } catch (error) {
     return null
   }
 
-  return DomEditor.toDOMRange(editor, selection)
+  const domSelection = root.getSelection()
+
+  if (!domSelection || domSelection.rangeCount <= 0) {
+    return null
+  }
+
+  try {
+    return domSelection.getRangeAt(0).startContainer
+  } catch (error) {
+    return null
+  }
 }
 
 function areBothTextNodes(editor, selection) {
@@ -71,11 +85,11 @@ export function handleCompositionStart(e: Event, textarea: TextArea, editor: IDo
   const { selection } = editor
 
   if (selection && Range.isCollapsed(selection)) {
-    // Capture the current DOM text node before mutating Slate content.
-    const domRange = getDOMRangeIfReady(editor, selection)
+    // Align with Slate: use native DOM selection snapshot for composition
+    // transitions, avoiding stale Slate->DOM mapping windows.
+    const startContainer = getDOMSelectionStartContainer(editor)
 
-    if (domRange) {
-      const startContainer = domRange.startContainer
+    if (startContainer) {
       const curText = startContainer.textContent || ''
 
       EDITOR_TO_TEXT.set(editor, curText)
@@ -172,10 +186,10 @@ export function handleCompositionEnd(e: Event, textarea: TextArea, editor: IDomE
     const leftLengthOfMaxLength = DomEditor.getLeftLengthOfMaxLength(editor)
 
     if (leftLengthOfMaxLength < data.length) {
-      const domRange = getDOMRangeIfReady(editor, selection)
+      const startContainer = getDOMSelectionStartContainer(editor)
 
-      if (domRange && domRange.startContainer.nodeType === Node.TEXT_NODE) {
-        domRange.startContainer.textContent = EDITOR_TO_TEXT.get(editor) || ''
+      if (startContainer && startContainer.nodeType === Node.TEXT_NODE) {
+        startContainer.textContent = EDITOR_TO_TEXT.get(editor) || ''
       }
       if (leftLengthOfMaxLength > 0) {
         // 剩余长度 >0 ，但小于 data 长度，截取一部分插入
@@ -212,10 +226,9 @@ export function handleCompositionEnd(e: Event, textarea: TextArea, editor: IDomE
       const oldStartContainer = EDITOR_TO_START_CONTAINER.get(editor) // 拼音输入开始时的 text node
 
       if (oldStartContainer == null) { return }
-      const domRange = getDOMRangeIfReady(editor, setTimeoutSelection)
+      const curStartContainer = getDOMSelectionStartContainer(editor)
 
-      if (domRange == null) { return }
-      const curStartContainer = domRange.startContainer // 拼音输入结束时的 text node
+      if (curStartContainer == null) { return } // 拼音输入结束时的 text node
 
       if (curStartContainer === oldStartContainer) {
         // 拼音输入的开始和结束，都在同一个 text node ，则不做处理
