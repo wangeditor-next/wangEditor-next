@@ -35,6 +35,21 @@ function getCumulativeHeights(rowHeights: number[]) {
   return cumulativeHeights
 }
 
+function getRowHeightsForResize(tableNode: TableElement): number[] {
+  const { children: tableRows, rowHeights = [] } = tableNode
+
+  const hasValidSnapshot = (
+    rowHeights.length === tableRows.length
+    && rowHeights.every(height => Number.isFinite(height) && height > 0)
+  )
+
+  if (hasValidSnapshot) {
+    return rowHeights
+  }
+
+  return tableRows.map(row => (row as TableRowElement).height || 30)
+}
+
 // 行拖拽相关状态
 let isMouseDownForRowResize = false
 let clientYWhenMouseDown = 0
@@ -107,14 +122,15 @@ function onMouseMoveForRowHandler(event: Event) {
   const [[elemNode]] = Editor.nodes(editorWhenMouseDownForRow, {
     match: isOfType(editorWhenMouseDownForRow, 'table'),
   })
-  const { children: tableRows, resizingRowIndex = -1 } = elemNode as TableElement
+  const tableNode = elemNode as TableElement
+  const { resizingRowIndex = -1 } = tableNode
 
-  // 从实际行元素获取高度
-  const rowHeights = tableRows.map(row => (row as TableRowElement).height || 30)
+  // 优先使用 ResizeObserver 采集到的真实 DOM 行高
+  const rowHeights = getRowHeightsForResize(tableNode)
 
   let adjustRowHeights: number[]
-  const tableNode = DomEditor.getSelectedNodeByType(editorWhenMouseDownForRow, 'table') as TableElement
-  const tableDom = DomEditor.toDOMNode(editorWhenMouseDownForRow, tableNode)
+  const selectedTableNode = DomEditor.getSelectedNodeByType(editorWhenMouseDownForRow, 'table') as TableElement
+  const tableDom = DomEditor.toDOMNode(editorWhenMouseDownForRow, selectedTableNode)
 
   const tableElement = tableDom.querySelector('.table')
 
@@ -176,11 +192,8 @@ export function handleRowBorderVisible(
   if (editor.isDisabled()) { return }
   if (isMouseDownForRowResize) { return }
 
-  const {
-    children: tableRows,
-    isHoverRowBorder,
-    resizingRowIndex,
-  } = elemNode as TableElement
+  const tableNode = elemNode as TableElement
+  const { isHoverRowBorder, resizingRowIndex } = tableNode
 
   const { target } = e
 
@@ -191,8 +204,8 @@ export function handleRowBorderVisible(
       const { clientY: mouseY } = e
       const rect = parent.getBoundingClientRect()
 
-      // 从实际行元素获取高度
-      const actualRowHeights = tableRows.map(row => (row as TableRowElement).height || 30)
+      // 优先使用 ResizeObserver 采集到的真实 DOM 行高
+      const actualRowHeights = getRowHeightsForResize(tableNode)
       const cumulativeHeights = getCumulativeHeights(actualRowHeights)
 
       // 鼠标移动时，计算当前鼠标位置，判断在哪个行边界上
