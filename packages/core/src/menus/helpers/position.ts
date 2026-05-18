@@ -12,6 +12,10 @@ import { promiseResolveThen } from '../../utils/util'
 import { NODE_TO_ELEMENT } from '../../utils/weak-maps'
 import { IPositionStyle } from '../interface'
 
+function clampToNonNegative(value: number): number {
+  return value < 0 ? 0 : value
+}
+
 /**
  * 获取 textContainer 尺寸和定位
  * @param editor editor
@@ -76,18 +80,20 @@ export function getPositionBySelection(editor: IDomEditor): Partial<IPositionSty
   // 判断水平位置： modal/bar 显示在选区左侧，还是右侧？
   if (relativeLeft > containerWidth / 2) {
     // 选区 left 大于 containerWidth/2 （选区在 container 的右侧），则 modal/bar 显示在选区左侧
-    const r = containerWidth - relativeLeft
+    const r = clampToNonNegative(containerWidth - relativeLeft)
 
     positionStyle.right = `${r + 5}px` // 5px 间隔
   } else {
     // 否则（选区在 container 的左侧），modal/bar 显示在选区右侧
-    positionStyle.left = `${relativeLeft + 5}px` // 5px 间隔
+    const l = clampToNonNegative(relativeLeft)
+
+    positionStyle.left = `${l + 5}px` // 5px 间隔
   }
 
   // 判断垂直的位置： modal/bar 显示在选区上面，还是下面？
   if (relativeTop > containerHeight / 2) {
     // 选区 top  > containerHeight/2 （选区在 container 的下半部分），则 modal/bar 显示在选区的上面
-    const b = containerHeight - relativeTop
+    const b = clampToNonNegative(containerHeight - relativeTop)
 
     positionStyle.bottom = `${b + 5}px` // 5px 间隔
   } else {
@@ -168,10 +174,12 @@ export function getPositionByNode(
 
   if (type === 'bar') {
     // bar - 1. left 对齐 elem.left ；2. 尽量显示在 elem 上方
-    positionStyle.left = `${relativeLeft}px`
+    positionStyle.left = `${clampToNonNegative(relativeLeft)}px`
     if (relativeTop > 40) {
       // top > 40 则显示在上方
-      positionStyle.bottom = `${containerHeight - relativeTop + 5}px` // 5px 间隙
+      const b = clampToNonNegative(containerHeight - relativeTop)
+
+      positionStyle.bottom = `${b + 5}px` // 5px 间隙
     } else {
       // 否则，显示在下方
       positionStyle.top = `${relativeTop + elemHeight + 5}px` // 5px 间隙
@@ -186,15 +194,19 @@ export function getPositionByNode(
     // 水平
     if (!isVoidElem) {
       // 非 void node - left 和 elem left 对齐
-      positionStyle.left = `${relativeLeft}px`
+      positionStyle.left = `${clampToNonNegative(relativeLeft)}px`
     } else if (isInlineElem) {
       // inline void node 需要计算
       if (relativeLeft > (containerWidth - elemWidth) / 2) {
         // elem 在 container 的右侧，则 modal 显示在 elem 左侧
-        positionStyle.right = `${containerWidth - relativeLeft + 5}px`
+        const r = clampToNonNegative(containerWidth - relativeLeft)
+
+        positionStyle.right = `${r + 5}px`
       } else {
         // 否则 elem 在 container 左侧，则 modal 显示在 elem 右侧
-        positionStyle.left = `${relativeLeft + elemWidth + 5}px`
+        const l = clampToNonNegative(relativeLeft + elemWidth)
+
+        positionStyle.left = `${l + 5}px`
       }
     } else {
       // block void node 水平靠左即可
@@ -211,7 +223,9 @@ export function getPositionByNode(
       // 非 void node ，计算 top
     } else if (relativeTop > (containerHeight - elemHeight) / 2) {
       // elem 在 container 的下半部分，则 modal 显示在 elem 上方
-      positionStyle.bottom = `${containerHeight - relativeTop + 5}px`
+      const b = clampToNonNegative(containerHeight - relativeTop)
+
+      positionStyle.bottom = `${b + 5}px`
     } else {
       // elem 在 container 的上半部分，则 modal 显示在 elem 下方
       let t = relativeTop + elemHeight
