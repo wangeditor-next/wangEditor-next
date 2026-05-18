@@ -50,7 +50,11 @@ export function parseStyleHtml(
   const textNode = node as StyledText
 
   // bold
-  if (isMatch($text, 'b,strong') || isBoldStyle($text)) {
+  const fontWeight = getStyleValue($text, 'font-weight')
+
+  if (fontWeight) {
+    textNode.bold = isBoldStyle($text)
+  } else if (isMatch($text, 'b,strong')) {
     textNode.bold = true
   }
 
