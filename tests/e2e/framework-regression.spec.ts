@@ -195,6 +195,52 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
+    test(`${target.name}: regression #564 malformed span+p html should not throw`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+
+      const malformedHtml = '<p><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;">这是一</span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;"><p><br></p></span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;">这是二</span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;"><p><br></p></span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;">这是三</span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;"><p><br></p></span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;"><p><br></p></span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;">这是四</span></p>'
+
+      const snapshot = await page.evaluate(({ html }) => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        editor.setHtml(html)
+        const output = editor.getHtml()
+        const hasInlineNestedParagraph = /<span[^>]*>\s*<p/i.test(output)
+        const root = document.querySelector('[data-testid="editor-textarea"]')
+        const nestedParagraphInSpanCount = root?.querySelectorAll('span p').length ?? 0
+
+        editor.focus()
+        editor.insertText('1')
+        editor.deleteBackward('character')
+
+        return {
+          output,
+          outputAfterEdit: editor.getHtml(),
+          hasInlineNestedParagraph,
+          nestedParagraphInSpanCount,
+        }
+      }, { html: malformedHtml })
+
+      expect(snapshot.hasInlineNestedParagraph).toBe(false)
+      expect(snapshot.nestedParagraphInSpanCount).toBe(0)
+      expect(snapshot.outputAfterEdit).toBe(snapshot.output)
+      expect(pageErrors).toEqual([])
+    })
+
     test(`${target.name}: table resize flow should be consistent`, async ({ page }) => {
       const pageErrors: string[] = []
 
