@@ -241,6 +241,117 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
+    test(`${target.name}: regression #610 image insertion should keep active font marks`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+      await clearEditor(page)
+
+      const imageMenuSupport = await page.evaluate(() => {
+        const menuKeys = Array.from(
+          document.querySelectorAll('[data-testid="editor-toolbar"] [data-menu-key]'),
+        ).map(el => el.getAttribute('data-menu-key') || '')
+
+        return {
+          hasGroupImage: menuKeys.includes('group-image'),
+          hasInsertImage: menuKeys.includes('insertImage'),
+        }
+      })
+
+      test.skip(
+        !imageMenuSupport.hasGroupImage && !imageMenuSupport.hasInsertImage,
+        `${target.name} demo toolbar does not expose image insertion menus`,
+      )
+
+      await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        editor.setHtml('<p><span style="font-family: 微软雅黑; font-size: 14px;">M</span></p>')
+        editor.select({
+          anchor: { path: [0, 0], offset: 1 },
+          focus: { path: [0, 0], offset: 1 },
+        })
+      })
+
+      if (imageMenuSupport.hasGroupImage) {
+        const groupImage = await ensureMenuEnabled(page, 'group-image')
+
+        await groupImage.hover()
+        const groupPanel = groupImage.locator('..').locator('.w-e-bar-item-menus-container')
+
+        await groupPanel.waitFor({ state: 'visible' })
+        await groupPanel.locator('[data-menu-key="insertImage"]').click({ force: true })
+      } else {
+        const imageMenu = await ensureMenuEnabled(page, 'insertImage')
+
+        await imageMenu.click({ force: true })
+      }
+
+      const modal = page.locator('.w-e-modal:visible').last()
+
+      await expect(modal).toBeVisible()
+      await modal.locator('input[type="text"]').first().fill('https://example.com/regression-610.png')
+      await modal.locator('.button-container button').first().click()
+      await page.waitForTimeout(220)
+
+      await focusEditable(page)
+      await page.keyboard.type('Z')
+      await page.waitForTimeout(150)
+
+      const markState = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        const findTextNode = (nodes: any[], targetText: string): Record<string, unknown> | null => {
+          for (const node of nodes || []) {
+            if (typeof node?.text === 'string' && node.text.includes(targetText)) {
+              return node
+            }
+            if (Array.isArray(node?.children)) {
+              const found = findTextNode(node.children, targetText)
+
+              if (found) { return found }
+            }
+          }
+          return null
+        }
+
+        const insertedTextNode = findTextNode(editor.children || [], 'Z')
+
+        return {
+          imageCount: (editor.getElemsByTypePrefix?.('image') || []).length,
+          fontFamily: insertedTextNode?.fontFamily || '',
+          fontSize: insertedTextNode?.fontSize || '',
+          html: editor.getHtml?.() || '',
+        }
+      })
+
+      expect(markState.imageCount).toBeGreaterThanOrEqual(1)
+      expect(markState.fontFamily).toBe('微软雅黑')
+      expect(markState.fontSize).toBe('14px')
+      expect(markState.html).toContain('regression-610.png')
+      expect(pageErrors).toEqual([])
+    })
+
     test(`${target.name}: table resize flow should be consistent`, async ({ page }) => {
       const pageErrors: string[] = []
 

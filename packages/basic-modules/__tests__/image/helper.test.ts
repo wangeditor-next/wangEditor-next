@@ -80,6 +80,33 @@ describe('image helper', () => {
     expect(images.length).toBe(1)
   })
 
+  it('insert image should preserve active marks for trailing text', async () => {
+    editor = createEditor({
+      config: baseEditorConfig,
+      content: [
+        {
+          type: 'paragraph',
+          children: [
+            {
+              text: '',
+              fontFamily: '微软雅黑',
+              fontSize: '14px',
+            },
+          ],
+        },
+      ],
+    })
+
+    editor.select({ path: [0, 0], offset: 0 })
+    expect(editor.getMarks()?.fontFamily).toBe('微软雅黑')
+    expect(editor.getMarks()?.fontSize).toBe('14px')
+
+    await insertImageNode(editor, baseSrc, baseAlt, href)
+
+    expect(editor.getMarks()?.fontFamily).toBe('微软雅黑')
+    expect(editor.getMarks()?.fontSize).toBe('14px')
+  })
+
   it('update image node', async () => {
     editor.select(startLocation)
 
