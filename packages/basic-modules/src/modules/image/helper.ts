@@ -104,6 +104,18 @@ export async function insertImageNode(
   // 如果 blur ，则恢复选区
   if (editor.selection === null) { editor.restoreSelection() }
 
+  // Preserve active text marks (e.g. fontFamily/fontSize) for the text typed after image insertion.
+  const activeMarks = editor.getMarks?.() || {}
+  const marksForTrailingText: Record<string, unknown> = {}
+
+  Object.keys(activeMarks).forEach(key => {
+    const value = (activeMarks as Record<string, unknown>)[key]
+
+    if (value == null) { return }
+    if (value === false) { return }
+    marksForTrailingText[key] = value
+  })
+
   // 如果当前正好选中了图片，则 move 一下（如：连续上传多张图片时）
   if (DomEditor.getSelectedNodeByType(editor, 'image')) {
     editor.move(1)
@@ -113,6 +125,11 @@ export async function insertImageNode(
 
   // 插入图片
   Transforms.insertNodes(editor, image)
+
+  // Slate/Plate style: restore marks for subsequent typing instead of mutating existing text nodes.
+  Object.keys(marksForTrailingText).forEach(key => {
+    Editor.addMark(editor, key, marksForTrailingText[key])
+  })
 
   // 回调
   const { onInsertedImage } = editor.getMenuConfig('insertImage')
