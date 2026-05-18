@@ -18,6 +18,7 @@ import {
   Transforms,
 } from 'slate'
 
+import { TableCursor } from './table-cursor'
 import { EDITOR_TO_SELECTION } from './weak-maps'
 import { withSelection } from './with-selection'
 
@@ -166,6 +167,7 @@ function withTable<T extends IDomEditor>(editor: T): T {
     insertData,
     handleTab,
     selectAll,
+    deleteFragment,
   } = editor
   const newEditor = editor
 
@@ -369,6 +371,55 @@ function withTable<T extends IDomEditor>(editor: T): T {
     }
 
     newEditor.select(newSelection) // 选中 table-cell 内部的全部文字
+  }
+
+  // 重写 deleteFragment - 批量选中 table-cell 时只清空单元格内容，不破坏表格结构
+  newEditor.deleteFragment = options => {
+    const tableSelection = EDITOR_TO_SELECTION.get(newEditor)
+
+    if (tableSelection && tableSelection.length > 0) {
+      const selectedCellPaths: Path[] = []
+
+      tableSelection.forEach(row => {
+        row.forEach(cell => {
+          const [, cellPath] = cell[0]
+
+          if (!selectedCellPaths.some(path => Path.equals(path, cellPath))) {
+            selectedCellPaths.push(cellPath)
+          }
+        })
+      })
+
+      const firstCellPath = selectedCellPaths[0]
+
+      selectedCellPaths.forEach(cellPath => {
+        // 在复杂操作后 path 可能失效，跳过即可
+        if (!Node.has(newEditor, cellPath)) { return }
+
+        const start = Editor.start(newEditor, cellPath)
+        const end = Editor.end(newEditor, cellPath)
+
+        // 每次只选中单个 cell 的内容，再走原生 deleteFragment
+        // 避免跨 cell 删除触发 merge_node，导致表格结构错乱
+        Transforms.select(newEditor, {
+          anchor: start,
+          focus: end,
+        })
+        deleteFragment(options)
+      })
+
+      TableCursor.unselect(newEditor)
+
+      if (firstCellPath && Node.has(newEditor, firstCellPath)) {
+        const start = Editor.start(newEditor, firstCellPath)
+
+        Transforms.select(newEditor, start)
+      }
+
+      return
+    }
+
+    deleteFragment(options)
   }
 
   /**
