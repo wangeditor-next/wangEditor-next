@@ -26,6 +26,8 @@ jobs:
     strategy:
       matrix:
         node-version: ['22.13.0']
+    env:
+      DOCS_REPO_DISPATCH_TOKEN: ${{ secrets.DOCS_REPO_DISPATCH_TOKEN }}
 
     steps:
       # 检出代码库
@@ -123,16 +125,16 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Trigger docs site deployment for released editor version
-        if: steps.changesets.outputs.published == 'true' && github.ref_name == 'master' && secrets.DOCS_REPO_DISPATCH_TOKEN != ''
+        if: steps.changesets.outputs.published == 'true' && github.ref_name == 'master' && env.DOCS_REPO_DISPATCH_TOKEN != ''
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.DOCS_REPO_DISPATCH_TOKEN }}
+          token: ${{ env.DOCS_REPO_DISPATCH_TOKEN }}
           repository: wangeditor-next/docs
           event-type: editor-release-published
           client-payload: >-
             {"version":"${{ steps.editor_version.outputs.version }}","sourceRepo":"${{ github.repository }}","sourceSha":"${{ github.sha }}","sourceRunId":"${{ github.run_id }}"}
 
       - name: Warn when docs dispatch token is missing
-        if: steps.changesets.outputs.published == 'true' && github.ref_name == 'master' && secrets.DOCS_REPO_DISPATCH_TOKEN == ''
+        if: steps.changesets.outputs.published == 'true' && github.ref_name == 'master' && env.DOCS_REPO_DISPATCH_TOKEN == ''
         run: |
           echo "::warning::DOCS_REPO_DISPATCH_TOKEN is not set. Skip triggering wangeditor-next/docs deployment."
