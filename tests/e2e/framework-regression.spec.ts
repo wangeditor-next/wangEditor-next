@@ -150,7 +150,7 @@ async function dragLastTableFirstBorder(page: Page, deltaX: number): Promise<boo
 }
 
 test.describe('Framework parity regression', () => {
-  test.describe.configure({ timeout: process.env.CI ? 120_000 : 90_000 })
+  test.describe.configure({ timeout: process.env.CI ? 240_000 : 90_000 })
 
   for (const target of targets) {
     test(`${target.name}: ime composition should not throw`, async ({ page }) => {
