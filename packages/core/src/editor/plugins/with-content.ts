@@ -469,16 +469,47 @@ export const withContent = <T extends Editor>(editor: T) => {
         const $el = $(el)
         const parsedRes = parseElemHtml($el, e) as Element
 
-        if (Array.isArray(parsedRes)) {
-          parsedRes.forEach(parsedEl => insertElemToEditor(e, parsedEl))
-          insertedElemNum += 1 // 记录数量
-        } else {
-          insertElemToEditor(e, parsedRes)
-          insertedElemNum += 1 // 记录数量
-        }
+        const parsedElems = Array.isArray(parsedRes) ? parsedRes : [parsedRes]
+
+        parsedElems.forEach(parsedEl => insertElemToEditor(e, parsedEl))
+        insertedElemNum += parsedElems.length // 记录数量
 
         // 如果当前选中 void node ，则选区移动一下
         if (DomEditor.isSelectedVoidNode(e)) { e.move(1) }
+
+        const insertedInlineLikeElem = parsedElems.some(parsedEl => {
+          if (!Element.isElement(parsedEl)) { return false }
+          if (e.isInline(parsedEl)) { return true }
+
+          return parsedEl.children.some(child => {
+            return Element.isElement(child) && e.isInline(child)
+          })
+        })
+
+        // 如果本次插入的块内含 inline（如 link），选区会停在 inline 内部；
+        // 下一次插入 block 会发生 split 并产生多余空段落。这里显式把选区移到 inline 后的 text。
+        if (insertedInlineLikeElem && e.selection) {
+          const selectedInlineNodes = Editor.nodes(e, {
+            at: e.selection,
+            match: node => Element.isElement(node) && e.isInline(node),
+            universal: true,
+          })
+          const firstInlineEntry = selectedInlineNodes.next().value
+
+          if (firstInlineEntry) {
+            const [, inlinePath] = firstInlineEntry
+            const afterInlinePath = Path.next(inlinePath)
+
+            if (Editor.hasPath(e, afterInlinePath)) {
+              Transforms.select(e, {
+                anchor: { path: afterInlinePath, offset: 0 },
+                focus: { path: afterInlinePath, offset: 0 },
+              })
+            } else {
+              e.move(1)
+            }
+          }
+        }
 
         return
       }

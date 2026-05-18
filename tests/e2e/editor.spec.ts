@@ -192,6 +192,166 @@ test.describe('Basic Editor', () => {
     expect(domPointErrors).toEqual([])
   })
 
+  test('regression #609: insertData with complex html should not break editing', async ({ page }) => {
+    const pageErrors: string[] = []
+    const consoleErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.message || String(err))
+    })
+
+    page.on('console', msg => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text())
+      }
+    })
+
+    const complexHtml = [
+      '<p>111111111111111111111111111111</p>',
+      '<table style="width:100%;table-layout:fixed"><tbody>',
+      '  <tr>',
+      '    <td style="text-align:center;vertical-align:top">Layout 布局</td>',
+      '    <td style="text-align:left">Dialog 对话框</td>',
+      '    <td style="display:none;text-align:center"></td>',
+      '  </tr>',
+      '  <tr>',
+      '    <td style="text-align:center">Container 容器</td>',
+      '    <td style="text-align:left"><span>在保留自然浏览状态的情况下，默认可中断前端弹窗操作。</span></td>',
+      '    <td style="display:none;text-align:right"></td>',
+      '  </tr>',
+      '</tbody></table>',
+      '<p>22222222222222222222222222222</p>',
+      '<p><img alt="tiny" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" /></p>',
+      '<p>3333333333333333333333333333333333333</p>',
+    ].join('')
+
+    await page.evaluate(value => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor missing')
+      }
+
+      const transfer = new DataTransfer()
+
+      transfer.setData('text/plain', 'fallback')
+      transfer.setData('text/html', value)
+      editor.insertData(transfer)
+    }, complexHtml)
+
+    const editable = page.locator('[data-testid="editor-textarea"] [data-slate-editor]').first()
+
+    await editable.click()
+    await page.keyboard.type('after-insertData-check')
+
+    await expect(page.getByTestId('editor-html')).toContainText('after-insertData-check')
+
+    expect(pageErrors).toEqual([])
+    expect(consoleErrors).toEqual([])
+  })
+
+  test('regression #502: insertLink modal should stay in visible editor area after scroll-to-top', async ({ page }) => {
+    const pageErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.message || String(err))
+    })
+
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor missing')
+      }
+
+      const html = Array.from(
+        { length: 320 },
+        (_, i) => `<p>line-${String(i).padStart(3, '0')} abcdefghijklmnopqrstuvwxyz</p>`,
+      ).join('')
+
+      editor.setHtml(html)
+    })
+
+    const editable = page.locator('[data-testid="editor-textarea"] [contenteditable="true"]')
+
+    await editable.click()
+    await page.keyboard.press('Control+End')
+    await page.waitForTimeout(350)
+
+    await page.evaluate(() => {
+      const scroller = document.querySelector('[data-testid="editor-textarea"] .w-e-scroll') as HTMLElement | null
+
+      if (!scroller) {
+        throw new Error('scroller missing')
+      }
+      scroller.scrollTop = 0
+      window.scrollTo(0, 0)
+    })
+    await page.waitForTimeout(120)
+
+    const insertLinkMenu = await waitForMenuEnabled(page, 'insertLink')
+
+    await insertLinkMenu.click()
+    await expect(page.locator('.w-e-modal')).toBeVisible()
+
+    const metrics = await page.evaluate(() => {
+      const modal = document.querySelector('.w-e-modal')
+      const container = document.querySelector('[data-testid="editor-textarea"]')
+      const scroller = document.querySelector('[data-testid="editor-textarea"] .w-e-scroll') as HTMLElement | null
+      const modalRect = modal?.getBoundingClientRect()
+      const containerRect = container?.getBoundingClientRect()
+
+      return {
+        pageScrollY: window.scrollY,
+        scrollTop: scroller?.scrollTop ?? 0,
+        inContainerViewport: !!(modalRect && containerRect
+          && modalRect.top >= containerRect.top
+          && modalRect.bottom <= containerRect.bottom
+          && modalRect.left >= containerRect.left
+          && modalRect.right <= containerRect.right),
+      }
+    })
+
+    expect(metrics.pageScrollY).toBeLessThanOrEqual(1)
+    expect(metrics.scrollTop).toBe(0)
+    expect(metrics.inContainerViewport).toBe(true)
+    expect(pageErrors).toEqual([])
+  })
+
+  test('regression #541: dangerouslyInsertHtml should not append extra blank paragraphs', async ({ page }) => {
+    const metrics = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor missing')
+      }
+
+      editor.clear()
+      const html = '<p><a>222</a></p><p>更新</p><p><a>222</a></p><p>更新</p><p><a>222</a></p><p>更新</p>'
+
+      editor.dangerouslyInsertHtml(html)
+
+      const output = editor.getHtml()
+      const wrapper = document.createElement('div')
+
+      wrapper.innerHTML = output
+      const paragraphs = Array.from(wrapper.querySelectorAll('p'))
+      const blankParagraphCount = paragraphs.filter(p => (p.textContent || '').trim() === '').length
+
+      return {
+        output,
+        paragraphCount: paragraphs.length,
+        blankParagraphCount,
+      }
+    })
+
+    expect(metrics.paragraphCount).toBe(6)
+    expect(metrics.blankParagraphCount).toBe(0)
+    expect(metrics.output).toBe(
+      '<p><a href="" target="">222</a></p><p>更新</p><p><a href="" target="">222</a></p><p>更新</p><p><a href="" target="">222</a></p><p>更新</p>',
+    )
+  })
+
   test('does not execute script when importing untrusted html', async ({ page }) => {
     const dialogs: string[] = []
 
