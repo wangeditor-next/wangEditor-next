@@ -190,13 +190,6 @@ class InsertTable implements IDropPanelMenu {
       Transforms.removeNodes(editor, { mode: 'highest' })
     }
 
-    if (editor.children.length === 0) {
-      // table 作为第一个 children 时会导致无法正常删除
-      // 在当前位置插入空行，当前元素下移
-      const newElem = { type: 'paragraph', children: [{ text: '' }] }
-
-      Transforms.insertNodes(editor, newElem, { mode: 'highest' })
-    }
     // 插入表格
     const tableNode = genTableNode(editor, rowNum, colNum)
 

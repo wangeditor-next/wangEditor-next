@@ -358,12 +358,11 @@ export const withContent = <T extends Editor>(editor: T) => {
       },
     ]
 
-    Transforms.delete(e, {
-      at: {
-        anchor: Editor.start(e, []),
-        focus: Editor.end(e, []),
-      },
-    })
+    // 逐个删除顶层节点，避免首节点为 table 等复杂结构时
+    // 全文 range 删除出现残留节点（导致 setHtml 追加而非覆盖）。
+    for (let i = e.children.length - 1; i >= 0; i -= 1) {
+      Transforms.removeNodes(e, { at: [i] })
+    }
 
     if (e.children.length === 0) {
       Transforms.insertNodes(e, initialEditorValue)
