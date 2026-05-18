@@ -1,5 +1,20 @@
 # Change Log
 
+## 5.7.3
+
+### Patch Changes
+
+- edc17af: Fix table column resize after `setHtml` when the current selection is outside the table.
+
+  Column drag now captures the target table path on `mousedown` and keeps using
+  that path during `mousemove`, instead of looking up the table from current
+  selection state. This keeps full-width table column resize usable after
+  `setHtml` without requiring an extra click inside a cell first.
+
+- Updated dependencies [edc17af]
+- Updated dependencies [9aa2987]
+  - @wangeditor-next/table-module@2.0.3
+
 ## 5.7.2
 
 ### Patch Changes

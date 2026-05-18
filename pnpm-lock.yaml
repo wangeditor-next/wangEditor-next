@@ -568,7 +568,7 @@ importers:
         specifier: 2.0.2
         version: link:../list-module
       '@wangeditor-next/table-module':
-        specifier: 2.0.2
+        specifier: 2.0.3
         version: link:../table-module
       '@wangeditor-next/upload-image-module':
         specifier: 2.0.2
@@ -657,7 +657,7 @@ importers:
   packages/plugin-float-image:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.2
+        specifier: 5.7.3
         version: link:../editor
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -676,7 +676,7 @@ importers:
   packages/plugin-formula:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.2
+        specifier: 5.7.3
         version: link:../editor
       dom7:
         specifier: ^4.0.0
@@ -698,7 +698,7 @@ importers:
   packages/plugin-link-card:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.2
+        specifier: 5.7.3
         version: link:../editor
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -717,7 +717,7 @@ importers:
   packages/plugin-markdown:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.2
+        specifier: 5.7.3
         version: link:../editor
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -736,7 +736,7 @@ importers:
   packages/plugin-mention:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.2
+        specifier: 5.7.3
         version: link:../editor
       snabbdom:
         specifier: ^3.6.0
@@ -858,7 +858,7 @@ importers:
   packages/yjs-for-react:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.2
+        specifier: 5.7.3
         version: link:../editor
       '@wangeditor-next/yjs':
         specifier: ^1.0.2
@@ -889,7 +889,7 @@ importers:
   packages/yjs-for-vue:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.2
+        specifier: 5.7.3
         version: link:../editor
       '@wangeditor-next/yjs':
         specifier: ^1.0.2
