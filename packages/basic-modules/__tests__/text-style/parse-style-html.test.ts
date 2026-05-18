@@ -159,6 +159,23 @@ describe('parse style html', () => {
     ])
   })
 
+  it('it should keep explicit non-bold style scoped when parent span is bold', () => {
+    const nestedEditor = createEditor({
+      html: '<p><span style="font-weight: 700;">A<span style="font-weight: 400;">B</span>C</span></p>',
+    })
+
+    expect(nestedEditor.children).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'A', bold: true },
+          { text: 'B' },
+          { text: 'C', bold: true },
+        ],
+      },
+    ])
+  })
+
   it('it should ignore formatting newlines around nested superscript html imports', () => {
     const nestedEditor = createEditor({
       html: '<p><span>\nH<span style="vertical-align: super;">2</span>O\n</span></p>',

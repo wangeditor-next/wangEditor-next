@@ -397,6 +397,76 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
+    test(`${target.name}: regression #608 mixed bold span should keep non-bold subrange`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+
+      await page.evaluate(async () => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        editor.setHtml('<p><span style="font-weight: 700;">前缀<span style="font-weight: 400;">中间</span>后缀</span></p><p><br></p>')
+
+        await new Promise<void>(resolve => {
+          setTimeout(() => resolve(), 80)
+        })
+      })
+      const snapshot = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        const richParagraph = (editor.children || []).find((node: any) => {
+          if (!node || node.type !== 'paragraph') { return false }
+          const text = (node.children || [])
+            .map((child: any) => String(child?.text || ''))
+            .join('')
+            .trim()
+
+          return text.length > 0
+        })
+        const richParagraphChildren = richParagraph?.children || []
+        const modelSegments = richParagraphChildren.map((node: any) => {
+          return {
+            text: String(node?.text || ''),
+            bold: node?.bold === true,
+          }
+        })
+        const html = editor.getHtml?.() || ''
+
+        return {
+          modelSegments,
+          html,
+        }
+      })
+
+      expect(snapshot.modelSegments).toEqual([
+        { text: '前缀', bold: true },
+        { text: '中间', bold: false },
+        { text: '后缀', bold: true },
+      ])
+      expect(snapshot.html).toMatch(/<p><strong>前缀<\/strong>中间<strong>后缀<\/strong><\/p>/)
+      expect(pageErrors).toEqual([])
+    })
+
     test(`${target.name}: regression #621 heading default font-size should clear pasted inline size`, async ({ page }) => {
       const pageErrors: string[] = []
 
