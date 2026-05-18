@@ -227,5 +227,128 @@ test.describe('Framework parity regression', () => {
       expect(resized || clampedAtMinWidth).toBe(true)
       expect(pageErrors).toEqual([])
     })
+
+    test(`${target.name}: setHtml in-table focus should keep single table and stable output`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+
+      const firstHtml = `
+        <table border="1" cellspacing="0" width="100%">
+          <tbody>
+            <tr>
+              <td style="font-size: 14px; color: #fed865; vertical-align: middle; text-align: center; background-color: #44739f;">A1</td>
+              <td>B1</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><br></p>
+      `
+      const secondHtml = `
+        <table border="1" cellspacing="0" width="100%">
+          <tbody>
+            <tr>
+              <td style="font-size: 14px; color: #fed865; vertical-align: middle; text-align: center; background-color: #44739f;">A2</td>
+              <td>B2</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><br></p>
+      `
+
+      await page.evaluate(({ html }) => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        const normalizeHtml = (value: string) => value.replace(/\s+/g, ' ').trim()
+
+        editor.setHtml(html)
+        const afterFirstSet = normalizeHtml(editor.getHtml())
+
+        editor.setHtml(html)
+        const afterSecondSet = normalizeHtml(editor.getHtml())
+
+        globalWindow.setHtmlStableFlag = afterFirstSet === afterSecondSet
+        globalWindow.setHtmlTableCountAfterFirst = (afterFirstSet.match(/<table/gi) || []).length
+        globalWindow.setHtmlTableCountAfterSecond = (afterSecondSet.match(/<table/gi) || []).length
+
+        const tableIndex = editor.children.findIndex((node: any) => node?.type === 'table')
+
+        if (tableIndex < 0) {
+          throw new Error('table node not found')
+        }
+
+        editor.select({
+          anchor: { path: [tableIndex, 0, 0, 0], offset: 0 },
+          focus: { path: [tableIndex, 0, 0, 0], offset: 1 },
+        })
+      }, { html: firstHtml })
+
+      await page.waitForTimeout(120)
+
+      await page.evaluate(({ html }) => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        editor.setHtml(html)
+      }, { html: secondHtml })
+
+      await page.waitForTimeout(160)
+
+      const snapshot = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+        const root = document.querySelector('[data-testid="editor-textarea"]') as HTMLElement | null
+        const tableElements = Array.from(root?.querySelectorAll('table') || [])
+        const nestedTableElements = Array.from(root?.querySelectorAll('table table') || [])
+        const firstCell = tableElements[0]?.querySelector('tr td, tr th') as HTMLElement | null
+        const modelTableCount = (editor?.children || []).filter((node: any) => node?.type === 'table').length
+        const currentHtml = editor?.getHtml?.() || ''
+
+        return {
+          stableBetweenRepeatedSetHtml: !!globalWindow.setHtmlStableFlag,
+          tableCountAfterFirstSet: Number(globalWindow.setHtmlTableCountAfterFirst || 0),
+          tableCountAfterSecondSet: Number(globalWindow.setHtmlTableCountAfterSecond || 0),
+          currentHtmlTableCount: (currentHtml.match(/<table/gi) || []).length,
+          modelTableCount,
+          domTableCount: tableElements.length,
+          nestedTableCount: nestedTableElements.length,
+          firstCellText: (firstCell?.textContent || '').replace(/\s+/g, ''),
+          firstCellStyle: firstCell?.getAttribute('style') || '',
+        }
+      })
+
+      expect(snapshot.stableBetweenRepeatedSetHtml).toBe(true)
+      expect(snapshot.tableCountAfterFirstSet).toBe(1)
+      expect(snapshot.tableCountAfterSecondSet).toBe(1)
+      expect(snapshot.currentHtmlTableCount).toBe(1)
+      expect(snapshot.modelTableCount).toBe(1)
+      expect(snapshot.domTableCount).toBe(1)
+      expect(snapshot.nestedTableCount).toBe(0)
+      expect(snapshot.firstCellText).toBe('A2')
+      expect(snapshot.firstCellStyle).toContain('background-color')
+      expect(pageErrors).toEqual([])
+    })
   }
 })
