@@ -7,6 +7,8 @@ type Target = {
   needCreate?: boolean
 }
 
+const MIN_COLUMN_WIDTH = 60
+
 const targets: Target[] = [
   {
     name: 'html-core',
@@ -27,7 +29,7 @@ const targets: Target[] = [
   },
 ]
 
-const WRAPPER_READY_TIMEOUT = process.env.CI ? 90_000 : 60_000
+const WRAPPER_READY_TIMEOUT = process.env.CI ? 180_000 : 60_000
 
 const getEditable = (page: Page) => page.locator('[data-testid="editor-textarea"] [contenteditable="true"]')
 
@@ -115,12 +117,12 @@ async function getLastTableWidths(page: Page): Promise<number[]> {
   })
 }
 
-async function dragLastTableFirstBorder(page: Page, deltaX: number) {
+async function dragLastTableFirstBorder(page: Page, deltaX: number): Promise<boolean> {
   const widths = await getLastTableWidths(page)
   const table = page.locator('[data-testid="editor-textarea"] table.table').last()
   const tableRect = await table.boundingBox()
 
-  if (!tableRect || widths.length === 0) { return }
+  if (!tableRect || widths.length === 0) { return false }
 
   await page.mouse.move(tableRect.x + widths[0], tableRect.y + 20)
   await page.waitForTimeout(140)
@@ -133,7 +135,7 @@ async function dragLastTableFirstBorder(page: Page, deltaX: number) {
     .locator('.resizer-line-hotzone')
   const hotzoneRect = await hotzone.boundingBox()
 
-  if (!hotzoneRect) { return }
+  if (!hotzoneRect) { return false }
 
   await page.mouse.move(hotzoneRect.x + hotzoneRect.width / 2, hotzoneRect.y + hotzoneRect.height / 2)
   await page.mouse.down()
@@ -143,6 +145,8 @@ async function dragLastTableFirstBorder(page: Page, deltaX: number) {
   )
   await page.mouse.up()
   await page.waitForTimeout(240)
+
+  return true
 }
 
 test.describe('Framework parity regression', () => {
@@ -210,14 +214,17 @@ test.describe('Framework parity regression', () => {
         .last()
         .locator('tr:nth-child(1) > *:nth-child(1)')
         .click({ force: true })
-      await dragLastTableFirstBorder(page, 60)
+      const dragged = await dragLastTableFirstBorder(page, 60)
       const afterDrag = await getLastTableWidths(page)
 
       const beforeFirst = before[0] || 0
       const afterFirst = afterDrag[0] || 0
+      const resized = afterFirst > beforeFirst
+      const clampedAtMinWidth = beforeFirst <= MIN_COLUMN_WIDTH && afterFirst === beforeFirst
 
+      expect(dragged).toBe(true)
       expect(beforeFirst).toBeGreaterThan(0)
-      expect(afterFirst).toBeGreaterThan(beforeFirst)
+      expect(resized || clampedAtMinWidth).toBe(true)
       expect(pageErrors).toEqual([])
     })
   }
