@@ -30,19 +30,42 @@ function normalizeTextNodeContent(text: string, childNode: Node): string {
   return text
 }
 
-function parseChildNode($childElem, parentStyle, editor) {
-  const childNode = $childElem[0]
+type DescendantRecord = Record<string, unknown>
+
+function mergeParentStyle(parentStyle: Descendant, node: Descendant): Descendant {
+  const merged: DescendantRecord = {
+    ...(parentStyle as DescendantRecord),
+    ...(node as DescendantRecord),
+  }
+
+  Object.keys(node as DescendantRecord).forEach(key => {
+    // `false` means the child explicitly clears a parent style mark.
+    if ((node as DescendantRecord)[key] === false) {
+      delete merged[key]
+    }
+  })
+
+  return merged as Descendant
+}
+
+function parseChildNode(
+  $childElem: Dom7Array,
+  parentStyle: Descendant,
+  editor: IDomEditor,
+): Descendant[] | null {
+  const childNode = $childElem[0] as unknown as Node
 
   if (isDOMElement(childNode)) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     const elem = parseElemHtml($childElem, editor)
+    const styleWithoutText: DescendantRecord = { ...(parentStyle as DescendantRecord) }
 
     // Element 节点不应该继承传入的 { text: '' } 默认值，该值会导致slate识别错误
-    delete parentStyle.text
+    delete styleWithoutText.text
 
     return Array.isArray(elem)
-      ? elem.map(v => ({ ...parentStyle, ...v }))
-      : [{ ...parentStyle, ...elem }]
+      ? elem.map(v => mergeParentStyle(styleWithoutText as Descendant, v))
+      : [mergeParentStyle(styleWithoutText as Descendant, elem)]
   }
 
   if (isDOMComment(childNode)) { return null } // 过滤掉注释节点
@@ -51,7 +74,7 @@ function parseChildNode($childElem, parentStyle, editor) {
     ? { text: normalizeTextNodeContent(childNode.textContent || '', childNode) }
     : parseTextElemHtml($childElem, editor)
 
-  return [{ ...parentStyle, ...text }]
+  return [mergeParentStyle(parentStyle, text)]
 }
 
 /**
@@ -84,7 +107,7 @@ function parseElemHtml($elem: Dom7Array, editor: IDomEditor): Descendant | Desce
     if (hasNonTextChild) {
       const parentStyle = parseTextElemHtmlToStyle($($elem[0]), editor)
 
-      return childNodes.flatMap(child => {
+      return childNodes.flatMap((child): Descendant[] => {
         const parsed = parseChildNode($(child), parentStyle, editor)
 
         return parsed || []
@@ -116,7 +139,7 @@ function parseElemHtml($elem: Dom7Array, editor: IDomEditor): Descendant | Desce
     if (hasNonTextChild) {
       const parentStyle = parseTextElemHtmlToStyle($($elem[0]), editor)
 
-      return childNodes.flatMap(child => {
+      return childNodes.flatMap((child): Descendant[] => {
         const parsed = parseChildNode($(child), parentStyle, editor)
 
         return parsed || []
