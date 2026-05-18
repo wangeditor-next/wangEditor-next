@@ -1,5 +1,18 @@
 # Change Log
 
+## 2.0.2
+
+### Patch Changes
+
+- ff0ba6a: Fix table row-resize hotspot alignment after table cell content expands.
+
+  The row resize UI now follows real DOM row heights (captured via table resize
+  observation) instead of stale model defaults, so hovering and dragging the row
+  bottom border stays accurate even when a cell grows taller from wrapped text.
+
+- Updated dependencies [38532c2]
+  - @wangeditor-next/core@1.8.2
+
 ## 2.0.1
 
 ### Patch Changes

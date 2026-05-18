@@ -1,5 +1,33 @@
 # Change Log
 
+## 5.7.2
+
+### Patch Changes
+
+- 38532c2: Fix IME composition stability for long-text Chinese input (issue #793) by
+  capturing native DOM selection containers directly during composition
+  boundaries instead of converting Slate ranges in transient sync windows.
+
+  Align the composition flow with Slate-style handling to avoid
+  `Cannot resolve a DOM point from Slate point` errors, and add regression
+  coverage for repeated composition commits on long text.
+
+- ff0ba6a: Fix table row-resize hotspot alignment after table cell content expands.
+
+  The row resize UI now follows real DOM row heights (captured via table resize
+  observation) instead of stale model defaults, so hovering and dragging the row
+  bottom border stays accurate even when a cell grows taller from wrapped text.
+
+- Updated dependencies [38532c2]
+- Updated dependencies [ff0ba6a]
+  - @wangeditor-next/core@1.8.2
+  - @wangeditor-next/table-module@2.0.2
+  - @wangeditor-next/basic-modules@2.0.2
+  - @wangeditor-next/code-highlight@2.0.2
+  - @wangeditor-next/list-module@2.0.2
+  - @wangeditor-next/upload-image-module@2.0.2
+  - @wangeditor-next/video-module@2.0.2
+
 ## 5.7.1
 
 ### Patch Changes
