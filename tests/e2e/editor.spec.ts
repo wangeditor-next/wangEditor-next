@@ -518,9 +518,23 @@ test.describe('Basic Editor', () => {
     })
     await page.waitForTimeout(150)
 
-    const selectedCount = await page.locator('[data-testid="editor-textarea"] td.w-e-selected, [data-testid="editor-textarea"] th.w-e-selected').count()
+    const selectionState = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
 
-    expect(selectedCount).toBeGreaterThanOrEqual(2)
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      const tableSelection = editor.getTableSelection?.() || []
+
+      return {
+        rows: tableSelection.length,
+        cells: tableSelection.flat().length,
+      }
+    })
+
+    expect(selectionState.rows).toBeGreaterThanOrEqual(1)
+    expect(selectionState.cells).toBeGreaterThanOrEqual(2)
 
     await page.keyboard.press('Control+X')
     await page.waitForTimeout(120)
@@ -580,6 +594,107 @@ test.describe('Basic Editor', () => {
     await page.locator('.w-e-panel-content-table td').first().click()
 
     await expect(page.getByTestId('editor-html')).toContainText('<table')
+  })
+
+  test('regression #47: first inserted table should be first node and removable by select-all delete/cut', async ({ page }) => {
+    await clearEditor(page)
+    await waitForMenuEnabled(page, 'insertTable')
+    await getToolbarMenu(page, 'insertTable').click()
+    await page.locator('.w-e-panel-content-table').waitFor({ state: 'visible' })
+    await page.locator('.w-e-panel-content-table td').first().click()
+    await page.waitForTimeout(120)
+
+    const afterInsertByMenu = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      return {
+        types: (editor.children || []).map((node: any) => node?.type || ''),
+        tableCount: (editor.children || []).filter((node: any) => node?.type === 'table').length,
+      }
+    })
+
+    expect(afterInsertByMenu.tableCount).toBe(1)
+    expect(afterInsertByMenu.types[0]).toBe('table')
+
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      editor.setHtml(`
+        <table style="width: 100%;">
+          <tbody>
+            <tr><td>A</td><td>B</td></tr>
+          </tbody>
+        </table>
+      `)
+    })
+    await page.waitForTimeout(120)
+
+    await page.locator('#w-e-textarea-1').click()
+    await page.keyboard.press('Control+A')
+    await page.keyboard.press('Backspace')
+    await page.waitForTimeout(120)
+
+    const afterBackspace = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      return {
+        tableCount: (editor.children || []).filter((node: any) => node?.type === 'table').length,
+        firstType: editor.children?.[0]?.type || '',
+      }
+    })
+
+    expect(afterBackspace.tableCount).toBe(0)
+    expect(afterBackspace.firstType).toBe('paragraph')
+
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      editor.setHtml(`
+        <table style="width: 100%;">
+          <tbody>
+            <tr><td>A</td><td>B</td></tr>
+          </tbody>
+        </table>
+      `)
+    })
+    await page.waitForTimeout(120)
+
+    await page.locator('#w-e-textarea-1').click()
+    await page.keyboard.press('Control+A')
+    await page.keyboard.press('Control+X')
+    await page.waitForTimeout(120)
+
+    const afterCut = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      return {
+        tableCount: (editor.children || []).filter((node: any) => node?.type === 'table').length,
+        firstType: editor.children?.[0]?.type || '',
+      }
+    })
+
+    expect(afterCut.tableCount).toBe(0)
+    expect(afterCut.firstType).toBe('paragraph')
   })
 
   test('uploads an image as base64', async ({ page }) => {

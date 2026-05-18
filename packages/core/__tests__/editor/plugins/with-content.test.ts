@@ -307,6 +307,35 @@ describe('editor content API', () => {
     expect(editor.getText()).toBe('')
   })
 
+  it('clear should reset editor when the first top-level node is a table', () => {
+    const editor = createEditor({
+      content: [
+        {
+          type: 'table',
+          children: [
+            {
+              type: 'table-row',
+              children: [
+                {
+                  type: 'table-cell',
+                  children: [{ text: 'A' }],
+                } as any,
+              ],
+            } as any,
+          ],
+        } as any,
+        {
+          type: 'paragraph',
+          children: [{ text: '' }],
+        } as any,
+      ],
+    })
+
+    editor.clear()
+
+    expect(editor.children).toEqual([{ type: 'paragraph', children: [{ text: '' }] }])
+  })
+
   it('undo', () => {
     const editor = createEditor()
 

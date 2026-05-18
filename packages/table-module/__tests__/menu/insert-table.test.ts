@@ -243,4 +243,35 @@ describe('Table Module Insert Table Menu', () => {
       expect.any(Object),
     )
   })
+
+  test('should insert table as first node without prepending an empty paragraph', () => {
+    const insertTableMenu = new InsertTable()
+    const editor = createEditor()
+
+    editor.children = [] as any
+    vi.spyOn(core.DomEditor, 'isSelectedEmptyParagraph').mockReturnValue(false)
+
+    const insertNodesFn = vi.fn()
+
+    vi.spyOn(slate.Transforms, 'insertNodes').mockImplementation(insertNodesFn)
+
+    const tablePanel = insertTableMenu.getPanelContentElem(editor)
+    const tdEl = $(tablePanel).find('td')[0]
+
+    tdEl.dispatchEvent(
+      new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+      }),
+    )
+
+    expect(insertNodesFn).toHaveBeenCalledTimes(1)
+    expect(insertNodesFn).toHaveBeenCalledWith(
+      editor,
+      expect.objectContaining({
+        type: 'table',
+      }),
+      expect.any(Object),
+    )
+  })
 })
