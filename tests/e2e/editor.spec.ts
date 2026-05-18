@@ -372,6 +372,108 @@ test.describe('Basic Editor', () => {
     expect(hoverAtDomBorder.resizingRowIndex).toBe(0)
   })
 
+  test('regression #297: column resize should work after setHtml without selecting table first', async ({ page }) => {
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      editor.setHtml(`
+        <p>before table</p>
+        <table style="width: 100%;">
+          <tbody>
+            <tr><td>col-1</td><td>col-2</td><td>col-3</td></tr>
+            <tr><td>a</td><td>b</td><td>c</td></tr>
+          </tbody>
+        </table>
+        <p>after table</p>
+      `)
+    })
+
+    const metrics = await page.evaluate(() => {
+      const table = document.querySelector('[data-testid="editor-textarea"] table.table') as HTMLTableElement | null
+      const firstCol = table?.querySelector('col') as HTMLTableColElement | null
+
+      if (!table || !firstCol) {
+        throw new Error('table not ready')
+      }
+
+      table.scrollIntoView({ block: 'center', inline: 'nearest' })
+      const tableRect = table.getBoundingClientRect()
+      const firstColWidth = Number(firstCol.getAttribute('width') || 0)
+
+      if (!Number.isFinite(firstColWidth) || firstColWidth <= 0) {
+        throw new Error('first column width is invalid')
+      }
+
+      return {
+        borderX: tableRect.left + firstColWidth,
+        borderY: tableRect.top + tableRect.height / 2,
+        beforeWidth: firstColWidth,
+      }
+    })
+
+    await page.locator('[data-testid="editor-textarea"] p').last().click()
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+      const tableNode = editor?.children?.find((n: any) => n?.type === 'table')
+
+      if (!tableNode) {
+        throw new Error('table node not found')
+      }
+
+      // 在 e2e 中直接设置索引，稳定触发列拖拽逻辑
+      tableNode.resizingIndex = 0
+    })
+
+    await page.evaluate(({ borderX, borderY }) => {
+      const hotzone = document.querySelector('.column-resizer .resizer-line-hotzone') as HTMLElement | null
+
+      if (!hotzone) {
+        throw new Error('resize hotzone not found')
+      }
+
+      hotzone.dispatchEvent(new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        clientX: borderX,
+        clientY: borderY,
+      }))
+      window.dispatchEvent(new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        clientX: borderX + 60,
+        clientY: borderY,
+      }))
+      window.dispatchEvent(new MouseEvent('mouseup', {
+        bubbles: true,
+        cancelable: true,
+        clientX: borderX + 60,
+        clientY: borderY,
+      }))
+    }, {
+      borderX: metrics.borderX,
+      borderY: metrics.borderY,
+    })
+    await page.waitForTimeout(150)
+
+    const afterWidth = await page.evaluate(() => {
+      const firstCol = document.querySelector(
+        '[data-testid="editor-textarea"] table col',
+      ) as HTMLTableColElement | null
+
+      if (!firstCol) {
+        throw new Error('first table col not found')
+      }
+
+      return Number(firstCol.getAttribute('width') || 0)
+    })
+
+    expect(afterWidth).toBeGreaterThan(metrics.beforeWidth + 8)
+  })
+
   test('pastes plain text', async ({ page }) => {
     await pasteText(page, 'pasted text')
 

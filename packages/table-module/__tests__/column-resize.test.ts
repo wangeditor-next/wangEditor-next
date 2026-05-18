@@ -18,6 +18,9 @@ Object.defineProperty(window, 'getComputedStyle', {
 
 Object.defineProperty(HTMLElement.prototype, 'closest', {
   value(selector: string) {
+    if (selector === '[data-block-type="table-cell"]') {
+      return this.getAttribute('data-block-type') === 'table-cell' ? this : null
+    }
     if (selector === '.table') {
       return {
         getBoundingClientRect: () => ({
@@ -208,10 +211,8 @@ describe('column resize module', () => {
     tableDom.appendChild(innerTable)
 
     vi.spyOn(editor, 'getMenuConfig').mockReturnValue({ minWidth: 90 } as any)
-    vi.spyOn(slate.Editor, 'nodes').mockReturnValue((function* () {
-      yield [table, [0]] as slate.NodeEntry<slate.Node>
-    }()))
-    vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockReturnValue(table as any)
+    vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([0] as slate.Path)
+    vi.spyOn(slate.Editor, 'node').mockReturnValue([table as slate.Node, [0]])
     vi.spyOn(core.DomEditor, 'toDOMNode').mockReturnValue(tableDom)
     const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
 
@@ -231,7 +232,7 @@ describe('column resize module', () => {
     expect(setNodesSpy).toHaveBeenCalledWith(
       editor,
       { columnWidths: [80, 180, 100] } as TableElement,
-      { mode: 'highest' },
+      { at: [0] },
     )
 
     window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
@@ -246,10 +247,8 @@ describe('column resize module', () => {
     }
 
     vi.spyOn(editor, 'getMenuConfig').mockReturnValue({ minWidth: 95 } as any)
-    vi.spyOn(slate.Editor, 'nodes').mockReturnValue((function* () {
-      yield [table, [0]] as slate.NodeEntry<slate.Node>
-    }()))
-    vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockReturnValue(table as any)
+    vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([0] as slate.Path)
+    vi.spyOn(slate.Editor, 'node').mockReturnValue([table as slate.Node, [0]])
     vi.spyOn(core.DomEditor, 'toDOMNode').mockReturnValue(document.createElement('div'))
     const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
 
@@ -268,7 +267,7 @@ describe('column resize module', () => {
     expect(setNodesSpy).toHaveBeenCalledWith(
       editor,
       { columnWidths: [95, 120, 100] } as TableElement,
-      { mode: 'highest' },
+      { at: [0] },
     )
   })
 })
