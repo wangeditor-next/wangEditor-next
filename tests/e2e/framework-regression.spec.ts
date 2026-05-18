@@ -351,6 +351,125 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
+    test(`${target.name}: regression #621 heading default font-size should clear pasted inline size`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+
+      await page.evaluate(async () => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        editor.setHtml(`
+          <h2><span style="font-size: 16px;">公众号标题</span></h2>
+          <p><br></p>
+        `)
+        await new Promise<void>(resolve => {
+          setTimeout(() => resolve(), 80)
+        })
+
+        const headingIndex = editor.children.findIndex((node: any) => node?.type === 'header2')
+
+        if (headingIndex < 0) {
+          throw new Error('header2 node not found')
+        }
+
+        const headingTextNode = editor.children?.[headingIndex]?.children?.[0] || {}
+        const text = String(headingTextNode.text || '')
+        const endOffset = Math.max(text.length, 1)
+        const editable = document.querySelector('[data-testid="editor-textarea"] [contenteditable="true"]')
+        const headingLeaf = editable?.querySelector('h2 [data-slate-string="true"]') as HTMLElement | null
+
+        if (!headingLeaf) {
+          throw new Error('heading leaf dom not found')
+        }
+
+        globalWindow.issue621BeforeSize = Number.parseFloat(window.getComputedStyle(headingLeaf).fontSize || '0')
+        globalWindow.issue621BeforeModelFontSize = String(headingTextNode.fontSize || '')
+
+        editor.select({
+          anchor: { path: [headingIndex, 0], offset: 0 },
+          focus: { path: [headingIndex, 0], offset: endOffset },
+        })
+      })
+
+      const fontSizeMenu = getToolbarMenu(page, 'fontSize').first()
+      const hasFontSizeMenu = await fontSizeMenu.count()
+
+      if (hasFontSizeMenu > 0) {
+        await expect(fontSizeMenu).not.toHaveClass(/disabled/)
+        await fontSizeMenu.click()
+        await page.locator('.w-e-select-list:visible li[data-value=""]').first().click()
+      } else {
+        await page.evaluate(() => {
+          const globalWindow = window as any
+          const editor = globalWindow.wangEditorExampleBridge?.editor
+            || globalWindow.vue2Editor
+            || globalWindow.vue3Editor
+            || globalWindow.reactEditor
+
+          if (!editor) {
+            throw new Error('editor not ready')
+          }
+
+          // Wrapper demos may not expose fontSize menu in toolbar.
+          editor.removeMark('fontSize')
+        })
+      }
+
+      await page.waitForTimeout(160)
+
+      const snapshot = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        const headingIndex = editor.children.findIndex((node: any) => node?.type === 'header2')
+        const headingTextNode = headingIndex >= 0 ? (editor.children?.[headingIndex]?.children?.[0] || {}) : {}
+        const editable = document.querySelector('[data-testid="editor-textarea"] [contenteditable="true"]')
+        const heading = editable?.querySelector('h2') as HTMLElement | null
+        const headingLeaf = editable?.querySelector('h2 [data-slate-string="true"]') as HTMLElement | null
+        const html = editor.getHtml?.() || ''
+
+        return {
+          beforeSize: Number(globalWindow.issue621BeforeSize || 0),
+          beforeModelFontSize: String(globalWindow.issue621BeforeModelFontSize || ''),
+          afterSize: Number.parseFloat(headingLeaf ? window.getComputedStyle(headingLeaf).fontSize || '0' : '0'),
+          leafStyle: headingLeaf?.getAttribute('style') || '',
+          modelFontSize: String(headingTextNode.fontSize || ''),
+          html,
+          headingText: (heading?.textContent || '').trim(),
+        }
+      })
+
+      expect(snapshot.headingText).toContain('公众号标题')
+      expect(snapshot.beforeModelFontSize).toBe('16px')
+      expect(snapshot.beforeSize).toBeGreaterThan(0)
+      expect(snapshot.afterSize).toBeGreaterThan(snapshot.beforeSize)
+      expect(snapshot.leafStyle).not.toContain('font-size')
+      expect(snapshot.modelFontSize).toBe('')
+      expect(snapshot.html).toContain('<h2>')
+      expect(snapshot.html).not.toMatch(/<span[^>]*style="[^"]*font-size/i)
+      expect(pageErrors).toEqual([])
+    })
+
     test(`${target.name}: table multi-cell bold should affect only selected cells`, async ({ page }) => {
       const pageErrors: string[] = []
 
