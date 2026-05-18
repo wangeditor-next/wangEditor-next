@@ -17,7 +17,8 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Ensure release jobs on master are not interrupted by subsequent pushes.
+  cancel-in-progress: ${{ github.ref_name != 'master' }}
 
 jobs:
   release:
