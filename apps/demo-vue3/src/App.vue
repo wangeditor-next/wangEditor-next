@@ -10,20 +10,24 @@
       </header>
 
       <div class="editor-shell">
-        <Toolbar
-          style="border-bottom: 1px solid #d9e2f2"
-          :editor="editorRef"
-          :default-config="toolbarConfig"
-          mode="default"
-        />
-        <Editor
-          style="height: 360px; overflow-y: hidden"
-          v-model="html"
-          :default-config="editorConfig"
-          mode="default"
-          @on-created="handleCreated"
-          @on-change="handleChange"
-        />
+        <div data-testid="editor-toolbar">
+          <Toolbar
+            style="border-bottom: 1px solid #d9e2f2"
+            :editor="editorRef"
+            :default-config="toolbarConfig"
+            mode="default"
+          />
+        </div>
+        <div data-testid="editor-textarea">
+          <Editor
+            style="height: 360px; overflow-y: hidden"
+            v-model="html"
+            :default-config="editorConfig"
+            mode="default"
+            @on-created="handleCreated"
+            @on-change="handleChange"
+          />
+        </div>
       </div>
     </section>
 
@@ -37,9 +41,14 @@
 <script lang="ts">
 import '@wangeditor-next/editor/dist/css/style.css'
 
-import type { IEditorConfig, IToolbarConfig } from '@wangeditor-next/editor'
+import type { IDomEditor, IEditorConfig, IToolbarConfig } from '@wangeditor-next/editor'
 import { Editor, Toolbar } from '@wangeditor-next/editor-for-vue'
-import { defineComponent, onBeforeUnmount, ref, shallowRef } from 'vue'
+import {
+  defineComponent,
+  onBeforeUnmount,
+  ref,
+  shallowRef,
+} from 'vue'
 
 const initialHtml = [
   '<h2>Vue 3 Demo</h2>',
@@ -49,10 +58,13 @@ const initialHtml = [
 
 export default defineComponent({
   name: 'DemoVue3App',
-  components: { Editor, Toolbar },
+  components: {
+    Editor,
+    Toolbar,
+  },
   setup() {
     const html = ref(initialHtml)
-    const editorRef = shallowRef()
+    const editorRef = shallowRef<IDomEditor | null>(null)
     const toolbarConfig: Partial<IToolbarConfig> = {}
     const editorConfig: Partial<IEditorConfig> = {
       placeholder: '请输入内容...',
@@ -61,16 +73,19 @@ export default defineComponent({
     onBeforeUnmount(() => {
       const editor = editorRef.value
 
-      if (editor == null) return
+      if (editor == null) { return }
       editor.destroy()
     })
 
-    const handleCreated = (editor: typeof Editor) => {
-      editorRef.value = editor
+    const handleCreated = (createdEditor: IDomEditor) => {
+      const globalWindow = window as unknown as { vue3Editor?: IDomEditor | null }
+
+      editorRef.value = createdEditor
+      globalWindow.vue3Editor = createdEditor
     }
 
-    const handleChange = (editor: typeof Editor) => {
-      html.value = editor.getHtml()
+    const handleChange = (changedEditor: IDomEditor) => {
+      html.value = changedEditor.getHtml()
     }
 
     return {

@@ -57,9 +57,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # 先构建 editor 及其依赖，避免把冷构建时间算进 Playwright webServer 超时
+      # 先构建 core editor + react wrapper，避免把冷构建时间算进 Playwright webServer 超时
       - name: Build editor packages
-        run: pnpm turbo build --filter=@wangeditor-next/editor
+        run: pnpm turbo build --filter=@wangeditor-next/editor --filter=@wangeditor-next/editor-for-react
 
       # 安装 Playwright 浏览器和系统依赖
       - name: Install Playwright browsers
