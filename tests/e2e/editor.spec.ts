@@ -372,6 +372,181 @@ test.describe('Basic Editor', () => {
     expect(hoverAtDomBorder.resizingRowIndex).toBe(0)
   })
 
+  test('regression #297: column resize should work after setHtml without selecting table first', async ({ page }) => {
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      editor.setHtml(`
+        <p>before table</p>
+        <table style="width: 100%;">
+          <tbody>
+            <tr><td>col-1</td><td>col-2</td><td>col-3</td></tr>
+            <tr><td>a</td><td>b</td><td>c</td></tr>
+          </tbody>
+        </table>
+        <p>after table</p>
+      `)
+    })
+
+    const metrics = await page.evaluate(() => {
+      const table = document.querySelector('[data-testid="editor-textarea"] table.table') as HTMLTableElement | null
+      const firstCol = table?.querySelector('col') as HTMLTableColElement | null
+
+      if (!table || !firstCol) {
+        throw new Error('table not ready')
+      }
+
+      table.scrollIntoView({ block: 'center', inline: 'nearest' })
+      const tableRect = table.getBoundingClientRect()
+      const firstColWidth = Number(firstCol.getAttribute('width') || 0)
+
+      if (!Number.isFinite(firstColWidth) || firstColWidth <= 0) {
+        throw new Error('first column width is invalid')
+      }
+
+      return {
+        borderX: tableRect.left + firstColWidth,
+        borderY: tableRect.top + tableRect.height / 2,
+        beforeWidth: firstColWidth,
+      }
+    })
+
+    await page.locator('[data-testid="editor-textarea"] p').last().click()
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+      const tableNode = editor?.children?.find((n: any) => n?.type === 'table')
+
+      if (!tableNode) {
+        throw new Error('table node not found')
+      }
+
+      // 在 e2e 中直接设置索引，稳定触发列拖拽逻辑
+      tableNode.resizingIndex = 0
+    })
+
+    await page.evaluate(({ borderX, borderY }) => {
+      const hotzone = document.querySelector('.column-resizer .resizer-line-hotzone') as HTMLElement | null
+
+      if (!hotzone) {
+        throw new Error('resize hotzone not found')
+      }
+
+      hotzone.dispatchEvent(new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        clientX: borderX,
+        clientY: borderY,
+      }))
+      window.dispatchEvent(new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        clientX: borderX + 60,
+        clientY: borderY,
+      }))
+      window.dispatchEvent(new MouseEvent('mouseup', {
+        bubbles: true,
+        cancelable: true,
+        clientX: borderX + 60,
+        clientY: borderY,
+      }))
+    }, {
+      borderX: metrics.borderX,
+      borderY: metrics.borderY,
+    })
+    await page.waitForTimeout(150)
+
+    const afterWidth = await page.evaluate(() => {
+      const firstCol = document.querySelector(
+        '[data-testid="editor-textarea"] table col',
+      ) as HTMLTableColElement | null
+
+      if (!firstCol) {
+        throw new Error('first table col not found')
+      }
+
+      return Number(firstCol.getAttribute('width') || 0)
+    })
+
+    expect(afterWidth).toBeGreaterThan(metrics.beforeWidth + 8)
+  })
+
+  test('regression #574: cutting batch-selected table cells should keep table shape and only clear selected cells', async ({ page }) => {
+    const pageErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.stack || err?.message || String(err))
+    })
+
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      editor.setHtml(`
+        <table style="width: 100%;">
+          <tbody>
+            <tr><td>A</td><td>B</td></tr>
+            <tr><td>C</td><td>D</td></tr>
+          </tbody>
+        </table>
+      `)
+    })
+
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      const tableIndex = editor.children.findIndex((node: any) => node?.type === 'table')
+
+      if (tableIndex < 0) {
+        throw new Error('table node not found')
+      }
+
+      editor.select({
+        anchor: { path: [tableIndex, 0, 0, 0], offset: 0 },
+        focus: { path: [tableIndex, 0, 1, 0], offset: 1 },
+      })
+    })
+    await page.waitForTimeout(150)
+
+    const selectedCount = await page.locator('[data-testid="editor-textarea"] td.w-e-selected, [data-testid="editor-textarea"] th.w-e-selected').count()
+
+    expect(selectedCount).toBeGreaterThanOrEqual(2)
+
+    await page.keyboard.press('Control+X')
+    await page.waitForTimeout(120)
+
+    const tableState = await page.evaluate(() => {
+      const rows = Array.from(document.querySelectorAll('[data-testid="editor-textarea"] table tr'))
+      const matrix = rows.map(row => {
+        const cells = Array.from(row.querySelectorAll('td,th')) as HTMLElement[]
+
+        return cells.map(cell => (cell.textContent || '').replace(/\s+/g, ''))
+      })
+
+      return {
+        rowCount: rows.length,
+        colCounts: rows.map(row => row.querySelectorAll('td,th').length),
+        matrix,
+      }
+    })
+
+    expect(pageErrors).toEqual([])
+    expect(tableState.rowCount).toBe(2)
+    expect(tableState.colCounts).toEqual([2, 2])
+    expect(tableState.matrix[0]).toEqual(['', ''])
+    expect(tableState.matrix[1]).toEqual(['C', 'D'])
+  })
+
   test('pastes plain text', async ({ page }) => {
     await pasteText(page, 'pasted text')
 

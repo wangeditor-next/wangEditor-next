@@ -8,6 +8,7 @@ import * as slate from 'slate'
 
 import createEditor from '../../../tests/utils/create-editor'
 import withTable from '../src/module/plugin'
+import { TableCursor } from '../src/module/table-cursor'
 import { EDITOR_TO_SELECTION } from '../src/module/weak-maps'
 
 describe('TableModule module', () => {
@@ -485,6 +486,67 @@ describe('TableModule module', () => {
 
       expect(originalSetNodesSpy).toHaveBeenCalledTimes(1)
       expect(originalSetNodesSpy).toHaveBeenCalledWith(wrappedEditor, { hidden: true }, {})
+    })
+
+    test('use withTable plugin when deleteFragment should only clear selected cell text in batch table selection', () => {
+      const editor = createEditor({
+        content: [
+          {
+            type: 'table',
+            width: 'auto',
+            children: [
+              {
+                type: 'table-row',
+                children: [
+                  { type: 'table-cell', children: [{ text: 'A' }] },
+                  { type: 'table-cell', children: [{ text: 'B' }] },
+                ],
+              },
+              {
+                type: 'table-row',
+                children: [
+                  { type: 'table-cell', children: [{ text: 'C' }] },
+                  { type: 'table-cell', children: [{ text: 'D' }] },
+                ],
+              },
+            ],
+            columnWidths: [100, 100],
+          },
+        ],
+      })
+      const wrappedEditor = withTable(editor)
+      const unselectSpy = vi.spyOn(TableCursor, 'unselect')
+
+      const tableSelection = [[
+        [
+          [slate.Node.get(wrappedEditor, [0, 0, 0]) as any, [0, 0, 0]],
+          {
+            rtl: 1, ltr: 1, ttb: 1, btt: 1,
+          },
+        ],
+        [
+          [slate.Node.get(wrappedEditor, [0, 0, 1]) as any, [0, 0, 1]],
+          {
+            rtl: 1, ltr: 1, ttb: 1, btt: 1,
+          },
+        ],
+      ]] as any
+
+      EDITOR_TO_SELECTION.set(wrappedEditor, tableSelection)
+      wrappedEditor.selection = {
+        anchor: { path: [0, 0, 0, 0], offset: 0 },
+        focus: { path: [0, 0, 1, 0], offset: 1 },
+      }
+
+      wrappedEditor.deleteFragment()
+
+      expect((slate.Node.get(wrappedEditor, [0, 0, 0, 0]) as slate.Text).text).toBe('')
+      expect((slate.Node.get(wrappedEditor, [0, 0, 1, 0]) as slate.Text).text).toBe('')
+      expect((slate.Node.get(wrappedEditor, [0, 1, 0, 0]) as slate.Text).text).toBe('C')
+      expect((slate.Node.get(wrappedEditor, [0, 1, 1, 0]) as slate.Text).text).toBe('D')
+      expect((slate.Node.get(wrappedEditor, [0, 0]).children as any[])).toHaveLength(2)
+      expect((slate.Node.get(wrappedEditor, [0, 1]).children as any[])).toHaveLength(2)
+      expect(unselectSpy).toHaveBeenCalledWith(wrappedEditor)
     })
   })
 })

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>wangEditor Vue2 wrapper demo</title>
+  <link href="https://cdn.bootcdn.net/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet">
+  <link href="./css/editor.css" rel="stylesheet">
+  <link href="../dist/css/style.css" rel="stylesheet">
+  <style>
+    .page {
+      margin: 16px;
+      max-width: 980px;
+    }
+
+    .shell {
+      border: 1px solid #d9e2f2;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .output {
+      margin-top: 12px;
+      font-size: 12px;
+      background: #f7f9fc;
+      border: 1px solid #e5ebf5;
+      border-radius: 8px;
+      padding: 8px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script src="https://unpkg.com/vue@2.7.16/dist/vue.js"></script>
+  <script src="../dist/index.js"></script>
+  <script>
+    window.editor = window.wangEditor
+  </script>
+  <script src="https://unpkg.com/@wangeditor-next/editor-for-vue2@1.0.2/dist/index.js"></script>
+  <script>
+    const { Editor, Toolbar } = window.WangEditorForVue
+
+    new Vue({
+      el: '#app',
+      components: {
+        Editor,
+        Toolbar,
+      },
+      data() {
+        return {
+          html: [
+            '<h2>Vue2 Demo</h2>',
+            '<p>用于回归 IME 与 table 行为。</p>',
+            '<p>点击工具栏可插入表格并执行拖拽验证。</p>',
+          ].join(''),
+          editor: null,
+          toolbarConfig: {
+            toolbarKeys: [
+              'headerSelect',
+              'bold',
+              'italic',
+              '|',
+              'insertTable',
+              '|',
+              'undo',
+              'redo',
+            ],
+          },
+          editorConfig: {
+            placeholder: '请输入内容...',
+          },
+        }
+      },
+      methods: {
+        handleCreated(editorInstance) {
+          this.editor = Object.seal(editorInstance)
+          window.vue2Editor = editorInstance
+        },
+        handleChange(editorInstance) {
+          this.html = editorInstance.getHtml()
+        },
+      },
+      beforeDestroy() {
+        if (this.editor == null) { return }
+        this.editor.destroy()
+      },
+      template: `
+        <div class="page">
+          <h2>Vue2 Wrapper Demo</h2>
+          <p>该示例使用 Vue2 + @wangeditor-next/editor-for-vue2，核心能力来自本地构建产物。</p>
+
+          <div class="shell">
+            <div data-testid="editor-toolbar">
+              <Toolbar :editor="editor" :defaultConfig="toolbarConfig" mode="default" />
+            </div>
+            <div data-testid="editor-textarea">
+              <Editor
+                v-model="html"
+                :defaultConfig="editorConfig"
+                mode="default"
+                @onCreated="handleCreated"
+                @onChange="handleChange"
+              />
+            </div>
+          </div>
+
+          <pre class="output" data-testid="editor-html">{{ html }}</pre>
+        </div>
+      `,
+    })
+  </script>
+</body>
+</html>

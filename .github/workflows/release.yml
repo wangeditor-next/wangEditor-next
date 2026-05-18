@@ -103,3 +103,36 @@ jobs:
         run: >-
           node .github/scripts/create-consolidated-release.js
           '${{ steps.changesets.outputs.publishedPackages }}'
+
+      - name: Resolve published editor version
+        if: steps.changesets.outputs.published == 'true' && github.ref_name == 'master'
+        id: editor_version
+        env:
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        run: |
+          set -euo pipefail
+
+          version="$(node -e "const pkgs = JSON.parse(process.env.PUBLISHED_PACKAGES || '[]'); const editor = pkgs.find(p => p.name === '@wangeditor-next/editor'); if (editor?.version) process.stdout.write(editor.version)")"
+          if [ -z "$version" ]; then
+            version="$(node -p "require('./packages/editor/package.json').version")"
+            echo "Fallback to packages/editor/package.json version: $version"
+          else
+            echo "Published @wangeditor-next/editor version: $version"
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger docs site deployment for released editor version
+        if: steps.changesets.outputs.published == 'true' && github.ref_name == 'master' && secrets.DOCS_REPO_DISPATCH_TOKEN != ''
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.DOCS_REPO_DISPATCH_TOKEN }}
+          repository: wangeditor-next/docs
+          event-type: editor-release-published
+          client-payload: >-
+            {"version":"${{ steps.editor_version.outputs.version }}","sourceRepo":"${{ github.repository }}","sourceSha":"${{ github.sha }}","sourceRunId":"${{ github.run_id }}"}
+
+      - name: Warn when docs dispatch token is missing
+        if: steps.changesets.outputs.published == 'true' && github.ref_name == 'master' && secrets.DOCS_REPO_DISPATCH_TOKEN == ''
+        run: |
+          echo "::warning::DOCS_REPO_DISPATCH_TOKEN is not set. Skip triggering wangeditor-next/docs deployment."
