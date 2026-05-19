@@ -62,6 +62,44 @@ describe('vdom util fns', () => {
     expect(pProps.id).toBe('p1')
   })
 
+  it('preserves svg namespace when normalizing vnode data', () => {
+    const vnode = h(
+      'div',
+      {},
+      [
+        h(
+          'svg',
+          {
+            attrs: {
+              viewBox: '0 0 16 16',
+              width: '16',
+              height: '16',
+            },
+          },
+          [
+            h('path', {
+              attrs: {
+                d: 'M0 0L1 1',
+                fill: 'red',
+              },
+            }),
+          ],
+        ),
+      ],
+    )
+
+    const svgVNode = (vnode.children?.[0] || {}) as VNode
+    const pathVNode = (svgVNode.children?.[0] || {}) as VNode
+
+    expect(svgVNode.data?.ns).toBe('http://www.w3.org/2000/svg')
+    expect(pathVNode.data?.ns).toBe('http://www.w3.org/2000/svg')
+
+    normalizeVnodeData(vnode)
+
+    expect(svgVNode.data?.ns).toBe('http://www.w3.org/2000/svg')
+    expect(pathVNode.data?.ns).toBe('http://www.w3.org/2000/svg')
+  })
+
   it('add vnode props', () => {
     const vnode = h('div', {})
 
