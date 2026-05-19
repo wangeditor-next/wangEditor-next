@@ -250,6 +250,70 @@ test.describe('Basic Editor', () => {
     expect(consoleErrors).toEqual([])
   })
 
+  test('regression #692: toolbar object config should keep fontSize select options', async ({ page }) => {
+    const pageErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.stack || err?.message || String(err))
+    })
+
+    await page.evaluate(() => {
+      const globalWindow = window as any
+      const bridge = globalWindow.wangEditorExampleBridge
+      const editorContainer = document.querySelector('#editor-text-area')
+      const toolbarContainer = document.querySelector('#editor-toolbar')
+
+      bridge?.toolbar?.destroy()
+      bridge?.editor?.destroy()
+
+      if (!editorContainer || !toolbarContainer) {
+        throw new Error('editor containers are missing')
+      }
+
+      const editor = globalWindow.wangEditor.createEditor({
+        selector: '#editor-text-area',
+        html: '<p>font-size-regression</p>',
+        config: {
+          MENU_CONF: {
+            fontSize: {
+              fontSizeList: ['12px', '16px', '24px', '40px'],
+            },
+          },
+        },
+      })
+      const toolbar = globalWindow.wangEditor.createToolbar({
+        editor,
+        selector: '#editor-toolbar',
+        config: {
+          toolbarKeys: [{ key: 'fontSize', title: '文字大小' }],
+        },
+      })
+
+      globalWindow.wangEditorExampleBridge = {
+        editor,
+        toolbar,
+      }
+    })
+
+    await focusEditor(page)
+
+    const fontSizeMenu = getToolbarMenu(page, 'fontSize')
+
+    await expect(fontSizeMenu).toHaveClass(/select-button/)
+    await expect(page.locator('#editor-toolbar .w-e-bar-item-group')).toHaveCount(0)
+
+    await fontSizeMenu.click()
+
+    const selectList = page.locator('.w-e-select-list:visible').last()
+
+    await expect(selectList).toBeVisible()
+
+    const optionTexts = (await selectList.locator('li').allTextContents()).map(item => item.trim())
+
+    expect(optionTexts).toEqual(expect.arrayContaining(['12px', '16px', '24px', '40px']))
+    expect(pageErrors).toEqual([])
+  })
+
   test('regression #502: insertLink modal should stay in visible editor area after scroll-to-top', async ({ page }) => {
     const pageErrors: string[] = []
 

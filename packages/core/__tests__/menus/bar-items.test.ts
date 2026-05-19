@@ -227,6 +227,68 @@ describe('bar item lifecycle', () => {
     toolbar.destroy()
   })
 
+  test('Toolbar treats toolbarKeys object without menuKeys as a single select menu', async () => {
+    const editor = createEditorStub()
+    const container = document.createElement('div')
+    let toolbar: Toolbar | null = null
+
+    document.body.appendChild(container)
+
+    editor.getMenuConfig = vi.fn((key: string) => {
+      if (key !== 'fontSize') { return {} }
+
+      return {
+        fontSizeList: ['12px', '16px', { name: '24px', value: '24px' }],
+      }
+    })
+    MENU_ITEM_FACTORIES.fontSize = vi.fn(() => ({
+      title: '字号',
+      tag: 'select',
+      getValue: () => '',
+      getOptions: (currentEditor: any) => {
+        const { fontSizeList = [] } = currentEditor.getMenuConfig('fontSize')
+        const options = [{ text: '默认', value: '' }]
+
+        fontSizeList.forEach((size: string | { name: string; value: string }) => {
+          if (typeof size === 'string') {
+            options.push({ text: size, value: size })
+            return
+          }
+
+          options.push({ text: size.name, value: size.value })
+        })
+
+        return options
+      },
+      isActive: () => false,
+      isDisabled: () => false,
+      exec: vi.fn(),
+    })) as any
+
+    try {
+      toolbar = new Toolbar(container, {
+        toolbarKeys: [{ key: 'fontSize', title: '文字大小' }],
+      })
+      TOOLBAR_TO_EDITOR.set(toolbar as any, editor)
+      await flushMicrotasks()
+
+      expect(container.querySelector('.w-e-bar-item-group')).toBeNull()
+      const menuButton = container.querySelector('[data-menu-key="fontSize"]') as HTMLButtonElement
+
+      expect(menuButton).not.toBeNull()
+      menuButton.click()
+      await flushMicrotasks()
+
+      const optionTexts = Array.from(container.querySelectorAll('.w-e-select-list li'))
+        .map(elem => elem.textContent?.trim() || '')
+
+      expect(optionTexts).toEqual(['默认', '12px', '16px', '24px'])
+    } finally {
+      toolbar?.destroy()
+      delete MENU_ITEM_FACTORIES.fontSize
+    }
+  })
+
   test('HoverBar updates state for new selections and skips re-render for the same inline path', async () => {
     vi.useFakeTimers()
     const editor = createEditorStub()
