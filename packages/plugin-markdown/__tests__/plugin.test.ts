@@ -1,3 +1,4 @@
+import { DomEditor } from '@wangeditor-next/editor'
 import { Editor } from 'slate'
 
 import createEditor from '../../../tests/utils/create-editor'
@@ -26,5 +27,20 @@ describe('plugin-markdown', () => {
     editor.insertBreak()
 
     expect(editor.children[0].type).toBe('divider')
+  })
+
+  it('skips markdown trigger while composing', () => {
+    const editor = createMarkdownEditor()
+    const textarea = DomEditor.getTextarea(editor)
+
+    editor.select(Editor.start(editor, []))
+    editor.insertText('#')
+
+    textarea.isComposing = true
+    editor.insertText(' ')
+    textarea.isComposing = false
+
+    expect(editor.children[0].type).toBe('paragraph')
+    expect(Editor.string(editor, [0])).toBe('# ')
   })
 })
