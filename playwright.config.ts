@@ -9,7 +9,9 @@ let reactDemoCommand = reactDemoDevCommand
 let vue3DemoCommand = vue3DemoDevCommand
 
 if (process.env.PLAYWRIGHT_SKIP_BUILD) {
-  webServerCommand = 'pnpm --filter @wangeditor-next/demo-html run serve'
+  // CI e2e sets PLAYWRIGHT_SKIP_BUILD=1 and prebuilds only part of packages.
+  // Keep this lightweight but ensure plugin-markdown dist exists for markdown demos.
+  webServerCommand = 'pnpm turbo build --filter=@wangeditor-next/plugin-markdown && pnpm --filter @wangeditor-next/demo-html run serve'
 } else if (process.env.CI) {
   webServerCommand = 'pnpm turbo build --force --filter=@wangeditor-next/editor --filter=@wangeditor-next/plugin-markdown && pnpm --filter @wangeditor-next/demo-html run serve'
 }
