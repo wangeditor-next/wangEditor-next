@@ -241,6 +241,46 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
+    test(`${target.name}: regression #339 setHtml should keep emsp in styled span`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+
+      const snapshot = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        editor.setHtml('<p>2.<span style="font-family: MS-Mincho;">111&emsp;222</span></p>')
+
+        const children = editor.children || []
+        const paragraph = children[0] || {}
+        const styledNode = paragraph?.children?.[1] || {}
+        const html = editor.getHtml?.() || ''
+
+        return {
+          styledText: String(styledNode.text || ''),
+          styledFontFamily: String(styledNode.fontFamily || ''),
+          html,
+        }
+      })
+
+      expect(snapshot.styledText).toBe('111 222')
+      expect(snapshot.styledFontFamily).toBe('MS-Mincho')
+      expect(snapshot.html).toContain('111 222')
+      expect(pageErrors).toEqual([])
+    })
+
     test(`${target.name}: regression #610 image insertion should keep active font marks`, async ({ page }) => {
       const pageErrors: string[] = []
 
