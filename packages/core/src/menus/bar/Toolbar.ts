@@ -6,7 +6,13 @@
 import clonedeep from 'lodash.clonedeep'
 import debounce from 'lodash.debounce'
 
-import { EditorEvents, IInsertKeysConfig, IToolbarConfig } from '../../config/interface'
+import {
+  EditorEvents,
+  IInsertKeysConfig,
+  IToolbarConfig,
+  IToolbarMenuItemConf,
+  IToolbarMenuKey,
+} from '../../config/interface'
 import { IDomEditor } from '../../editor/interface'
 import { i18nListenLanguage } from '../../i18n'
 import $, { Dom7Array, DOMElement } from '../../utils/dom'
@@ -21,6 +27,7 @@ import {
 import { MENU_ITEM_FACTORIES } from '../register'
 
 type MenuType = IButtonMenu | ISelectMenu | IDropPanelMenu | IModalMenu
+type IToolbarSingleMenuOverride = Pick<IToolbarMenuItemConf, 'title' | 'iconSvg'>
 
 class Toolbar {
   $box: Dom7Array
@@ -115,10 +122,10 @@ class Toolbar {
       const adjustedIndex = menu.index + cumulativeOffset
 
       if (menu.replaceFn && toolbarKeysWithInsertedKeys[adjustedIndex]) {
-        const callbackKeys: string | IMenuGroup = menu.replaceFn(toolbarKeysWithInsertedKeys[adjustedIndex])
+        const callbackKeys: IToolbarMenuKey = menu.replaceFn(toolbarKeysWithInsertedKeys[adjustedIndex])
 
         if (!callbackKeys) {
-          throw new Error('This function needs to return the menu configuration：string | IMenuGroup')
+          throw new Error('This function needs to return the menu configuration: IToolbarMenuKey')
         }
         toolbarKeysWithInsertedKeys[adjustedIndex] = callbackKeys
       }
@@ -170,10 +177,27 @@ class Toolbar {
         return
       }
 
-      // 菜单组
-      this.registerGroup(key)
-      prevKey = 'group'
+      if (this.isMenuGroup(key)) {
+        // 菜单组
+        this.registerGroup(key)
+        prevKey = 'group'
+        return
+      }
+
+      // 单菜单配置对象（例如 { key: 'fontSize', title: '文字大小' }）
+      this.registerSingleMenuByConf(key)
+      prevKey = key.key
     })
+  }
+
+  private isMenuGroup(menu: IToolbarMenuKey): menu is IMenuGroup {
+    return typeof menu !== 'string' && Array.isArray((menu as IMenuGroup).menuKeys)
+  }
+
+  private registerSingleMenuByConf(menuConf: IToolbarMenuItemConf) {
+    const { key, title, iconSvg } = menuConf
+
+    this.registerSingleItem(key, this, { title, iconSvg })
   }
 
   // 注册菜单组
@@ -197,7 +221,11 @@ class Toolbar {
   }
 
   // 注册单个 toolbarItem
-  private registerSingleItem(key: string, container: GroupButton | Toolbar) {
+  private registerSingleItem(
+    key: string,
+    container: GroupButton | Toolbar,
+    toolbarOverride: IToolbarSingleMenuOverride = {},
+  ) {
     const editor = this.getEditorInstance()
     const inGroup = container instanceof GroupButton // 要添加到 groupButton
 
@@ -228,6 +256,13 @@ class Toolbar {
 
     if (menuConf && menuConf.iconSvg !== undefined) {
       menu.iconSvg = menuConf.iconSvg
+    }
+
+    if (toolbarOverride.iconSvg !== undefined) {
+      menu.iconSvg = toolbarOverride.iconSvg
+    }
+    if (toolbarOverride.title !== undefined) {
+      (menu as unknown as { title?: string }).title = toolbarOverride.title
     }
 
     const toolbarItem = createBarItem(key, menu, inGroup)

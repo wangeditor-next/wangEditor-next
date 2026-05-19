@@ -295,15 +295,23 @@ export interface IEditorConfig {
 
 export interface IInsertKeysConfig {
   index: number
-  keys: string | Array<string | IMenuGroup>
-  replaceFn?: (config: string | IMenuGroup) => string | IMenuGroup
+  keys: string | IToolbarMenuKey[]
+  replaceFn?: (config: IToolbarMenuKey) => IToolbarMenuKey
 }
+
+export interface IToolbarMenuItemConf {
+  key: string
+  title?: string
+  iconSvg?: string
+}
+
+export type IToolbarMenuKey = string | IMenuGroup | IToolbarMenuItemConf
 
 /**
  * toolbar config
  */
 export interface IToolbarConfig {
-  toolbarKeys: Array<string | IMenuGroup>
+  toolbarKeys: IToolbarMenuKey[]
   insertKeys: IInsertKeysConfig | Array<IInsertKeysConfig>
   excludeKeys: Array<string> // 排除哪些菜单
   modalAppendToBody: boolean // modal append 到 body ，而非 $textAreaContainer 内
