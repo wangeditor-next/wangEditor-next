@@ -150,5 +150,9 @@ describe('image helper', () => {
     editor.select(startLocation)
     Transforms.setNodes(editor, { type: 'header1' })
     expect(isInsertImageMenuDisabled(editor)).toBeTruthy()
+
+    editor.select(startLocation)
+    Transforms.setNodes(editor, { type: 'list-item' })
+    expect(isInsertImageMenuDisabled(editor)).toBeFalsy()
   })
 })
