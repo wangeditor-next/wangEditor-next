@@ -165,8 +165,35 @@ export function editorSelectionToDOM(textarea: TextArea, editor: IDomEditor, foc
         scrollMode: 'if-needed',
         boundary: config.scroll ? editorElement.parentElement || body : body, // issue 4215
         block: 'end',
-        behavior: 'smooth',
+        // Keep caret tracking deterministic during fast typing/enter bursts.
+        // Smooth scrolling can lag behind and leave the caret above viewport bottom.
+        behavior: 'auto',
       })
+
+      // Some wrapper runtimes can still leave the collapsed caret slightly
+      // outside of the scroll viewport after rapid enter bursts. Force a
+      // final correction so caret is always visible (issue #388).
+      if (config.scroll) {
+        const scrollContainer = editorElement.parentElement as HTMLElement | null
+
+        if (scrollContainer) {
+          const keepCaretVisible = () => {
+            const latestRect = newDomRange!.getBoundingClientRect()
+            const containerRect = scrollContainer.getBoundingClientRect()
+            const overflowBottom = latestRect.bottom - containerRect.bottom
+            const overflowTop = containerRect.top - latestRect.top
+
+            if (overflowBottom > 0) {
+              scrollContainer.scrollTop += overflowBottom + 1
+            } else if (overflowTop > 0) {
+              scrollContainer.scrollTop -= overflowTop + 1
+            }
+          }
+
+          keepCaretVisible()
+          requestAnimationFrame(keepCaretVisible)
+        }
+      }
       // @ts-ignore
       delete leafEl.getBoundingClientRect
     }
