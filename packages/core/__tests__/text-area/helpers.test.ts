@@ -114,6 +114,26 @@ describe('text-area helpers', () => {
     expect(hasSelectableTarget(editor, target)).toBe(true)
   })
 
+  it('treats reserve-marker targets as selectable even when not editable', () => {
+    const editor = { getConfig: () => ({ readOnly: false }) } as any
+    const target = {
+      nodeType: 3,
+      parentElement: {
+        nodeType: 1,
+        closest: vi.fn((selector: string) => {
+          if (selector === '[data-w-e-reserve]') { return {} }
+          return null
+        }),
+      },
+    } as any
+
+    vi.spyOn(DomEditor, 'hasDOMNode').mockImplementation((_editor, _target, options) => {
+      return !options?.editable
+    })
+
+    expect(hasSelectableTarget(editor, target)).toBe(true)
+  })
+
   it('returns false when editor is readonly', () => {
     const editor = { getConfig: () => ({ readOnly: true }) } as any
     const target = { nodeType: 1 } as any

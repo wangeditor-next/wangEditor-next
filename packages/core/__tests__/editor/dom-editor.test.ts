@@ -340,6 +340,29 @@ describe('Core DomEditor', () => {
     expect(slatePoint).toEqual({ path: [0, 0], offset: 5 })
   })
 
+  test('toSlatePoint keeps backward semantics for reserve markers when only next leaf is available', async () => {
+    editor.insertText('hello')
+    await flushPromises()
+
+    const paragraph = DomEditor.toDOMNode(editor, editor.children[0] as CustomElement)
+    const textNodeWrapper = paragraph.querySelector('[data-slate-node="text"]') as HTMLElement
+    const leaf = paragraph.querySelector('[data-slate-leaf]') as HTMLElement
+    const reserve = document.createElement('span')
+
+    reserve.setAttribute('contenteditable', 'false')
+    reserve.setAttribute('data-w-e-reserve', 'true')
+    reserve.textContent = '1.'
+    textNodeWrapper.insertBefore(reserve, leaf)
+
+    const slatePoint = DomEditor.toSlatePoint(editor, [reserve.firstChild as Node, 2], {
+      exactMatch: false,
+      suppressThrow: false,
+      searchDirection: 'backward',
+    })
+
+    expect(slatePoint).toEqual({ path: [0, 0], offset: 5 })
+  })
+
   test('hasRange', () => {
     editor.insertText('hello')
     editor.selectAll()
