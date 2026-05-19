@@ -231,6 +231,56 @@ test.describe('Basic Editor', () => {
     expect(snapshot.supLineHeight).not.toBe('0px')
   })
 
+  test('regression #539: colored multiline blockquote should re-render and stay editable', async ({ page }) => {
+    const pageErrors: string[] = []
+    const consoleErrors: string[] = []
+    const issueHtml = '<blockquote><span style="color: rgb(247, 89, 171);">22222<br>3333</span></blockquote>'
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.stack || err?.message || String(err))
+    })
+
+    page.on('console', msg => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text())
+      }
+    })
+
+    const snapshot = await page.evaluate(value => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor missing')
+      }
+
+      editor.setHtml(value)
+      const firstPassHtml = editor.getHtml()
+
+      // Simulate framework two-way binding "echo" by writing serialized html back.
+      editor.setHtml(firstPassHtml)
+      editor.focus()
+      editor.insertText('Z')
+      editor.deleteBackward('character')
+
+      return {
+        firstPassHtml,
+        secondPassHtml: editor.getHtml(),
+        plainText: editor.getText?.() || '',
+      }
+    }, issueHtml)
+
+    const domNodeErrors = pageErrors.filter(msg => msg.includes('Cannot resolve a DOM node from Slate node'))
+
+    expect(snapshot.firstPassHtml).toContain('<blockquote>')
+    expect(snapshot.secondPassHtml).toContain('<blockquote>')
+    expect(snapshot.secondPassHtml).toContain('22222')
+    expect(snapshot.secondPassHtml).toContain('3333')
+    expect(snapshot.plainText).toContain('22222')
+    expect(snapshot.plainText).toContain('3333')
+    expect(domNodeErrors).toEqual([])
+    expect(consoleErrors).toEqual([])
+  })
+
   test('regression #609: insertData with complex html should not break editing', async ({ page }) => {
     const pageErrors: string[] = []
     const consoleErrors: string[] = []
