@@ -1,5 +1,35 @@
 # Change Log
 
+## 1.8.3
+
+### Patch Changes
+
+- d311c7a: Fix first-node table lifecycle by removing the prepended empty paragraph workaround and making `clear()` reliably reset content when table is the first top-level node.
+
+  Add regressions for issue #47 to ensure first inserted table can be removed via select-all delete/cut and that setHtml fully replaces previous table content.
+
+- 539e9f0: Preserve SVG namespace (`data.ns`) during vnode data normalization so custom renderers using `h('svg')` keep valid SVG rendering semantics.
+- 647b74c: Fix list selection mapping when the browser selection lands on ordered-list reserve markers (`data-w-e-reserve`).
+
+  Treat reserve-marker targets as selectable during `selectionchange` sync, and resolve reserve-marker DOM points to nearby Slate text points so `editor.getSelectionText()` stays in sync with visible list-row selections.
+
+- 6641948: Fix clipped first-line rendering when large-font superscript or subscript appears
+  at the top of the editor content.
+
+  `sup` and `sub` in the editor area now inherit line-height, preventing browser
+  default `line-height: 0` behavior from being cut by the scroll container.
+
+- b2c0fa7: Fix toolbar object config compatibility for single menus such as `fontSize`.
+
+  `toolbarKeys` items like `{ key: 'fontSize', title: '文字大小' }` are now treated
+  as single-menu configs (instead of menu groups) when `menuKeys` is absent, so
+  `MENU_CONF.fontSize.fontSizeList` and the select dropdown keep working together.
+
+- 91dd27e: Fix caret auto-scroll alignment during rapid enter typing so Vue 3 wrapper editing keeps the caret visible at the viewport bottom.
+- e90bd5b: Fix nested span style parsing so explicit child style values correctly override inherited parent marks during HTML import.
+
+  This resolves issue #608 where a mixed bold span (`font-weight:700` parent with `font-weight:400` child) was imported as fully bold text instead of preserving the non-bold subrange.
+
 ## 1.8.2
 
 ### Patch Changes

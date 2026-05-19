@@ -1,5 +1,56 @@
 # Change Log
 
+## 5.7.3
+
+### Patch Changes
+
+- d311c7a: Fix first-node table lifecycle by removing the prepended empty paragraph workaround and making `clear()` reliably reset content when table is the first top-level node.
+
+  Add regressions for issue #47 to ensure first inserted table can be removed via select-all delete/cut and that setHtml fully replaces previous table content.
+
+- 6641948: Fix clipped first-line rendering when large-font superscript or subscript appears
+  at the top of the editor content.
+
+  `sup` and `sub` in the editor area now inherit line-height, preventing browser
+  default `line-height: 0` behavior from being cut by the scroll container.
+
+- edc17af: Fix table column resize after `setHtml` when the current selection is outside the table.
+
+  Column drag now captures the target table path on `mousedown` and keeps using
+  that path during `mousemove`, instead of looking up the table from current
+  selection state. This keeps full-width table column resize usable after
+  `setHtml` without requiring an extra click inside a cell first.
+
+- b2c0fa7: Fix toolbar object config compatibility for single menus such as `fontSize`.
+
+  `toolbarKeys` items like `{ key: 'fontSize', title: '文字大小' }` are now treated
+  as single-menu configs (instead of menu groups) when `menuKeys` is absent, so
+  `MENU_CONF.fontSize.fontSizeList` and the select dropdown keep working together.
+
+- e90bd5b: Fix nested span style parsing so explicit child style values correctly override inherited parent marks during HTML import.
+
+  This resolves issue #608 where a mixed bold span (`font-weight:700` parent with `font-weight:400` child) was imported as fully bold text instead of preserving the non-bold subrange.
+
+- Updated dependencies [d311c7a]
+- Updated dependencies [539e9f0]
+- Updated dependencies [917fe92]
+- Updated dependencies [c6c6c0b]
+- Updated dependencies [647b74c]
+- Updated dependencies [6641948]
+- Updated dependencies [18d2ae5]
+- Updated dependencies [edc17af]
+- Updated dependencies [b2c0fa7]
+- Updated dependencies [91dd27e]
+- Updated dependencies [e90bd5b]
+- Updated dependencies [9aa2987]
+  - @wangeditor-next/core@1.8.3
+  - @wangeditor-next/table-module@2.0.3
+  - @wangeditor-next/basic-modules@2.0.3
+  - @wangeditor-next/video-module@2.0.3
+  - @wangeditor-next/code-highlight@2.0.3
+  - @wangeditor-next/list-module@2.0.3
+  - @wangeditor-next/upload-image-module@2.0.3
+
 ## 5.7.2
 
 ### Patch Changes
