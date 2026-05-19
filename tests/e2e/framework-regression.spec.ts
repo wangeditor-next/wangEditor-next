@@ -281,6 +281,143 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
+    test(`${target.name}: regression #441 ordered list selection text should match visual range`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+      await clearEditor(page)
+
+      const listMenuSupport = await page.evaluate(() => {
+        const menuKeys = Array.from(
+          document.querySelectorAll('[data-testid="editor-toolbar"] [data-menu-key]'),
+        ).map(el => el.getAttribute('data-menu-key') || '')
+
+        return {
+          hasNumberedList: menuKeys.includes('numberedList'),
+          hasOrderedList: menuKeys.includes('orderedList'),
+        }
+      })
+
+      let orderedListMenuKey = ''
+
+      if (listMenuSupport.hasNumberedList) {
+        orderedListMenuKey = 'numberedList'
+      } else if (listMenuSupport.hasOrderedList) {
+        orderedListMenuKey = 'orderedList'
+      }
+
+      test.skip(
+        !orderedListMenuKey,
+        `${target.name} demo toolbar does not expose ordered-list menu`,
+      )
+
+      const orderedListMenu = await ensureMenuEnabled(page, orderedListMenuKey)
+
+      await orderedListMenu.click({ force: true })
+      await page.keyboard.type('parent-item')
+      await page.keyboard.press('Enter')
+      await page.keyboard.type('child-item')
+      await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        const secondListItemIndex = (editor.children || []).findIndex((node: any, index: number) => {
+          return index > 0 && node?.type === 'list-item'
+        })
+
+        if (secondListItemIndex < 0) {
+          throw new Error('second list item not found')
+        }
+
+        editor.select({
+          anchor: { path: [secondListItemIndex, 0], offset: 0 },
+          focus: { path: [secondListItemIndex, 0], offset: 0 },
+        })
+        editor.handleTab?.()
+      })
+      await page.waitForTimeout(200)
+
+      const didSelectPrefix = await page.evaluate(() => {
+        const textArea = document.querySelector('[data-testid="editor-textarea"]') as HTMLElement | null
+        const textNodes = Array.from(textArea?.querySelectorAll('[data-slate-string]') || []) as HTMLElement[]
+        const parentText = textNodes.find(el => (el.textContent || '').trim() === 'parent-item')
+
+        if (!parentText) { return false }
+
+        const row = parentText.closest('div[style*="display: flex"]') as HTMLElement | null
+
+        if (!row) { return false }
+        const prefixNode = row.querySelector('[data-w-e-reserve]') as HTMLElement | null
+
+        if (!prefixNode || !prefixNode.firstChild) { return false }
+
+        const selection = window.getSelection()
+
+        if (!selection) { return false }
+
+        const range = document.createRange()
+
+        range.setStart(prefixNode.firstChild, 0)
+        range.setEnd(prefixNode.firstChild, prefixNode.textContent?.length || 0)
+        selection.removeAllRanges()
+        selection.addRange(range)
+        document.dispatchEvent(new Event('selectionchange'))
+
+        return true
+      })
+
+      expect(didSelectPrefix).toBe(true)
+      await page.waitForTimeout(120)
+
+      const snapshot = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        const listItems = (editor.children || []).filter((node: any) => node?.type === 'list-item')
+        const levels = listItems.map((node: any) => {
+          return {
+            level: Number(node?.level ?? -1),
+            text: String(node?.children?.[0]?.text || ''),
+          }
+        })
+        const selection = window.getSelection()
+
+        return {
+          levels,
+          domSelectionText: selection?.toString() || '',
+          editorSelectionText: editor.getSelectionText?.() || '',
+          selection: editor.selection || null,
+        }
+      })
+
+      expect(snapshot.levels.some(item => item.level === 1 && item.text.includes('child-item'))).toBe(true)
+      expect(
+        snapshot.editorSelectionText.length,
+        JSON.stringify(snapshot),
+      ).toBeGreaterThan(0)
+      expect(snapshot.domSelectionText).toBe('1.')
+      expect(snapshot.editorSelectionText.replace(/\s+/g, '')).toBe('parent-item')
+      expect(pageErrors).toEqual([])
+    })
+
     test(`${target.name}: regression #610 image insertion should keep active font marks`, async ({ page }) => {
       const pageErrors: string[] = []
 

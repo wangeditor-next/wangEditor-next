@@ -7,7 +7,14 @@ import { Editor, Element } from 'slate'
 
 import { DomEditor } from '../editor/dom-editor'
 import { IDomEditor } from '../editor/interface'
-import { DOMNode, DOMRange, isDOMNode } from '../utils/dom'
+import {
+  DOMElement,
+  DOMNode,
+  DOMRange,
+  isDOMElement,
+  isDOMNode,
+  isDOMText,
+} from '../utils/dom'
 
 /**
  * Check if two DOM range objects are equal.
@@ -62,7 +69,22 @@ export function isTargetInsideNonReadonlyVoid(
  * Check if the target can participate in editor selection.
  */
 export function hasSelectableTarget(editor: IDomEditor, target: EventTarget | null): boolean {
-  return hasEditableTarget(editor, target) || isTargetInsideNonReadonlyVoid(editor, target)
+  if (hasEditableTarget(editor, target)) { return true }
+  if (!hasTarget(editor, target)) { return false }
+
+  let targetEl: DOMElement | null = null
+
+  if (isDOMElement(target)) {
+    targetEl = target
+  } else if (isDOMText(target)) {
+    targetEl = target.parentElement
+  }
+
+  if (targetEl?.closest('[data-w-e-reserve]')) {
+    return true
+  }
+
+  return isTargetInsideNonReadonlyVoid(editor, target)
 }
 
 /**

@@ -629,6 +629,16 @@ export const DomEditor = {
           })
         }
       } else if (nonEditableNode) {
+        const isReserveNode = Boolean(nonEditableNode.closest('[data-w-e-reserve]'))
+
+        // `data-w-e-reserve` (for example list-item prefix markers) is a
+        // non-editable decoration before real slate text. Prefer mapping
+        // forward so drag/select from the marker lands on the following text.
+        if (!searchDirection && isReserveNode) {
+          searchDirection = 'forward'
+        }
+
+        let resolvedDirection = searchDirection
         const getLeafNodes = (node: DOMElement | null | undefined) => {
           return node
             ? Array.from(node.querySelectorAll('[data-slate-leaf]'))
@@ -654,7 +664,17 @@ export const DomEditor = {
           }
         }
 
-        if (!leafNode && (searchDirection === 'forward' || !searchDirection)) {
+        if (
+          !leafNode
+          && (
+            searchDirection === 'forward'
+            || !searchDirection
+            // Keep trying for reserve markers even when the requested
+            // direction is backward. Reserve markers are rendered before real
+            // text and otherwise cannot resolve a point.
+            || isReserveNode
+          )
+        ) {
           const leafNodes = [
             ...getLeafNodes(elementNode),
             ...getLeafNodes(elementNode?.nextElementSibling as DOMElement | null),
@@ -663,7 +683,9 @@ export const DomEditor = {
           for (const currentLeaf of leafNodes) {
             if (isAfter(nonEditableNode, currentLeaf)) {
               leafNode = currentLeaf
-              searchDirection = 'forward'
+              resolvedDirection = searchDirection === 'backward' && isReserveNode
+                ? 'backward'
+                : 'forward'
               break
             }
           }
@@ -673,7 +695,7 @@ export const DomEditor = {
           textNode = leafNode.closest('[data-slate-node="text"]')!
           domNode = leafNode
 
-          if (searchDirection === 'forward') {
+          if (resolvedDirection === 'forward') {
             offset = 0
           } else {
             offset = domNode.textContent!.length
