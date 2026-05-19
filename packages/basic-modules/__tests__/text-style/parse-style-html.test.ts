@@ -206,4 +206,20 @@ describe('parse style html', () => {
     ])
     expect(nestedEditor.getText()).toBe(underlinedSpaces)
   })
+
+  it('it should preserve emsp inside styled span when setting html', () => {
+    const html = '<p>2.<span style="font-family: MS-Mincho;">111&emsp;222</span></p>'
+    const nestedEditor = createEditor({ html })
+
+    expect(nestedEditor.children).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          { text: '2.' },
+          { text: '111 222', fontFamily: 'MS-Mincho' },
+        ],
+      },
+    ])
+    expect(nestedEditor.getHtml()).toBe('<p>2.<span style="font-family: MS-Mincho;">111 222</span></p>')
+  })
 })
