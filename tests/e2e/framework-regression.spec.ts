@@ -1217,4 +1217,66 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
   }
+
+  test('vue2-wrapper-markdown: regression #675 should skip markdown trigger during composition', async ({ page }) => {
+    const pageErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.stack || err?.message || String(err))
+    })
+
+    await openTarget(page, {
+      name: 'vue2-wrapper-markdown',
+      url: '/examples/framework-vue2-markdown.html',
+    })
+
+    await clearEditor(page)
+    await page.keyboard.type('# ')
+
+    const normalTriggerSnapshot = await page.evaluate(() => {
+      const editor = (window as any).vue2MarkdownEditor
+
+      if (!editor) {
+        throw new Error('vue2 markdown editor not ready')
+      }
+
+      return {
+        firstType: editor.children?.[0]?.type || '',
+        html: editor.getHtml?.() || '',
+      }
+    })
+
+    expect(normalTriggerSnapshot.firstType).toBe('header1')
+    expect(normalTriggerSnapshot.html).toContain('<h1>')
+
+    await clearEditor(page)
+    await page.keyboard.type('#')
+
+    const compositionSnapshot = await page.evaluate(() => {
+      const globalWindow = window as any
+      const editor = globalWindow.vue2MarkdownEditor
+
+      if (!editor) {
+        throw new Error('vue2 markdown editor not ready')
+      }
+
+      const textarea = globalWindow.editor.DomEditor.getTextarea(editor)
+
+      textarea.isComposing = true
+      editor.insertText(' ')
+      editor.insertText('你')
+      textarea.isComposing = false
+
+      return {
+        firstType: editor.children?.[0]?.type || '',
+        html: editor.getHtml?.() || '',
+        text: editor.getText?.() || '',
+      }
+    })
+
+    expect(compositionSnapshot.firstType).toBe('paragraph')
+    expect(compositionSnapshot.html).toContain('<p># 你</p>')
+    expect(compositionSnapshot.text).toContain('# 你')
+    expect(pageErrors).toEqual([])
+  })
 })

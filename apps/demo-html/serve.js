@@ -6,6 +6,7 @@ const port = Number(process.env.PORT || 8881)
 const examplesDir = path.join(__dirname, 'examples')
 const editorDistDir = path.join(__dirname, '../../packages/editor/dist')
 const coreDistDir = path.join(__dirname, '../../packages/core/dist')
+const markdownDistDir = path.join(__dirname, '../../packages/plugin-markdown/dist')
 
 const contentTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -54,6 +55,10 @@ function resolvePath(urlPath) {
     return { filePath: path.join(coreDistDir, urlPath.replace('/core-dist/', '')) }
   }
 
+  if (urlPath.startsWith('/plugin-markdown-dist/')) {
+    return { filePath: path.join(markdownDistDir, urlPath.replace('/plugin-markdown-dist/', '')) }
+  }
+
   return { notFound: true }
 }
 
@@ -85,6 +90,8 @@ const server = http.createServer((req, res) => {
     baseDir = editorDistDir
   } else if (requestUrl.pathname.startsWith('/core-dist/')) {
     baseDir = coreDistDir
+  } else if (requestUrl.pathname.startsWith('/plugin-markdown-dist/')) {
+    baseDir = markdownDistDir
   }
   if (!isSafePath(baseDir, filePath) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' })

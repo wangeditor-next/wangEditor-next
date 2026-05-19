@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test'
 
-let webServerCommand = 'pnpm turbo build --filter=@wangeditor-next/editor && pnpm --filter @wangeditor-next/demo-html run serve'
+let webServerCommand = 'pnpm turbo build --filter=@wangeditor-next/editor --filter=@wangeditor-next/plugin-markdown && pnpm --filter @wangeditor-next/demo-html run serve'
 const reactDemoDevCommand = 'pnpm --filter @wangeditor-next/demo-react exec vite --host 127.0.0.1 --port 3102 --strictPort'
 const vue3DemoDevCommand = 'pnpm --filter @wangeditor-next/demo-vue3 exec vite --force --host 127.0.0.1 --port 3103 --strictPort'
 const reactDemoPreviewCommand = 'pnpm --filter @wangeditor-next/demo-react run build && pnpm --filter @wangeditor-next/demo-react exec vite preview --host 127.0.0.1 --port 3102 --strictPort'
@@ -11,7 +11,7 @@ let vue3DemoCommand = vue3DemoDevCommand
 if (process.env.PLAYWRIGHT_SKIP_BUILD) {
   webServerCommand = 'pnpm --filter @wangeditor-next/demo-html run serve'
 } else if (process.env.CI) {
-  webServerCommand = 'pnpm turbo build --force --filter=@wangeditor-next/editor && pnpm --filter @wangeditor-next/demo-html run serve'
+  webServerCommand = 'pnpm turbo build --force --filter=@wangeditor-next/editor --filter=@wangeditor-next/plugin-markdown && pnpm --filter @wangeditor-next/demo-html run serve'
 }
 
 if (process.env.CI && process.env.PLAYWRIGHT_WRAPPER_PREVIEW === '1') {

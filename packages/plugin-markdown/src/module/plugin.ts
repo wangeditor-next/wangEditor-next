@@ -66,10 +66,23 @@ function withMarkdown<T extends IDomEditor>(editor: T) {
   const { insertBreak, insertText } = editor
   const newEditor = editor
 
+  const isComposing = () => {
+    try {
+      return DomEditor.getTextarea(editor).isComposing
+    } catch {
+      return false
+    }
+  }
+
   // 输入空格时，尝试转换 markdown
   newEditor.insertText = text => {
     const { selection } = editor
 
+    // Align with Slate/Plate autoformat behavior: never run markdown trigger
+    // while IME composition is active.
+    if (isComposing()) {
+      return insertText(text)
+    }
     if (selection == null) {
       return insertText(text)
     }
@@ -125,6 +138,9 @@ function withMarkdown<T extends IDomEditor>(editor: T) {
   newEditor.insertBreak = () => {
     const { selection } = editor
 
+    if (isComposing()) {
+      return insertBreak()
+    }
     if (selection == null) {
       return insertBreak()
     }
