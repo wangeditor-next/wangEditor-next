@@ -254,6 +254,13 @@ const onMouseMove = throttle((event: Event) => {
 }, 100)
 
 function onMouseUp(_event: Event) {
+  // Flush any throttled trailing mousemove before clearing drag state.
+  // Fast drags can queue the last movement; without flush the final width change is lost.
+  if (isMouseDownForResize) {
+    onMouseMove.flush()
+  }
+  onMouseMove.cancel()
+
   isSelectionOperation = false
   isMouseDownForResize = false
   editorWhenMouseDown = null
