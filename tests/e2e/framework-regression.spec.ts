@@ -1279,4 +1279,114 @@ test.describe('Framework parity regression', () => {
     expect(compositionSnapshot.text).toContain('# 你')
     expect(pageErrors).toEqual([])
   })
+
+  test('vue3-wrapper: regression #388 enter-at-bottom should keep scroll pinned', async ({ page }) => {
+    const pageErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.stack || err?.message || String(err))
+    })
+
+    await openTarget(page, {
+      name: 'vue3-wrapper',
+      url: 'http://127.0.0.1:3103/',
+    })
+
+    await page.evaluate(() => {
+      const editor = (window as any).vue3Editor
+
+      if (!editor) {
+        throw new Error('vue3 editor not ready')
+      }
+
+      const lines = Array.from({ length: 120 }, (_, index) => {
+        return `<p>scroll-line-${String(index).padStart(3, '0')}</p>`
+      }).join('')
+
+      editor.setHtml(lines)
+
+      const lastIndex = Math.max((editor.children?.length || 1) - 1, 0)
+      const lastText = String(editor.children?.[lastIndex]?.children?.[0]?.text || '')
+
+      editor.select({
+        anchor: { path: [lastIndex, 0], offset: lastText.length },
+        focus: { path: [lastIndex, 0], offset: lastText.length },
+      })
+      editor.focus()
+
+      const container = document.querySelector('[data-testid="editor-textarea"]')
+      const scroller = container?.querySelector('.w-e-scroll') as HTMLElement | null
+
+      if (scroller) {
+        scroller.scrollTop = scroller.scrollHeight
+      }
+    })
+
+    await page
+      .locator('[data-testid="editor-textarea"] [data-slate-node="text"]')
+      .last()
+      .click({ force: true })
+
+    await Array.from({ length: 36 }).reduce<Promise<void>>(sequence => {
+      return sequence.then(() => page.keyboard.press('Enter'))
+    }, Promise.resolve())
+
+    await page.waitForTimeout(500)
+
+    const metrics = await page.evaluate(() => {
+      const container = document.querySelector('[data-testid="editor-textarea"]')
+      const scroller = container?.querySelector('.w-e-scroll') as HTMLElement | null
+
+      if (!scroller) {
+        throw new Error('scroll container missing')
+      }
+
+      const viewportBottom = scroller.scrollTop + scroller.clientHeight
+      const gapToBottom = scroller.scrollHeight - viewportBottom
+      const scrollerRect = scroller.getBoundingClientRect()
+      const selection = window.getSelection()
+
+      let caretTop = -1
+      let caretBottom = -1
+
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0).cloneRange()
+
+        range.collapse(true)
+        const rangeRect = range.getBoundingClientRect()
+
+        if (rangeRect && !(rangeRect.top === 0 && rangeRect.bottom === 0)) {
+          caretTop = rangeRect.top
+          caretBottom = rangeRect.bottom
+        } else if (selection.anchorNode) {
+          const anchorElem = selection.anchorNode.nodeType === Node.TEXT_NODE
+            ? selection.anchorNode.parentElement
+            : selection.anchorNode as Element
+          const anchorRect = anchorElem?.getBoundingClientRect()
+
+          if (anchorRect) {
+            caretTop = anchorRect.top
+            caretBottom = anchorRect.bottom
+          }
+        }
+      }
+
+      const caretInView = caretBottom >= scrollerRect.top - 1 && caretTop <= scrollerRect.bottom + 1
+
+      return {
+        gapToBottom,
+        scrollTop: scroller.scrollTop,
+        scrollHeight: scroller.scrollHeight,
+        clientHeight: scroller.clientHeight,
+        caretTop,
+        caretBottom,
+        scrollerTop: scrollerRect.top,
+        scrollerBottom: scrollerRect.bottom,
+        caretInView,
+      }
+    })
+
+    expect(metrics.caretInView, JSON.stringify(metrics)).toBe(true)
+    expect(pageErrors).toEqual([])
+  })
 })
