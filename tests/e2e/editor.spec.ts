@@ -192,6 +192,45 @@ test.describe('Basic Editor', () => {
     expect(domPointErrors).toEqual([])
   })
 
+  test('regression #282: first-line superscript with large font should not be clipped', async ({ page }) => {
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor missing')
+      }
+
+      editor.setHtml('<p><span style="font-size: 40px;"><sup><strong>sfdsf</strong></sup></span></p>')
+    })
+
+    await page.waitForTimeout(120)
+
+    const snapshot = await page.evaluate(() => {
+      const textarea = document.querySelector('[data-testid="editor-textarea"]')
+      const scroll = textarea?.querySelector('.w-e-scroll')
+      const strong = textarea?.querySelector('strong')
+      const sup = textarea?.querySelector('sup')
+
+      if (!scroll || !strong || !sup) {
+        throw new Error('required elements not found')
+      }
+
+      const scrollRect = scroll.getBoundingClientRect()
+      const strongRect = strong.getBoundingClientRect()
+      const clippedTop = strongRect.top + 0.5 < scrollRect.top
+
+      return {
+        clippedTop,
+        scrollTop: scrollRect.top,
+        textTop: strongRect.top,
+        supLineHeight: window.getComputedStyle(sup).lineHeight,
+      }
+    })
+
+    expect(snapshot.clippedTop).toBe(false)
+    expect(snapshot.supLineHeight).not.toBe('0px')
+  })
+
   test('regression #609: insertData with complex html should not break editing', async ({ page }) => {
     const pageErrors: string[] = []
     const consoleErrors: string[] = []

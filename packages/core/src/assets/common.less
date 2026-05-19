@@ -10,6 +10,12 @@
   p, li, td, th, blockquote {
     line-height: 1.5;
   }
+
+  // Avoid first-line clipping when superscript/subscript appears with large fonts.
+  // Browser default styles often set sup/sub line-height to 0, which can be cut by .w-e-scroll.
+  sup, sub {
+    line-height: inherit;
+  }
 }
 
 .w-e-toolbar * {
