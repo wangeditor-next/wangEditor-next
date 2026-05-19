@@ -5,17 +5,17 @@
 
 import camelCase from 'lodash.camelcase'
 import {
-  VNode,
-  init,
+  attributesModule,
   classModule,
+  Dataset,
+  datasetModule,
+  eventListenersModule,
+  init,
+  Props,
   propsModule,
   styleModule,
-  datasetModule,
+  VNode,
   VNodeStyle,
-  Props,
-  Dataset,
-  eventListenersModule,
-  attributesModule,
 } from 'snabbdom'
 
 export type PatchFn = (oldVnode: VNode | Element, vnode: VNode) => VNode
@@ -34,11 +34,54 @@ export function genPatchFn(): PatchFn {
     eventListenersModule, // attaches event listeners
     attributesModule,
   ])
+
   return patch
 }
 
 // vnode.data 保留属性，参考 snabbdom VNodeData
-const DATA_PRESERVE_KEYS = ['props', 'attrs', 'style', 'dataset', 'on', 'hook']
+const DATA_PRESERVE_KEYS = ['props', 'attrs', 'style', 'dataset', 'on', 'hook', 'ns']
+
+/**
+ * 给 vnode 添加 prop
+ * @param vnode vnode
+ * @param newProp { key: val }
+ */
+export function addVnodeProp(vnode: VNode, newProp: Props) {
+  if (vnode.data == null) { vnode.data = {} }
+  const data = vnode.data
+
+  if (data.props == null) { data.props = {} }
+
+  Object.assign(data.props, newProp)
+}
+
+/**
+ * 给 vnode 添加 dataset
+ * @param vnode vnode
+ * @param newDataset { key: val }
+ */
+export function addVnodeDataset(vnode: VNode, newDataset: Dataset) {
+  if (vnode.data == null) { vnode.data = {} }
+  const data = vnode.data
+
+  if (data.dataset == null) { data.dataset = {} }
+
+  Object.assign(data.dataset, newDataset)
+}
+
+/**
+ * 给 vnode 添加样式
+ * @param vnode vnode
+ * @param newStyle { key: val }
+ */
+export function addVnodeStyle(vnode: VNode, newStyle: VNodeStyle) {
+  if (vnode.data == null) { vnode.data = {} }
+  const data = vnode.data
+
+  if (data.style == null) { data.style = {} }
+
+  Object.assign(data.style, newStyle)
+}
 
 /**
  * 整理 vnode.data ，将暴露出来的零散属性（如 id className data-xxx）放在 data.props 或 data.dataset
@@ -47,6 +90,7 @@ const DATA_PRESERVE_KEYS = ['props', 'attrs', 'style', 'dataset', 'on', 'hook']
 export function normalizeVnodeData(vnode: VNode) {
   const { data = {}, children = [] } = vnode
   const dataKeys = Object.keys(data)
+
   dataKeys.forEach((key: string) => {
     const value = data[key]
 
@@ -57,11 +101,12 @@ export function normalizeVnodeData(vnode: VNode) {
     }
 
     // 忽略 data 保留属性
-    if (DATA_PRESERVE_KEYS.includes(key)) return
+    if (DATA_PRESERVE_KEYS.includes(key)) { return }
 
     // dataset
     if (key.startsWith('data-')) {
       let datasetKey = key.slice(5) // 截取掉最前面的 'data-'
+
       datasetKey = camelCase(datasetKey) // 转为驼峰写法
 
       // 存储到 data.dataset
@@ -80,47 +125,8 @@ export function normalizeVnodeData(vnode: VNode) {
   // 遍历 children
   if (children.length > 0) {
     children.forEach(child => {
-      if (typeof child === 'string') return
+      if (typeof child === 'string') { return }
       normalizeVnodeData(child)
     })
   }
-}
-
-/**
- * 给 vnode 添加 prop
- * @param vnode vnode
- * @param newProp { key: val }
- */
-export function addVnodeProp(vnode: VNode, newProp: Props) {
-  if (vnode.data == null) vnode.data = {}
-  const data = vnode.data
-  if (data.props == null) data.props = {}
-
-  Object.assign(data.props, newProp)
-}
-
-/**
- * 给 vnode 添加 dataset
- * @param vnode vnode
- * @param newDataset { key: val }
- */
-export function addVnodeDataset(vnode: VNode, newDataset: Dataset) {
-  if (vnode.data == null) vnode.data = {}
-  const data = vnode.data
-  if (data.dataset == null) data.dataset = {}
-
-  Object.assign(data.dataset, newDataset)
-}
-
-/**
- * 给 vnode 添加样式
- * @param vnode vnode
- * @param newStyle { key: val }
- */
-export function addVnodeStyle(vnode: VNode, newStyle: VNodeStyle) {
-  if (vnode.data == null) vnode.data = {}
-  const data = vnode.data
-  if (data.style == null) data.style = {}
-
-  Object.assign(data.style, newStyle)
 }
