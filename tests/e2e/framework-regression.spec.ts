@@ -385,6 +385,85 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
+    test(`${target.name}: regression #505 fast drag should keep effective resize`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+      await clearEditor(page)
+      await page.keyboard.type('outside anchor')
+      await create2x2Table(page)
+      await page
+        .locator('[data-testid="editor-textarea"] table.table')
+        .last()
+        .locator('tr:nth-child(1) > *:nth-child(1)')
+        .click({ force: true })
+
+      const before = await getLastTableWidths(page)
+      const table = page.locator('[data-testid="editor-textarea"] table.table').last()
+      const tableRect = await table.boundingBox()
+      const hotzone = page
+        .locator('[data-testid="editor-textarea"] .column-resizer')
+        .last()
+        .locator('.column-resizer-item')
+        .first()
+        .locator('.resizer-line-hotzone')
+
+      if (tableRect && before.length > 0) {
+        await page.mouse.move(tableRect.x + before[0], tableRect.y + 20)
+        await page.waitForTimeout(120)
+      }
+
+      const fastDragApplied = await page.evaluate(() => {
+        const hotzoneEl = document.querySelector(
+          '[data-testid="editor-textarea"] .column-resizer .column-resizer-item:first-child .resizer-line-hotzone',
+        ) as HTMLElement | null
+
+        if (!hotzoneEl) { return false }
+
+        const rect = hotzoneEl.getBoundingClientRect()
+        const x = Math.round(rect.left + rect.width / 2)
+        const y = Math.round(rect.top + rect.height / 2)
+
+        hotzoneEl.dispatchEvent(new MouseEvent('mousedown', {
+          bubbles: true,
+          clientX: x,
+          clientY: y,
+        }))
+        // Trigger a no-op movement first so the next movement is throttled trailing.
+        window.dispatchEvent(new MouseEvent('mousemove', {
+          bubbles: true,
+          clientX: x,
+          clientY: y,
+        }))
+        window.dispatchEvent(new MouseEvent('mousemove', {
+          bubbles: true,
+          clientX: x + 120,
+          clientY: y,
+        }))
+        window.dispatchEvent(new MouseEvent('mouseup', {
+          bubbles: true,
+          clientX: x + 120,
+          clientY: y,
+        }))
+
+        return true
+      })
+      const afterFastDrag = await getLastTableWidths(page)
+
+      const beforeFirst = before[0] || 0
+      const afterFastFirst = afterFastDrag[0] || 0
+
+      expect(fastDragApplied).toBe(true)
+      await expect(hotzone).toHaveClass(/visible/)
+      expect(beforeFirst).toBeGreaterThan(0)
+      expect(afterFastFirst).toBeGreaterThan(beforeFirst)
+      expect(pageErrors).toEqual([])
+    })
+
     test(`${target.name}: setHtml in-table focus should keep single table and stable output`, async ({ page }) => {
       const pageErrors: string[] = []
 
