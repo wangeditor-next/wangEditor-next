@@ -392,6 +392,163 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
+    test(`${target.name}: regression #704 list item should allow inserting image and video`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+      await clearEditor(page)
+
+      const menuSupport = await page.evaluate(() => {
+        const menuKeys = Array.from(
+          document.querySelectorAll('[data-testid="editor-toolbar"] [data-menu-key]'),
+        ).map(el => el.getAttribute('data-menu-key') || '')
+
+        return {
+          hasBulletedList: menuKeys.includes('bulletedList'),
+          hasGroupImage: menuKeys.includes('group-image'),
+          hasInsertImage: menuKeys.includes('insertImage'),
+          hasGroupVideo: menuKeys.includes('group-video'),
+          hasInsertVideo: menuKeys.includes('insertVideo'),
+        }
+      })
+
+      test.skip(
+        !menuSupport.hasBulletedList
+          || (!menuSupport.hasGroupImage && !menuSupport.hasInsertImage)
+          || (!menuSupport.hasGroupVideo && !menuSupport.hasInsertVideo),
+        `${target.name} demo toolbar does not expose required list/image/video menus`,
+      )
+
+      await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        editor.setHtml('<ul><li>list item</li></ul>')
+
+        const listIndex = editor.children.findIndex((node: any) => node?.type === 'list-item')
+
+        if (listIndex < 0) {
+          throw new Error('list-item node not found')
+        }
+
+        const listTextNode = listIndex >= 0 ? (editor.children[listIndex]?.children?.[0] || {}) : {}
+        const textLength = String(listTextNode.text || '').length
+        const offset = Math.min(Math.max(textLength, 1), 4)
+
+        editor.select({
+          anchor: { path: [listIndex, 0], offset },
+          focus: { path: [listIndex, 0], offset },
+        })
+      })
+
+      if (menuSupport.hasGroupImage) {
+        const groupImage = await ensureMenuEnabled(page, 'group-image')
+
+        await groupImage.hover()
+        const groupPanel = groupImage.locator('..').locator('.w-e-bar-item-menus-container')
+
+        await groupPanel.waitFor({ state: 'visible' })
+        await groupPanel.locator('[data-menu-key="insertImage"]').click({ force: true })
+      } else {
+        const imageMenu = await ensureMenuEnabled(page, 'insertImage')
+
+        await imageMenu.click({ force: true })
+      }
+
+      const imageModal = page.locator('.w-e-modal:visible').last()
+
+      await expect(imageModal).toBeVisible()
+      await imageModal.locator('input[type="text"]').first().fill('https://example.com/regression-704.png')
+      await imageModal.locator('.button-container button').first().click()
+      await page.waitForTimeout(200)
+
+      await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        const listIndex = editor.children.findIndex((node: any) => node?.type === 'list-item')
+
+        if (listIndex < 0) {
+          throw new Error('list-item node not found after image insertion')
+        }
+
+        const listTextNode = listIndex >= 0 ? (editor.children[listIndex]?.children?.[0] || {}) : {}
+        const textLength = String(listTextNode.text || '').length
+        const offset = Math.min(Math.max(textLength, 1), 4)
+
+        editor.select({
+          anchor: { path: [listIndex, 0], offset },
+          focus: { path: [listIndex, 0], offset },
+        })
+      })
+
+      if (menuSupport.hasGroupVideo) {
+        const groupVideo = await ensureMenuEnabled(page, 'group-video')
+
+        await groupVideo.hover()
+        const groupPanel = groupVideo.locator('..').locator('.w-e-bar-item-menus-container')
+
+        await groupPanel.waitFor({ state: 'visible' })
+        await groupPanel.locator('[data-menu-key="insertVideo"]').click({ force: true })
+      } else {
+        const videoMenu = await ensureMenuEnabled(page, 'insertVideo')
+
+        await videoMenu.click({ force: true })
+      }
+
+      const videoModal = page.locator('.w-e-modal:visible').last()
+
+      await expect(videoModal).toBeVisible()
+      await videoModal.locator('input[type="text"]').first().fill('https://example.com/regression-704.mp4')
+      await videoModal.locator('.button-container button').first().click()
+      await page.waitForTimeout(260)
+
+      const snapshot = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        const listItemCount = (editor.children || []).filter((node: any) => node?.type === 'list-item').length
+
+        return {
+          imageCount: (editor.getElemsByTypePrefix?.('image') || []).length,
+          videoCount: (editor.getElemsByTypePrefix?.('video') || []).length,
+          listItemCount,
+          html: editor.getHtml?.() || '',
+        }
+      })
+
+      expect(snapshot.listItemCount).toBeGreaterThanOrEqual(1)
+      expect(snapshot.imageCount).toBeGreaterThanOrEqual(1)
+      expect(snapshot.videoCount).toBeGreaterThanOrEqual(1)
+      expect(snapshot.html).toContain('regression-704')
+      expect(pageErrors).toEqual([])
+    })
+
     test(`${target.name}: table resize flow should be consistent`, async ({ page }) => {
       const pageErrors: string[] = []
 

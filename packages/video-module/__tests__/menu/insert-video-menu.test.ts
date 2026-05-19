@@ -52,6 +52,14 @@ describe('videoModule module', () => {
       expect(insertVideoMenu.isDisabled(editor)).toBe(false)
     })
 
+    test('InsertVideoMenu should remain enabled when current selection is in list-item', () => {
+      setEditorSelection(editor)
+
+      vi.spyOn(slate.Range, 'isCollapsed').mockReturnValue(true)
+      vi.spyOn(core.DomEditor, 'getSelectedElems').mockReturnValue([{ type: 'list-item' }] as any)
+      expect(insertVideoMenu.isDisabled(editor)).toBe(false)
+    })
+
     test('InsertVideoMenu invoke getModalPositionNode should return null', () => {
       expect(insertVideoMenu.getModalPositionNode(editor)).toBeNull()
     })

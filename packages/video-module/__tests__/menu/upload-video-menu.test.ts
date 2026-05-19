@@ -52,6 +52,14 @@ describe('videoModule module', () => {
       expect(uploadVideoMenu.isDisabled(baseEditor)).toBe(false)
     })
 
+    test('UploadVideoMenu should remain enabled when current selection is in list-item', () => {
+      setEditorSelection(baseEditor)
+
+      vi.spyOn(slate.Range, 'isCollapsed').mockReturnValue(true)
+      vi.spyOn(core.DomEditor, 'getSelectedElems').mockReturnValue([{ type: 'list-item' }] as any)
+      expect(uploadVideoMenu.isDisabled(baseEditor)).toBe(false)
+    })
+
     test('UploadVideoMenu invoke customBrowseAndUpload if editor give customBrowseAndUpload option', () => {
       const fn = vi.fn()
       const editor = createEditor({
