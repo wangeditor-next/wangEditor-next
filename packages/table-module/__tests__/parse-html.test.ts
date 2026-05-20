@@ -9,6 +9,7 @@ import { registerParseElemHtmlConf } from '../../core/src/parse-html'
 import { registerParseStyleHtmlHandler } from '../../core/src/parse-html/index'
 import parseElemHtmlFromCore from '../../core/src/parse-html/parse-elem-html'
 import wangEditorTableModule from '../src/index'
+import { tableToHtmlConf } from '../src/module/elem-to-html'
 import {
   parseCellHtmlConf,
   parseRowHtmlConf,
@@ -666,6 +667,105 @@ describe('table - parse html', () => {
       height: 124,
       children,
       columnWidths: [90],
+    })
+  })
+
+  it('table - class mode full width attrs should parse as responsive width', () => {
+    const $table = $(
+      [
+        '<table class="w-e-table-layout-fixed" width="100%" data-w-e-table-height="auto">',
+        '<colgroup><col width="120"></col><col width="180"></col></colgroup>',
+        '<tr><td width="auto">A</td><td width="auto">B</td></tr>',
+        '</table>',
+      ].join(''),
+    )
+    const children = [
+      {
+        type: 'table-row',
+        children: [
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: 'A' }] },
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: 'B' }] },
+        ],
+      },
+    ]
+
+    expect(parseTableHtmlConf.parseElemHtml($table[0], children as any, editor)).toEqual({
+      type: 'table',
+      width: '100%',
+      height: 0,
+      children,
+      columnWidths: [120, 180],
+    })
+  })
+
+  it('table width 100% should keep round-trip from html -> slate -> html in class mode', () => {
+    const $table = $(
+      [
+        '<table class="w-e-table-layout-fixed" width="100%" data-w-e-table-height="auto">',
+        '<colgroup><col width="120"></col><col width="180"></col></colgroup>',
+        '<tr><td width="auto">A</td><td width="auto">B</td></tr>',
+        '</table>',
+      ].join(''),
+    )
+    const children = [
+      {
+        type: 'table-row',
+        children: [
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: 'A' }] },
+          { ...TABLE_CELL_BASE_PROPS, children: [{ text: 'B' }] },
+        ],
+      },
+    ]
+    const parsedTable = parseTableHtmlConf.parseElemHtml($table[0], children as any, editor)
+    const exported = tableToHtmlConf.elemToHtml(
+      parsedTable as any,
+      '<tr><td>A</td><td>B</td></tr>',
+      {
+        getConfig() {
+          return { textStyleMode: 'class' }
+        },
+      } as any,
+    )
+
+    expect(parsedTable.width).toBe('100%')
+    expect(exported).toContain('width="100%"')
+    expect(exported).toContain('<col width=120></col>')
+    expect(exported).toContain('<col width=180></col>')
+  })
+
+  it('table width 100% should keep round-trip from slate -> html -> slate', () => {
+    const tableNode = {
+      type: 'table',
+      width: '100%',
+      height: 'auto',
+      columnWidths: [160, 240],
+      children: [
+        {
+          type: 'table-row',
+          children: [
+            { ...TABLE_CELL_BASE_PROPS, children: [{ text: 'A' }] },
+            { ...TABLE_CELL_BASE_PROPS, children: [{ text: 'B' }] },
+          ],
+        },
+      ],
+    }
+    const exported = tableToHtmlConf.elemToHtml(
+      tableNode as any,
+      '<tr><td>A</td><td>B</td></tr>',
+      {
+        getConfig() {
+          return { textStyleMode: 'class' }
+        },
+      } as any,
+    )
+    const $table = $(exported)
+    const parsedBack = parseTableHtmlConf.parseElemHtml($table[0], tableNode.children as any, editor)
+
+    expect(exported).toContain('width="100%"')
+    expect(parsedBack).toMatchObject({
+      type: 'table',
+      width: '100%',
+      columnWidths: [160, 240],
     })
   })
 

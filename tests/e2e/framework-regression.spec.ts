@@ -149,6 +149,39 @@ async function dragLastTableFirstBorder(page: Page, deltaX: number): Promise<boo
   return true
 }
 
+async function setTextareaWidthAndMeasureLastTable(
+  page: Page,
+  widthPx: number,
+): Promise<{ containerWidth: number; tableWidth: number; tableStyleWidth: string }> {
+  return page.evaluate(({ width }) => {
+    const textarea = document.querySelector('[data-testid="editor-textarea"]') as HTMLElement | null
+
+    if (!textarea) {
+      throw new Error('editor textarea not found')
+    }
+
+    textarea.style.width = `${width}px`
+    textarea.style.maxWidth = `${width}px`
+    textarea.style.transition = 'none'
+
+    const tables = Array.from(textarea.querySelectorAll('table.table')) as HTMLElement[]
+    const table = tables[tables.length - 1] || null
+
+    if (!table) {
+      throw new Error('table not found')
+    }
+
+    const containerRect = textarea.getBoundingClientRect()
+    const tableRect = table.getBoundingClientRect()
+
+    return {
+      containerWidth: containerRect.width,
+      tableWidth: tableRect.width,
+      tableStyleWidth: table.style.width || '',
+    }
+  }, { width: widthPx })
+}
+
 test.describe('Framework parity regression', () => {
   test.describe.configure({ timeout: process.env.CI ? 240_000 : 90_000 })
 
@@ -716,6 +749,74 @@ test.describe('Framework parity regression', () => {
       expect(dragged).toBe(true)
       expect(beforeFirst).toBeGreaterThan(0)
       expect(resized || clampedAtMinWidth).toBe(true)
+      expect(pageErrors).toEqual([])
+    })
+
+    test(`${target.name}: regression #848 tableFullWidth should stay responsive after container resize`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+      await clearEditor(page)
+      await create2x2Table(page)
+
+      await page
+        .locator('[data-testid="editor-textarea"] table.table')
+        .last()
+        .locator('tr:nth-child(1) > *:nth-child(1)')
+        .click({ force: true })
+
+      const fullWidthMenu = page.locator('[data-menu-key="tableFullWidth"]:visible').first()
+      const hasFullWidthMenu = await fullWidthMenu.count()
+
+      test.skip(!hasFullWidthMenu, `${target.name} demo does not expose tableFullWidth menu`)
+
+      await expect(fullWidthMenu).not.toHaveClass(/disabled/)
+      await fullWidthMenu.click({ force: true })
+      await page.waitForTimeout(220)
+
+      const widthMode = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        const tableNode = (editor.children || []).find((node: any) => node?.type === 'table')
+
+        return String(tableNode?.width || '')
+      })
+
+      expect(widthMode).toBe('100%')
+
+      const wide = await setTextareaWidthAndMeasureLastTable(page, 820)
+
+      await page.waitForTimeout(100)
+      const narrow = await setTextareaWidthAndMeasureLastTable(page, 520)
+
+      await page.waitForTimeout(100)
+      const widened = await setTextareaWidthAndMeasureLastTable(page, 760)
+
+      expect(wide.tableStyleWidth).toBe('100%')
+      expect(narrow.tableStyleWidth).toBe('100%')
+      expect(widened.tableStyleWidth).toBe('100%')
+
+      expect(narrow.tableWidth).toBeLessThan(wide.tableWidth - 80)
+      expect(widened.tableWidth).toBeGreaterThan(narrow.tableWidth + 80)
+
+      const wideRatio = wide.tableWidth / Math.max(wide.containerWidth, 1)
+      const narrowRatio = narrow.tableWidth / Math.max(narrow.containerWidth, 1)
+      const widenedRatio = widened.tableWidth / Math.max(widened.containerWidth, 1)
+
+      expect(Math.abs(wideRatio - narrowRatio)).toBeLessThan(0.15)
+      expect(Math.abs(narrowRatio - widenedRatio)).toBeLessThan(0.15)
       expect(pageErrors).toEqual([])
     })
 
