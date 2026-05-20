@@ -95,6 +95,7 @@ jobs:
             ${{ github.ref_name == 'master' && 'chore(release): publish a new release version' || 'chore(release): publish a new pre-release version' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       # Create one consolidated GitHub Release that aggregates all published
