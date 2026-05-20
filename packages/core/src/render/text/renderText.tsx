@@ -12,9 +12,13 @@ import { jsx, VNode } from 'snabbdom'
 
 import { DomEditor } from '../../editor/dom-editor'
 import { IDomEditor } from '../../editor/interface'
-import { getElementById } from '../../utils/dom'
 import { promiseResolveThen } from '../../utils/util'
-import { ELEMENT_TO_NODE, KEY_TO_ELEMENT, NODE_TO_ELEMENT } from '../../utils/weak-maps'
+import {
+  EDITOR_TO_ELEMENT,
+  ELEMENT_TO_NODE,
+  KEY_TO_ELEMENT,
+  NODE_TO_ELEMENT,
+} from '../../utils/weak-maps'
 import { genTextId } from '../helper'
 import genTextVnode from './genVnode'
 import addTextVnodeStyle from './renderStyle'
@@ -52,8 +56,10 @@ function renderText(textNode: SlateText, parent: Ancestor, editor: IDomEditor): 
 
   // 更新 weak-map
   promiseResolveThen(() => {
-    // 异步，否则拿不到 DOM
-    const dom = getElementById(textId)
+    // 异步，否则拿不到 DOM。
+    // 优先在当前 editor root 内查找，避免同页重复 id 导致映射到错误节点。
+    const editorRoot = EDITOR_TO_ELEMENT.get(editor)
+    const dom = editorRoot?.querySelector<HTMLElement>(`#${textId}`)
 
     if (dom == null) { return }
     KEY_TO_ELEMENT.set(key, dom)

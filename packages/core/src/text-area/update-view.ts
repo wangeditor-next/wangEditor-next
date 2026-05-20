@@ -3,8 +3,9 @@
  * @author wangfupeng
  */
 
-import { h, VNode } from 'snabbdom'
 import { Element } from 'slate'
+import { h, VNode } from 'snabbdom'
+
 import { IDomEditor } from '../editor/interface'
 import { node2Vnode } from '../render/node2Vnode'
 import $, { Dom7Array, getDefaultView, getElementById } from '../utils/dom'
@@ -117,6 +118,9 @@ function updateView(textarea: TextArea, editor: IDomEditor) {
     $scroll.append($textArea)
     textarea.$textArea = $textArea // 存储下编辑区域的 DOM 节点
     textareaElem = $textArea[0]
+    EDITOR_TO_ELEMENT.set(editor, textareaElem)
+    NODE_TO_ELEMENT.set(editor, textareaElem)
+    ELEMENT_TO_NODE.set(textareaElem, editor)
 
     // 再生成 patch 函数，并执行
     const patchFn = genPatchFn()
@@ -138,7 +142,9 @@ function updateView(textarea: TextArea, editor: IDomEditor) {
   }
 
   if (textareaElem == null) {
-    textareaElem = getElementById(elemId)
+    const scopedRoot = $scroll[0] as HTMLElement | undefined
+
+    textareaElem = scopedRoot?.querySelector(`#${elemId}`) || getElementById(elemId)
 
     // 通过 getElementById 获取的有可能是 null （销毁、重建时，可能会发生这种情况）
     if (textareaElem == null) { return }
@@ -164,7 +170,9 @@ function updateView(textarea: TextArea, editor: IDomEditor) {
   if (isFirstPatch) {
     const window = getDefaultView(textareaElem)
 
-    window && EDITOR_TO_WINDOW.set(editor, window)
+    if (window) {
+      EDITOR_TO_WINDOW.set(editor, window)
+    }
   }
 
   EDITOR_TO_ELEMENT.set(editor, textareaElem) // 存储 editor -> elem 对应关系
