@@ -1063,6 +1063,44 @@ test.describe('Basic Editor', () => {
   })
 })
 
+test('regression #625: duplicated legacy ids should not break DOM-to-Slate mapping', async ({ page }) => {
+  const pageErrors: string[] = []
+
+  page.on('pageerror', err => {
+    pageErrors.push(err?.stack || err?.message || String(err))
+  })
+
+  await page.goto('/examples/default-mode.html')
+  await page.evaluate(() => {
+    const legacyRoot = document.createElement('div')
+
+    legacyRoot.id = 'legacy-editor-mock'
+    legacyRoot.innerHTML = [
+      '<div id="w-e-textarea-1" data-slate-editor data-slate-node="value">',
+      '  <p id="w-e-element-header1-0" data-slate-node="element">',
+      '    <span id="w-e-text-1" data-slate-node="text">',
+      '      <span data-slate-leaf><span data-slate-string>legacy</span></span>',
+      '    </span>',
+      '  </p>',
+      '</div>',
+    ].join('')
+    document.body.prepend(legacyRoot)
+  })
+
+  await page.getByTestId('btn-create').click()
+  await expect(getEditable(page)).toBeVisible()
+
+  await page.locator('[data-testid="editor-textarea"] [data-slate-string]').first().click()
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.type('hello-next')
+  await page.waitForTimeout(120)
+
+  const domNodeErrors = pageErrors.filter(msg => msg.includes('Cannot resolve a Slate node from DOM node'))
+
+  expect(domNodeErrors).toEqual([])
+  await expect(page.getByTestId('editor-html')).toContainText('hello-next')
+})
+
 test.describe('Multi Editors', () => {
   test('edits each editor independently', async ({ page }) => {
     await page.goto('/examples/multi-editors.html')

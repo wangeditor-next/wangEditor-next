@@ -9,9 +9,9 @@ import { jsx, VNode } from 'snabbdom'
 
 import { DomEditor } from '../../editor/dom-editor'
 import { IDomEditor } from '../../editor/interface'
-import { getElementById } from '../../utils/dom'
 import { promiseResolveThen } from '../../utils/util'
 import {
+  EDITOR_TO_ELEMENT,
   ELEMENT_TO_NODE,
   KEY_TO_ELEMENT,
   NODE_TO_ELEMENT,
@@ -115,8 +115,10 @@ function renderElement(elemNode: SlateElement, editor: IDomEditor): VNode {
 
   // 更新 element 相关的 weakMap
   promiseResolveThen(() => {
-    // 异步，否则拿不到 DOM 节点
-    const dom = getElementById(domId)
+    // 异步，否则拿不到 DOM 节点。
+    // 优先在当前 editor root 内查找，避免同页多编辑器（或旧版 wangEditor）重复 id 冲突。
+    const editorRoot = EDITOR_TO_ELEMENT.get(editor)
+    const dom = editorRoot?.querySelector<HTMLElement>(`#${domId}`)
 
     if (dom == null) { return }
     KEY_TO_ELEMENT.set(key, dom)
