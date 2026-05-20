@@ -142,6 +142,20 @@ describe('TableModule module', () => {
       )
     })
 
+    test('tableToHtmlConf should keep 100% width even when columnWidths are present', () => {
+      const element = {
+        type: 'table',
+        width: '100%',
+        columnWidths: [120, 80],
+        children: [],
+      }
+      const res = tableToHtmlConf.elemToHtml(element, '<tr><td>123</td><td>456</td></tr>')
+
+      expect(res).toBe(
+        '<table style="width: 100%;table-layout: fixed;height:auto"><colgroup contentEditable="false"><col width=120></col><col width=80></col></colgroup><tbody><tr><td>123</td><td>456</td></tr></tbody></table>',
+      )
+    })
+
     test('tableToHtmlConf should return html table string with full width style if element is set fullWith value true', () => {
       const element = {
         type: 'table',

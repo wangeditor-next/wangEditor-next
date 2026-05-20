@@ -50,69 +50,13 @@ class TableFullWidth implements IButtonMenu {
 
     if (!tableNode) { return }
 
-    const { columnWidths = [] } = tableNode
-
-    // 获取当前选中的表格的DOM元素,再查找table-container容器元素，防止文档多表格时，获取到其他表格的容器元素
-    const tableDom = DomEditor.toDOMNode(editor, tableNode)
-    const containerElement = tableDom.querySelector('.table-container')
-
-    if (!containerElement || columnWidths.length === 0) {
-      // 如果找不到容器或没有列宽信息，则使用原来的逻辑，先使用auto预留以后实现按比例实现缩放功能
-      const props: Partial<TableElement> = {
-        width: 'auto',
-      }
-
-      Transforms.setNodes(editor, props, { mode: 'highest' })
-      return
+    // 主流编辑器在“适应宽度”语义下使用 100% 响应式模式，而不是一次性重算像素列宽。
+    // 列宽数据仍然保留，用于后续拖拽列宽时进行比例/最小宽度计算。
+    const props: Partial<TableElement> = {
+      width: '100%',
     }
 
-    const containerWidth = containerElement.clientWidth
-    const currentTotalWidth = columnWidths.reduce((a, b) => a + b, 0)
-
-    // 计算等比例调整后的列宽
-    const adjustedColumnWidths = columnWidths.map(width => {
-      const ratio = width / currentTotalWidth
-
-      return Math.floor(ratio * containerWidth)
-    })
-
-    // 确保最小宽度限制（与 insertTable 配置一致，默认 60px）
-    const { minWidth: configuredMinWidth = 60 } = editor.getMenuConfig('insertTable') as any
-    const minWidth = parseInt(String(configuredMinWidth), 10) || 60
-    const adjustedWithMinWidth = adjustedColumnWidths.map(width => Math.max(minWidth, width))
-
-    // 如果调整后的总宽度超过容器宽度，按比例缩小
-    const adjustedTotalWidth = adjustedWithMinWidth.reduce((a, b) => a + b, 0)
-
-    if (adjustedTotalWidth > containerWidth) {
-      const scaleFactor = containerWidth / adjustedTotalWidth
-      const finalColumnWidths = adjustedWithMinWidth.map(width => Math.max(minWidth, Math.floor(width * scaleFactor)))
-
-      // 应用新的列宽和宽度设置
-      const props: Partial<TableElement> = {
-        width: 'auto',
-        columnWidths: finalColumnWidths,
-      }
-
-      Transforms.setNodes(editor, props, { mode: 'highest' })
-    } else {
-      // 如果调整后的总宽度小于容器宽度，将剩余宽度加到最后一列
-      const finalColumnWidths = [...adjustedWithMinWidth]
-      const remainingWidth = containerWidth - adjustedTotalWidth - 1
-
-      if (remainingWidth > 0 && finalColumnWidths.length > 0) {
-        // 将剩余宽度加到最后一列
-        finalColumnWidths[finalColumnWidths.length - 1] += remainingWidth
-      }
-
-      // 应用新的列宽和宽度设置
-      const props: Partial<TableElement> = {
-        width: 'auto',
-        columnWidths: finalColumnWidths,
-      }
-
-      Transforms.setNodes(editor, props, { mode: 'highest' })
-    }
+    Transforms.setNodes(editor, props, { mode: 'highest' })
   }
 }
 
