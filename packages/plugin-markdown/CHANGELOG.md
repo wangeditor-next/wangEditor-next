@@ -1,5 +1,17 @@
 # @wangeditor-next/plugin-markdown
 
+## 2.0.3
+
+### Patch Changes
+
+- b88927c: Fix markdown auto-trigger behavior during IME composition to avoid Vue2 wrapper cursor/selection glitches while typing with Chinese input methods.
+- Updated dependencies [d311c7a]
+- Updated dependencies [6641948]
+- Updated dependencies [edc17af]
+- Updated dependencies [b2c0fa7]
+- Updated dependencies [e90bd5b]
+  - @wangeditor-next/editor@5.7.3
+
 ## 2.0.2
 
 ### Patch Changes
