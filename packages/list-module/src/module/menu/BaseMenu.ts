@@ -68,6 +68,8 @@ abstract class BaseMenu implements IButtonMenu {
         // @ts-ignore
         ordered: undefined,
         level: undefined,
+        start: undefined,
+        orderType: undefined,
       })
     } else {
       // 否则，转换为 list-item
@@ -75,6 +77,8 @@ abstract class BaseMenu implements IButtonMenu {
         type: 'list-item',
         ordered: this.ordered, // 有序/无序
         indent: undefined,
+        start: undefined,
+        orderType: undefined,
       })
     }
   }

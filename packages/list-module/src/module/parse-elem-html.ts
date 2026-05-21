@@ -8,7 +8,7 @@ import { Dom7Array } from 'dom7'
 import { Descendant, Text } from 'slate'
 
 import $, { DOMElement, getTagName } from '../utils/dom'
-import { ListItemElement } from './custom-types'
+import { ListItemElement, OrderedListType } from './custom-types'
 
 /**
  * 获取 ordered
@@ -20,6 +20,36 @@ function getOrdered($elem: Dom7Array): boolean {
 
   if (listTagName === 'ol') { return true }
   return false
+}
+
+function getOrderedStart($elem: Dom7Array): number | undefined {
+  const $list = $elem.parent()
+
+  if (getTagName($list) !== 'ol') { return undefined }
+  const startStr = ($list.attr('start') || '').trim()
+
+  if (startStr === '') { return undefined }
+  const start = Number.parseInt(startStr, 10)
+
+  if (Number.isNaN(start)) { return undefined }
+  return start
+}
+
+function getOrderedType($elem: Dom7Array): OrderedListType | undefined {
+  const $list = $elem.parent()
+
+  if (getTagName($list) !== 'ol') { return undefined }
+  const orderType = ($list.attr('type') || '').trim()
+
+  if (orderType === '1'
+    || orderType === 'a'
+    || orderType === 'A'
+    || orderType === 'i'
+    || orderType === 'I') {
+    return orderType
+  }
+
+  return undefined
 }
 
 /**
@@ -61,11 +91,15 @@ function parseItemHtml(
 
   const ordered = getOrdered($elem)
   const level = getLevel($elem)
+  const start = getOrderedStart($elem)
+  const orderType = getOrderedType($elem)
 
   return {
     type: 'list-item',
     ordered,
     level,
+    ...(start !== undefined ? { start } : {}),
+    ...(orderType !== undefined ? { orderType } : {}),
     // @ts-ignore
     children,
   }

@@ -9,7 +9,12 @@ import { Editor, Element, Path } from 'slate'
 import { ELEM_TO_EDITOR } from '../utils/maps'
 import { getListItemColor } from '../utils/util'
 import { ListItemElement } from './custom-types'
-import { hasSameOrderWithBrother } from './helpers'
+import {
+  getNormalizedOrderedListStart,
+  getNormalizedOrderedListType,
+  hasSameListConfig,
+  hasSameOrderWithBrother,
+} from './helpers'
 import { genListColorClassName, resolveListColorAction } from './style-class'
 
 /**
@@ -21,7 +26,12 @@ function getStartContainerTagNumber(elem: Element): number {
 
   if (editor == null) { return 0 }
 
-  const { type, ordered = false, level = 0 } = elem as ListItemElement
+  const listItemElem = elem as ListItemElement
+  const {
+    type,
+    ordered = false,
+    level = 0,
+  } = listItemElem
 
   const path = DomEditor.findPath(editor, elem)
 
@@ -45,7 +55,10 @@ function getStartContainerTagNumber(elem: Element): number {
   }
 
   // 上一个 elem 是 list-item
-  const { ordered: prevOrdered = false, level: prevLevel = 0 } = prevElem as ListItemElement
+  const {
+    ordered: prevOrdered = false,
+    level: prevLevel = 0,
+  } = prevElem as ListItemElement
 
   if (prevLevel < level) {
     // 上一个 level 小于当前 level ，需要拼接 <ol> 或 <ul>
@@ -57,7 +70,7 @@ function getStartContainerTagNumber(elem: Element): number {
   }
   if (prevLevel === level) {
     // 上一个 level 等于当前 level
-    if (prevOrdered === ordered) {
+    if (prevOrdered === ordered && hasSameListConfig(prevElem as ListItemElement, listItemElem)) {
       // ordered 一致，则不需要拼接 <ol> 或 <ul>
       return 0
     }
@@ -79,7 +92,12 @@ function getEndContainerTagNumber(elem: Element): number {
 
   if (editor == null) { return 0 }
 
-  const { type, ordered = false, level = 0 } = elem as ListItemElement
+  const listItemElem = elem as ListItemElement
+  const {
+    type,
+    ordered = false,
+    level = 0,
+  } = listItemElem
 
   const path = DomEditor.findPath(editor, elem)
 
@@ -103,7 +121,10 @@ function getEndContainerTagNumber(elem: Element): number {
   }
 
   // 下一个 elem 是 list-item
-  const { ordered: nextOrdered = false, level: nextLevel = 0 } = nextElem as ListItemElement
+  const {
+    ordered: nextOrdered = false,
+    level: nextLevel = 0,
+  } = nextElem as ListItemElement
 
   if (nextLevel < level) {
     // 下一个 level 小于当前 level，此处需要看上一个同级兄弟节点 ordered 是否一致，如果一致则不需要拼接，否则需要拼接
@@ -121,7 +142,7 @@ function getEndContainerTagNumber(elem: Element): number {
   }
   if (nextLevel === level) {
     // 下一个 level 等于当前 level
-    if (nextOrdered === ordered) {
+    if (nextOrdered === ordered && hasSameListConfig(nextElem as ListItemElement, listItemElem)) {
       // ordered 一致，则不需要拼接 </ol> 或 </ul>
       return 0
     }
@@ -137,6 +158,26 @@ function getEndContainerTagNumber(elem: Element): number {
 // ol ul 栈
 const CONTAINER_TAG_STACK: Array<string> = []
 
+function genContainerStartTag(elem: ListItemElement): string {
+  const { ordered = false } = elem
+
+  if (!ordered) { return '<ul>' }
+
+  const attrs: string[] = []
+  const orderType = getNormalizedOrderedListType(elem)
+  const orderStart = getNormalizedOrderedListStart(elem)
+
+  if (orderType !== '1') {
+    attrs.push(`type="${orderType}"`)
+  }
+  if (orderStart !== 1) {
+    attrs.push(`start="${orderStart}"`)
+  }
+
+  if (attrs.length === 0) { return '<ol>' }
+  return `<ol ${attrs.join(' ')}>`
+}
+
 function elemToHtml(
   elem: Element,
   childrenHtml: string,
@@ -149,15 +190,17 @@ function elemToHtml(
   let startContainerStr = ''
   let endContainerStr = ''
 
-  const { ordered = false } = elem as ListItemElement
+  const listItemElem = elem as ListItemElement
+  const { ordered = false } = listItemElem
   const containerTag = ordered ? 'ol' : 'ul'
+  const containerStartTag = genContainerStartTag(listItemElem)
 
   // 前面需要拼接几个 <ol> 或 <ul>
   const startContainerTagNumber = getStartContainerTagNumber(elem)
 
   if (startContainerTagNumber > 0) {
     for (let i = 0; i < startContainerTagNumber; i += 1) {
-      startContainerStr += `<${containerTag}>` // 记录 start container tag ，如 `<ul>`
+      startContainerStr += containerStartTag // 记录 start container tag ，如 `<ul>`
       CONTAINER_TAG_STACK.push(containerTag) // tag 压栈
     }
   }

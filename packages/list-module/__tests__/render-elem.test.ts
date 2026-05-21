@@ -40,6 +40,39 @@ describe('list module - render elem', () => {
     expect(prefixVnode.text).toBe('1.') // ordered list-item 有序号
   })
 
+  it('render ordered list item with custom type', () => {
+    const upperAlphaOrderedItem = {
+      type: 'list-item',
+      ordered: true,
+      orderType: 'A',
+      children: [{ text: '' }],
+    }
+    const localEditor = createEditor({
+      content: [upperAlphaOrderedItem],
+    })
+    const vnode: any = renderListItemConf.renderElem(upperAlphaOrderedItem, null, localEditor)
+    const prefixVnode = vnode.children[0] || {}
+
+    expect(prefixVnode.text).toBe('A.')
+  })
+
+  it('render ordered list item with start', () => {
+    const upperRomanOrderedItem = {
+      type: 'list-item',
+      ordered: true,
+      orderType: 'I',
+      start: 2,
+      children: [{ text: '' }],
+    }
+    const localEditor = createEditor({
+      content: [upperRomanOrderedItem],
+    })
+    const vnode: any = renderListItemConf.renderElem(upperRomanOrderedItem, null, localEditor)
+    const prefixVnode = vnode.children[0] || {}
+
+    expect(prefixVnode.text).toBe('II.')
+  })
+
   it('render unOrdered list item elem', () => {
     const vnode: any = renderListItemConf.renderElem(unOrderedItem, null, editor)
 
@@ -93,5 +126,27 @@ describe('list module - render elem', () => {
     const prefixVnode = vnode.children[0] || {}
 
     expect(prefixVnode.text).toBe('2.') // ordered list-item 有序号
+  })
+
+  it('restart ordered prefix when type/start config changes', () => {
+    const decimalOrderedItem = {
+      type: 'list-item',
+      ordered: true,
+      children: [{ text: '' }],
+    }
+    const romanOrderedItem = {
+      type: 'list-item',
+      ordered: true,
+      orderType: 'I',
+      start: 2,
+      children: [{ text: '' }],
+    }
+    const localEditor = createEditor({
+      content: [decimalOrderedItem, romanOrderedItem],
+    })
+    const vnode: any = renderListItemConf.renderElem(romanOrderedItem, null, localEditor)
+    const prefixVnode = vnode.children[0] || {}
+
+    expect(prefixVnode.text).toBe('II.')
   })
 })
