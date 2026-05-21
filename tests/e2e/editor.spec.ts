@@ -281,6 +281,40 @@ test.describe('Basic Editor', () => {
     expect(consoleErrors).toEqual([])
   })
 
+  test('regression #44: blockquote div line breaks should survive setHtml(getHtml())', async ({ page }) => {
+    const issueHtml = '<blockquote><div>line 1</div><div><span style="font-weight: 700;">line 2</span></div></blockquote>'
+
+    const snapshot = await page.evaluate(value => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor missing')
+      }
+
+      editor.setHtml(value)
+      const firstPassHtml = editor.getHtml()
+
+      editor.setHtml(firstPassHtml)
+
+      return {
+        firstPassHtml,
+        secondPassHtml: editor.getHtml(),
+        plainText: editor.getText?.() || '',
+      }
+    }, issueHtml)
+
+    expect(snapshot.firstPassHtml).toContain('<blockquote>')
+    expect(snapshot.firstPassHtml).toContain('line 1')
+    expect(snapshot.firstPassHtml).toContain('line 2')
+    expect(snapshot.secondPassHtml).toContain('<blockquote>')
+    expect(snapshot.secondPassHtml).toContain('line 1')
+    expect(snapshot.secondPassHtml).toContain('line 2')
+    expect(snapshot.secondPassHtml).toContain('<br>')
+    expect(snapshot.plainText).toContain('line 1')
+    expect(snapshot.plainText).toContain('line 2')
+    expect(snapshot.plainText).toContain('\n')
+  })
+
   test('regression #609: insertData with complex html should not break editing', async ({ page }) => {
     const pageErrors: string[] = []
     const consoleErrors: string[] = []
