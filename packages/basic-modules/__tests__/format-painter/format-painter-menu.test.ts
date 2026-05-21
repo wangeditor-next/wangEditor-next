@@ -22,6 +22,7 @@ describe('format painter menu', () => {
     menu = null
     FormatPainter.attrs.isSelect = false
     FormatPainter.attrs.formatStyle = null
+    FormatPainter.attrs.formatBlockStyle = null
   })
 
   it('is disabled', () => {
@@ -60,6 +61,7 @@ describe('format painter menu', () => {
     expect(Editor.marks(editor)).toEqual({ bold: true, italic: true })
     expect(FormatPainter.attrs.isSelect).toBeFalsy()
     expect(FormatPainter.attrs.formatStyle).toBeNull()
+    expect(FormatPainter.attrs.formatBlockStyle).toBeNull()
   })
 
   it('exec', () => {
@@ -87,6 +89,7 @@ describe('format painter menu', () => {
 
     menu.exec(editor) // 取消格式刷
     expect(FormatPainter.attrs.isSelect).toBeFalsy()
+    expect(FormatPainter.attrs.formatBlockStyle).toBeNull()
 
     // 选中文本
     editor.select({
@@ -100,5 +103,125 @@ describe('format painter menu', () => {
 
     menu.exec(editor)
     expect(FormatPainter.attrs.formatStyle).toEqual({ bold: true, italic: true })
+  })
+
+  it('copies and applies heading block format', () => {
+    editor = createEditor({
+      content: [
+        { type: 'header2', children: [{ text: 'Heading source' }] },
+        { type: 'paragraph', children: [{ text: 'Paragraph target' }] },
+      ],
+    })
+
+    editor.select({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 7 },
+    })
+
+    menu.exec(editor)
+    expect(FormatPainter.attrs.formatBlockStyle).toEqual({ type: 'header2' })
+
+    editor.select({
+      anchor: { path: [1, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 9 },
+    })
+    menu.setFormatHtml(editor)
+
+    expect((editor.children[1] as any).type).toBe('header2')
+  })
+
+  it('copies and applies list block format', () => {
+    editor = createEditor({
+      content: [
+        {
+          type: 'list-item',
+          ordered: true,
+          orderType: 'a',
+          children: [{ text: 'List source' }],
+        },
+        { type: 'paragraph', children: [{ text: 'Paragraph target' }] },
+      ],
+    })
+
+    editor.select({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 4 },
+    })
+
+    menu.exec(editor)
+    expect(FormatPainter.attrs.formatBlockStyle).toEqual({
+      type: 'list-item',
+      ordered: true,
+      orderType: 'a',
+    })
+
+    editor.select({
+      anchor: { path: [1, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 9 },
+    })
+    menu.setFormatHtml(editor)
+
+    expect(editor.children[1]).toMatchObject({
+      type: 'list-item',
+      ordered: true,
+      orderType: 'a',
+    })
+  })
+
+  it('applies captured block format to multi-block selection', () => {
+    editor = createEditor({
+      content: [
+        { type: 'blockquote', children: [{ text: 'Quote source' }] },
+        { type: 'paragraph', children: [{ text: 'Target one' }] },
+        { type: 'paragraph', children: [{ text: 'Target two' }] },
+      ],
+    })
+
+    editor.select({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 5 },
+    })
+    menu.exec(editor)
+
+    editor.select({
+      anchor: { path: [1, 0], offset: 0 },
+      focus: { path: [2, 0], offset: 6 },
+    })
+    menu.setFormatHtml(editor)
+
+    expect((editor.children[1] as any).type).toBe('blockquote')
+    expect((editor.children[2] as any).type).toBe('blockquote')
+  })
+
+  it('skips unsupported target blocks when applying block format', () => {
+    editor = createEditor({
+      content: [
+        { type: 'header3', children: [{ text: 'Heading source' }] },
+        {
+          type: 'table',
+          width: 'auto',
+          children: [
+            {
+              type: 'table-row',
+              children: [{ type: 'table-cell', children: [{ text: 'cell' }], isHeader: true }],
+            },
+          ],
+        },
+      ],
+    })
+
+    editor.select({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 7 },
+    })
+    menu.exec(editor)
+
+    editor.select({
+      anchor: { path: [1, 0, 0, 0], offset: 0 },
+      focus: { path: [1, 0, 0, 0], offset: 4 },
+    })
+    menu.setFormatHtml(editor)
+
+    expect((editor.children[1] as any).type).toBe('table')
   })
 })
