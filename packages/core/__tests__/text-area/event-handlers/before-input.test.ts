@@ -372,10 +372,18 @@ describe('handleBeforeInput', () => {
     expect(Editor.deleteForward).toHaveBeenCalledWith(editor, { unit: 'word' })
   })
 
-  it('inserts breaks for paragraph input and ignores composition-text mutations', () => {
+  it('inserts soft line break for shift+enter and block break for enter', () => {
     const editor = {
       selection: createSelection(false),
       getConfig: () => ({ readOnly: false }),
+    } as any
+    const lineBreakEvent = {
+      inputType: 'insertLineBreak',
+      data: null,
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [],
     } as any
     const paragraphEvent = {
       inputType: 'insertParagraph',
@@ -395,11 +403,14 @@ describe('handleBeforeInput', () => {
     } as any
 
     vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
     vi.spyOn(Editor, 'insertBreak').mockImplementation(() => {})
 
+    handleBeforeInput(lineBreakEvent, {} as any, editor)
     handleBeforeInput(paragraphEvent, {} as any, editor)
     handleBeforeInput(compositionEvent, {} as any, editor)
 
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, '\n')
     expect(Editor.insertBreak).toHaveBeenCalledWith(editor)
     expect(compositionEvent.preventDefault).not.toHaveBeenCalled()
   })
