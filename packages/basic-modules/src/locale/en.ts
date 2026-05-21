@@ -50,6 +50,7 @@ export default {
     delete: 'Delete image',
     edit: 'Edit image',
     editSize: 'Edit size',
+    preview: 'Preview image',
     viewLink: 'View link',
     src: 'Image src',
     desc: 'Description',

@@ -8,6 +8,7 @@ import DeleteImage from './DeleteImage'
 import EditImage from './EditImage'
 import EditorImageSizeMenu from './EditImageSizeMenu'
 import InsertImage from './InsertImage'
+import PreviewImage from './PreviewImage'
 import ViewImageLink from './ViewImageLink'
 import ImageWidth30 from './Width30'
 import ImageWidth50 from './Width50'
@@ -45,6 +46,13 @@ export const viewImageLinkMenuConf = {
   key: 'viewImageLink',
   factory() {
     return new ViewImageLink()
+  },
+}
+
+export const previewImageMenuConf = {
+  key: 'previewImage',
+  factory() {
+    return new PreviewImage()
   },
 }
 
