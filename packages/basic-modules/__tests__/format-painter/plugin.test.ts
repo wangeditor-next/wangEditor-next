@@ -22,6 +22,9 @@ describe('format painter plugin', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
+    FormatPainter.attrs.isSelect = false
+    FormatPainter.attrs.formatStyle = null
+    FormatPainter.attrs.formatBlockStyle = null
   })
 
   it('format painter change', () => {
