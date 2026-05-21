@@ -58,6 +58,44 @@ describe('module elem-to-html', () => {
     })
   })
 
+  test('ordered item toHtml with start/type', () => {
+    const orderedWithType1 = {
+      type: 'list-item',
+      ordered: true,
+      orderType: 'A',
+      start: 3,
+      children: [{ text: '' }],
+    }
+    const orderedWithType2 = {
+      type: 'list-item',
+      ordered: true,
+      orderType: 'A',
+      start: 3,
+      children: [{ text: '' }],
+    }
+    const localEditor = createEditor({
+      content: [orderedWithType1, orderedWithType2],
+    })
+
+    ELEM_TO_EDITOR.set(orderedWithType1, localEditor)
+    ELEM_TO_EDITOR.set(orderedWithType2, localEditor)
+
+    const { elemToHtml } = listItemToHtmlConf
+    const firstHtml = elemToHtml(orderedWithType1, childrenHtml)
+    const secondHtml = elemToHtml(orderedWithType2, childrenHtml)
+
+    expect(firstHtml).toEqual({
+      html: '<li><span>hello</span></li>',
+      prefix: '<ol type="A" start="3">',
+      suffix: '',
+    })
+    expect(secondHtml).toEqual({
+      html: '<li><span>hello</span></li>',
+      prefix: '',
+      suffix: '</ol>',
+    })
+  })
+
   test('unOrdered item toHtml', () => {
     const { elemToHtml } = listItemToHtmlConf
 
@@ -279,6 +317,62 @@ describe('module elem-to-html complex list', () => {
     expect(orderedHtml2).toEqual({
       html: '<li><span>hello</span></li>',
       prefix: '<ol>',
+      suffix: '</ol>',
+    })
+  })
+})
+
+describe('module elem-to-html ordered list boundaries', () => {
+  const orderedDecimal = {
+    type: 'list-item',
+    ordered: true,
+    children: [{ text: '' }],
+  }
+  const orderedUpperAlpha = {
+    type: 'list-item',
+    ordered: true,
+    orderType: 'A',
+    children: [{ text: '' }],
+  }
+  const orderedUpperRomanFrom2 = {
+    type: 'list-item',
+    ordered: true,
+    orderType: 'I',
+    start: 2,
+    children: [{ text: '' }],
+  }
+
+  let editor: ReturnType<typeof createEditor>
+
+  beforeEach(() => {
+    editor = createEditor({
+      content: [orderedDecimal, orderedUpperAlpha, orderedUpperRomanFrom2],
+    })
+
+    ELEM_TO_EDITOR.set(orderedDecimal, editor)
+    ELEM_TO_EDITOR.set(orderedUpperAlpha, editor)
+    ELEM_TO_EDITOR.set(orderedUpperRomanFrom2, editor)
+  })
+
+  test('split consecutive ordered lists by type/start config', () => {
+    const childrenHtml = '<span>hello</span>'
+    const { elemToHtml } = listItemToHtmlConf
+
+    expect(elemToHtml(orderedDecimal, childrenHtml)).toEqual({
+      html: '<li><span>hello</span></li>',
+      prefix: '<ol>',
+      suffix: '</ol>',
+    })
+
+    expect(elemToHtml(orderedUpperAlpha, childrenHtml)).toEqual({
+      html: '<li><span>hello</span></li>',
+      prefix: '<ol type="A">',
+      suffix: '</ol>',
+    })
+
+    expect(elemToHtml(orderedUpperRomanFrom2, childrenHtml)).toEqual({
+      html: '<li><span>hello</span></li>',
+      prefix: '<ol type="I" start="2">',
       suffix: '</ol>',
     })
   })

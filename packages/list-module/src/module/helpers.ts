@@ -6,7 +6,36 @@
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
 import { Editor, Path } from 'slate'
 
-import { ListItemElement } from './custom-types'
+import { ListItemElement, OrderedListType } from './custom-types'
+
+export function getNormalizedOrderedListStart(elem: ListItemElement): number {
+  const { ordered = false, start } = elem
+
+  if (!ordered) { return 1 }
+  if (typeof start !== 'number' || Number.isNaN(start)) { return 1 }
+  return start
+}
+
+export function getNormalizedOrderedListType(elem: ListItemElement): OrderedListType {
+  const { orderType } = elem
+
+  if (orderType === 'a'
+    || orderType === 'A'
+    || orderType === 'i'
+    || orderType === 'I') {
+    return orderType
+  }
+
+  return '1'
+}
+
+export function hasSameListConfig(a: ListItemElement, b: ListItemElement): boolean {
+  if (a.ordered !== b.ordered) { return false }
+  if (!a.ordered) { return true }
+
+  return getNormalizedOrderedListType(a) === getNormalizedOrderedListType(b)
+    && getNormalizedOrderedListStart(a) === getNormalizedOrderedListStart(b)
+}
 
 /**
  * 获取上一个同一 level 的 list item
@@ -58,5 +87,5 @@ export function hasSameOrderWithBrother(
 ): boolean {
   const brotherElem = getBrotherListNodeByLevel(editor, elem, level)
 
-  return brotherElem ? brotherElem.ordered === elem.ordered : false
+  return brotherElem ? hasSameListConfig(brotherElem, elem) : false
 }

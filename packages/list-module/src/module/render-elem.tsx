@@ -13,6 +13,11 @@ import { jsx, VNode } from 'snabbdom'
 import { ELEM_TO_EDITOR } from '../utils/maps'
 import { getListItemColor } from '../utils/util'
 import { ListItemElement } from './custom-types'
+import {
+  getNormalizedOrderedListStart,
+  getNormalizedOrderedListType,
+  hasSameListConfig,
+} from './helpers'
 
 /**
  * 无序列表：根据 level 获取的前置符号
@@ -37,20 +42,85 @@ function genPreSymbol(level = 0): string {
   return s
 }
 
+function genAlphabetIndex(num: number, upper = false): string {
+  if (num <= 0) { return String(num) }
+
+  let n = num
+  let result = ''
+
+  while (n > 0) {
+    const rem = (n - 1) % 26
+    const charCode = (upper ? 65 : 97) + rem
+
+    result = String.fromCharCode(charCode) + result
+    n = Math.floor((n - 1) / 26)
+  }
+
+  return result
+}
+
+function genRomanIndex(num: number, upper = false): string {
+  if (num <= 0 || num >= 4000) { return String(num) }
+
+  const romanMap: Array<[number, string]> = [
+    [1000, 'M'],
+    [900, 'CM'],
+    [500, 'D'],
+    [400, 'CD'],
+    [100, 'C'],
+    [90, 'XC'],
+    [50, 'L'],
+    [40, 'XL'],
+    [10, 'X'],
+    [9, 'IX'],
+    [5, 'V'],
+    [4, 'IV'],
+    [1, 'I'],
+  ]
+
+  let n = num
+  let result = ''
+
+  for (const [value, roman] of romanMap) {
+    while (n >= value) {
+      result += roman
+      n -= value
+    }
+  }
+
+  return upper ? result : result.toLowerCase()
+}
+
+function genOrderedPrefix(num: number, orderType: string): string {
+  switch (orderType) {
+    case 'a':
+      return `${genAlphabetIndex(num)}.`
+    case 'A':
+      return `${genAlphabetIndex(num, true)}.`
+    case 'i':
+      return `${genRomanIndex(num)}.`
+    case 'I':
+      return `${genRomanIndex(num, true)}.`
+    default:
+      return `${num}.`
+  }
+}
+
 /**
  * 有序列表：获取前缀 number
  * @param editor editor
  * @param elem listItem elem
  */
 function getOrderedItemNumber(editor: IDomEditor, elem: SlateElement): number {
-  const { type, level = 0, ordered = false } = elem as ListItemElement
+  const listItemElem = elem as ListItemElement
+  const { type, level = 0, ordered = false } = listItemElem
 
-  let num = 1 // 默认值 1
+  let num = getNormalizedOrderedListStart(listItemElem)
   let curElem = elem
   let curPath = DomEditor.findPath(editor, curElem)
 
-  // 第一个元素，直接返回 1
-  if (curPath[0] === 0) { return 1 }
+  // 第一个元素，直接返回起始值
+  if (curPath[0] === 0) { return num }
 
   while (curPath[0] > 0) {
     const prevPath = Path.previous(curPath)
@@ -66,11 +136,10 @@ function getOrderedItemNumber(editor: IDomEditor, elem: SlateElement): number {
     if (prevLevel < level) { break }
 
     if (prevLevel === level) {
-      // level 一样，如果 ordered 不一样，则退出循环，不再累加 num
-      if (prevOrdered !== ordered) { break } else {
-        // level 一样，order 一样，则累加 num
-        num += 1
-      }
+      // level 一样，如果 list 配置不一致，则退出循环，不再累加 num
+      if (prevOrdered !== ordered || !hasSameListConfig(prevElem, listItemElem)) { break }
+      // level 一样，order 配置一致，则累加 num
+      num += 1
     }
 
     // prevLevel 更大，不累加 num ，继续向前
@@ -103,8 +172,9 @@ function renderListElem(
   if (ordered) {
     // 有序列表：获取前缀 number
     const orderedNumber = getOrderedItemNumber(editor, elemNode)
+    const orderType = getNormalizedOrderedListType(elemNode as ListItemElement)
 
-    prefix = `${orderedNumber}.`
+    prefix = genOrderedPrefix(orderedNumber, orderType)
   } else {
     // 无序列表：根据层级，使用不同的前缀符号
     prefix = genPreSymbol(level)

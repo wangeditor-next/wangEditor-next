@@ -49,6 +49,25 @@ describe('list - parse html', () => {
     })
   })
 
+  it('parse ordered list item with start and type', () => {
+    const $ol = $('<ol start="2" type="I"></ol>')
+    const $li = $('<li></li>')
+
+    $ol.append($li)
+    const children = [{ text: 'hello' }]
+
+    const elem = parseItemHtmlConf.parseElemHtml($li[0], children, editor)
+
+    expect(elem).toEqual({
+      type: 'list-item',
+      ordered: true,
+      level: 0,
+      start: 2,
+      orderType: 'I',
+      children,
+    })
+  })
+
   it('parse leveled list item', () => {
     const $ul = $('<ul></ul>')
     const $ol = $('<ol></ol>')

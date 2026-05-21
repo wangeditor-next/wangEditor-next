@@ -44,6 +44,8 @@ function withList<T extends IDomEditor>(editor: T): T {
         // @ts-ignore
         ordered: undefined,
         level: undefined,
+        start: undefined,
+        orderType: undefined,
       })
       return
     }
@@ -74,19 +76,28 @@ function withList<T extends IDomEditor>(editor: T): T {
 
     if (selection.focus.offset === 0) {
       // 选中了当前 list-item 文本的开头，此时按删除键，应该降低 level 或转换为 p 元素
-      const { level = 0, ordered = false } = listItemElem as ListItemElement
+      const { level = 0 } = listItemElem as ListItemElement
 
       if (level > 0) {
-        // 如果有兄弟节点，则判断 ordered 是否一致，不一致需要切换 ordered
+        // 如果有兄弟节点，则对齐兄弟节点的列表配置
         const brotherElem = getBrotherListNodeByLevel(
           editor,
           listItemElem as ListItemElement,
           level - 1,
         )
 
-        if (brotherElem && brotherElem.ordered !== ordered) {
-          Transforms.setNodes(newEditor, { level: level - 1, ordered: !ordered })
-        } else { Transforms.setNodes(newEditor, { level: level - 1 }) }
+        if (brotherElem) {
+          const nextOrdered = brotherElem.ordered
+
+          Transforms.setNodes(newEditor, {
+            level: level - 1,
+            ordered: nextOrdered,
+            start: nextOrdered ? brotherElem.start : undefined,
+            orderType: nextOrdered ? brotherElem.orderType : undefined,
+          })
+        } else {
+          Transforms.setNodes(newEditor, { level: level - 1 })
+        }
       } else {
         // 转换为 p 元素
         Transforms.setNodes(newEditor, {
@@ -94,6 +105,8 @@ function withList<T extends IDomEditor>(editor: T): T {
           // @ts-ignore
           ordered: undefined,
           level: undefined,
+          start: undefined,
+          orderType: undefined,
         })
       }
       return
