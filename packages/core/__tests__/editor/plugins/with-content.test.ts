@@ -618,4 +618,21 @@ describe('editor content API', () => {
       },
     ])
   })
+
+  it('insertData parses html wrapped by template tags', () => {
+    const editor = createEditor()
+
+    editor.select(getStartLocation(editor))
+    editor.insertData({
+      getData(type: string) {
+        if (type === 'text/html') {
+          return '<template><p>hello <strong>world</strong></p></template>'
+        }
+        return ''
+      },
+    } as DataTransfer)
+
+    expect(editor.getText()).toBe('hello world')
+    expect(editor.getHtml()).toContain('hello world')
+  })
 })
