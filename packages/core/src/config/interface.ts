@@ -198,6 +198,7 @@ export interface IMenuConfig {
   enter: ISingleMenuConfig;
   bulletedList: ISingleMenuConfig;
   numberedList: ISingleMenuConfig;
+  numberedListLowerAlpha: ISingleMenuConfig;
   insertTable: ISingleMenuConfig;
   deleteTable: ISingleMenuConfig;
   insertTableRow: IInsertTableConfig;

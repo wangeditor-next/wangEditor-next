@@ -1,13 +1,13 @@
 /**
- * @description list NumberedListMenu test
+ * @description list LowerAlphaListMenu test
  * @author wangfupeng
  */
 
 import createEditor from '../../../../tests/utils/create-editor'
-import NumberedListMenu from '../../src/module/menu/NumberedListMenu'
+import LowerAlphaListMenu from '../../src/module/menu/LowerAlphaListMenu'
 
-describe('list NumberedListMenu', () => {
-  const menu = new NumberedListMenu()
+describe('list LowerAlphaListMenu', () => {
+  const menu = new LowerAlphaListMenu()
 
   it('isActive', () => {
     const editor = createEditor({
@@ -26,18 +26,20 @@ describe('list NumberedListMenu', () => {
     editor.select({ path: [0, 0], offset: 0 }) // 选中 p
     expect(menu.isActive(editor)).toBeFalsy()
 
-    editor.select({ path: [1, 0], offset: 0 }) // 选中 li
-    expect(menu.isActive(editor)).toBeTruthy()
+    editor.select({ path: [1, 0], offset: 0 }) // 选中 numbered li
+    expect(menu.isActive(editor)).toBeFalsy()
 
     editor.select({ path: [2, 0], offset: 0 }) // 选中 lower-alpha li
-    expect(menu.isActive(editor)).toBeFalsy()
+    expect(menu.isActive(editor)).toBeTruthy()
   })
 
   it('isDisabled', () => {
     const editor = createEditor({
       content: [
         { type: 'paragraph', children: [{ text: 'hello' }] },
-        { type: 'list-item', ordered: true, children: [{ text: 'a' }] },
+        {
+          type: 'list-item', ordered: true, orderType: 'a', children: [{ text: 'a' }],
+        },
         {
           type: 'table',
           width: 'auto',
@@ -80,11 +82,12 @@ describe('list NumberedListMenu', () => {
     expect(menu.getValue(editor)).toBe('')
     editor.select({ path: [0, 0], offset: 0 }) // 选中 p
 
-    menu.exec(editor, '') // p 转 li
+    menu.exec(editor, '') // p 转 lower-alpha li
     expect(editor.children).toEqual([
       {
         type: 'list-item',
         ordered: true,
+        orderType: 'a',
         children: [{ text: 'hello' }],
       },
     ])
@@ -93,11 +96,9 @@ describe('list NumberedListMenu', () => {
     expect(editor.children).toEqual([pElem])
   })
 
-  it('exec should switch lower-alpha to numbered', () => {
+  it('exec should switch numbered to lower-alpha', () => {
     const editor = createEditor({
-      content: [{
-        type: 'list-item', ordered: true, orderType: 'a', children: [{ text: 'hello' }],
-      }],
+      content: [{ type: 'list-item', ordered: true, children: [{ text: 'hello' }] }],
     })
 
     editor.select({ path: [0, 0], offset: 0 })
@@ -107,6 +108,7 @@ describe('list NumberedListMenu', () => {
       {
         type: 'list-item',
         ordered: true,
+        orderType: 'a',
         children: [{ text: 'hello' }],
       },
     ])
