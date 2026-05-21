@@ -11,7 +11,6 @@ const BLOCKED_TAGS = new Set([
   'object',
   'script',
   'svg',
-  'template',
 ])
 
 const URL_ATTRS = new Set([
@@ -47,32 +46,56 @@ function isSafeUrl(tagName: string, attrName: string, value: string) {
 export function defaultSanitizeHtml(html: string = '') {
   if (!html) { return '' }
 
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(html, 'text/html')
-  const elements = Array.from(doc.body.querySelectorAll('*'))
+  const container = document.createElement('div')
 
-  elements.forEach(elem => {
-    const tagName = elem.tagName.toLowerCase()
+  container.innerHTML = html
+  const sanitizeChildren = parent => {
+    const children = Array.from(parent.childNodes)
 
-    if (BLOCKED_TAGS.has(tagName)) {
-      elem.remove()
-      return
-    }
+    children.forEach(node => {
+      if (!(node instanceof Element)) { return }
 
-    Array.from(elem.attributes).forEach(attr => {
-      const attrName = attr.name.toLowerCase()
-      const attrValue = attr.value || ''
+      const elem = node
+      const tagName = elem.tagName.toLowerCase()
 
-      if (attrName === 'srcdoc' || attrName.startsWith('on')) {
-        elem.removeAttribute(attr.name)
+      if (tagName === 'template') {
+        const template = elem as HTMLTemplateElement
+        const sanitizedTemplateHtml = defaultSanitizeHtml(template.innerHTML)
+
+        if (!sanitizedTemplateHtml) {
+          template.remove()
+          return
+        }
+
+        template.insertAdjacentHTML('beforebegin', sanitizedTemplateHtml)
+        template.remove()
         return
       }
 
-      if (URL_ATTRS.has(attrName) && !isSafeUrl(tagName, attrName, attrValue)) {
-        elem.removeAttribute(attr.name)
+      if (BLOCKED_TAGS.has(tagName)) {
+        elem.remove()
+        return
       }
-    })
-  })
 
-  return doc.body.innerHTML
+      Array.from(elem.attributes).forEach(attr => {
+        const attrName = attr.name.toLowerCase()
+        const attrValue = attr.value || ''
+
+        if (attrName === 'srcdoc' || attrName.startsWith('on')) {
+          elem.removeAttribute(attr.name)
+          return
+        }
+
+        if (URL_ATTRS.has(attrName) && !isSafeUrl(tagName, attrName, attrValue)) {
+          elem.removeAttribute(attr.name)
+        }
+      })
+
+      sanitizeChildren(elem)
+    })
+  }
+
+  sanitizeChildren(container)
+
+  return container.innerHTML
 }

@@ -48,4 +48,28 @@ describe('sanitize html', () => {
     expect(sanitized).toContain('disabled=""')
     expect(sanitized).toContain('checked=""')
   })
+
+  it('unwraps template content and still removes unsafe payloads', () => {
+    const unsafeHref = ['java', 'script:alert(1)'].join('')
+    const html = `
+      <template>
+        <p>
+          <strong>bold</strong>
+          <em>italic</em>
+          <a href="${unsafeHref}" onclick="alert(1)">bad</a>
+          <script>alert(1)</script>
+        </p>
+      </template>
+    `
+
+    const sanitized = defaultSanitizeHtml(html)
+
+    expect(sanitized).not.toContain('<template')
+    expect(sanitized).toContain('<strong>bold</strong>')
+    expect(sanitized).toContain('<em>italic</em>')
+    expect(sanitized).toContain('<a>bad</a>')
+    expect(sanitized).not.toContain(unsafeHref)
+    expect(sanitized).not.toContain('onclick')
+    expect(sanitized).not.toContain('<script')
+  })
 })
