@@ -50,6 +50,7 @@ export default {
     delete: '删除图片',
     edit: '编辑图片',
     editSize: '修改尺寸',
+    preview: '预览图片',
     viewLink: '查看链接',
     src: '图片地址',
     desc: '图片描述',

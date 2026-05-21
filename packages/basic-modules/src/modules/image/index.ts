@@ -14,6 +14,7 @@ import {
   imageWidth50MenuConf,
   imageWidth100MenuConf,
   insertImageMenuConf,
+  previewImageMenuConf,
   viewImageLinkMenuConf,
 } from './menu/index'
 import { parseHtmlConf } from './parse-elem-html'
@@ -28,6 +29,7 @@ const image: Partial<IModuleConf> = {
     insertImageMenuConf,
     deleteImageMenuConf,
     editImageMenuConf,
+    previewImageMenuConf,
     viewImageLinkMenuConf,
     imageWidth30MenuConf,
     imageWidth50MenuConf,

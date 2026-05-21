@@ -169,6 +169,7 @@ export interface IMenuConfig {
   insertImage: IInsertImageConfig;
   deleteImage: ISingleMenuConfig;
   editImage: IEditImageConfig;
+  previewImage: ISingleMenuConfig;
   viewImageLink: ISingleMenuConfig;
   imageWidth30: ISingleMenuConfig;
   imageWidth50: ISingleMenuConfig;

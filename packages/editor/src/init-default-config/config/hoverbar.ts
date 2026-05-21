@@ -15,6 +15,7 @@ const COMMON_HOVERBAR_KEYS = {
       'imageWidth100',
       'editorImageSizeMenu',
       'editImage',
+      'previewImage',
       'viewImageLink',
       'deleteImage',
     ],
