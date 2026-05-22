@@ -276,8 +276,8 @@ describe('composition handlers', () => {
       focus: { path: [0, 0], offset: 0 },
     }
     const paragraph = { type: 'paragraph', children: [{ text: 'x' }] }
-    const oldStartContainer = { textContent: 'before' }
-    const currentStartContainer = { textContent: 'after' }
+    const oldStartContainer = document.createTextNode('before')
+    const currentStartContainer = document.createTextNode('after')
     const editor = {
       selection,
       getConfig: () => ({ maxLength: 0 }),
@@ -316,5 +316,60 @@ describe('composition handlers', () => {
     expect(oldStartContainer.textContent).toBe('before')
     expect(getSelection).toHaveBeenCalledTimes(3)
     expect(Editor.insertText).toHaveBeenCalledWith(editor, '拼')
+  })
+
+  it('does not rewrite non-text start containers in post-composition cleanup', () => {
+    vi.useFakeTimers()
+
+    const paragraph = { type: 'paragraph', children: [{ text: 'x' }] }
+    const oldStartContainer = document.createElement('span')
+    const newStartContainer = document.createTextNode('new')
+    const editor = {
+      selection: {
+        anchor: { path: [0], offset: 0 },
+        focus: { path: [0], offset: 0 },
+      },
+      getConfig: () => ({ maxLength: 0 }),
+    } as any
+    const textarea = { changeViewState: vi.fn(), isComposing: false } as any
+    const startEvent = { target: {} } as any
+    const endEvent = { target: {}, data: '拼' } as any
+
+    oldStartContainer.textContent = 'start-text'
+
+    const findRootSpy = vi.spyOn(DomEditor, 'findDocumentOrShadowRoot')
+
+    findRootSpy
+      .mockImplementationOnce(() => ({
+        getSelection: () => ({
+          rangeCount: 1,
+          getRangeAt: () => ({ startContainer: oldStartContainer }),
+        }),
+      }) as any)
+      .mockImplementation(() => ({
+        getSelection: () => ({
+          rangeCount: 1,
+          getRangeAt: () => ({ startContainer: newStartContainer }),
+        }),
+      }) as any)
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'cleanExposedTexNodeInSelectionBlock').mockImplementation(() => {})
+    vi.spyOn(Editor, 'node').mockImplementation((_ed, path) => {
+      if (path.length === 1) {
+        return [paragraph, path] as any
+      }
+
+      return [{ text: 'x' }, path] as any
+    })
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    handleCompositionStart(startEvent, textarea, editor)
+    oldStartContainer.textContent = 'mutated-after-start'
+    handleCompositionEnd(endEvent, textarea, editor)
+    vi.runAllTimers()
+
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, '拼')
+    expect(oldStartContainer.textContent).toBe('mutated-after-start')
   })
 })
