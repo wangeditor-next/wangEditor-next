@@ -192,6 +192,82 @@ test.describe('Basic Editor', () => {
     expect(domPointErrors).toEqual([])
   })
 
+  test('regression #861: composing insertText after backspace clear should commit once and stay visible', async ({ page }) => {
+    const pageErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.stack || err?.message || String(err))
+    })
+
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+      const el = document.querySelector('[data-testid="editor-textarea"] [contenteditable="true"]') as HTMLElement | null
+
+      if (!editor || !el) {
+        throw new Error('editor or editable not found')
+      }
+
+      const fire = (event: Event) => el.dispatchEvent(event)
+      const composeCommitAsInsertText = (text: string) => {
+        fire(new CompositionEvent('compositionstart', { data: '' }))
+        fire(new CompositionEvent('compositionupdate', { data: 'nihao' }))
+        fire(new InputEvent('beforeinput', {
+          inputType: 'insertText',
+          data: text,
+          bubbles: true,
+          cancelable: true,
+          isComposing: true,
+        }))
+        fire(new CompositionEvent('compositionend', { data: '' }))
+      }
+      const backspaceDeleteAll = () => {
+        let guard = 200
+
+        while (editor.getText().length > 0 && guard > 0) {
+          fire(new InputEvent('beforeinput', {
+            inputType: 'deleteContentBackward',
+            data: null,
+            bubbles: true,
+            cancelable: true,
+          }))
+          guard -= 1
+        }
+      }
+
+      editor.focus()
+      editor.clear()
+      composeCommitAsInsertText('你好')
+      backspaceDeleteAll()
+      composeCommitAsInsertText('中文')
+    })
+
+    await page.waitForTimeout(200)
+
+    const settled = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+      const el = document.querySelector('[data-testid="editor-textarea"] [contenteditable="true"]')
+
+      if (!editor || !el) {
+        throw new Error('editor or editable not found')
+      }
+
+      return {
+        modelText: editor.getText(),
+        modelHtml: editor.getHtml(),
+        domText: (el as HTMLElement).innerText,
+      }
+    })
+
+    expect(settled.modelText).toBe('中文')
+    expect(settled.modelHtml).toContain('<p>中文</p>')
+    expect(settled.domText).toContain('中文')
+    expect(settled.domText).not.toContain('中文中文')
+    await expect(page.getByTestId('editor-html')).toContainText('<p>中文</p>')
+    await expect(page.getByTestId('editor-html')).not.toContainText('中文中文')
+    await expect(getEditable(page)).toContainText('中文')
+    expect(pageErrors).toEqual([])
+  })
+
   test('regression #282: first-line superscript with large font should not be clipped', async ({ page }) => {
     await page.evaluate(() => {
       const editor = (window as any).wangEditorExampleBridge?.editor

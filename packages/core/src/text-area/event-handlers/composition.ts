@@ -226,9 +226,11 @@ export function handleCompositionEnd(e: Event, textarea: TextArea, editor: IDomE
       const oldStartContainer = EDITOR_TO_START_CONTAINER.get(editor) // 拼音输入开始时的 text node
 
       if (oldStartContainer == null) { return }
+      if (oldStartContainer.nodeType !== Node.TEXT_NODE) { return }
       const curStartContainer = getDOMSelectionStartContainer(editor)
 
       if (curStartContainer == null) { return } // 拼音输入结束时的 text node
+      if (curStartContainer.nodeType !== Node.TEXT_NODE) { return }
 
       if (curStartContainer === oldStartContainer) {
         // 拼音输入的开始和结束，都在同一个 text node ，则不做处理
