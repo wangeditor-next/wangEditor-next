@@ -666,6 +666,53 @@ test.describe('Basic Editor', () => {
     await expect(page.getByTestId('editor-html')).toContainText('<li>numbered item</li>')
   })
 
+  test('regression #543: nested list should stay inside parent li after round-trip', async ({ page }) => {
+    const issueHtml = '<ol><li>第一项<ul><li>子项1</li><li>子项2</li></ul></li><li>第二项</li></ol>'
+
+    const snapshot = await page.evaluate(value => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor missing')
+      }
+
+      editor.setHtml(value)
+      const firstPassHtml = editor.getHtml()
+
+      editor.setHtml(firstPassHtml)
+      const secondPassHtml = editor.getHtml()
+
+      const wrapper = document.createElement('div')
+
+      wrapper.innerHTML = secondPassHtml
+      const topOl = wrapper.querySelector('ol')
+      const topLevelLi = topOl
+        ? Array.from(topOl.children).filter(el => el.tagName === 'LI')
+        : []
+      const firstLi = topLevelLi[0] as HTMLLIElement | undefined
+      const nestedUl = firstLi?.querySelector(':scope > ul')
+      const directUlUnderOl = topOl?.querySelectorAll(':scope > ul').length || 0
+
+      return {
+        firstPassHtml,
+        secondPassHtml,
+        topLevelLiCount: topLevelLi.length,
+        hasNestedUlInFirstLi: !!nestedUl,
+        nestedLiCount: nestedUl?.querySelectorAll(':scope > li').length || 0,
+        directUlUnderOl,
+      }
+    }, issueHtml)
+
+    expect(snapshot.firstPassHtml).toContain('<ol>')
+    expect(snapshot.firstPassHtml).toContain('<ul>')
+    expect(snapshot.secondPassHtml).toContain('<ol>')
+    expect(snapshot.secondPassHtml).toContain('<ul>')
+    expect(snapshot.topLevelLiCount).toBe(2)
+    expect(snapshot.hasNestedUlInFirstLi).toBe(true)
+    expect(snapshot.nestedLiCount).toBe(2)
+    expect(snapshot.directUlUnderOl).toBe(0)
+  })
+
   test('creates a todo item', async ({ page }) => {
     await typeInEditor(page, 'todo item')
     await selectAll(page)

@@ -4,7 +4,7 @@
  */
 
 import { DomEditor, getTextStyleMode, IDomEditor } from '@wangeditor-next/core'
-import { Editor, Element, Path } from 'slate'
+import { Element } from 'slate'
 
 import { ELEM_TO_EDITOR } from '../utils/maps'
 import { getListItemColor } from '../utils/util'
@@ -13,150 +13,20 @@ import {
   getNormalizedOrderedListStart,
   getNormalizedOrderedListType,
   hasSameListConfig,
-  hasSameOrderWithBrother,
 } from './helpers'
 import { genListColorClassName, resolveListColorAction } from './style-class'
 
-/**
- * 当前 list-item 前面需要拼接几个 <ol> 或 <ul>
- * @param elem elem
- */
-function getStartContainerTagNumber(elem: Element): number {
-  const editor = ELEM_TO_EDITOR.get(elem)
-
-  if (editor == null) { return 0 }
-
-  const listItemElem = elem as ListItemElement
-  const {
-    type,
-    ordered = false,
-    level = 0,
-  } = listItemElem
-
-  const path = DomEditor.findPath(editor, elem)
-
-  if (path[0] === 0) {
-    // list-item 是第一个元素，再往前没有了。需要拼接 <ol> 或 <ul>
-    return level + 1
-  }
-
-  // 获取上一个 elem
-  const prevPath = Path.previous(path)
-  const prevEntry = Editor.node(editor, prevPath)
-
-  if (!prevEntry) { return 0 }
-  const [prevElem] = prevEntry
-
-  const prevType = DomEditor.getNodeType(prevElem)
-
-  if (prevType !== type) {
-    // 上一个 elem 不是 list-item ，需要拼接 <ol> 或 <ul>
-    return level + 1
-  }
-
-  // 上一个 elem 是 list-item
-  const {
-    ordered: prevOrdered = false,
-    level: prevLevel = 0,
-  } = prevElem as ListItemElement
-
-  if (prevLevel < level) {
-    // 上一个 level 小于当前 level ，需要拼接 <ol> 或 <ul>
-    return level - prevLevel
-  }
-  if (prevLevel > level) {
-    // 此处需要看上一个同级兄弟节点 ordered 是否一致，如果一致则不需要拼接，否则需要拼接
-    return hasSameOrderWithBrother(editor, elem as ListItemElement) ? 0 : 1
-  }
-  if (prevLevel === level) {
-    // 上一个 level 等于当前 level
-    if (prevOrdered === ordered && hasSameListConfig(prevElem as ListItemElement, listItemElem)) {
-      // ordered 一致，则不需要拼接 <ol> 或 <ul>
-      return 0
-    }
-    /// ordered 不一致，则需要拼接 <ol> 或 <ul>
-    return 1
-
-  }
-
-  // 其他情况
-  return 0
-}
-
-/**
- * 当前 list-item 后面面需要拼接几个 </ol> 或 </ul>
- * @param elem elem
- */
-function getEndContainerTagNumber(elem: Element): number {
-  const editor = ELEM_TO_EDITOR.get(elem)
-
-  if (editor == null) { return 0 }
-
-  const listItemElem = elem as ListItemElement
-  const {
-    type,
-    ordered = false,
-    level = 0,
-  } = listItemElem
-
-  const path = DomEditor.findPath(editor, elem)
-
-  if (path[0] === editor.children.length - 1) {
-    // list-item 是最后一个元素，再往后没有了。需要拼接 </ol> 或 </ul>
-    return level + 1
-  }
-
-  // 获取下一个 elem
-  const nextPath = Path.next(path)
-  const nextEntry = Editor.node(editor, nextPath)
-
-  if (!nextEntry) { return 0 }
-  const [nextElem] = nextEntry
-
-  const nextType = DomEditor.getNodeType(nextElem)
-
-  if (nextType !== type) {
-    // 下一个 elem 不是 list-item ，需要拼接 <ol> 或 <ul>
-    return level + 1
-  }
-
-  // 下一个 elem 是 list-item
-  const {
-    ordered: nextOrdered = false,
-    level: nextLevel = 0,
-  } = nextElem as ListItemElement
-
-  if (nextLevel < level) {
-    // 下一个 level 小于当前 level，此处需要看上一个同级兄弟节点 ordered 是否一致，如果一致则不需要拼接，否则需要拼接
-    if (hasSameOrderWithBrother(editor, nextElem as ListItemElement)) {
-      // ordered 一致，则不需要额外拼接 </ol> 或 </ul>
-      return level - nextLevel
-    }
-    // ordered 不一致，则需要额外拼接 </ol> 或 </ul>
-    return level - nextLevel + 1
-
-  }
-  if (nextLevel > level) {
-    // 下一个 level 大于当前 level ，不需要拼接 </ol> 或 </ul>
-    return 0
-  }
-  if (nextLevel === level) {
-    // 下一个 level 等于当前 level
-    if (nextOrdered === ordered && hasSameListConfig(nextElem as ListItemElement, listItemElem)) {
-      // ordered 一致，则不需要拼接 </ol> 或 </ul>
-      return 0
-    }
-    /// ordered 不一致，则需要拼接 </ol> 或 </ul>
-    return 1
-
-  }
-
-  // 其他情况
-  return 0
-}
-
-// ol ul 栈
+// ol ul stack for streaming list-item serialization
 const CONTAINER_TAG_STACK: Array<string> = []
+let STACK_EDITOR: IDomEditor | null = null
+
+function getContainerTag(elem: ListItemElement): 'ol' | 'ul' {
+  return elem.ordered ? 'ol' : 'ul'
+}
+
+function getFallbackContainerTag(elem: ListItemElement): string {
+  return elem.ordered ? 'ol' : 'ul'
+}
 
 function genContainerStartTag(elem: ListItemElement): string {
   const { ordered = false } = elem
@@ -178,6 +48,37 @@ function genContainerStartTag(elem: ListItemElement): string {
   return `<ol ${attrs.join(' ')}>`
 }
 
+function getAdjacentListItem(
+  editor: IDomEditor,
+  index: number,
+  direction: 'prev' | 'next',
+): ListItemElement | null {
+  if (direction === 'prev' && index === 0) { return null }
+  if (direction === 'next' && index === editor.children.length - 1) { return null }
+
+  const targetIndex = direction === 'prev' ? index - 1 : index + 1
+  const targetNode = editor.children[targetIndex] as any
+
+  if (!DomEditor.checkNodeType(targetNode, 'list-item')) { return null }
+  return targetNode as ListItemElement
+}
+
+function getPrevSameLevelListItem(
+  editor: IDomEditor,
+  index: number,
+  level: number,
+): ListItemElement | null {
+  for (let i = index - 1; i >= 0; i -= 1) {
+    const node = editor.children[i] as any
+
+    if (!DomEditor.checkNodeType(node, 'list-item')) { continue }
+    if ((node.level || 0) === level) {
+      return node as ListItemElement
+    }
+  }
+  return null
+}
+
 function elemToHtml(
   elem: Element,
   childrenHtml: string,
@@ -191,34 +92,105 @@ function elemToHtml(
   let endContainerStr = ''
 
   const listItemElem = elem as ListItemElement
-  const { ordered = false } = listItemElem
-  const containerTag = ordered ? 'ol' : 'ul'
+  const { level = 0 } = listItemElem
+  const containerTag = getContainerTag(listItemElem)
   const containerStartTag = genContainerStartTag(listItemElem)
+  const bindEditor = ELEM_TO_EDITOR.get(elem)
+  const bindEditorWithChildren = bindEditor && Array.isArray((bindEditor as any).children)
+    ? bindEditor
+    : null
+  const passedEditorWithChildren = editor && Array.isArray((editor as any).children)
+    ? editor
+    : null
+  const editorContainsElem = (candidate: IDomEditor | null | undefined) => (
+    !!candidate && candidate.children.indexOf(elem as any) >= 0
+  )
+  let finalEditor = passedEditorWithChildren || bindEditorWithChildren
 
-  // 前面需要拼接几个 <ol> 或 <ul>
-  const startContainerTagNumber = getStartContainerTagNumber(elem)
+  if (editorContainsElem(passedEditorWithChildren)) {
+    finalEditor = passedEditorWithChildren
+  } else if (editorContainsElem(bindEditorWithChildren)) {
+    finalEditor = bindEditorWithChildren
+  }
+  const styleEditor = editor || bindEditor
 
-  if (startContainerTagNumber > 0) {
-    for (let i = 0; i < startContainerTagNumber; i += 1) {
-      startContainerStr += containerStartTag // 记录 start container tag ，如 `<ul>`
-      CONTAINER_TAG_STACK.push(containerTag) // tag 压栈
+  if (finalEditor == null) {
+    return {
+      html: `<li>${childrenHtml}</li>`,
+      prefix: '',
+      suffix: '',
     }
   }
 
-  // 后面需要拼接几个 </ol> 或 </ul>
-  const endContainerTagNumber = getEndContainerTagNumber(elem)
+  if (STACK_EDITOR !== finalEditor) {
+    CONTAINER_TAG_STACK.length = 0
+    STACK_EDITOR = finalEditor
+  }
 
-  if (endContainerTagNumber > 0) {
-    for (let i = 0; i < endContainerTagNumber; i += 1) {
-      const tag = CONTAINER_TAG_STACK.pop() // tag 从栈中获取
+  const index = finalEditor.children.indexOf(elem as any)
 
-      endContainerStr += `</${tag}>` // 记录 end container tag ，如 `</ul>`
+  if (index < 0) {
+    return {
+      html: `<li>${childrenHtml}</li>`,
+      prefix: '',
+      suffix: '',
+    }
+  }
+
+  const prevItem = getAdjacentListItem(finalEditor, index, 'prev')
+  const nextItem = getAdjacentListItem(finalEditor, index, 'next')
+  const hasNestedNext = !!nextItem && (nextItem.level || 0) > level
+
+  if (!prevItem) {
+    // list block start
+    CONTAINER_TAG_STACK.length = 0
+    for (let i = 0; i < level + 1; i += 1) {
+      startContainerStr += containerStartTag
+      CONTAINER_TAG_STACK.push(containerTag)
+    }
+  } else {
+    const prevLevel = prevItem.level || 0
+
+    if (level > prevLevel) {
+      // Enter nested lists inside previous <li>.
+      for (let i = 0; i < level - prevLevel; i += 1) {
+        startContainerStr += containerStartTag
+        CONTAINER_TAG_STACK.push(containerTag)
+      }
+    } else if (level === prevLevel) {
+      // Split same-level lists when ordered/type/start differ.
+      if (!hasSameListConfig(prevItem, listItemElem)) {
+        const closeTag = CONTAINER_TAG_STACK.pop() || getFallbackContainerTag(prevItem)
+
+        startContainerStr += `</${closeTag}>${containerStartTag}`
+        CONTAINER_TAG_STACK.push(containerTag)
+      }
+    } else {
+      // Climb up: close nested list containers and parent <li>.
+      let diff = prevLevel - level
+
+      while (diff > 0) {
+        const closeTag = CONTAINER_TAG_STACK.pop() || getFallbackContainerTag(prevItem)
+
+        startContainerStr += `</${closeTag}></li>`
+        diff -= 1
+      }
+
+      // Split target-level list container when config changed.
+      const brother = getPrevSameLevelListItem(finalEditor, index, level)
+
+      if (brother && !hasSameListConfig(brother, listItemElem)) {
+        const closeTag = CONTAINER_TAG_STACK.pop() || getFallbackContainerTag(brother)
+
+        startContainerStr += `</${closeTag}>${containerStartTag}`
+        CONTAINER_TAG_STACK.push(containerTag)
+      }
     }
   }
 
   // 获取前缀颜色
   const prefixColor = getListItemColor(elem)
-  const textStyleMode = getTextStyleMode(editor)
+  const textStyleMode = getTextStyleMode(styleEditor)
   let colorStyle = ''
   let colorClass = ''
   let colorData = ''
@@ -226,7 +198,7 @@ function elemToHtml(
   if (prefixColor) {
     if (textStyleMode === 'class') {
       colorData = ` data-w-e-color="${prefixColor}"`
-      const action = resolveListColorAction(editor, prefixColor)
+      const action = resolveListColorAction(styleEditor, prefixColor)
 
       if (action === 'class') {
         colorClass = ` class="${genListColorClassName(prefixColor)}"`
@@ -238,8 +210,24 @@ function elemToHtml(
     }
   }
 
+  const html = `<li${colorClass}${colorData}${colorStyle}>${childrenHtml}${hasNestedNext ? '' : '</li>'}`
+
+  if (!nextItem) {
+    // list block end
+    while (CONTAINER_TAG_STACK.length > 0) {
+      const tag = CONTAINER_TAG_STACK.pop()
+
+      if (!tag) { break }
+      endContainerStr += `</${tag}>`
+      if (CONTAINER_TAG_STACK.length > 0) {
+        endContainerStr += '</li>'
+      }
+    }
+    STACK_EDITOR = null
+  }
+
   return {
-    html: `<li${colorClass}${colorData}${colorStyle}>${childrenHtml}</li>`,
+    html,
     prefix: startContainerStr,
     suffix: endContainerStr,
   }

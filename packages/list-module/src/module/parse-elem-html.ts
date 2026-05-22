@@ -3,7 +3,7 @@
  * @author wangfupeng
  */
 
-import { IDomEditor } from '@wangeditor-next/core'
+import { DomEditor, IDomEditor } from '@wangeditor-next/core'
 import { Dom7Array } from 'dom7'
 import { Descendant, Text } from 'slate'
 
@@ -57,36 +57,53 @@ function getOrderedType($elem: Dom7Array): OrderedListType | undefined {
  * @param $elem list $elem
  */
 function getLevel($elem: Dom7Array): number {
-  let level = 0
-
+  let listAncestorCount = 0
   let $cur: Dom7Array = $elem.parent()
-  let tagName: string = getTagName($cur)
 
-  while (tagName === 'ul' || tagName === 'ol') {
+  while ($cur.length > 0) {
+    const tagName = getTagName($cur)
+
+    if (tagName === 'ul' || tagName === 'ol') {
+      listAncestorCount += 1
+    }
     $cur = $cur.parent()
-    tagName = getTagName($cur)
-    level += 1
   }
 
-  return level - 1
+  return Math.max(0, listAncestorCount - 1)
 }
 
 function parseItemHtml(
   elem: DOMElement,
   children: Descendant[],
   editor: IDomEditor,
-): ListItemElement {
+): ListItemElement | ListItemElement[] {
   const $elem = $(elem)
+  const normalizedChildren: Descendant[] = []
+  const nestedListChildren: ListItemElement[] = []
 
-  children = children.filter(child => {
-    if (Text.isText(child)) { return true }
-    if (editor.isInline(child)) { return true }
-    return false
+  children.forEach(child => {
+    if (Text.isText(child)) {
+      normalizedChildren.push(child)
+      return
+    }
+
+    if (editor.isInline(child)) {
+      normalizedChildren.push(child)
+      return
+    }
+
+    if (DomEditor.checkNodeType(child, 'list-item')) {
+      nestedListChildren.push(child as ListItemElement)
+    }
   })
 
   // 无 children ，则用纯文本
-  if (children.length === 0) {
-    children = [{ text: $elem.text().replace(/\s+/gm, ' ') }]
+  if (normalizedChildren.length === 0) {
+    if (nestedListChildren.length > 0) {
+      normalizedChildren.push({ text: '' })
+    } else {
+      normalizedChildren.push({ text: $elem.text().replace(/\s+/gm, ' ') })
+    }
   }
 
   const ordered = getOrdered($elem)
@@ -94,15 +111,18 @@ function parseItemHtml(
   const start = getOrderedStart($elem)
   const orderType = getOrderedType($elem)
 
-  return {
+  const currentItem: ListItemElement = {
     type: 'list-item',
     ordered,
     level,
     ...(start !== undefined ? { start } : {}),
     ...(orderType !== undefined ? { orderType } : {}),
     // @ts-ignore
-    children,
+    children: normalizedChildren,
   }
+
+  if (nestedListChildren.length === 0) { return currentItem }
+  return [currentItem, ...nestedListChildren]
 }
 
 export const parseItemHtmlConf = {
