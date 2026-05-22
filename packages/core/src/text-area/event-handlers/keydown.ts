@@ -4,13 +4,16 @@
  */
 
 import { isHotkey } from 'is-hotkey'
-import { Editor, Transforms, Range, Node, Element } from 'slate'
+import {
+  Editor, Element, Node, Range, Transforms,
+} from 'slate'
+
 import { IDomEditor } from '../../editor/interface'
-import TextArea from '../TextArea'
 import Hotkeys from '../../utils/hotkeys'
-import { hasEditableTarget } from '../helpers'
 import { HAS_BEFORE_INPUT_SUPPORT, IS_CHROME, IS_SAFARI } from '../../utils/ua'
-import { EDITOR_TO_TOOLBAR, EDITOR_TO_HOVER_BAR } from '../../utils/weak-maps'
+import { EDITOR_TO_HOVER_BAR, EDITOR_TO_TOOLBAR } from '../../utils/weak-maps'
+import { hasEditableTarget } from '../helpers'
+import TextArea from '../TextArea'
 
 function preventDefault(event: Event) {
   event.preventDefault()
@@ -25,13 +28,17 @@ function triggerMenuHotKey(editor: IDomEditor, event: KeyboardEvent) {
 
   // 合并所有 menus
   const allMenus = { ...toolbarMenus, ...hoverbarMenus }
-  for (let key in allMenus) {
+
+  for (const key of Object.keys(allMenus)) {
     const menu = allMenus[key]
     const { hotkey } = menu
+
     if (hotkey && isHotkey(hotkey, event)) {
       const disabled = menu.isDisabled(editor)
+
       if (!disabled) {
         const val = menu.getValue(editor)
+
         menu.exec(editor, val) // 执行 menu 命令
       }
     }
@@ -43,9 +50,9 @@ function handleOnKeydown(e: Event, textarea: TextArea, editor: IDomEditor) {
   const { selection } = editor
   const { readOnly } = editor.getConfig()
 
-  if (readOnly) return
-  if (textarea.isComposing) return
-  if (!hasEditableTarget(editor, event.target)) return
+  if (readOnly) { return }
+  if (textarea.isComposing) { return }
+  if (!hasEditableTarget(editor, event.target)) { return }
 
   // 触发 menu 快捷键
   triggerMenuHotKey(editor, event)
@@ -172,7 +179,11 @@ function handleOnKeydown(e: Event, textarea: TextArea, editor: IDomEditor) {
 
     if (Hotkeys.isSplitBlock(event)) {
       preventDefault(event)
-      Editor.insertBreak(editor)
+      if (event.shiftKey) {
+        Editor.insertText(editor, '\n')
+      } else {
+        Editor.insertBreak(editor)
+      }
       return
     }
 
@@ -230,30 +241,27 @@ function handleOnKeydown(e: Event, textarea: TextArea, editor: IDomEditor) {
       } else {
         Editor.deleteForward(editor, { unit: 'word' })
       }
-      return
+
     }
-  } else {
-    if (IS_CHROME || IS_SAFARI) {
-      // COMPAT: Chrome and Safari support `beforeinput` event but do not fire
-      // an event when deleting backwards in a selected void inline node
-      // 修复在 Chrome 和 Safari 中删除内容时，内联空节点被选中
+  } else if (IS_CHROME || IS_SAFARI) {
+    // COMPAT: Chrome and Safari support `beforeinput` event but do not fire
+    // an event when deleting backwards in a selected void inline node
+    // 修复在 Chrome 和 Safari 中删除内容时，内联空节点被选中
+    if (
+      selection
+        && (Hotkeys.isDeleteBackward(event) || Hotkeys.isDeleteForward(event))
+        && Range.isCollapsed(selection)
+    ) {
+      const currentNode = Node.parent(editor, selection.anchor.path)
+
       if (
-        selection &&
-        (Hotkeys.isDeleteBackward(event) || Hotkeys.isDeleteForward(event)) &&
-        Range.isCollapsed(selection)
+        Element.isElement(currentNode)
+          && Editor.isVoid(editor, currentNode)
+          && Editor.isInline(editor, currentNode)
       ) {
-        const currentNode = Node.parent(editor, selection.anchor.path)
+        event.preventDefault()
+        Transforms.delete(editor, { unit: 'block' })
 
-        if (
-          Element.isElement(currentNode) &&
-          Editor.isVoid(editor, currentNode) &&
-          Editor.isInline(editor, currentNode)
-        ) {
-          event.preventDefault()
-          Transforms.delete(editor, { unit: 'block' })
-
-          return
-        }
       }
     }
   }

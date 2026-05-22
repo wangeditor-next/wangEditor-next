@@ -262,13 +262,17 @@ describe('handleOnKeydown', () => {
     expect(event.preventDefault).toHaveBeenCalled()
   })
 
-  it('splits block on splitBlock hotkey', () => {
+  it('splits block on enter without shift when beforeinput is unsupported', () => {
     const editor = {
       selection: createSelection(false),
       getConfig: () => ({ readOnly: false }),
     } as any
     const textarea = { isComposing: false } as any
-    const event = { preventDefault: vi.fn(), target: {} } as any
+    const event = {
+      preventDefault: vi.fn(),
+      target: {},
+      shiftKey: false,
+    } as any
 
     vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
     vi.spyOn(Hotkeys, 'isSplitBlock').mockReturnValue(true)
@@ -277,6 +281,30 @@ describe('handleOnKeydown', () => {
     handleOnKeydown(event, textarea, editor)
 
     expect(Editor.insertBreak).toHaveBeenCalledWith(editor)
+    expect(event.preventDefault).toHaveBeenCalled()
+  })
+
+  it('inserts soft line break on shift+enter when beforeinput is unsupported', () => {
+    const editor = {
+      selection: createSelection(false),
+      getConfig: () => ({ readOnly: false }),
+    } as any
+    const textarea = { isComposing: false } as any
+    const event = {
+      preventDefault: vi.fn(),
+      target: {},
+      shiftKey: true,
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(Hotkeys, 'isSplitBlock').mockReturnValue(true)
+    vi.spyOn(Editor, 'insertBreak').mockImplementation(() => {})
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    handleOnKeydown(event, textarea, editor)
+
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, '\n')
+    expect(Editor.insertBreak).not.toHaveBeenCalled()
     expect(event.preventDefault).toHaveBeenCalled()
   })
 
