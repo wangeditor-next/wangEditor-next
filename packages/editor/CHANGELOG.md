@@ -1,5 +1,30 @@
 # Change Log
 
+## 5.7.4
+
+### Patch Changes
+
+- 0b21edf: feat(image): add built-in image preview menu in hoverbar to open image src directly.
+- 008047e: fix: scope Slate DOM mapping lookup to the active editor root so duplicated legacy ids do not break DOM-to-Slate resolution when wangEditor and wangEditor-next coexist.
+- 438ab1c: fix(table): make `tableFullWidth` switch table nodes to responsive `width: 100%` mode instead of one-time pixel recalculation, and add regression coverage for width round-trip plus container-resize behavior.
+- Updated dependencies [6a0de8e]
+- Updated dependencies [0b21edf]
+- Updated dependencies [6cb2513]
+- Updated dependencies [db75eaf]
+- Updated dependencies [0c49afa]
+- Updated dependencies [69125f8]
+- Updated dependencies [dcf7a98]
+- Updated dependencies [008047e]
+- Updated dependencies [eac6814]
+- Updated dependencies [438ab1c]
+  - @wangeditor-next/basic-modules@2.0.4
+  - @wangeditor-next/core@1.8.4
+  - @wangeditor-next/list-module@2.0.4
+  - @wangeditor-next/table-module@2.0.4
+  - @wangeditor-next/upload-image-module@2.0.4
+  - @wangeditor-next/code-highlight@2.0.4
+  - @wangeditor-next/video-module@2.0.4
+
 ## 5.7.3
 
 ### Patch Changes

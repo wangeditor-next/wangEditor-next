@@ -1,5 +1,19 @@
 # Change Log
 
+## 2.0.4
+
+### Patch Changes
+
+- 6cb2513: feat(list): support ordered list `start` and `type` in list parsing, rendering, and HTML serialization.
+- db75eaf: feat(list): add built-in lower-alpha ordered-list menu key (`numberedListLowerAlpha`) for issue 702.
+- eac6814: Fix nested list import/export so standard HTML nesting is preserved. `li > ul/ol` structures are now parsed into list levels correctly, and list serialization outputs nested lists inside their parent `<li>` instead of sibling containers.
+- Updated dependencies [0b21edf]
+- Updated dependencies [db75eaf]
+- Updated dependencies [69125f8]
+- Updated dependencies [dcf7a98]
+- Updated dependencies [008047e]
+  - @wangeditor-next/core@1.8.4
+
 ## 2.0.3
 
 ### Patch Changes

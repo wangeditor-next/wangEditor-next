@@ -1,5 +1,17 @@
 # Change Log
 
+## 2.0.4
+
+### Patch Changes
+
+- 438ab1c: fix(table): make `tableFullWidth` switch table nodes to responsive `width: 100%` mode instead of one-time pixel recalculation, and add regression coverage for width round-trip plus container-resize behavior.
+- Updated dependencies [0b21edf]
+- Updated dependencies [db75eaf]
+- Updated dependencies [69125f8]
+- Updated dependencies [dcf7a98]
+- Updated dependencies [008047e]
+  - @wangeditor-next/core@1.8.4
+
 ## 2.0.3
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # Change Log
 
+## 2.0.4
+
+### Patch Changes
+
+- 6a0de8e: feat(format-painter): support copying and applying block-level formats (heading, blockquote, list, todo) in issue 774.
+- 0b21edf: feat(image): add built-in image preview menu in hoverbar to open image src directly.
+- 0c49afa: Fix blockquote HTML parsing for imported content where line breaks are represented by block children (for example `blockquote > div` from Feishu docs). The parser now flattens block children into newline-separated content while preserving inline text marks.
+- Updated dependencies [0b21edf]
+- Updated dependencies [db75eaf]
+- Updated dependencies [69125f8]
+- Updated dependencies [dcf7a98]
+- Updated dependencies [008047e]
+  - @wangeditor-next/core@1.8.4
+
 ## 2.0.3
 
 ### Patch Changes

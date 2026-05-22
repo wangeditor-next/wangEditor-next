@@ -1,5 +1,15 @@
 # Change Log
 
+## 1.8.4
+
+### Patch Changes
+
+- 0b21edf: feat(image): add built-in image preview menu in hoverbar to open image src directly.
+- db75eaf: feat(list): add built-in lower-alpha ordered-list menu key (`numberedListLowerAlpha`) for issue 702.
+- 69125f8: fix(core): map Shift+Enter to soft line breaks (`\n` -> `<br>`) instead of paragraph breaks.
+- dcf7a98: fix(core): preserve template-wrapped clipboard html by safely unwrapping template content during sanitize.
+- 008047e: fix: scope Slate DOM mapping lookup to the active editor root so duplicated legacy ids do not break DOM-to-Slate resolution when wangEditor and wangEditor-next coexist.
+
 ## 1.8.3
 
 ### Patch Changes
