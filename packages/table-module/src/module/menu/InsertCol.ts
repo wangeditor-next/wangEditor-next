@@ -113,7 +113,7 @@ class InsertCol implements IButtonMenu {
     if (tableNode == null) { return }
 
     const matrix = filledMatrix(editor)
-    let tdIndex = 0
+    let tdIndex = -1
 
     for (let x = 0; x < matrix.length; x += 1) {
       for (let y = 0; y < matrix[x].length; y += 1) {
@@ -124,7 +124,19 @@ class InsertCol implements IButtonMenu {
           break
         }
       }
+      if (tdIndex !== -1) { break }
     }
+
+    if (tdIndex === -1) { return }
+
+    const selectedColSpan = (selectedCellNode as TableCellElement).colSpan || 1
+    const { insertPosition = 'before' } = editor.getMenuConfig('insertTableCol') || {}
+    const normalizedInsertPosition = insertPosition === 'after' ? 'after' : 'before'
+    const totalCols = matrix[0]?.length || 0
+    const insertColIndex = normalizedInsertPosition === 'after'
+      ? Math.min(tdIndex + selectedColSpan, totalCols)
+      : tdIndex
+    const mergeInspectColIndex = insertColIndex < totalCols ? insertColIndex : -1
 
     Editor.withoutNormalizing(editor, () => {
       // 记录已处理的合并单元格和需要跳过插入的行
@@ -133,14 +145,18 @@ class InsertCol implements IButtonMenu {
 
       // 遍历每一行的第 tdIndex 列，处理合并单元格
       for (let x = 0; x < matrix.length; x += 1) {
+        if (mergeInspectColIndex < 0) {
+          continue
+        }
+
         // 安全检查：确保行和列都存在
-        if (!matrix[x] || !matrix[x][tdIndex]) {
+        if (!matrix[x] || !matrix[x][mergeInspectColIndex]) {
           continue
         }
 
         const [[,], {
           rtl, ltr, ttb, btt,
-        }] = matrix[x][tdIndex]
+        }] = matrix[x][mergeInspectColIndex]
 
         // 判断是否是合并单元格
         if (rtl > 1 || ltr > 1 || ttb > 1 || btt > 1) {
@@ -149,7 +165,7 @@ class InsertCol implements IButtonMenu {
           // rtl表示从右到左的距离，所以真实单元格列 = 当前列 - (rtl - 1)
           // ttb表示从上到下的距离，所以真实单元格行 = 当前行 - (ttb - 1)
           const realCellRow = x - (ttb - 1)
-          const realCellCol = tdIndex - (rtl - 1)
+          const realCellCol = mergeInspectColIndex - (rtl - 1)
 
           // 安全检查：确保真实单元格位置存在
           if (realCellRow < 0 || realCellRow >= matrix.length
@@ -197,8 +213,10 @@ class InsertCol implements IButtonMenu {
           continue
         }
 
+        const currentRow = matrix[x]
+
         // 安全检查：确保矩阵位置存在
-        if (!matrix[x] || !matrix[x][tdIndex]) {
+        if (!currentRow || currentRow.length === 0) {
           continue
         }
 
@@ -212,7 +230,17 @@ class InsertCol implements IButtonMenu {
           newCell.isHeader = true
         }
 
-        const [[, insertPath]] = matrix[x][tdIndex]
+        let insertPath: Path
+
+        if (insertColIndex < currentRow.length) {
+          const [[, pathAtInsertCol]] = currentRow[insertColIndex]
+
+          insertPath = pathAtInsertCol as Path
+        } else {
+          const [[, lastCellPath]] = currentRow[currentRow.length - 1]
+
+          insertPath = Path.next(lastCellPath as Path)
+        }
 
         Transforms.insertNodes(editor, newCell, { at: insertPath })
       }
@@ -230,16 +258,22 @@ class InsertCol implements IButtonMenu {
 
         // 获取当前列的宽度，如果没有设置则使用默认宽度
         const { minWidth = 60 } = editor.getMenuConfig('insertTable')
-        const currentColWidth = columnWidths[tdIndex] || parseInt(minWidth, 10) || 60
+        const currentColWidth = columnWidths[tdIndex] || parseInt(minWidth.toString(), 10) || 60
 
         // 将当前列宽度一分为二
         const halfWidth = Math.floor(currentColWidth / 2)
         const remainingWidth = currentColWidth - halfWidth
 
-        // 在当前位置插入新列（左侧），使用一半宽度
-        adjustColumnWidths.splice(tdIndex, 0, halfWidth)
-        // 更新原列宽度为剩余的一半
-        adjustColumnWidths[tdIndex + 1] = remainingWidth
+        if (normalizedInsertPosition === 'after') {
+          // 在当前位置后插入新列（右侧）
+          adjustColumnWidths[tdIndex] = remainingWidth
+          adjustColumnWidths.splice(tdIndex + 1, 0, halfWidth)
+        } else {
+          // 在当前位置前插入新列（左侧）
+          adjustColumnWidths.splice(tdIndex, 0, halfWidth)
+          // 更新原列宽度为剩余的一半
+          adjustColumnWidths[tdIndex + 1] = remainingWidth
+        }
 
         Transforms.setNodes(editor, { columnWidths: adjustColumnWidths } as TableElement, {
           at: tablePath,

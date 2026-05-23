@@ -124,6 +124,10 @@ interface IInsertTableConfig {
   }
 }
 
+interface IInsertTableColConfig {
+  insertPosition: 'before' | 'after';
+}
+
 interface ILinkConfig {
   checkLink: (text:string, url:string)=> string | boolean | undefined
   parseLinkUrl: (url: string) => string
@@ -203,7 +207,7 @@ export interface IMenuConfig {
   deleteTable: ISingleMenuConfig;
   insertTableRow: IInsertTableConfig;
   deleteTableRow: ISingleMenuConfig;
-  insertTableCol: ISingleMenuConfig;
+  insertTableCol: IInsertTableColConfig;
   deleteTableCol: ISingleMenuConfig;
   tableHeader: ISingleMenuConfig;
   tableFullWidth: ISingleMenuConfig;

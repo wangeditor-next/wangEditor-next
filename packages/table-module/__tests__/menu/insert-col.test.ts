@@ -162,7 +162,7 @@ describe('Table Module Insert Col Menu', () => {
           type: 'table-cell',
           children: [],
         } as slate.Element,
-        [0, 1],
+        [0, 0, 0],
       ] as slate.NodeEntry<slate.Element>
     }
 
@@ -184,7 +184,7 @@ describe('Table Module Insert Col Menu', () => {
           type: 'table-cell',
           children: [],
         } as slate.Element,
-        [0, 1],
+        [0, 0, 0],
       ] as slate.NodeEntry<slate.Element>
     }
 
@@ -208,7 +208,7 @@ describe('Table Module Insert Col Menu', () => {
           type: 'table-cell',
           children: [],
         } as slate.Element,
-        [0, 1],
+        [0, 0, 0],
       ] as slate.NodeEntry<slate.Element>
     }
 
@@ -373,6 +373,92 @@ describe('Table Module Insert Col Menu', () => {
     expect(table.children[0].children).toHaveLength(3)
     expect(table.children[0].children[0].isHeader).toBe(true)
     expect(table.children[1].children).toHaveLength(3)
+  })
+
+  test('exec should insert column after current column when insertPosition is after', () => {
+    const insertColMenu = new InsertCol()
+    const editor = createEditor({
+      content: [
+        {
+          type: 'table',
+          columnWidths: [120, 80],
+          children: [
+            {
+              type: 'table-row',
+              children: [
+                { type: 'table-cell', isHeader: true, children: [{ text: 'h1' }] },
+                { type: 'table-cell', isHeader: true, children: [{ text: 'h2' }] },
+              ],
+            },
+            {
+              type: 'table-row',
+              children: [
+                { type: 'table-cell', children: [{ text: 'a1' }] },
+                { type: 'table-cell', children: [{ text: 'a2' }] },
+              ],
+            },
+          ],
+        },
+      ],
+      config: {
+        MENU_CONF: {
+          insertTable: {
+            minWidth: '60',
+          },
+          insertTableCol: {
+            insertPosition: 'after',
+          },
+        },
+      },
+    })
+
+    editor.selection = {
+      anchor: { path: [0, 0, 0, 0], offset: 0 },
+      focus: { path: [0, 0, 0, 0], offset: 0 },
+    }
+
+    mockedUtils.filledMatrix.mockImplementation(() => {
+      return [
+        [
+          [
+            [{ type: 'table-cell', isHeader: true, children: [{ text: 'h1' }] }, [0, 0, 0]],
+            {
+              rtl: 1, ltr: 1, ttb: 1, btt: 1,
+            },
+          ],
+          [
+            [{ type: 'table-cell', isHeader: true, children: [{ text: 'h2' }] }, [0, 0, 1]],
+            {
+              rtl: 1, ltr: 1, ttb: 1, btt: 1,
+            },
+          ],
+        ],
+        [
+          [
+            [{ type: 'table-cell', children: [{ text: 'a1' }] }, [0, 1, 0]],
+            {
+              rtl: 1, ltr: 1, ttb: 1, btt: 1,
+            },
+          ],
+          [
+            [{ type: 'table-cell', children: [{ text: 'a2' }] }, [0, 1, 1]],
+            {
+              rtl: 1, ltr: 1, ttb: 1, btt: 1,
+            },
+          ],
+        ],
+      ]
+    })
+
+    insertColMenu.exec(editor, '')
+
+    const table = editor.children[0] as any
+
+    expect(table.columnWidths).toEqual([60, 60, 80])
+    expect(table.children[0].children).toHaveLength(3)
+    expect(table.children[0].children[1].isHeader).toBe(true)
+    expect(table.children[0].children.map((cell: any) => cell.children[0]?.text ?? '')).toEqual(['h1', '', 'h2'])
+    expect(table.children[1].children.map((cell: any) => cell.children[0]?.text ?? '')).toEqual(['a1', '', 'a2'])
   })
 
   test('isDisabled should fail closed when matrix inspection throws', () => {
