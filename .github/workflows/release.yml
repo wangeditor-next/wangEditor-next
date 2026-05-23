@@ -101,6 +101,7 @@ jobs:
       # Create one consolidated GitHub Release that aggregates all published
       # packages into a single entry instead of one release per package.
       - name: Create consolidated GitHub Release
+        id: consolidated_release
         if: steps.changesets.outputs.published == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -125,6 +126,31 @@ jobs:
           fi
 
           echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Upload editor sourcemaps to GitHub Release assets
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ steps.consolidated_release.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${RELEASE_TAG}" ]; then
+            echo "::warning::Missing release tag output. Skip sourcemap upload."
+            exit 0
+          fi
+
+          map_count="$(find packages/editor/dist -type f -name '*.map' | wc -l | tr -d ' ')"
+          if [ "${map_count}" = "0" ]; then
+            echo "::warning::No sourcemap files found under packages/editor/dist. Skip upload."
+            exit 0
+          fi
+
+          asset_name="editor-sourcemaps-${RELEASE_TAG}.tar.gz"
+          find packages/editor/dist -type f -name '*.map' -print0 \
+            | tar --null -T - -czf "${asset_name}"
+
+          gh release upload "${RELEASE_TAG}" "${asset_name}" --clobber
 
       - name: Trigger docs site deployment for released editor version
         if: steps.changesets.outputs.published == 'true' && github.ref_name == 'master' && env.DOCS_REPO_DISPATCH_TOKEN != ''
