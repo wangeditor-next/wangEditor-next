@@ -1,5 +1,24 @@
 # Change Log
 
+## 5.7.5
+
+### Patch Changes
+
+- 42d5803: Optimize `@wangeditor-next/editor` package distribution and lightweight entry ergonomics:
+  - Exclude `.map` files from npm publish artifacts to reduce install size.
+  - Upload editor sourcemaps as GitHub Release assets for debugging workflows.
+  - Add a package-size CI guard (`pnpm run check:editor:pack-size`) to prevent regressions.
+
+- Updated dependencies [ef9d73d]
+- Updated dependencies [95660ea]
+  - @wangeditor-next/core@1.8.5
+  - @wangeditor-next/table-module@2.0.5
+  - @wangeditor-next/basic-modules@2.0.5
+  - @wangeditor-next/code-highlight@2.0.5
+  - @wangeditor-next/list-module@2.0.5
+  - @wangeditor-next/upload-image-module@2.0.5
+  - @wangeditor-next/video-module@2.0.5
+
 ## 5.7.4
 
 ### Patch Changes

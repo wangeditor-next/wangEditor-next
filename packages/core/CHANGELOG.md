@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.8.5
+
+### Patch Changes
+
+- ef9d73d: add configurable table column insert position (before/after current column)
+
 ## 1.8.4
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # Change Log
 
+## 2.0.5
+
+### Patch Changes
+
+- ef9d73d: add configurable table column insert position (before/after current column)
+- 95660ea: fix table caption parse/render/toHtml round-trip support
+- Updated dependencies [ef9d73d]
+  - @wangeditor-next/core@1.8.5
+
 ## 2.0.4
 
 ### Patch Changes
