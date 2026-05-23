@@ -757,6 +757,53 @@ test.describe('Basic Editor', () => {
     ).toHaveCount(1)
   })
 
+  test('regression #156: insertTableCol should insert after current column when configured', async ({ page }) => {
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      const editorConfig = editor.getConfig?.()
+
+      if (!editorConfig?.MENU_CONF) {
+        throw new Error('editor config not ready')
+      }
+
+      editorConfig.MENU_CONF.insertTableCol = {
+        ...(editorConfig.MENU_CONF.insertTableCol || {}),
+        insertPosition: 'after',
+      }
+      editor.setHtml(`
+        <table style="width: 100%;">
+          <tbody>
+            <tr><td>A</td><td>B</td></tr>
+          </tbody>
+        </table>
+      `)
+    })
+
+    await page.locator('[data-testid="editor-textarea"] table td').first().click()
+    await page.locator('.w-e-hover-bar [data-menu-key="insertTableCol"]').click({ force: true })
+    await expect(
+      page.locator('[data-testid="editor-textarea"] table tr').first().locator('th, td'),
+    ).toHaveCount(3)
+
+    const firstRowTexts = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+      const tableNode = editor?.children?.find((node: any) => node?.type === 'table')
+
+      if (!tableNode) {
+        throw new Error('table node not found')
+      }
+
+      return tableNode.children[0].children.map((cell: any) => cell?.children?.[0]?.text ?? '')
+    })
+
+    expect(firstRowTexts).toEqual(['A', '', 'B'])
+  })
+
   test('regression #811: row resize hotzone should follow rendered row border after content expands', async ({ page }) => {
     await clearEditor(page)
     await page.keyboard.type('table-resize-probe')
