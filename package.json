@@ -44,7 +44,8 @@
     "smoke:demo:vue3": "pnpm --filter @wangeditor-next/demo-vue3 run smoke",
     "smoke:demo:yjs:react": "pnpm --filter @wangeditor-next/demo-yjs-react run smoke",
     "smoke:demo:yjs:vue3": "pnpm --filter @wangeditor-next/demo-yjs-vue3 run smoke",
-    "smoke:demos": "pnpm exec turbo build --filter=@wangeditor-next/demo-react --filter=@wangeditor-next/demo-vue3 --filter=@wangeditor-next/demo-yjs-react --filter=@wangeditor-next/demo-yjs-vue3"
+    "smoke:demos": "pnpm exec turbo build --filter=@wangeditor-next/demo-react --filter=@wangeditor-next/demo-vue3 --filter=@wangeditor-next/demo-yjs-react --filter=@wangeditor-next/demo-yjs-vue3",
+    "check:editor:pack-size": "node scripts/check-editor-pack-size.js"
   },
   "workspaces": [
     "apps/*",

@@ -65,6 +65,9 @@ jobs:
       - name: Build packages
         run: pnpm build
 
+      - name: Check editor package size budget
+        run: pnpm run check:editor:pack-size
+
       # 在 master 上顺带产出覆盖率，避免额外 workflow 重复跑一轮
       - name: Unit test with coverage
         if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_name == 'master')

@@ -187,3 +187,7 @@ execSync(
 )
 
 console.log(`\nConsolidated GitHub release created: ${tag}`)
+
+if (process.env.GITHUB_OUTPUT) {
+  fs.appendFileSync(process.env.GITHUB_OUTPUT, `tag=${tag}\n`)
+}
