@@ -16,6 +16,9 @@ export default {
   },
   codeBlock: {
     title: 'Code block',
+    copy: 'Copy',
+    copied: 'Copied',
+    copyFailed: 'Copy failed',
   },
   color: {
     color: 'Font color',

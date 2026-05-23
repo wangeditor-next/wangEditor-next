@@ -1,3 +1,27 @@
-// pre>code 样式已移至 code-highlight 模块以避免重复
-// 此文件保留为空，但不删除以保持模块结构完整
+.w-e-text-container [data-slate-editor] pre.w-e-code-block {
+  position: relative;
 
+  .w-e-code-block-copy-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1;
+    min-width: 56px;
+    height: 24px;
+    padding: 0 8px;
+    border: 1px solid var(--w-e-textarea-slight-border-color);
+    border-radius: 4px;
+    background-color: #fff;
+    color: #666;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .15s ease;
+  }
+
+  &:hover .w-e-code-block-copy-button,
+  .w-e-code-block-copy-button:focus {
+    opacity: 1;
+  }
+}

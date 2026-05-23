@@ -30,4 +30,34 @@ describe('code-block render elem', () => {
 
     expect(vnode.sel).toBe('pre')
   })
+
+  it('render pre elem should include copy button when enabled by config', () => {
+    const editorWithCopyButton = createEditor({
+      config: {
+        MENU_CONF: {
+          codeBlock: {
+            showCopyButton: true,
+          },
+        },
+      },
+    })
+
+    const elem = {
+      type: 'pre',
+      children: [
+        {
+          type: 'code',
+          language: '',
+          children: [{ text: 'const a = 1' }],
+        },
+      ],
+    }
+    const vnode = renderPreConf.renderElem(elem, null, editorWithCopyButton) as any
+    const buttonVNode = vnode.children?.[0]
+
+    expect(vnode.sel).toBe('pre')
+    expect(vnode.data?.className).toBe('w-e-code-block')
+    expect(buttonVNode.sel).toBe('button')
+    expect(buttonVNode.data?.className).toBe('w-e-code-block-copy-button')
+  })
 })

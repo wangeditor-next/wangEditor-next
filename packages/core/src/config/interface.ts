@@ -150,6 +150,10 @@ interface ICodeLangConfig {
   codeLangs: { text: string; value: string; selected?: boolean }[];
 }
 
+interface ICodeBlockConfig {
+  showCopyButton?: boolean;
+}
+
 export interface IMenuConfig {
   bold: ISingleMenuConfig;
   underline: ISingleMenuConfig;
@@ -185,7 +189,7 @@ export interface IMenuConfig {
   editLink: ILinkConfig;
   unLink: ISingleMenuConfig;
   viewLink: ISingleMenuConfig;
-  codeBlock: ISingleMenuConfig;
+  codeBlock: ICodeBlockConfig;
   blockquote: ISingleMenuConfig;
   headerSelect: ISingleMenuConfig;
   header1: ISingleMenuConfig;
