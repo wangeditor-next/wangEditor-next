@@ -8,6 +8,15 @@ import { Element } from 'slate'
 
 import { TableCellElement, TableElement, TableRowElement } from './custom-types'
 
+function escapeHtml(raw: string): string {
+  return raw
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 function getExportTableWidth(tableNode: TableElement): string {
   const { width = 'auto', columnWidths = [] } = tableNode
 
@@ -30,13 +39,14 @@ function getExportTableWidth(tableNode: TableElement): string {
 
 function tableToHtml(elemNode: Element, childrenHtml: string, editor?: IDomEditor): string {
   const tableNode = elemNode as TableElement
-  const { columnWidths, height = 'auto' } = tableNode
+  const { columnWidths, caption, height = 'auto' } = tableNode
   const cols = columnWidths
     ?.map(colWidth => {
       return `<col width=${colWidth}></col>`
     })
     .join('')
 
+  const captionStr = caption ? `<caption>${escapeHtml(caption)}</caption>` : ''
   const colgroupStr = cols ? `<colgroup contentEditable="false">${cols}</colgroup>` : ''
   const exportedWidth = getExportTableWidth(tableNode)
   const textStyleMode = getTextStyleMode(editor)
@@ -47,10 +57,10 @@ function tableToHtml(elemNode: Element, childrenHtml: string, editor?: IDomEdito
     const heightAttr = heightValue && heightValue !== 'auto' ? ` height="${heightValue}"` : ''
     const heightDataAttr = heightValue ? ` data-w-e-table-height="${heightValue}"` : ''
 
-    return `<table class="w-e-table-layout-fixed"${widthAttr}${heightAttr}${heightDataAttr}>${colgroupStr}<tbody>${childrenHtml}</tbody></table>`
+    return `<table class="w-e-table-layout-fixed"${widthAttr}${heightAttr}${heightDataAttr}>${captionStr}${colgroupStr}<tbody>${childrenHtml}</tbody></table>`
   }
 
-  return `<table style="width: ${exportedWidth};table-layout: fixed;height:${height}">${colgroupStr}<tbody>${childrenHtml}</tbody></table>`
+  return `<table style="width: ${exportedWidth};table-layout: fixed;height:${height}">${captionStr}${colgroupStr}<tbody>${childrenHtml}</tbody></table>`
 }
 
 function tableRowToHtml(elem: Element, childrenHtml: string, editor?: IDomEditor): string {

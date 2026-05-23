@@ -67,6 +67,7 @@ function renderTable(elemNode: SlateElement, children: VNode[] | null, editor: I
   // 宽度和高度
   const {
     width: tableWidth = 'auto',
+    caption,
     height,
     columnWidths = [],
     rowHeights = [],
@@ -145,6 +146,11 @@ function renderTable(elemNode: SlateElement, children: VNode[] | null, editor: I
           ),
         }}
       >
+        {
+          caption ? (
+            <caption contentEditable={false}>{caption}</caption>
+          ) : null
+        }
         <colgroup contentEditable={false}>
           {
             /**

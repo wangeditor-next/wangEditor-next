@@ -75,6 +75,23 @@ describe('table module - render elem', () => {
     expect(tableVnode.sel).toBe('table')
   })
 
+  it('render table caption when caption is provided', () => {
+    const elem = {
+      type: 'table',
+      caption: 'Table 2: Effects of contact',
+      children: [],
+    }
+
+    const observerVnode = renderTableConf.renderElem(elem, null, editor) as any
+    const containerVnode = observerVnode.children[0] as any
+    const tableVnode = containerVnode.children[0] as any
+    const captionVnode = tableVnode.children[0] as any
+
+    expect(captionVnode.sel).toBe('caption')
+    expect(captionVnode.data?.contentEditable).toBe(false)
+    expect(captionVnode.text).toBe('Table 2: Effects of contact')
+  })
+
   it('render table elem with full with', () => {
     const elem = { type: 'table', children: [], width: '100%' }
 

@@ -1066,6 +1066,40 @@ test.describe('Basic Editor', () => {
     await expect(page.getByTestId('editor-html')).toContainText('<table')
   })
 
+  test('regression #335: table caption should render and survive setHtml(getHtml())', async ({ page }) => {
+    const snapshot = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      editor.setHtml(`
+        <table style="width: 100%;">
+          <caption>Table 2: Effects of contact</caption>
+          <tbody>
+            <tr><td>A</td><td>B</td></tr>
+          </tbody>
+        </table>
+      `)
+      const firstPassHtml = editor.getHtml()
+
+      editor.setHtml(firstPassHtml)
+      const secondPassHtml = editor.getHtml()
+      const domCaption = document.querySelector('[data-testid="editor-textarea"] table caption')?.textContent || ''
+
+      return {
+        firstPassHtml,
+        secondPassHtml,
+        domCaption: domCaption.trim(),
+      }
+    })
+
+    expect(snapshot.firstPassHtml).toContain('<caption>Table 2: Effects of contact</caption>')
+    expect(snapshot.secondPassHtml).toContain('<caption>Table 2: Effects of contact</caption>')
+    expect(snapshot.domCaption).toBe('Table 2: Effects of contact')
+  })
+
   test('regression #47: first inserted table should be first node and removable by select-all delete/cut', async ({ page }) => {
     await clearEditor(page)
     await waitForMenuEnabled(page, 'insertTable')
