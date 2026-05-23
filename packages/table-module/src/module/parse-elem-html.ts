@@ -131,6 +131,7 @@ function parseTableHtml(
   _editor: IDomEditor,
 ): TableElement {
   const $elem = $(elem)
+  const caption = ($elem.find('caption').text() || '').replace(/\s+/gm, ' ').trim() || undefined
 
   // 计算宽度
   let tableWidth = 'auto'
@@ -154,6 +155,7 @@ function parseTableHtml(
   const tableELement: TableElement = {
     type: 'table',
     width: tableWidth,
+    caption,
     height,
     // @ts-ignore
     children: children.filter(child => DomEditor.getNodeType(child) === 'table-row'),

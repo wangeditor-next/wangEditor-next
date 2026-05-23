@@ -128,6 +128,19 @@ describe('TableModule module', () => {
       )
     })
 
+    test('tableToHtmlConf should include caption when present', () => {
+      const element = {
+        type: 'table',
+        caption: 'Table 2: Effects of contact',
+        children: [],
+      }
+      const res = tableToHtmlConf.elemToHtml(element, '<tr><td>123</td></tr>')
+
+      expect(res).toBe(
+        '<table style="width: auto;table-layout: fixed;height:auto"><caption>Table 2: Effects of contact</caption><tbody><tr><td>123</td></tr></tbody></table>',
+      )
+    })
+
     test('tableToHtmlConf should export explicit pixel width when columnWidths are present', () => {
       const element = {
         type: 'table',
@@ -188,6 +201,26 @@ describe('TableModule module', () => {
         '<table class="w-e-table-layout-fixed" width="100%" height="60px" data-w-e-table-height="60px"><tbody><tr><td>123</td></tr></tbody></table>',
       )
       expect(res).not.toContain('style=')
+    })
+
+    test('tableToHtmlConf should escape caption html', () => {
+      const element = {
+        type: 'table',
+        caption: '<script>alert(1)</script>',
+        width: '100%',
+        height: '60px',
+        children: [],
+      }
+      const mockEditor = {
+        getConfig() {
+          return { textStyleMode: 'class' }
+        },
+      } as any
+      const res = tableToHtmlConf.elemToHtml(element, '<tr><td>123</td></tr>', mockEditor)
+
+      expect(res).toBe(
+        '<table class="w-e-table-layout-fixed" width="100%" height="60px" data-w-e-table-height="60px"><caption>&lt;script&gt;alert(1)&lt;/script&gt;</caption><tbody><tr><td>123</td></tr></tbody></table>',
+      )
     })
   })
 })

@@ -247,6 +247,38 @@ describe('table - parse html', () => {
       ],
     })
   })
+
+  it('table should parse caption text', () => {
+    const html = [
+      '<table style="width:100%;table-layout:fixed">',
+      '<caption>Table 2: Effects of contact</caption>',
+      '<tr><td>1</td></tr>',
+      '</table>',
+    ].join('')
+    const $table = $(html)
+    const stubEditor = {
+      isInline: () => false,
+    } as any
+    const rows = Array.from($table.find('tr'))
+      .map(row => {
+        const cells = Array.from(row.children).map(cell => parseCellHtmlConf.parseElemHtml(cell as HTMLTableCellElement, [], stubEditor))
+
+        return parseRowHtmlConf.parseElemHtml(row as HTMLTableRowElement, cells, stubEditor)
+      })
+    const table = parseTableHtmlConf.parseElemHtml($table[0], rows as any, stubEditor)
+
+    expect(table).toMatchObject({
+      type: 'table',
+      width: '100%',
+      caption: 'Table 2: Effects of contact',
+      children: [
+        {
+          type: 'table-row',
+          children: [{ ...TABLE_CELL_BASE_PROPS, children: [{ text: '1' }] }],
+        },
+      ],
+    })
+  })
   // ============== 测试table的border相关属性 start ==============
 
   it('table cell (TD) without border style should use default border (1px)', () => {

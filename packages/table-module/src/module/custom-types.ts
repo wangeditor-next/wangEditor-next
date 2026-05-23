@@ -36,6 +36,7 @@ export type TableRowElement = {
 export type TableElement = {
   type: 'table'
   width: string
+  caption?: string
   children: TableRowElement[]
 
   /** resize bar */
