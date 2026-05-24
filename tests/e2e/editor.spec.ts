@@ -1280,6 +1280,57 @@ test.describe('Basic Editor', () => {
     await expect(page.getByTestId('editor-html')).toContainText('<code')
   })
 
+  test('regression #173: code block copy button should copy code text when enabled', async ({ page }) => {
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+      const editorConfig = editor.getConfig?.()
+
+      if (!editorConfig?.MENU_CONF) {
+        throw new Error('editor config not ready')
+      }
+      const win = window as any
+
+      editorConfig.MENU_CONF.codeBlock = {
+        ...(editorConfig.MENU_CONF.codeBlock || {}),
+        showCopyButton: true,
+      }
+
+      win.e2eCopiedCodeText = ''
+
+      const clipboardMock = {
+        writeText: async (text: string) => {
+          win.e2eCopiedCodeText = text
+        },
+      }
+
+      try {
+        Object.defineProperty(window.navigator, 'clipboard', {
+          configurable: true,
+          value: clipboardMock,
+        })
+      } catch (err) {
+        // @ts-ignore
+        window.navigator.clipboard = clipboardMock
+      }
+
+      editor.setHtml(`<pre><code>const a = 1
+console.log(a)</code></pre>`)
+    })
+
+    const copyButton = page.locator('[data-testid="editor-textarea"] .w-e-code-block-copy-button')
+
+    await expect(copyButton).toBeVisible()
+    await copyButton.click()
+
+    const copiedText = await page.evaluate(() => (window as any).e2eCopiedCodeText || '')
+
+    expect(copiedText).toBe('const a = 1\nconsole.log(a)')
+  })
+
   test('toggles readOnly via button', async ({ page }) => {
     await expect(page.locator('#w-e-textarea-1')).toHaveAttribute('contenteditable', 'true')
     await page.getByTestId('btn-toggle-enable').dispatchEvent('mousedown')
