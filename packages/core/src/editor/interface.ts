@@ -89,4 +89,5 @@ export interface IDomEditor extends Editor {
   // undo redo - 不用自己实现，使用 slate-history 扩展
   undo?: () => void
   redo?: () => void
+  clearHistory?: () => void
 }
