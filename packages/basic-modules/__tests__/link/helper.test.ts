@@ -31,9 +31,13 @@ describe('link module helper', () => {
     return url
   }
 
-  const editorConfig = { MENU_CONF: { insertLink: {} }, maxLength: 20 }
+  const editorConfig = { MENU_CONF: { insertLink: {}, editLink: {} }, maxLength: 20 }
 
   editorConfig.MENU_CONF.insertLink = {
+    checkLink: customCheckLinkFn,
+    parseLinkUrl: customParseLinkUrl,
+  }
+  editorConfig.MENU_CONF.editLink = {
     checkLink: customCheckLinkFn,
     parseLinkUrl: customParseLinkUrl,
   }
@@ -107,6 +111,17 @@ describe('link module helper', () => {
     const linkElem = links[0]
 
     expect(linkElem.url).toBe('https://wangeditor-next.github.io/docs/a%20b')
+  })
+
+  it('insert link should trigger custom check when url is empty', async () => {
+    editor.select(startLocation)
+
+    const alertSpy = vi.spyOn(editor, 'alert')
+
+    await insertLink(editor, 'hello', '')
+
+    expect(alertSpy).toHaveBeenCalledWith('链接必须以 http/https 开头', 'error')
+    expect(editor.getElemsByTypePrefix('link').length).toBe(0)
   })
 
   it('insert link with collapsed max length', async () => {
@@ -276,5 +291,27 @@ describe('link module helper', () => {
     const linkElem = links[0]
 
     expect(linkElem.url).toBe('https://wangeditor-next.github.io/docs/a%20b')
+  })
+
+  it('update link should trigger custom check when url is empty', async () => {
+    editor.select(startLocation)
+
+    const url = 'https://wangeditor-next.github.io/docs/'
+
+    await insertLink(editor, 'hello', url)
+    editor.select({
+      path: [0, 1, 0],
+      offset: 3,
+    })
+
+    const alertSpy = vi.spyOn(editor, 'alert')
+
+    await updateLink(editor, '', '')
+
+    expect(alertSpy).toHaveBeenCalledWith('链接必须以 http/https 开头', 'error')
+    const links = editor.getElemsByTypePrefix('link')
+
+    expect(links).toHaveLength(1)
+    expect(links[0].url).toBe(url)
   })
 })
