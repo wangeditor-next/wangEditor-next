@@ -46,7 +46,7 @@
   "peerDependencies": {
     "@wangeditor-next/core": "1.8.5",
     "dom7": "^3.0.0 || ^4.0.0",
-    "slate": "^0.123.0",
+    "slate": "^0.124.0",
     "snabbdom": "^3.6.0"
   },
   "devDependencies": {

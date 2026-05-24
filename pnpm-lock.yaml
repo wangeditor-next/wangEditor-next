@@ -442,8 +442,8 @@ importers:
         specifier: ^5.0.0
         version: 5.1.6
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       snabbdom:
         specifier: ^3.6.0
         version: 3.6.3
@@ -467,8 +467,8 @@ importers:
         specifier: ^1.23.0
         version: 1.30.0
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       snabbdom:
         specifier: ^3.6.0
         version: 3.6.3
@@ -525,11 +525,11 @@ importers:
         specifier: ^3.0.0
         version: 3.1.0
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       slate-history:
         specifier: ^0.115.0
-        version: 0.115.0(slate@0.123.0)
+        version: 0.115.0(slate@0.124.1)
       snabbdom:
         specifier: ^3.6.0
         version: 3.6.3
@@ -604,8 +604,8 @@ importers:
         specifier: ^5.0.0
         version: 5.1.6
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       snabbdom:
         specifier: ^3.6.0
         version: 3.6.3
@@ -644,8 +644,8 @@ importers:
         specifier: ^3.0.0 || ^4.0.0
         version: 4.0.6
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       snabbdom:
         specifier: ^3.6.0
         version: 3.6.3
@@ -663,8 +663,8 @@ importers:
         specifier: ^3.0.0 || ^4.0.0
         version: 4.0.6
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       snabbdom:
         specifier: ^3.6.0
         version: 3.6.3
@@ -704,8 +704,8 @@ importers:
         specifier: ^3.0.0 || ^4.0.0
         version: 4.0.6
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       snabbdom:
         specifier: ^3.6.0
         version: 3.6.3
@@ -723,8 +723,8 @@ importers:
         specifier: ^3.0.0 || ^4.0.0
         version: 4.0.6
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       snabbdom:
         specifier: ^3.6.0
         version: 3.6.3
@@ -764,8 +764,8 @@ importers:
         specifier: ^5.0.0
         version: 5.1.6
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       snabbdom:
         specifier: ^3.6.0
         version: 3.6.3
@@ -795,8 +795,8 @@ importers:
         specifier: ^4.5.0
         version: 4.5.0
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       snabbdom:
         specifier: ^3.6.0
         version: 3.6.3
@@ -823,8 +823,8 @@ importers:
         specifier: ^5.0.0
         version: 5.1.6
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       snabbdom:
         specifier: ^3.6.0
         version: 3.6.3
@@ -846,8 +846,8 @@ importers:
         specifier: workspace:^
         version: link:../../shared/rollup-config
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       typescript:
         specifier: ^5.0.0
         version: 5.7.2
@@ -867,8 +867,8 @@ importers:
         specifier: '>=17.0.2'
         version: 17.0.2
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       use-sync-external-store:
         specifier: ^1.2.0
         version: 1.6.0(react@17.0.2)
@@ -895,8 +895,8 @@ importers:
         specifier: ^1.0.5
         version: link:../yjs
       slate:
-        specifier: ^0.123.0
-        version: 0.123.0
+        specifier: ^0.124.0
+        version: 0.124.1
       vue:
         specifier: '>=3.5.18'
         version: 3.5.24(typescript@5.7.2)
@@ -5790,8 +5790,8 @@ packages:
     peerDependencies:
       slate: '>=0.114.3'
 
-  slate@0.123.0:
-    resolution: {integrity: sha512-Oon3HR/QzJQBjuOUJT1jGGlp8Ff7t3Bkr/rJ2lDqxNT4H+cBnXpEVQ/si6hn1ZCHhD2xY/2N91PQoH/rD7kxTg==}
+  slate@0.124.1:
+    resolution: {integrity: sha512-ii7DwezgvbLAyKtHBIunjTR1kzbNfYLCUKLMzJELlbTZkvHzX4DzN7HKIwcakf6dPxO6AoeT/P7kHOcyTym/hA==}
 
   slice-ansi@5.0.0:
     resolution: {integrity: sha512-FC+lgizVPfie0kkhqUScwRu1O/lF6NOgJmlCgK+/LYxDCTk8sGelYaHDhFcDN+Sn3Cv+3VSa4Byeo+IMCzpMgQ==}
@@ -11964,11 +11964,11 @@ snapshots:
 
   slash@3.0.0: {}
 
-  slate-history@0.115.0(slate@0.123.0):
+  slate-history@0.115.0(slate@0.124.1):
     dependencies:
-      slate: 0.123.0
+      slate: 0.124.1
 
-  slate@0.123.0: {}
+  slate@0.124.1: {}
 
   slice-ansi@5.0.0:
     dependencies:
