@@ -34,6 +34,21 @@ import { Editor, Toolbar } from '@wangeditor-next/editor-for-react'
 
 详情参考[wangEditor react使用文档](https://wangeditor-next.github.io/docs/guide/for-frame#react)。
 
+### Editor 内置 loading
+
+为避免外层 `Spin/Loader` 包裹导致编辑器节点结构变化，可直接使用内置 `loading` 覆盖层：
+
+```tsx
+<Editor
+  defaultConfig={editorConfig}
+  onChange={setEditorState}
+  loading={uploading}
+  loadingText="Uploading..."
+/>
+```
+
+`loading` 只控制可视化遮罩，不会重建 editor 实例。
+
 ### 在Next.js下使用
 ```js
 import dynamic  from 'next/dynamic'

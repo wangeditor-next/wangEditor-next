@@ -175,4 +175,51 @@ describe('editor-for-react onChange behavior', () => {
       ReactDOM.unmountComponentAtNode(container)
     })
   })
+
+  it('supports built-in loading overlay without recreating editor instance', async () => {
+    const onChange = vi.fn()
+    const container = document.createElement('div')
+
+    document.body.appendChild(container)
+    await act(async () => {
+      ReactDOM.render(
+        React.createElement(Editor as any, {
+          value: '<p>123</p>',
+          onChange,
+          defaultConfig: {},
+          mode: 'default',
+          loading: true,
+          loadingText: 'Uploading...',
+        }),
+        container,
+      )
+    })
+    await flushPromises()
+    await flushPromises()
+
+    expect(createEditor).toHaveBeenCalledTimes(1)
+    expect(container.querySelector('[data-w-e-loading-overlay="true"]')?.textContent).toBe('Uploading...')
+
+    await act(async () => {
+      ReactDOM.render(
+        React.createElement(Editor as any, {
+          value: '<p>123</p>',
+          onChange,
+          defaultConfig: {},
+          mode: 'default',
+          loading: false,
+        }),
+        container,
+      )
+    })
+    await flushPromises()
+    await flushPromises()
+
+    expect(createEditor).toHaveBeenCalledTimes(1)
+    expect(container.querySelector('[data-w-e-loading-overlay="true"]')).toBeNull()
+
+    await act(async () => {
+      ReactDOM.unmountComponentAtNode(container)
+    })
+  })
 })
