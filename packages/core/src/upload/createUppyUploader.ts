@@ -3,16 +3,73 @@
  * @author wangfupeng
  */
 
+// @ts-ignore Uppy v5 types are not resolvable under current TS moduleResolution=node
 import Uppy from '@uppy/core'
+// @ts-ignore Uppy v5 types are not resolvable under current TS moduleResolution=node
 import XHRUpload from '@uppy/xhr-upload'
 
 import { addQueryToUrl } from '../utils/util'
-import type { IUploadConfig, IUploader, IUploadResultFile } from './interface'
+import type {
+  IUploadConfig, IUploader, IUploadHeaders, IUploadResultFile,
+} from './interface'
 
 function getUploadResultFile(file?: IUploadResultFile | null): IUploadResultFile {
   if (file) { return file }
 
   return { name: '' }
+}
+
+function normalizeHeaderValues(headers: IUploadHeaders): Record<string, string> {
+  return Object.keys(headers).reduce<Record<string, string>>((res, key) => {
+    res[key] = String(headers[key])
+    return res
+  }, {})
+}
+
+function normalizeHeaders(
+  headers: IUploadConfig['headers'],
+): Record<string, string> | ((file: unknown) => Record<string, string>) | undefined {
+  if (!headers) { return undefined }
+
+  if (typeof headers === 'function') {
+    return file => normalizeHeaderValues(headers(file as IUploadResultFile))
+  }
+
+  return normalizeHeaderValues(headers)
+}
+
+function ensureAbortSignalAny() {
+  if (typeof AbortSignal === 'undefined') { return }
+
+  const abortSignal = AbortSignal as typeof AbortSignal & {
+    any?: (signals: AbortSignal[]) => AbortSignal
+  }
+
+  if (typeof abortSignal.any === 'function') { return }
+
+  abortSignal.any = (signals: AbortSignal[]) => {
+    const controller = new AbortController()
+
+    const onAbort = (event: Event) => {
+      signals.forEach(signal => signal.removeEventListener('abort', onAbort))
+      const target = event.target as AbortSignal
+      const reason = (target as AbortSignal & { reason?: unknown }).reason
+
+      controller.abort(reason)
+    }
+
+    for (const signal of signals) {
+      if (signal.aborted) {
+        const reason = (signal as AbortSignal & { reason?: unknown }).reason
+
+        controller.abort(reason)
+        return controller.signal
+      }
+      signal.addEventListener('abort', onAbort, { once: true })
+    }
+
+    return controller.signal
+  }
 }
 
 function createUppyUploader(config: IUploadConfig): IUploader {
@@ -51,6 +108,9 @@ function createUppyUploader(config: IUploadConfig): IUploader {
     url = addQueryToUrl(url, meta)
   }
 
+  ensureAbortSignalAny()
+  const normalizedHeaders = normalizeHeaders(headers)
+
   const uppy = new Uppy({
     onBeforeUpload: files => onBeforeUpload(files) as any,
     restrictions: {
@@ -61,7 +121,7 @@ function createUppyUploader(config: IUploadConfig): IUploader {
     ...config.uppyConfig,
   }).use(XHRUpload, {
     endpoint: url,
-    headers,
+    headers: normalizedHeaders,
     formData: true,
     fieldName,
     bundle: false,
