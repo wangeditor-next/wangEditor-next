@@ -41,4 +41,15 @@ describe('indent - render text style', () => {
     // @ts-ignore
     expect(newVnode.data.dataset.wEIndent).toBe(indent)
   })
+
+  it('should not render indent style for non-target elements', () => {
+    const elem = { type: 'image', indent: '2em', children: [{ text: '' }] }
+    const vnode = <img src="https://example.com/1.png" />
+
+    // @ts-ignore
+    const newVnode = renderStyle(elem, vnode)
+
+    // @ts-ignore
+    expect(newVnode.data?.style?.textIndent).toBeUndefined()
+  })
 })

@@ -1280,6 +1280,44 @@ test.describe('Basic Editor', () => {
     await expect(page.getByTestId('editor-html')).toContainText('<code')
   })
 
+  test('regression #58: indent should only affect paragraph/header when selecting mixed blocks', async ({ page }) => {
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      editor.setHtml('<p>before image</p><img src="https://example.com/1.png">')
+    })
+
+    await selectAll(page)
+    const groupIndent = await waitForMenuEnabled(page, 'group-indent')
+
+    await groupIndent.hover()
+    const groupPanel = groupIndent.locator('..').locator('.w-e-bar-item-menus-container')
+
+    await groupPanel.waitFor({ state: 'visible' })
+    await groupPanel.locator('[data-menu-key="indent"]').click({ force: true })
+
+    const snapshot = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+      const paragraphNode = editor?.children?.find((node: any) => node?.type === 'paragraph')
+      const imageNode = editor?.children?.find((node: any) => node?.type === 'image')
+      const html = editor?.getHtml?.() || ''
+
+      return {
+        paragraphIndent: paragraphNode?.indent || '',
+        imageIndent: imageNode?.indent || '',
+        html,
+      }
+    })
+
+    expect(snapshot.paragraphIndent).toBe('2em')
+    expect(snapshot.imageIndent).toBe('')
+    expect(snapshot.html).not.toMatch(/<img[^>]*text-indent/i)
+  })
+
   test('regression #173: code block copy button should copy code text when enabled', async ({ page }) => {
     await page.evaluate(() => {
       const editor = (window as any).wangEditorExampleBridge?.editor

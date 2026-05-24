@@ -4,10 +4,11 @@
  */
 
 import { IDomEditor, t } from '@wangeditor-next/core'
-import { Element, Transforms } from 'slate'
+import { Transforms } from 'slate'
 
 import { INDENT_LEFT_SVG } from '../../../constants/icon-svg'
 import { IndentElement } from '../custom-types'
+import { isIndentTargetElement } from '../is-indent-target'
 import BaseMenu from './BaseMenu'
 
 class DecreaseIndentMenu extends BaseMenu {
@@ -36,7 +37,10 @@ class DecreaseIndentMenu extends BaseMenu {
       {
         indent: null,
       },
-      { match: n => Element.isElement(n) },
+      {
+        match: isIndentTargetElement,
+        mode: 'highest',
+      },
     )
   }
 }

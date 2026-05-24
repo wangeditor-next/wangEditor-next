@@ -28,4 +28,16 @@ describe('indent - text style to html', () => {
     expect(html).toContain('data-w-e-indent="2em"')
     expect(html).not.toContain('style=')
   })
+
+  it('should keep non-target html unchanged', () => {
+    const elem = {
+      type: 'image',
+      indent: '2em',
+      src: 'https://example.com/1.png',
+      children: [{ text: '' }],
+    } as any
+    const html = styleToHtml(elem, '<img src="https://example.com/1.png">')
+
+    expect(html).toBe('<img src="https://example.com/1.png">')
+  })
 })

@@ -57,4 +57,23 @@ describe('increase indent menu', () => {
 
     expect(menu.getValue(editor)).toBe('36px')
   })
+
+  it('exec should only apply indent to paragraph/header nodes', () => {
+    editor = createEditor({
+      content: [
+        { type: 'paragraph', children: [{ text: 'hello' }] },
+        {
+          type: 'blockquote',
+          children: [{ text: 'quote' }],
+        },
+      ] as any,
+    })
+
+    editor.select([])
+    menu.exec(editor, '')
+
+    expect((editor.children[0] as any).indent).toBe('2em')
+    expect((editor.children[1] as any).type).toBe('blockquote')
+    expect((editor.children[1] as any).indent).toBeUndefined()
+  })
 })
