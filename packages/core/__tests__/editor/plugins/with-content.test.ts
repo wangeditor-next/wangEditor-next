@@ -79,6 +79,53 @@ describe('editor content API', () => {
     expect(html).toBe('<div>hello</div><div></div>')
   })
 
+  it('getHtmlWithId', () => {
+    const editor = createEditor({
+      content: [
+        { type: 'paragraph', children: [{ text: 'hello' }] },
+        {
+          type: 'table',
+          children: [
+            {
+              type: 'table-row',
+              children: [
+                {
+                  type: 'table-cell',
+                  children: [{ text: 'A' }],
+                } as any,
+              ],
+            } as any,
+          ],
+        } as any,
+      ],
+    })
+
+    const html = editor.getHtmlWithId?.() || ''
+
+    expect(html).toContain('<div data-w-e-id="w-e-element-paragraph-')
+    expect(html).toContain('data-w-e-id="w-e-element-table-')
+    expect(html).toContain('data-w-e-id="w-e-element-table-row-')
+    expect(html).toContain('data-w-e-id="w-e-element-table-cell-')
+
+    const rawHtml = editor.getHtml()
+
+    expect(rawHtml).not.toContain('data-w-e-id=')
+  })
+
+  it('getHtmlWithId with custom id attribute key', () => {
+    const editor = createEditor({
+      content: [{ type: 'paragraph', children: [{ text: 'hello' }] }],
+    })
+
+    const html = editor.getHtmlWithId?.('data-node-id') || ''
+
+    expect(html).toContain('data-node-id="w-e-element-paragraph-')
+
+    const htmlWithInvalidKey = editor.getHtmlWithId?.('invalid key') || ''
+
+    expect(htmlWithInvalidKey).toContain('data-w-e-id="w-e-element-paragraph-')
+  })
+
   it('getText', () => {
     const editor = createEditor({
       content: [
