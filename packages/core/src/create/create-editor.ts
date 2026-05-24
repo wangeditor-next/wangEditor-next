@@ -4,7 +4,6 @@
  */
 
 import { createEditor } from 'slate'
-import { withHistory } from 'slate-history'
 
 import { genEditorConfig } from '../config/index'
 import { EditorEvents, ICreateOption } from '../config/interface'
@@ -14,6 +13,7 @@ import { withContent } from '../editor/plugins/with-content'
 import { withDOM } from '../editor/plugins/with-dom'
 import { withEmitter } from '../editor/plugins/with-emitter'
 import { withEventData } from '../editor/plugins/with-event-data'
+import { withHistory } from '../editor/plugins/with-history'
 import { withMaxLength } from '../editor/plugins/with-max-length'
 import { withSelection } from '../editor/plugins/with-selection'
 import HoverBar from '../menus/bar/HoverBar'

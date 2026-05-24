@@ -409,6 +409,30 @@ describe('editor content API', () => {
     expect(editor.getText()).toBe('hello')
   })
 
+  it('clearHistory', () => {
+    const editor = createEditor()
+
+    editor.select(getStartLocation(editor))
+    editor.insertText('hello')
+
+    // @ts-ignore
+    editor.undo()
+    expect(editor.getText()).toBe('')
+
+    // @ts-ignore
+    editor.clearHistory()
+    // @ts-ignore
+    editor.redo()
+    expect(editor.getText()).toBe('')
+
+    editor.insertText('world')
+    // @ts-ignore
+    editor.clearHistory()
+    // @ts-ignore
+    editor.undo()
+    expect(editor.getText()).toBe('world')
+  })
+
   describe('dangerouslyInsertHtml API', () => {
     beforeEach(() => {
       baseEditor = createEditor()
