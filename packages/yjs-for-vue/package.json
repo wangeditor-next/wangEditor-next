@@ -60,7 +60,7 @@
     "@wangeditor-next/editor": "5.7.5",
     "@wangeditor-next/yjs": "^1.0.5",
     "vue": ">=3.5.18",
-    "slate": "^0.123.0",
+    "slate": "^0.124.0",
     "yjs": "^13.5.29"
   }
 }

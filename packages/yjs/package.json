@@ -49,7 +49,7 @@
   },
   "peerDependencies": {
     "@wangeditor-next/core": "1.8.5",
-    "slate": "^0.123.0",
+    "slate": "^0.124.0",
     "yjs": "^13.5.29"
   },
   "bugs": {
