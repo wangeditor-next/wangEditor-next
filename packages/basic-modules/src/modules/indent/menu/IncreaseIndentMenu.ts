@@ -11,6 +11,7 @@ import {
 import { INDENT_RIGHT_SVG } from '../../../constants/icon-svg'
 import type { FontSizeAndFamilyText } from '../../font-size-family/custom-types'
 import { IndentElement } from '../custom-types'
+import { isIndentTargetElement } from '../is-indent-target'
 import BaseMenu from './BaseMenu'
 
 class IncreaseIndentMenu extends BaseMenu {
@@ -62,7 +63,7 @@ class IncreaseIndentMenu extends BaseMenu {
         indent,
       },
       {
-        match: n => Element.isElement(n),
+        match: isIndentTargetElement,
         mode: 'highest',
       },
     )

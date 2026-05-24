@@ -10,6 +10,7 @@ import { VNode } from 'snabbdom'
 import { appendVnodeStyleClassAndData, getTextStyleMode } from '../../utils/style-class'
 import { addVnodeStyle } from '../../utils/vdom'
 import { IndentElement } from './custom-types'
+import { isIndentTargetElement } from './is-indent-target'
 
 /**
  * 添加样式
@@ -20,6 +21,7 @@ import { IndentElement } from './custom-types'
  */
 export function renderStyle(node: Descendant, vnode: VNode, editor?: IDomEditor): VNode {
   if (!Element.isElement(node)) { return vnode }
+  if (!isIndentTargetElement(node)) { return vnode }
 
   const { indent } = node as IndentElement // 如 '2em'
   const styleVnode: VNode = vnode

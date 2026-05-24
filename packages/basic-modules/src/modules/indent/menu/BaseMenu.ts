@@ -3,8 +3,10 @@
  * @author wangfupeng
  */
 
-import { DomEditor, IButtonMenu, IDomEditor } from '@wangeditor-next/core'
+import { IButtonMenu, IDomEditor } from '@wangeditor-next/core'
 import { Editor, Node } from 'slate'
+
+import { isIndentTargetElement } from '../is-indent-target'
 
 abstract class BaseMenu implements IButtonMenu {
   abstract readonly title: string
@@ -42,15 +44,7 @@ abstract class BaseMenu implements IButtonMenu {
    */
   protected getMatchNode(editor: IDomEditor): Node | null {
     const [nodeEntry] = Editor.nodes(editor, {
-      match: n => {
-        const type = DomEditor.getNodeType(n)
-
-        // 只可用于 p 和 header
-        if (type === 'paragraph') { return true }
-        if (type.startsWith('header')) { return true }
-
-        return false
-      },
+      match: isIndentTargetElement,
       universal: true,
       mode: 'highest', // 匹配最高层级
     })

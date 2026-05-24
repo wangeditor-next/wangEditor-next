@@ -48,4 +48,24 @@ describe('decrease indent menu', () => {
     menu.exec(editor, '')
     expect(menu.getValue(editor)).toBe('')
   })
+
+  it('exec should only clear indent from paragraph/header nodes', () => {
+    editor = createEditor({
+      content: [
+        { type: 'paragraph', indent: '2em', children: [{ text: 'hello' }] },
+        {
+          type: 'blockquote',
+          indent: '2em',
+          children: [{ text: 'quote' }],
+        },
+      ] as any,
+    })
+
+    editor.select([])
+    menu.exec(editor, '')
+
+    expect((editor.children[0] as any).indent).toBeFalsy()
+    expect((editor.children[1] as any).type).toBe('blockquote')
+    expect((editor.children[1] as any).indent).toBe('2em')
+  })
 })

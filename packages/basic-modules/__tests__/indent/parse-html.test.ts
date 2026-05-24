@@ -44,6 +44,21 @@ describe('indent - parse style', () => {
       children: [{ text: 'hello' }],
     })
   })
+
+  it('should ignore non-indent target elements', () => {
+    const $img = $('<img style="text-indent: 2em;" />')
+    const image = {
+      type: 'image',
+      src: 'https://example.com/1.png',
+      href: '',
+      alt: '',
+      style: {},
+      children: [{ text: '' }],
+    } as any
+    const res = parseStyleHtml($img[0], image, editor) as any
+
+    expect(res.indent).toBeUndefined()
+  })
 })
 
 describe('indent - pre parse html', () => {

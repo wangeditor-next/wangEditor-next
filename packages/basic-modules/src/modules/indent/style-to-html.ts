@@ -9,9 +9,11 @@ import { Descendant, Element } from 'slate'
 import $, { getOuterHTML } from '../../utils/dom'
 import { appendStyleClassAndData, getTextStyleMode } from '../../utils/style-class'
 import { IndentElement } from './custom-types'
+import { isIndentTargetElement } from './is-indent-target'
 
 export function styleToHtml(node: Descendant, elemHtml: string, editor?: IDomEditor): string {
   if (!Element.isElement(node)) { return elemHtml }
+  if (!isIndentTargetElement(node)) { return elemHtml }
 
   const { indent } = node as IndentElement // 如 '2em'
 
