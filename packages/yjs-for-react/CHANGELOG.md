@@ -1,5 +1,19 @@
 # @wangeditor-next/yjs-for-react
 
+## 2.0.0
+
+### Patch Changes
+
+- f8d9577: Align Slate to `^0.124.0` across the monorepo to avoid mixed Slate type sources.
+  - upgrade all internal `slate` dependency and peer dependency ranges from `^0.123.0` to `^0.124.0`
+  - remove dual installation of `slate@0.123.x` and `slate@0.124.x` in workspace builds
+  - fix `@wangeditor-next/yjs-for-react` build failures caused by cross-version Slate type incompatibilities
+
+- Updated dependencies [f8d9577]
+- Updated dependencies [0459fb2]
+  - @wangeditor-next/editor@5.7.6
+  - @wangeditor-next/yjs@2.0.0
+
 ## 1.0.5
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @wangeditor-next/editor-for-react
 
+## 2.0.1
+
+### Patch Changes
+
+- 6c98f0c: add built-in `loading`/`loadingText` overlay props on `Editor` to avoid wrapper-induced DOM changes
+- Updated dependencies [f8d9577]
+- Updated dependencies [0459fb2]
+  - @wangeditor-next/editor@5.7.6
+
 ## 2.0.0
 
 ### Patch Changes
