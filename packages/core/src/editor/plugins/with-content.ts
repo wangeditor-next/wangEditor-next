@@ -273,6 +273,16 @@ export const withContent = <T extends Editor>(editor: T) => {
     return html
   }
 
+  /**
+   * 获取带元素 id 的 html（用于外部定位/标识）
+   * @param idKey 自定义 id 属性名，默认 data-w-e-id
+   */
+  e.getHtmlWithId = (idKey = 'data-w-e-id'): string => {
+    const { children = [] } = e
+
+    return children.map(child => node2html(child, e, { includeId: true, idKey })).join('')
+  }
+
   // 获取 text
   e.getText = (): string => {
     const { children = [] } = e
