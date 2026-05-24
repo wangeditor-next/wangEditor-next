@@ -7,7 +7,9 @@ import type { IDomEditor, IEditorConfig } from '@wangeditor-next/editor'
 import {
   createEditor, SlateDescendant,
 } from '@wangeditor-next/editor'
-import React, { useEffect, useRef, useState } from 'react'
+import React, {
+  useCallback, useEffect, useRef, useState,
+} from 'react'
 
 interface IProps {
   defaultContent?: SlateDescendant[]
@@ -19,6 +21,8 @@ interface IProps {
   mode?: string
   style?: React.CSSProperties
   className?: string
+  loading?: boolean
+  loadingText?: React.ReactNode
 }
 
 interface ICustomDomEditor extends IDomEditor {
@@ -28,13 +32,14 @@ interface ICustomDomEditor extends IDomEditor {
 function EditorComponent(props: Partial<IProps>) {
   const {
     defaultContent = [], onCreated, defaultHtml = '', value = '', onChange, defaultConfig = {}, mode = 'default', style = {}, className,
+    loading = false, loadingText = 'Loading...',
   } = props
   const ref = useRef<HTMLDivElement>(null)
   const latestHtmlRef = useRef('')
   const isSyncingFromPropsRef = useRef(false)
   const [editor, setEditor] = useState<ICustomDomEditor | null>(null)
 
-  const handleCreated = (createdEditor: IDomEditor) => {
+  const handleCreated = useCallback((createdEditor: IDomEditor) => {
     // 组件属性 onCreated
     if (onCreated) { onCreated(createdEditor) }
 
@@ -42,16 +47,16 @@ function EditorComponent(props: Partial<IProps>) {
     const { onCreated: onCreatedFromConfig } = defaultConfig
 
     if (onCreatedFromConfig) { onCreatedFromConfig(createdEditor) }
-  }
+  }, [defaultConfig, onCreated])
 
-  const handleDestroyed = (destroyedEditor: IDomEditor) => {
+  const handleDestroyed = useCallback((destroyedEditor: IDomEditor) => {
     const { onDestroyed } = defaultConfig
 
     setEditor(null)
     if (onDestroyed) {
       onDestroyed(destroyedEditor)
     }
-  }
+  }, [defaultConfig])
 
   useEffect(() => {
     if (editor == null) { return }
@@ -123,9 +128,45 @@ function EditorComponent(props: Partial<IProps>) {
 
     latestHtmlRef.current = newEditor.getHtml()
     setEditor(newEditor)
-  }, [editor])
+  }, [
+    editor,
+    defaultConfig,
+    defaultContent,
+    defaultHtml,
+    handleCreated,
+    handleDestroyed,
+    mode,
+    value,
+  ])
 
-  return <div style={style} ref={ref} className={className}></div>
+  return (
+    <div
+      style={{ ...style, position: style.position || 'relative' }}
+      className={className}
+      data-w-e-react-editor-container="true"
+    >
+      <div style={{ minHeight: '1px' }} ref={ref}></div>
+      {loading && (
+      <div
+        data-w-e-loading-overlay="true"
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'rgba(255, 255, 255, 0.6)',
+          zIndex: 10,
+        }}
+      >
+        {loadingText}
+      </div>
+      )}
+    </div>
+  )
 }
 
 export default EditorComponent
