@@ -1,4 +1,16 @@
-module.exports = {
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+import { FlatCompat } from '@eslint/eslintrc'
+
+const currentFilePath = fileURLToPath(import.meta.url)
+const currentDirPath = path.dirname(currentFilePath)
+
+const compat = new FlatCompat({
+  baseDirectory: currentDirPath,
+})
+
+const legacyConfig = {
   parserOptions: {
     parser: '@typescript-eslint/parser',
     sourceType: 'module',
@@ -10,11 +22,14 @@ module.exports = {
     node: true,
     webextensions: false,
   },
-  ignorePatterns: ['packages/code-highlight/src/vendor/**'],
   overrides: [
     {
       files: ['./**/*.ts', './**/*.tsx', './**/*.js', './**/*.jsx'],
-      extends: ['plugin:react-hooks/recommended'],
+      plugins: ['react-hooks'],
+      rules: {
+        'react-hooks/rules-of-hooks': 'error',
+        'react-hooks/exhaustive-deps': 'warn',
+      },
     },
     {
       files: [
@@ -26,7 +41,7 @@ module.exports = {
         './**/*.cjs',
         './**/*.mjs',
       ],
-      plugins: ['html', '@typescript-eslint', 'simple-import-sort'],
+      plugins: ['html', 'import', '@typescript-eslint', 'simple-import-sort'],
       globals: {
         globalThis: 'readonly',
         vi: 'readonly',
@@ -35,8 +50,7 @@ module.exports = {
       extends: [
         'plugin:@typescript-eslint/eslint-recommended',
         'plugin:@typescript-eslint/recommended',
-        'plugin:vue/vue3-strongly-recommended',
-        'airbnb-base',
+        'plugin:vue/strongly-recommended',
       ],
       rules: {
         'import/extensions': [
@@ -109,6 +123,7 @@ module.exports = {
           },
         ],
         'vue/singleline-html-element-content-newline': 'off',
+        'vue/valid-v-for': 'off',
         'no-param-reassign': 'off',
         'import/prefer-default-export': 'off',
         'consistent-return': 'off',
@@ -116,7 +131,7 @@ module.exports = {
         'no-redeclare': 'off',
         '@typescript-eslint/no-redeclare': ['error'],
         'no-unused-vars': 'off',
-        '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+        '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrors: 'none' }],
         'no-use-before-define': 'off',
         '@typescript-eslint/no-use-before-define': ['error'],
         'no-dupe-class-members': 'off',
@@ -124,14 +139,16 @@ module.exports = {
         'lines-between-class-members': 'off',
         'no-shadow': 'off',
         '@typescript-eslint/no-shadow': ['error'],
-        '@typescript-eslint/lines-between-class-members': ['error'],
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-empty-interface': 'off',
+        '@typescript-eslint/no-empty-object-type': 'off',
+        '@typescript-eslint/no-require-imports': 'off',
+        '@typescript-eslint/no-wrapper-object-types': 'off',
+        '@typescript-eslint/no-unsafe-function-type': 'off',
         '@typescript-eslint/explicit-module-boundary-type': 'off',
         '@typescript-eslint/no-var-requires': 'off',
         '@typescript-eslint/ban-ts-comment': 'off',
         '@typescript-eslint/ban-types': 'off',
-        '@typescript-eslint/comma-dangle': ['error', 'always-multiline'],
         '@typescript-eslint/explicit-module-boundary-types': 'off',
         'simple-import-sort/imports': 'error',
         'simple-import-sort/exports': 'error',
@@ -143,6 +160,7 @@ module.exports = {
         'max-classes-per-file': 'off',
         'func-names': 'off',
         'no-unused-expressions': 'off',
+        '@typescript-eslint/no-unused-expressions': 'off',
         'no-restricted-globals': 'off',
         eqeqeq: 'off',
         'no-plusplus': 'off',
@@ -150,3 +168,17 @@ module.exports = {
     },
   ],
 }
+
+export default [
+  {
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/lib/**',
+      '**/*.html',
+      '**/.*/**',
+      'packages/code-highlight/src/vendor/**',
+    ],
+  },
+  ...compat.config(legacyConfig),
+]
