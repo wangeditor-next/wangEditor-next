@@ -18,6 +18,7 @@
     "dev": "cross-env FORCE_COLOR=1 turbo dev",
     "dev:sh": "sh scripts/build-base.sh dev",
     "build": "cross-env FORCE_COLOR=1 turbo build",
+    "typecheck": "node scripts/typecheck-all.js",
     "publish": "pnpm changeset publish",
     "prerelease": "pnpm build",
     "format": "pnpm prettier --write",

@@ -1,0 +1,73 @@
+name: Type Check
+
+on:
+  push:
+    branches:
+      - 'master'
+      - 'dev'
+      - 'dev-*'
+      - 'dev/**'
+      - 'feature-*'
+      - 'feature/**'
+      - 'fix-*'
+      - 'fix/**'
+      - 'hotfix-*'
+      - 'hotfix/**'
+      - 'refactor-*'
+      - 'refactor/**'
+      - 'test-*'
+      - 'test/**'
+    paths:
+      - '.github/workflows/*'
+      - 'apps/**'
+      - 'packages/**'
+      - 'tests/**'
+      - 'scripts/typecheck-all.js'
+      - 'tsconfig.json'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/*'
+      - 'apps/**'
+      - 'packages/**'
+      - 'tests/**'
+      - 'scripts/typecheck-all.js'
+      - 'tsconfig.json'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.13.0
+          registry-url: https://registry.npmjs.com
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm run typecheck
