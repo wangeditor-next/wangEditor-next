@@ -1,5 +1,24 @@
 # Change Log
 
+## 3.0.0
+
+### Patch Changes
+
+- aa889ca: trigger custom link check before empty-url early return for insert and edit link flows
+- f8d9577: Align Slate to `^0.124.0` across the monorepo to avoid mixed Slate type sources.
+  - upgrade all internal `slate` dependency and peer dependency ranges from `^0.123.0` to `^0.124.0`
+  - remove dual installation of `slate@0.123.x` and `slate@0.124.x` in workspace builds
+  - fix `@wangeditor-next/yjs-for-react` build failures caused by cross-version Slate type incompatibilities
+
+- 9a104c7: add optional code-block copy button support via MENU_CONF.codeBlock.showCopyButton
+- 9b6631c: limit indent behavior to paragraph and header nodes to avoid affecting other block elements
+- Updated dependencies [f8d9577]
+- Updated dependencies [9a104c7]
+- Updated dependencies [0459fb2]
+- Updated dependencies [4743ff0]
+- Updated dependencies [25e55b4]
+  - @wangeditor-next/core@1.9.0
+
 ## 2.0.5
 
 ### Patch Changes

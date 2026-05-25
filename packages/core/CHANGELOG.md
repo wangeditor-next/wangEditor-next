@@ -1,5 +1,27 @@
 # Change Log
 
+## 1.9.0
+
+### Minor Changes
+
+- 25e55b4: add `editor.getHtmlWithId(idKey?)` to export HTML with generated unique element ids
+
+### Patch Changes
+
+- f8d9577: Align Slate to `^0.124.0` across the monorepo to avoid mixed Slate type sources.
+  - upgrade all internal `slate` dependency and peer dependency ranges from `^0.123.0` to `^0.124.0`
+  - remove dual installation of `slate@0.123.x` and `slate@0.124.x` in workspace builds
+  - fix `@wangeditor-next/yjs-for-react` build failures caused by cross-version Slate type incompatibilities
+
+- 9a104c7: add optional code-block copy button support via MENU_CONF.codeBlock.showCopyButton
+- 0459fb2: Upgrade the Uppy integration to v5 while keeping upload behavior compatible.
+  - bump `@uppy/core` and `@uppy/xhr-upload` in `@wangeditor-next/editor` to `^5.0.0`
+  - extend peer dependency ranges in `core`, `upload-image-module`, and `video-module` to support both Uppy v2 and v5
+  - normalize upload header values to strings for stricter Uppy v5 XHR typings
+  - add a guarded `AbortSignal.any` fallback for environments that do not implement it
+
+- 4743ff0: add `clearHistory` api on editor instances to clear slate undo/redo stacks
+
 ## 1.8.5
 
 ### Patch Changes
