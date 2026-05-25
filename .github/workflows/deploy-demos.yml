@@ -20,17 +20,17 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      DEMO_REPO_TOKEN: ${{ secrets.DEMO_REPO_TOKEN || secrets.DEMO_TEMPLATES_TOKEN }}
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v6
 
       - name: Verify deploy token
-        env:
-          DEMO_REPO_TOKEN: ${{ secrets.DEMO_REPO_TOKEN }}
         run: |
           if [ -z "$DEMO_REPO_TOKEN" ]; then
-            echo "::error::Missing DEMO_REPO_TOKEN. Please add a PAT with write access to wangeditor-next/demo."
+            echo "::error::Missing deploy token. Set DEMO_REPO_TOKEN (preferred) or DEMO_TEMPLATES_TOKEN."
             exit 1
           fi
 
@@ -39,7 +39,7 @@ jobs:
         with:
           repository: wangeditor-next/demo
           ref: main
-          token: ${{ secrets.DEMO_REPO_TOKEN }}
+          token: ${{ env.DEMO_REPO_TOKEN }}
           path: demo-repo
 
       - name: Sync demo files
