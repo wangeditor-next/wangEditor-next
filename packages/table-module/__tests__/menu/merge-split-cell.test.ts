@@ -6,8 +6,8 @@ import MergeCell from '../../src/module/menu/MergeCell'
 import SplitCell from '../../src/module/menu/SplitCell'
 import { TableCursor } from '../../src/module/table-cursor'
 import { EDITOR_TO_SELECTION } from '../../src/module/weak-maps'
-import { NodeEntryWithContext } from '../../src/utils'
 import * as utils from '../../src/utils'
+import { NodeEntryWithContext } from '../../src/utils'
 
 function createTableContent() {
   return [
