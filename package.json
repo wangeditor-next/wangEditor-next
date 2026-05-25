@@ -22,6 +22,7 @@
     "prerelease": "pnpm build",
     "format": "pnpm prettier --write",
     "lint": "eslint --cache --quiet --no-error-on-unmatched-pattern ./",
+    "lint:ci": "bash scripts/lint-changed-in-ci.sh",
     "lint:fix": "eslint --fix --cache --quiet --no-error-on-unmatched-pattern ./",
     "lint:staged": "lint-staged",
     "prettier": "prettier --ignore-path .gitignore \"packages/*/+(src|__tests__)/**/*.+(ts|tsx)\"  --cache",
@@ -125,12 +126,6 @@
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"
-    ]
-  },
-  "lint-staged": {
-    "*.js": [
-      "eslint --fix",
-      "prettier --write"
     ]
   },
   "config": {
