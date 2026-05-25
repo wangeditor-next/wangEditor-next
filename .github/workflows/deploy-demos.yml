@@ -5,39 +5,59 @@
 name: Deploy Demos
 
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'packages/editor/demo/**'
+      - '.github/workflows/deploy-demos.yml'
   workflow_dispatch:
+
+concurrency:
+  group: deploy-demos
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-    - uses: actions/checkout@v6
-    - name: set ssh key # 临时设置 ssh key
-      run: |
-        mkdir -p ~/.ssh/
-        echo "${{secrets.SSH_KEY_FOR_GITHUB_WANGEDITOR}}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan "github.com" >> ~/.ssh/known_hosts
-        echo "---------- set ssh-key ok ----------"
-    - name: download and replace # 下载现有文件，替换
-      run: |
-        git clone git@github.com:wangeditor-next/demo.git
-        echo "---------- git clone ok ----------"
-        cp -r ./packages/editor/demo/* ./demo ## 用最新构建出来的文件，替换现有的
-        echo "---------- replace ok ----------"
-    - name: upload # 上传文件
-      run: |
-        cd ./demo
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
-        echo "---------- begin git status ----------"
-        echo `git status`
-        echo "---------- end git status ----------"
-        git add .
-        git commit -m "update by github actions"
-        echo "---------- begin git push ----------"
-        git push origin main
-        echo "---------- end git push ----------"
-    - name: delete ssh key # 删除 ssh key
-      run: rm -rf ~/.ssh/id_rsa
+      - uses: actions/checkout@v6
 
+      - name: Verify deploy token
+        env:
+          DEMO_REPO_TOKEN: ${{ secrets.DEMO_REPO_TOKEN }}
+        run: |
+          if [ -z "$DEMO_REPO_TOKEN" ]; then
+            echo "::error::Missing DEMO_REPO_TOKEN. Please add a PAT with write access to wangeditor-next/demo."
+            exit 1
+          fi
+
+      - name: Checkout demo deployment repo
+        uses: actions/checkout@v6
+        with:
+          repository: wangeditor-next/demo
+          ref: main
+          token: ${{ secrets.DEMO_REPO_TOKEN }}
+          path: demo-repo
+
+      - name: Sync demo files
+        run: |
+          rsync -av --delete --exclude '.git/' ./packages/editor/demo/ ./demo-repo/
+
+      - name: Commit and push
+        working-directory: demo-repo
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          if git diff --quiet; then
+            echo "No demo changes to publish."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: sync demo from wangEditor-next@${SOURCE_SHA::7}"
+          git push origin HEAD:main
