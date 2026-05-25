@@ -4,8 +4,8 @@
  */
 
 import { IDomEditor } from '../editor/interface'
-import TextArea from './TextArea'
 import $ from '../utils/dom'
+import TextArea from './TextArea'
 
 /**
  * 处理 placeholder
@@ -14,7 +14,8 @@ import $ from '../utils/dom'
  */
 export function handlePlaceholder(textarea: TextArea, editor: IDomEditor) {
   const { placeholder } = editor.getConfig()
-  if (!placeholder) return
+
+  if (!placeholder) { return }
 
   const isEmpty = editor.isEmpty()
 
@@ -22,6 +23,7 @@ export function handlePlaceholder(textarea: TextArea, editor: IDomEditor) {
   if (isEmpty && !textarea.showPlaceholder && !textarea.isComposing) {
     if (textarea.$placeholder == null) {
       const $placeholder = $(`<div class="w-e-text-placeholder">${placeholder}</div>`)
+
       textarea.$textAreaContainer.append($placeholder)
       textarea.$placeholder = $placeholder
     }
@@ -34,7 +36,7 @@ export function handlePlaceholder(textarea: TextArea, editor: IDomEditor) {
   if (!isEmpty && textarea.showPlaceholder) {
     textarea.$placeholder?.hide()
     textarea.showPlaceholder = false // 记录
-    return
+
   }
 }
 
@@ -45,10 +47,12 @@ export function handlePlaceholder(textarea: TextArea, editor: IDomEditor) {
  */
 export function hidePlaceholder(textarea: TextArea, editor: IDomEditor) {
   const { placeholder } = editor.getConfig()
-  if (!placeholder) return
+
+  if (!placeholder) { return }
 
   const isEmpty = editor.isEmpty()
-  if (!isEmpty) return
+
+  if (!isEmpty) { return }
 
   if (textarea.showPlaceholder) {
     textarea.$placeholder?.hide()

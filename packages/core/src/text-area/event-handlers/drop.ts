@@ -4,25 +4,26 @@
  */
 
 import { Transforms } from 'slate'
-import { IDomEditor } from '../../editor/interface'
+
 import { DomEditor } from '../../editor/dom-editor'
-import TextArea from '../TextArea'
-import { hasTarget } from '../helpers'
+import { IDomEditor } from '../../editor/interface'
 import { HAS_BEFORE_INPUT_SUPPORT, IS_SAFARI } from '../../utils/ua'
+import { hasTarget } from '../helpers'
+import TextArea from '../TextArea'
 
 function handleOnDrop(e: Event, textarea: TextArea, editor: IDomEditor) {
   const event = e as DragEvent
   const data = event.dataTransfer
   const { readOnly } = editor.getConfig()
 
-  if (readOnly) return
-  if (!hasTarget(editor, event.target)) return
-  if (data == null) return
+  if (readOnly) { return }
+  if (!hasTarget(editor, event.target)) { return }
+  if (data == null) { return }
 
   if (HAS_BEFORE_INPUT_SUPPORT) {
     if (IS_SAFARI) {
       // safari 不支持拖拽文件
-      if (data.files.length > 0) return
+      if (data.files.length > 0) { return }
     }
   }
 
@@ -31,6 +32,7 @@ function handleOnDrop(e: Event, textarea: TextArea, editor: IDomEditor) {
   // Keep a reference to the dragged range before updating selection
   const draggedRange = editor.selection
   const range = DomEditor.findEventRange(editor, event)
+
   Transforms.select(editor, range)
 
   if (textarea.isDraggingInternally) {

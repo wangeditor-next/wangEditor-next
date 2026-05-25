@@ -5,20 +5,20 @@
 
 import handleBeforeInput from './beforeInput'
 import handleOnBlur from './blur'
-import handleOnFocus from './focus'
 import handleOnClick from './click'
 import {
-  handleCompositionStart,
   handleCompositionEnd,
+  handleCompositionStart,
   handleCompositionUpdate,
 } from './composition'
-import handleOnKeydown from './keydown'
-import handleKeypress from './keypress'
 import handleOnCopy from './copy'
 import handleOnCut from './cut'
-import handleOnPaste from './paste'
-import { handleOnDragover, handleOnDragstart, handleOnDragend } from './drag'
+import { handleOnDragend, handleOnDragover, handleOnDragstart } from './drag'
 import handleOnDrop from './drop'
+import handleOnFocus from './focus'
+import handleOnKeydown from './keydown'
+import handleKeypress from './keypress'
+import handleOnPaste from './paste'
 
 const eventConf = {
   beforeinput: handleBeforeInput,

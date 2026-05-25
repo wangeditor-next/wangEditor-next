@@ -2,18 +2,21 @@
  * @description Utilities for single-line deletion
  */
 
-import { Range, Editor } from 'slate'
-import { IDomEditor } from '../editor/interface'
+import { Editor, Range } from 'slate'
+
 import { DomEditor } from '../editor/dom-editor'
+import { IDomEditor } from '../editor/interface'
 
 const doRectsIntersect = (rect: DOMRect, compareRect: DOMRect) => {
   const middle = (compareRect.top + compareRect.bottom) / 2
+
   return rect.top <= middle && rect.bottom >= middle
 }
 
 const areRangesSameLine = (editor: IDomEditor, range1: Range, range2: Range) => {
   const rect1 = DomEditor.toDOMRange(editor, range1).getBoundingClientRect()
   const rect2 = DomEditor.toDOMRange(editor, range2).getBoundingClientRect()
+
   return doRectsIntersect(rect1, rect2) && doRectsIntersect(rect2, rect1)
 }
 

@@ -7,6 +7,10 @@
 
 // 必须是 node 环境
 if (typeof global === 'object') {
+  const randomFillSync = global.crypto && typeof global.crypto.getRandomValues === 'function'
+    ? (buffer: any) => global.crypto.getRandomValues.call(global.crypto, buffer)
+    : (buffer: any) => buffer
+
   // 用于 nodejs ，避免报错
   const globalProperty = Object.getOwnPropertyDescriptor(global, 'window')
 
@@ -25,8 +29,8 @@ if (typeof global === 'object') {
     }
     global.btoa = () => {}
     global.crypto = {
-      getRandomValues: function (buffer: any) {
-        return nodeCrypto.randomFillSync(buffer)
+      getRandomValues(buffer: any) {
+        return randomFillSync(buffer)
       },
     }
   }

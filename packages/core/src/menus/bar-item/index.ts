@@ -3,15 +3,17 @@
  * @author wangfupeng
  */
 
-import { Dom7Array } from '../../utils/dom'
-import { IButtonMenu, ISelectMenu, IDropPanelMenu, IModalMenu, IMenuGroup } from '../interface'
 import { IDomEditor } from '../../editor/interface'
+import { Dom7Array } from '../../utils/dom'
 import { BAR_ITEM_TO_EDITOR } from '../../utils/weak-maps'
-import SimpleButton from './SimpleButton'
+import {
+  IButtonMenu, IDropPanelMenu, IMenuGroup, IModalMenu, ISelectMenu,
+} from '../interface'
 import DropPanelButton from './DropPanelButton'
+import GroupButton from './GroupButton'
 import ModalButton from './ModalButton'
 import Select from './Select'
-import GroupButton from './GroupButton'
+import SimpleButton from './SimpleButton'
 
 type MenuType = IButtonMenu | ISelectMenu | IDropPanelMenu | IModalMenu
 
@@ -26,7 +28,8 @@ const MENU_TO_BAR_ITEM = new WeakMap<MenuType, IBarItem>()
 
 export function getEditorInstance(item: IBarItem): IDomEditor {
   const editor = BAR_ITEM_TO_EDITOR.get(item)
-  if (editor == null) throw new Error('Can not get editor instance')
+
+  if (editor == null) { throw new Error('Can not get editor instance') }
   return editor
 }
 
@@ -39,13 +42,16 @@ export function getEditorInstance(item: IBarItem): IDomEditor {
 export function createBarItem(key: string, menu: MenuType, inGroup: boolean = false): IBarItem {
   // 尝试从缓存获取
   let barItem = MENU_TO_BAR_ITEM.get(menu)
-  if (barItem) return barItem
+
+  if (barItem) { return barItem }
 
   // 缓存没有则创建
   const { tag } = menu
+
   if (tag === 'button') {
     // @ts-ignore
     const { showDropPanel, showModal } = menu
+
     if (showDropPanel) {
       barItem = new DropPanelButton(key, menu as IDropPanelMenu, inGroup)
     } else if (showModal) {
@@ -58,7 +64,7 @@ export function createBarItem(key: string, menu: MenuType, inGroup: boolean = fa
     barItem = new Select(key, menu as ISelectMenu, inGroup)
   }
 
-  if (barItem == null) throw new Error(`Invalid tag in menu ${JSON.stringify(menu)}`)
+  if (barItem == null) { throw new Error(`Invalid tag in menu ${JSON.stringify(menu)}`) }
 
   // 记录缓存
   MENU_TO_BAR_ITEM.set(menu, barItem)

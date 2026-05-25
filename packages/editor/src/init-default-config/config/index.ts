@@ -3,8 +3,8 @@
  * @author wangfupeng
  */
 
-import { genDefaultToolbarKeys, genSimpleToolbarKeys } from './toolbar'
 import { genDefaultHoverbarKeys, genSimpleHoverbarKeys } from './hoverbar'
+import { genDefaultToolbarKeys, genSimpleToolbarKeys } from './toolbar'
 
 export function getDefaultEditorConfig() {
   return {

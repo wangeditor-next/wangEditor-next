@@ -27,10 +27,12 @@ export function promiseResolveThen(fn: Function) {
  * @param data data
  */
 export function addQueryToUrl(url: string, data: object): string {
-  let [urlWithoutHash, hash] = url.split('#')
+  const [initialUrlWithoutHash, hash] = url.split('#')
+  let urlWithoutHash = initialUrlWithoutHash
 
   // 拼接 query string
   const queryArr: string[] = []
+
   forEach(data, (val, key) => {
     queryArr.push(`${key}=${val}`)
   })
@@ -48,9 +50,9 @@ export function addQueryToUrl(url: string, data: object): string {
   // 返回拼接好的 url
   if (hash) {
     return `${urlWithoutHash}#${hash}`
-  } else {
-    return urlWithoutHash
   }
+  return urlWithoutHash
+
 }
 
 /**

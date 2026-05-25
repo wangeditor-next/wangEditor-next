@@ -3,19 +3,22 @@
  * @author wangfupeng
  */
 
-import { Editor, Path, Transforms, Node } from 'slate'
-import { IDomEditor } from '../../editor/interface'
+import {
+  Editor, Node, Path, Transforms,
+} from 'slate'
+
 import { DomEditor } from '../../editor/dom-editor'
-import TextArea from '../TextArea'
-import { hasTarget } from '../helpers'
+import { IDomEditor } from '../../editor/interface'
 import { isDOMNode } from '../../utils/dom'
+import { hasTarget } from '../helpers'
+import TextArea from '../TextArea'
 
 function handleOnClick(event: Event, textarea: TextArea, editor: IDomEditor) {
   const { readOnly } = editor.getConfig()
 
-  if (readOnly) return
-  if (!hasTarget(editor, event.target)) return
-  if (!isDOMNode(event.target)) return
+  if (readOnly) { return }
+  if (!hasTarget(editor, event.target)) { return }
+  if (!isDOMNode(event.target)) { return }
 
   const node = DomEditor.toSlateNode(editor, event.target)
   const path = DomEditor.findPath(editor, node)
@@ -26,6 +29,7 @@ function handleOnClick(event: Event, textarea: TextArea, editor: IDomEditor) {
   // and that it still refers to the same node.
   if (Editor.hasPath(editor, path)) {
     const lookupNode = Node.get(editor, path)
+
     if (lookupNode === node) {
       const start = Editor.start(editor, path)
       const end = Editor.end(editor, path)
@@ -35,6 +39,7 @@ function handleOnClick(event: Event, textarea: TextArea, editor: IDomEditor) {
 
       if (startVoid && endVoid && Path.equals(startVoid[1], endVoid[1])) {
         const range = Editor.range(editor, start)
+
         Transforms.select(editor, range)
       }
     }

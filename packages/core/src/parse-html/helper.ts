@@ -12,5 +12,6 @@ const REPLACE_SPACE_160_REG = new RegExp(String.fromCharCode(160), 'g')
  */
 export function replaceSpace160(str: string): string {
   const res = str.replace(REPLACE_SPACE_160_REG, ' ')
+
   return res
 }

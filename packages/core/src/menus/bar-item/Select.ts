@@ -4,19 +4,21 @@
  */
 
 import $, { Dom7Array } from '../../utils/dom'
-import { IBarItem, getEditorInstance } from './index'
+import { promiseResolveThen } from '../../utils/util'
+import { gen$downArrow } from '../helpers/helpers'
 import { IOption, ISelectMenu } from '../interface'
 import SelectList from '../panel-and-modal/SelectList'
-import { gen$downArrow } from '../helpers/helpers'
-import { promiseResolveThen } from '../../utils/util'
+import { getEditorInstance, IBarItem } from './index'
 import { addTooltip } from './tooltip'
 
 // 根据 option value 获取 text
 function getOptionText(options: IOption[], value: string): string {
   const length = options.length
   let text = ''
-  for (let i = 0; i < length; i++) {
+
+  for (let i = 0; i < length; i += 1) {
     const opt = options[i]
+
     if (opt.value === value) {
       text = opt.text
       break
@@ -26,19 +28,27 @@ function getOptionText(options: IOption[], value: string): string {
 }
 
 class BarItemSelect implements IBarItem {
-  readonly $elem: Dom7Array = $(`<div class="w-e-bar-item"></div>`)
-  private readonly $button: Dom7Array = $(`<button type="button" class="select-button"></button>`)
+  readonly $elem: Dom7Array = $('<div class="w-e-bar-item"></div>')
+
+  private readonly $button: Dom7Array = $('<button type="button" class="select-button"></button>')
+
   menu: ISelectMenu
+
   private disabled = false
+
   private selectList: SelectList | null = null
 
   constructor(key: string, menu: ISelectMenu, inGroup = false) {
     // 验证 tag
-    const { tag, title, width, iconSvg = '', hotkey = '' } = menu
-    if (tag !== 'select') throw new Error(`Invalid tag '${tag}', expected 'select'`)
+    const {
+      tag, title, width, iconSvg = '', hotkey = '',
+    } = menu
+
+    if (tag !== 'select') { throw new Error(`Invalid tag '${tag}', expected 'select'`) }
 
     // 初始化 dom
     const $button = this.$button
+
     if (width) {
       $button.css('width', `${width}px`)
     }
@@ -60,6 +70,7 @@ class BarItemSelect implements IBarItem {
     this.$button.on('click', (e: Event) => {
       e.preventDefault()
       const editor = getEditorInstance(this)
+
       editor.hidePanelOrModal() // 隐藏当前的各种 panel
       this.trigger()
     })
@@ -68,8 +79,8 @@ class BarItemSelect implements IBarItem {
   private trigger() {
     const editor = getEditorInstance(this)
 
-    if (editor.isDisabled()) return
-    if (this.disabled) return
+    if (editor.isDisabled()) { return }
+    if (this.disabled) { return }
 
     const menu = this.menu
 
@@ -79,6 +90,7 @@ class BarItemSelect implements IBarItem {
       this.selectList = new SelectList(editor, menu.selectPanelWidth)
       const selectList = this.selectList
       const options = menu.getOptions(editor)
+
       selectList.renderList(options)
       selectList.appendTo(this.$elem)
       selectList.show()
@@ -86,22 +98,26 @@ class BarItemSelect implements IBarItem {
       // 初次创建，绑定事件
       selectList.$elem.on('click', 'li', (e: Event) => {
         const { target } = e
-        if (target == null) return
+
+        if (target == null) { return }
 
         e.preventDefault()
         const $li = $(target)
         const val = $li.attr('data-value')
+
         this.onChange(val)
       })
     } else {
       // 不是初次创建
       const selectList = this.selectList
+
       if (selectList.isShow) {
         // 当前处于显示状态，则隐藏
         selectList.hide()
       } else {
         // 当前未处于显示状态，则重新渲染 list ，并显示
         const options = menu.getOptions(editor) // 每次都要重新获取 options ，因为选中项可能会变化
+
         selectList.renderList(options)
         selectList.show()
       }
@@ -111,7 +127,10 @@ class BarItemSelect implements IBarItem {
   private onChange(value: string) {
     const editor = getEditorInstance(this)
     const menu = this.menu
-    menu.exec && menu.exec(editor, value)
+
+    if (menu.exec != null) {
+      menu.exec(editor, value)
+    }
   }
 
   private setSelectedValue() {
@@ -124,6 +143,7 @@ class BarItemSelect implements IBarItem {
 
     const $button = this.$button
     const $downArrow = gen$downArrow() // 向下的箭头图标
+
     $button.empty()
     $button.text(optText)
     $button.append($downArrow)
@@ -141,6 +161,7 @@ class BarItemSelect implements IBarItem {
     }
 
     const className = 'disabled'
+
     if (disabled) {
       // 设置为 disabled
       $button.addClass(className)

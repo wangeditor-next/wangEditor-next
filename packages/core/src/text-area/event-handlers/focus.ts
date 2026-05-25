@@ -3,15 +3,16 @@
  * @author wangfupeng
  */
 
-import { IDomEditor } from '../../editor/interface'
 import { DomEditor } from '../../editor/dom-editor'
-import TextArea from '../TextArea'
+import { IDomEditor } from '../../editor/interface'
 import { IS_FIREFOX } from '../../utils/ua'
 import { IS_FOCUSED } from '../../utils/weak-maps'
+import TextArea from '../TextArea'
 
 function handleOnFocus(event: Event, textarea: TextArea, editor: IDomEditor) {
   const el = DomEditor.toDOMNode(editor, editor)
   const root = DomEditor.findDocumentOrShadowRoot(editor)
+
   textarea.latestElement = root.activeElement
 
   // COMPAT: If the editor has nested editable elements, the focus

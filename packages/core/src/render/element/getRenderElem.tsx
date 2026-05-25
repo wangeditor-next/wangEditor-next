@@ -4,7 +4,9 @@
  */
 
 import { Element as SlateElement } from 'slate'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { jsx, VNode } from 'snabbdom'
+
 import { IDomEditor } from '../../editor/interface'
 import { RENDER_ELEM_CONF, RenderElemFnType } from '../index'
 
@@ -18,7 +20,7 @@ import { RENDER_ELEM_CONF, RenderElemFnType } from '../index'
 function defaultRender(
   elemNode: SlateElement,
   children: VNode[] | null,
-  editor: IDomEditor
+  editor: IDomEditor,
 ): VNode {
   const Tag = editor.isInline(elemNode) ? 'span' : 'div'
 
@@ -33,6 +35,7 @@ function defaultRender(
  */
 function getRenderElem(type: string): RenderElemFnType {
   const fn = RENDER_ELEM_CONF[type]
+
   return fn || defaultRender
 }
 

@@ -22,9 +22,13 @@ function collectWorkspaceVersions() {
     .filter(entry => entry.isDirectory())
     .forEach(entry => {
       const packageJsonPath = path.join(packagesDir, entry.name, 'package.json')
-      if (!fs.existsSync(packageJsonPath)) return
+
+      if (!fs.existsSync(packageJsonPath)) {
+        return
+      }
 
       const packageJson = readJson(packageJsonPath)
+
       if (packageJson.name && packageJson.version) {
         versions.set(packageJson.name, packageJson.version)
       }
@@ -37,7 +41,9 @@ function copyDir(sourceDir, targetDir) {
   fs.mkdirSync(targetDir, { recursive: true })
 
   fs.readdirSync(sourceDir, { withFileTypes: true }).forEach(entry => {
-    if (ignoredEntries.has(entry.name)) return
+    if (ignoredEntries.has(entry.name)) {
+      return
+    }
 
     const sourcePath = path.join(sourceDir, entry.name)
     const targetPath = path.join(targetDir, entry.name)
@@ -54,9 +60,12 @@ function copyDir(sourceDir, targetDir) {
 function normalizeDeps(versions, deps = {}) {
   return Object.fromEntries(
     Object.entries(deps).map(([name, version]) => {
-      if (!version.startsWith('workspace:')) return [name, version]
+      if (!version.startsWith('workspace:')) {
+        return [name, version]
+      }
 
       const workspaceVersion = versions.get(name)
+
       if (!workspaceVersion) {
         throw new Error(`Cannot resolve workspace version for "${name}"`)
       }
@@ -91,18 +100,21 @@ function main() {
   }
 
   const appDir = path.join(appsDir, appName)
+
   if (!fs.existsSync(appDir)) {
     console.error(`App not found: ${appName}`)
     process.exit(1)
   }
 
   const outputDir = path.resolve(rootDir, outputDirArg)
+
   fs.rmSync(outputDir, { recursive: true, force: true })
   copyDir(appDir, outputDir)
 
   const versions = collectWorkspaceVersions()
   const packageJsonPath = path.join(outputDir, 'package.json')
   const packageJson = readJson(packageJsonPath)
+
   writeJson(packageJsonPath, sanitizePackageJson(packageJson, versions))
 
   console.log(`Exported ${appName} to ${outputDir}`)

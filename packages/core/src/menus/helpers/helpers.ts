@@ -3,15 +3,15 @@
  * @author wangfupeng
  */
 
-import $, { Dom7Array } from '../../utils/dom'
 import { SVG_DOWN_ARROW } from '../../constants/svg'
+import $, { Dom7Array } from '../../utils/dom'
 
 /**
  * 清理 svg 的样式
  * @param $elem svg elem
  */
 export function clearSvgStyle($elem: Dom7Array) {
-  if (!$elem.removeAttr) return
+  if (!$elem.removeAttr) { return }
   $elem.removeAttr('width')
   $elem.removeAttr('height')
   $elem.removeAttr('fill')
@@ -20,6 +20,7 @@ export function clearSvgStyle($elem: Dom7Array) {
   $elem.removeAttr('p-id')
 
   const children = $elem.children()
+
   if (children.length) {
     clearSvgStyle(children)
   }
@@ -30,6 +31,7 @@ export function clearSvgStyle($elem: Dom7Array) {
  */
 export function gen$downArrow() {
   const $downArrow = $(SVG_DOWN_ARROW)
+
   return $downArrow
 }
 

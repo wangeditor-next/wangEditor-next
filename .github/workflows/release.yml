@@ -55,9 +55,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Incremental lint gate for changed files
-      - name: Lint changed files
-        run: pnpm lint:ci
+      # Full lint gate
+      - name: Lint
+        run: pnpm lint
 
       # 构建项目
       - name: Build packages
