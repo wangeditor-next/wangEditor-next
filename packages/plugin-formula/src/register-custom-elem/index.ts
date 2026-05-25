@@ -8,7 +8,7 @@ import './native-shim'
 import katex from 'katex'
 
 class WangEditorFormulaCard extends HTMLElement {
-  private span: HTMLElement
+  private span: HTMLElement | null = null
 
   // 监听的 attr
   static get observedAttributes() {
@@ -17,13 +17,6 @@ class WangEditorFormulaCard extends HTMLElement {
 
   constructor() {
     super()
-    const shadow = this.attachShadow({ mode: 'open' })
-    const document = shadow.ownerDocument
-    const span = document.createElement('span')
-
-    span.style.display = 'inline-block'
-    shadow.appendChild(span)
-    this.span = span
   }
 
   // connectedCallback() {
@@ -45,10 +38,25 @@ class WangEditorFormulaCard extends HTMLElement {
     }
   }
 
+  private ensureSpan() {
+    if (this.span) { return this.span }
+
+    const document = this.ownerDocument || window.document
+    const span = document.createElement('span')
+
+    span.style.display = 'inline-block'
+    this.appendChild(span)
+    this.span = span
+
+    return span
+  }
+
   private render(value: string) {
-    katex.render(value, this.span, {
+    const span = this.ensureSpan()
+
+    katex.render(value, span, {
       throwOnError: false,
-      output: 'mathml',
+      output: 'htmlAndMathml',
     })
   }
 }
