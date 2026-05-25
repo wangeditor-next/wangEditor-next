@@ -232,29 +232,29 @@ const MENU_CONF = [
     en: { text: 'Extend modal menu', link: './extend-menu-modal.html?lang=en' },
   },
   {
-    'zh-CN': { text: 'Vue2 demo', link: 'https://www.wangeditor.com/v5/for-frame.html#vue2' },
-    en: { text: 'Vue2 demo', link: 'https://www.wangeditor.com/en/v5/for-frame.html#vue2' },
+    'zh-CN': { text: 'Vue2 demo', link: 'https://wangeditor-next.github.io/docs/guide/for-frame#vue2' },
+    en: { text: 'Vue2 demo', link: 'https://wangeditor-next.github.io/docs/en/guide/for-frame#vue2' },
   },
   {
-    'zh-CN': { text: 'Vue3 demo', link: 'https://www.wangeditor.com/v5/for-frame.html#vue3' },
-    en: { text: 'Vue3 demo', link: 'https://www.wangeditor.com/en/v5/for-frame.html#vue3' },
+    'zh-CN': { text: 'Vue3 demo', link: 'https://wangeditor-next.github.io/docs/guide/for-frame#vue3' },
+    en: { text: 'Vue3 demo', link: 'https://wangeditor-next.github.io/docs/en/guide/for-frame#vue3' },
   },
   {
     'zh-CN': {
       text: 'React demo',
-      link: 'https://www.wangeditor.com/v5/for-frame.html#react',
+      link: 'https://wangeditor-next.github.io/docs/guide/for-frame#react',
     },
     en: {
       text: 'React demo',
-      link: 'https://www.wangeditor.com/en/v5/for-frame.html#react',
+      link: 'https://wangeditor-next.github.io/docs/en/guide/for-frame#react',
     },
   },
   {
     'zh-CN': {
       text: 'Webpack demo',
-      link: 'https://github.com/wangfupeng1988/webpack-wangeditor-demo',
+      link: 'https://github.com/wangeditor-next/wangEditor-next/tree/master/apps/demo-html',
     },
-    en: { text: 'Webpack demo', link: 'https://github.com/wangfupeng1988/webpack-wangeditor-demo' },
+    en: { text: 'Webpack demo', link: 'https://github.com/wangeditor-next/wangEditor-next/tree/master/apps/demo-html' },
   },
 ]
 
