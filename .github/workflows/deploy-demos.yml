@@ -44,7 +44,7 @@ jobs:
 
       - name: Sync demo files
         run: |
-          rsync -av --delete --exclude '.git/' ./packages/editor/demo/ ./demo-repo/
+          rsync -av --exclude '.git/' ./packages/editor/demo/ ./demo-repo/
 
       - name: Commit and push
         working-directory: demo-repo
