@@ -10,6 +10,7 @@ module.exports = {
     node: true,
     webextensions: false,
   },
+  ignorePatterns: ['packages/code-highlight/src/vendor/**'],
   overrides: [
     {
       files: ['./**/*.ts', './**/*.tsx', './**/*.js', './**/*.jsx'],
@@ -134,6 +135,17 @@ module.exports = {
         '@typescript-eslint/explicit-module-boundary-types': 'off',
         'simple-import-sort/imports': 'error',
         'simple-import-sort/exports': 'error',
+      },
+    },
+    {
+      files: ['packages/editor/demo/js/**/*.js', 'apps/demo-html/examples/js/**/*.js'],
+      rules: {
+        'max-classes-per-file': 'off',
+        'func-names': 'off',
+        'no-unused-expressions': 'off',
+        'no-restricted-globals': 'off',
+        eqeqeq: 'off',
+        'no-plusplus': 'off',
       },
     },
   ],

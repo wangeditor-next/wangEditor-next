@@ -3,22 +3,24 @@
  * @author wangfupeng
  */
 
-import $, { Dom7Array, DOMElement } from '../../utils/dom'
-import { IPositionStyle } from '../interface'
-import PanelAndModal from './BaseClass'
-import { IDomEditor } from '../../editor/interface'
 // import { DomEditor } from '../../editor/dom-editor'
 import { SVG_CLOSE } from '../../constants/svg'
+import { IDomEditor } from '../../editor/interface'
+import $, { Dom7Array, DOMElement } from '../../utils/dom'
 import { PANEL_OR_MODAL_TO_EDITOR } from '../../utils/weak-maps'
+import { IPositionStyle } from '../interface'
+import PanelAndModal from './BaseClass'
 
 class Modal extends PanelAndModal {
   type = 'modal'
-  readonly $elem: Dom7Array = $(`<div class="w-e-modal"></div>`)
+
+  readonly $elem: Dom7Array = $('<div class="w-e-modal"></div>')
+
   private width: number = 0
 
   constructor(editor: IDomEditor, width: number = 0) {
     super(editor)
-    if (width) this.width = width
+    if (width) { this.width = width }
 
     const { $elem } = this
 
@@ -28,6 +30,7 @@ class Modal extends PanelAndModal {
     // esc 关闭 modal
     $elem.on('keyup', e => {
       const event = e as KeyboardEvent
+
       if (event.code === 'Escape') {
         this.hide()
         editor.restoreSelection() // 还原选区
@@ -56,7 +59,7 @@ class Modal extends PanelAndModal {
 
     $elem.attr('style', '') // 先清空 style ，再重新设置
 
-    if (width) $elem.css('width', `${width}px`)
+    if (width) { $elem.css('width', `${width}px`) }
     $elem.css(positionStyle)
   }
 }
@@ -75,11 +78,13 @@ export default Modal
 export function genModalInputElems(
   labelText: string,
   inputId: string,
-  placeholder?: string
+  placeholder?: string,
 ): DOMElement[] {
   const $container = $('<label class="babel-container"></label>')
+
   $container.append(`<span>${labelText}</span>`)
   const $input = $(`<input type="text" id="${inputId}" placeholder="${placeholder || ''}">`)
+
   $container.append($input)
 
   return [$container[0], $input[0]]
@@ -95,13 +100,15 @@ export function genModalInputElems(
 export function genModalTextareaElems(
   labelText: string,
   textareaId: string,
-  placeholder?: string
+  placeholder?: string,
 ): DOMElement[] {
   const $container = $('<label class="babel-container"></label>')
+
   $container.append(`<span>${labelText}</span>`)
   const $textarea = $(
-    `<textarea type="text" id="${textareaId}" placeholder="${placeholder || ''}"></textarea>`
+    `<textarea type="text" id="${textareaId}" placeholder="${placeholder || ''}"></textarea>`,
   )
+
   $container.append($textarea)
 
   return [$container[0], $textarea[0]]
@@ -116,6 +123,7 @@ export function genModalTextareaElems(
 export function genModalButtonElems(buttonId: string, buttonText: string): DOMElement[] {
   const $buttonContainer = $('<div class="button-container"></div>')
   const $button = $(`<button type="button" id="${buttonId}">${buttonText}</button>`)
+
   $buttonContainer.append($button)
 
   return [$buttonContainer[0], $button[0]]

@@ -4,6 +4,7 @@
  */
 
 import { i18nAddResources } from '@wangeditor-next/core'
+
 import enResources from './en'
 import zhResources from './zh-CN'
 

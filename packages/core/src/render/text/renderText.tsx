@@ -39,7 +39,7 @@ function renderText(textNode: SlateText, parent: Ancestor, editor: IDomEditor): 
   const leavesVnode = leaves.map(({ leaf, position }: { leaf: SlateText; position?: LeafPosition }) => {
     // 文字和样式
     const isLast = position?.isLast ?? leaves.length === 1
-    let strVnode = genTextVnode(leaf, isLast, textNode, parent, editor)
+    let strVnode = genTextVnode(leaf, textNode, parent, editor, isLast)
 
     strVnode = addTextVnodeStyle(leaf, strVnode, editor)
     // 生成每一个 leaf 节点

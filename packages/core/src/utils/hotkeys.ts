@@ -4,6 +4,7 @@
  */
 
 import { isKeyHotkey } from 'is-hotkey'
+
 import { IS_APPLE } from './ua'
 
 interface KEYS {
@@ -66,9 +67,9 @@ const create = (key: string) => {
   const isWindows = windows && isKeyHotkey(windows)
 
   return (event: KeyboardEvent) => {
-    if (isGeneric && isGeneric(event)) return true
-    if (IS_APPLE && isApple && isApple(event)) return true
-    if (!IS_APPLE && isWindows && isWindows(event)) return true
+    if (isGeneric && isGeneric(event)) { return true }
+    if (IS_APPLE && isApple && isApple(event)) { return true }
+    if (!IS_APPLE && isWindows && isWindows(event)) { return true }
     return false
   }
 }

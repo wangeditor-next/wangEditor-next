@@ -3,13 +3,13 @@
  * @author wangfupeng
  */
 
+import { genToolbarConfig } from '../config/index'
+import { IToolbarConfig } from '../config/interface'
 import { IDomEditor } from '../editor/interface'
 import Toolbar from '../menus/bar/Toolbar'
-import { IToolbarConfig } from '../config/interface'
-import { genToolbarConfig } from '../config/index'
-import { isRepeatedCreateToolbar } from './helper'
 import { DOMElement } from '../utils/dom'
-import { TOOLBAR_TO_EDITOR, EDITOR_TO_TOOLBAR } from '../utils/weak-maps'
+import { EDITOR_TO_TOOLBAR, TOOLBAR_TO_EDITOR } from '../utils/weak-maps'
+import { isRepeatedCreateToolbar } from './helper'
 
 interface ICreateOption {
   selector: string | DOMElement
@@ -18,7 +18,7 @@ interface ICreateOption {
 
 export default function (editor: IDomEditor | null, option: ICreateOption): Toolbar {
   if (editor == null) {
-    throw new Error(`Cannot create toolbar, because editor is null`)
+    throw new Error('Cannot create toolbar, because editor is null')
   }
   const { selector, config = {} } = option
 
@@ -33,6 +33,7 @@ export default function (editor: IDomEditor | null, option: ICreateOption): Tool
 
   // 创建 toolbar ，并记录和 editor 关系
   const toolbar = new Toolbar(selector, toolbarConfig)
+
   TOOLBAR_TO_EDITOR.set(toolbar, editor)
   EDITOR_TO_TOOLBAR.set(editor, toolbar)
 

@@ -3,13 +3,17 @@
  * @author wangfupeng
  */
 
-import { Editor, Path, Node, Text as SlateText, Ancestor } from 'slate'
+import {
+  Ancestor, Editor, Node, Path, Text as SlateText,
+} from 'slate'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { jsx, VNode } from 'snabbdom'
+
 import { DomEditor } from '../../editor/dom-editor'
 import { IDomEditor } from '../../editor/interface'
 
 function str(text: string, isTrailing = false): VNode {
-  return <span data-slate-string>{isTrailing ? text + '\n' : text}</span>
+  return <span data-slate-string>{isTrailing ? `${text}\n` : text}</span>
 }
 
 function zeroWidthStr(length = 0, isLineBreak = false): VNode {
@@ -23,10 +27,10 @@ function zeroWidthStr(length = 0, isLineBreak = false): VNode {
 
 function genTextVnode(
   leafNode: SlateText,
-  isLast: boolean = false,
   textNode: SlateText,
   parent: Ancestor,
-  editor: IDomEditor
+  editor: IDomEditor,
+  isLast = false,
 ): VNode {
   const { text } = leafNode
   const path = DomEditor.findPath(editor, textNode)
@@ -46,10 +50,10 @@ function genTextVnode(
   // width space that will convert into a line break when copying and pasting
   // to support expected plain text.
   if (
-    text === '' &&
-    parent.children[parent.children.length - 1] === textNode &&
-    !editor.isInline(parent) &&
-    Editor.string(editor, parentPath) === ''
+    text === ''
+    && parent.children[parent.children.length - 1] === textNode
+    && !editor.isInline(parent)
+    && Editor.string(editor, parentPath) === ''
   ) {
     return zeroWidthStr(0, true)
   }

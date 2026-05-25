@@ -4,10 +4,11 @@
  */
 
 import { t } from '@wangeditor-next/core'
+
 import {
+  IMAGE_SVG,
   INDENT_RIGHT_SVG,
   JUSTIFY_LEFT_SVG,
-  IMAGE_SVG,
   MORE_SVG,
   VIDEO_SVG,
 } from '../../constants/svg'

@@ -3,7 +3,10 @@
  * @author wangfupeng
  */
 
-import { Element, Editor, Node, Ancestor } from 'slate'
+import {
+  Ancestor, Editor, Element, Node,
+} from 'slate'
+
 import { IDomEditor } from '../editor/interface'
 import { NODE_TO_INDEX, NODE_TO_PARENT } from '../utils/weak-maps'
 
@@ -21,12 +24,15 @@ function bindNodeRelation(node: Node, index: number, parent: Ancestor, editor: I
 
   if (Element.isElement(node)) {
     const { children = [] } = node
+
     children.forEach((child: Node, i: number) => bindNodeRelation(child, i, node, editor)) // 递归子节点
 
     const isVoid = Editor.isVoid(editor, node)
+
     if (isVoid) {
       const [[text]] = Node.texts(node)
       // 记录 text 相关 weakMap
+
       NODE_TO_INDEX.set(text, 0)
       NODE_TO_PARENT.set(text, node)
     }

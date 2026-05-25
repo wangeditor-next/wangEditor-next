@@ -11,7 +11,7 @@ export function addTooltip(
   iconSvg: string,
   title: string,
   hotkey: string = '',
-  inGroup = false
+  inGroup = false,
 ) {
   if (!iconSvg) {
     // 没有 icon 直接显示 title ，不用 tooltip
@@ -20,6 +20,7 @@ export function addTooltip(
 
   if (hotkey) {
     const fnKey = IS_APPLE ? 'cmd' : 'ctrl' // mac OS 转换为 cmd ，windows 转换为 ctrl
+
     hotkey = hotkey.replace('mod', fnKey)
   }
 
@@ -33,6 +34,7 @@ export function addTooltip(
   } else {
     // 非 in groupButton ，正常实现 tooltip
     const tooltip = hotkey ? `${title}\n${hotkey}` : title
+
     $button.attr('data-tooltip', tooltip)
     $button.addClass('w-e-menu-tooltip-v5')
   }

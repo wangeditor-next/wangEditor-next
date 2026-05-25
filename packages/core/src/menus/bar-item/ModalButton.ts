@@ -4,17 +4,20 @@
  */
 
 import { Element } from 'slate'
-import { IModalMenu, IPositionStyle } from '../interface'
-import BaseButton from './BaseButton'
-import Modal from '../panel-and-modal/Modal'
-import { getEditorInstance } from './index'
-import { getPositionBySelection, getPositionByNode, correctPosition } from '../helpers/position'
+
 import { DomEditor } from '../../editor/dom-editor'
 import $ from '../../utils/dom'
+import { correctPosition, getPositionByNode, getPositionBySelection } from '../helpers/position'
+import { IModalMenu, IPositionStyle } from '../interface'
+import Modal from '../panel-and-modal/Modal'
+import BaseButton from './BaseButton'
+import { getEditorInstance } from './index'
 
 class ModalButton extends BaseButton {
   private $body = $('body')
+
   private modal: Modal | null = null
+
   menu: IModalMenu
 
   constructor(key: string, menu: IModalMenu, inGroup = false) {
@@ -52,6 +55,7 @@ class ModalButton extends BaseButton {
     if (this.modal == null) {
       // 初次创建
       const modal = new Modal(editor, menu.modalWidth)
+
       this.renderAndShowModal(modal, true)
 
       // 记录下来，防止重复创建
@@ -59,6 +63,7 @@ class ModalButton extends BaseButton {
     } else {
       // 不是初次创建
       const modal = this.modal
+
       if (modal.isShow) {
         // 当前处于显示状态，则隐藏
         modal.hide()
@@ -77,13 +82,15 @@ class ModalButton extends BaseButton {
   private renderAndShowModal(modal: Modal, firstTime: boolean = false) {
     const editor = getEditorInstance(this)
     const menu = this.menu
-    if (menu.getModalContentElem == null) return
+
+    if (menu.getModalContentElem == null) { return }
 
     const textarea = DomEditor.getTextarea(editor)
     const toolbar = DomEditor.getToolbar(editor)
     const { modalAppendToBody } = toolbar?.getConfig() || {}
 
     const contentElem = menu.getModalContentElem(editor)
+
     modal.renderContent(contentElem)
 
     if (modalAppendToBody) {
@@ -92,6 +99,7 @@ class ModalButton extends BaseButton {
     } else {
       // 计算并设置 modal position
       const positionStyle = this.getPosition()
+
       modal.setStyle(positionStyle)
     }
 

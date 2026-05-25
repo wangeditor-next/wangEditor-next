@@ -13,16 +13,17 @@ import ColorMenu from '../../src/modules/color/menu/ColorMenu'
 
 // jsdom 不支持 getClientRects https://github.com/jsdom/jsdom/issues/3729
 document.createRange = () => {
-  const range = new Range();
+  const range = new Range()
+
   range.getClientRects = () => ({
-      item: () => null,
-      length: 0,
-      [Symbol.iterator]: function *() {
-          yield* [];
-      },
-  });
-  return range;
-};
+    item: () => null,
+    length: 0,
+    * [Symbol.iterator]() {
+      yield* []
+    },
+  })
+  return range
+}
 
 describe('color menus', () => {
   let editor: any

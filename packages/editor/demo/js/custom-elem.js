@@ -22,15 +22,15 @@
  * this.constructor so that the native HTMLElement constructor can access the
  * current under-construction element's definition.
  */
-;(function () {
+(function () {
   if (
     // No Reflect, no classes, no need for shim because native custom elements
     // require ES2015 classes or Reflect.
-    window.Reflect === undefined ||
-    window.customElements === undefined ||
+    window.Reflect === undefined
+    || window.customElements === undefined
     // The webcomponentsjs custom elements polyfill doesn't require
     // ES2015-compatible construction (`super()` or `Reflect.construct`).
-    window.customElements.polyfillWrapFlushCallback
+    || window.customElements.polyfillWrapFlushCallback
   ) {
     return
   }
@@ -46,11 +46,12 @@
       return Reflect.construct(BuiltInHTMLElement, [], /** @type {!Function} */ this.constructor)
     },
   }
-  window.HTMLElement = wrapperForTheName['HTMLElement']
+
+  window.HTMLElement = wrapperForTheName.HTMLElement
   HTMLElement.prototype = BuiltInHTMLElement.prototype
   HTMLElement.prototype.constructor = HTMLElement
   Object.setPrototypeOf(HTMLElement, BuiltInHTMLElement)
-})()
+}())
 // ------------------------------------------ native-shim end ------------------------------------------
 
 // ------------------------------------------ 顶部导航 start ------------------------------------------
@@ -67,6 +68,7 @@
       const document = shadow.ownerDocument
 
       const style = document.createElement('style')
+
       style.innerHTML = `
       .container {
         display: flex;
@@ -93,15 +95,18 @@
 
       // 容器
       const container = document.createElement('div')
+
       container.className = 'container'
 
       // 标题
       const header = document.createElement('h1')
+
       header.textContent = ''
       this.header = header
 
       // 右侧链接
       const rightContainer = document.createElement('div')
+
       rightContainer.className = 'right-container'
       if (LANG === 'en') {
         rightContainer.innerHTML = `
@@ -125,14 +130,16 @@
 
     attributeChangedCallback(name, oldValue, newValue) {
       if (name === 'title') {
-        if (oldValue == newValue) return
+        if (oldValue == newValue) {
+          return
+        }
         this.header.textContent = newValue
       }
     }
   }
   MyNav.observedAttributes = ['title']
   window.customElements.define('demo-nav', MyNav)
-})()
+}())
 // ------------------------------------------ 顶部导航 end ------------------------------------------
 
 // ------------------------------------------ 左侧菜单 start ------------------------------------------
@@ -264,6 +271,7 @@ const MENU_CONF = [
       const document = shadow.ownerDocument
 
       const style = document.createElement('style')
+
       style.innerHTML = `
         ul {
           list-style-type: none;
@@ -285,16 +293,18 @@ const MENU_CONF = [
       shadow.appendChild(style)
 
       const container = document.createElement('div')
+
       container.innerHTML = `<ul>
         ${MENU_CONF.map(item => {
-          const { link, text } = item[LANG]
-          return `<li><a href="${link}">${text}</a></li>`
-        }).join('')}
+    const { link, text } = item[LANG]
+
+    return `<li><a href="${link}">${text}</a></li>`
+  }).join('')}
       </ul>`
 
       shadow.appendChild(container)
     }
   }
   window.customElements.define('demo-menu', MyMenu)
-})()
+}())
 // ------------------------------------------ 左侧菜单 end ------------------------------------------
