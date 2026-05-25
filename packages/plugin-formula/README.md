@@ -22,10 +22,13 @@ pnpm add @wangeditor-next/plugin-formula
 ```js
 import { Boot, IEditorConfig, IToolbarConfig } from '@wangeditor-next/editor'
 import formulaModule from '@wangeditor-next/plugin-formula'
+import 'katex/dist/katex.min.css'
 
 // 注册。要在创建编辑器之前注册，且只能注册一次，不可重复注册。
 Boot.registerModule(formulaModule)
 ```
+
+需要确保页面引入 KaTeX 样式，否则公式会退化为未排版状态。
 
 ### 配置
 
