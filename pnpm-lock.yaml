@@ -654,6 +654,32 @@ importers:
         specifier: workspace:^
         version: link:../../shared/rollup-config
 
+  packages/plugin-attachment:
+    dependencies:
+      '@wangeditor-next/editor':
+        specifier: 5.7.6
+        version: link:../editor
+      dom7:
+        specifier: ^3.0.0 || ^4.0.0
+        version: 4.0.6
+      snabbdom:
+        specifier: ^3.6.0
+        version: 3.6.3
+    devDependencies:
+      '@wangeditor-next-shared/rollup-config':
+        specifier: workspace:^
+        version: link:../../shared/rollup-config
+
+  packages/plugin-ctrl-enter:
+    dependencies:
+      '@wangeditor-next/editor':
+        specifier: 5.7.6
+        version: link:../editor
+    devDependencies:
+      '@wangeditor-next-shared/rollup-config':
+        specifier: workspace:^
+        version: link:../../shared/rollup-config
+
   packages/plugin-float-image:
     dependencies:
       '@wangeditor-next/editor':

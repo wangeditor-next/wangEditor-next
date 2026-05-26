@@ -1,0 +1,1 @@
+# @wangeditor-next/plugin-attachment

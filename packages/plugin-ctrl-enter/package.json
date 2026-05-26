@@ -1,0 +1,49 @@
+{
+  "name": "@wangeditor-next/plugin-ctrl-enter",
+  "version": "2.0.6",
+  "description": "wangEditor ctrl+enter plugin",
+  "author": "cycleccc <2991205548@qq.com>",
+  "type": "module",
+  "homepage": "https://github.com/wangeditor-next/wangEditor-next#readme",
+  "license": "MIT",
+  "types": "dist/plugin-ctrl-enter/src/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/plugin-ctrl-enter/src/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./dist/css/style.css": "./dist/css/style.css"
+  },
+  "directories": {
+    "lib": "dist"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wangeditor-next/wangEditor-next.git"
+  },
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development rollup -c rollup.config.js",
+    "dev-watch": "cross-env NODE_ENV=development rollup -c rollup.config.js -w",
+    "build": "cross-env NODE_ENV=production rollup -c rollup.config.js",
+    "dev-size-stats": "cross-env NODE_ENV=development:size_stats rollup -c rollup.config.js",
+    "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
+  },
+  "bugs": {
+    "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
+  },
+  "peerDependencies": {
+    "@wangeditor-next/editor": "5.7.6"
+  },
+  "devDependencies": {
+    "@wangeditor-next-shared/rollup-config": "workspace:^"
+  }
+}
