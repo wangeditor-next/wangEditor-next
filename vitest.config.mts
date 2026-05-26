@@ -10,6 +10,8 @@ const modulePaths = [
   '@wangeditor-next/editor-for-react',
   '@wangeditor-next/list-module',
   '@wangeditor-next/plugin-float-image',
+  '@wangeditor-next/plugin-attachment',
+  '@wangeditor-next/plugin-ctrl-enter',
   '@wangeditor-next/plugin-formula',
   '@wangeditor-next/plugin-link-card',
   '@wangeditor-next/plugin-markdown',
@@ -84,6 +86,10 @@ export default defineConfig({
         find: `${p}/dist/css/style.css`,
         replacement: path.resolve(__dirname, 'tests/utils/stylesMock.js'),
       })),
+      {
+        find: /^@wangeditor-next\/core\/upload$/,
+        replacement: path.resolve(__dirname, 'packages/core/src/upload/index.ts'),
+      },
     ],
   },
   esbuild: {
