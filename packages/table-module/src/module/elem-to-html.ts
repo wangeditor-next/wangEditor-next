@@ -8,6 +8,8 @@ import { Element } from 'slate'
 
 import { TableCellElement, TableElement, TableRowElement } from './custom-types'
 
+type TableWidthExportMode = 'adaptive' | 'explicit'
+
 function escapeHtml(raw: string): string {
   return raw
     .replace(/&/g, '&amp;')
@@ -17,11 +19,29 @@ function escapeHtml(raw: string): string {
     .replace(/'/g, '&#39;')
 }
 
-function getExportTableWidth(tableNode: TableElement): string {
+function getTableWidthExportMode(editor?: IDomEditor): TableWidthExportMode {
+  if (!editor || typeof editor.getMenuConfig !== 'function') {
+    return 'explicit'
+  }
+
+  const menuConf = editor.getMenuConfig('insertTable') as { widthExportMode?: TableWidthExportMode }
+
+  return menuConf?.widthExportMode === 'explicit' ? 'explicit' : 'adaptive'
+}
+
+function getExportTableWidth(tableNode: TableElement, editor?: IDomEditor): string {
   const { width = 'auto', columnWidths = [] } = tableNode
 
   if (width && width !== 'auto') {
     return width
+  }
+
+  const widthExportMode = getTableWidthExportMode(editor)
+
+  // In adaptive mode, keep imported or generated auto-width tables as auto
+  // and only persist explicit fixed widths when width is not auto.
+  if (widthExportMode === 'adaptive') {
+    return 'auto'
   }
 
   const totalWidth = columnWidths.reduce((sum, columnWidth) => {
@@ -48,7 +68,7 @@ function tableToHtml(elemNode: Element, childrenHtml: string, editor?: IDomEdito
 
   const captionStr = caption ? `<caption>${escapeHtml(caption)}</caption>` : ''
   const colgroupStr = cols ? `<colgroup contentEditable="false">${cols}</colgroup>` : ''
-  const exportedWidth = getExportTableWidth(tableNode)
+  const exportedWidth = getExportTableWidth(tableNode, editor)
   const textStyleMode = getTextStyleMode(editor)
 
   if (textStyleMode === 'class') {

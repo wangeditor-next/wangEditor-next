@@ -18,6 +18,17 @@ import TableProperty from './TableProperty'
 
 export const insertTableMenuConf = {
   key: 'insertTable',
+  config: {
+    minWidth: 60,
+    minRowHeight: 30,
+    tableHeader: {
+      selected: true,
+    },
+    tableFullWidth: {
+      selected: false,
+    },
+    widthExportMode: 'explicit',
+  },
   factory() {
     return new InsertTable()
   },
