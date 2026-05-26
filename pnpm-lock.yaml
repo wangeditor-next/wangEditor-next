@@ -427,7 +427,7 @@ importers:
   packages/basic-modules:
     dependencies:
       '@wangeditor-next/core':
-        specifier: 1.9.1
+        specifier: '>=1.9.1 <2'
         version: link:../core
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -458,7 +458,7 @@ importers:
   packages/code-highlight:
     dependencies:
       '@wangeditor-next/core':
-        specifier: 1.9.1
+        specifier: '>=1.9.1 <2'
         version: link:../core
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -638,7 +638,7 @@ importers:
   packages/list-module:
     dependencies:
       '@wangeditor-next/core':
-        specifier: 1.9.1
+        specifier: '>=1.9.1 <2'
         version: link:../core
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -683,7 +683,7 @@ importers:
   packages/plugin-float-image:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.7
+        specifier: '>=5.7.7 <6'
         version: link:../editor
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -702,7 +702,7 @@ importers:
   packages/plugin-formula:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.7
+        specifier: '>=5.7.7 <6'
         version: link:../editor
       dom7:
         specifier: ^4.0.0
@@ -724,7 +724,7 @@ importers:
   packages/plugin-link-card:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.7
+        specifier: '>=5.7.7 <6'
         version: link:../editor
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -743,7 +743,7 @@ importers:
   packages/plugin-markdown:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.7
+        specifier: '>=5.7.7 <6'
         version: link:../editor
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -762,7 +762,7 @@ importers:
   packages/plugin-mention:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.7
+        specifier: '>=5.7.7 <6'
         version: link:../editor
       snabbdom:
         specifier: ^3.6.0
@@ -775,7 +775,7 @@ importers:
   packages/table-module:
     dependencies:
       '@wangeditor-next/core':
-        specifier: 1.9.1
+        specifier: '>=1.9.1 <2'
         version: link:../core
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -812,7 +812,7 @@ importers:
         specifier: 3.0.1
         version: link:../basic-modules
       '@wangeditor-next/core':
-        specifier: 1.9.1
+        specifier: '>=1.9.1 <2'
         version: link:../core
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -840,7 +840,7 @@ importers:
         specifier: ^2.0.7 || ^5.0.0
         version: 2.1.3(@uppy/core@2.3.4)
       '@wangeditor-next/core':
-        specifier: 1.9.1
+        specifier: '>=1.9.1 <2'
         version: link:../core
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -862,7 +862,7 @@ importers:
   packages/yjs:
     dependencies:
       '@wangeditor-next/core':
-        specifier: 1.9.1
+        specifier: '>=1.9.1 <2'
         version: link:../core
       y-protocols:
         specifier: ^1.0.5
@@ -884,7 +884,7 @@ importers:
   packages/yjs-for-react:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.7
+        specifier: '>=5.7.7 <6'
         version: link:../editor
       '@wangeditor-next/yjs':
         specifier: ^2.0.1
@@ -915,7 +915,7 @@ importers:
   packages/yjs-for-vue:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.7
+        specifier: '>=5.7.7 <6'
         version: link:../editor
       '@wangeditor-next/yjs':
         specifier: ^2.0.1
