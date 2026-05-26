@@ -59,7 +59,7 @@
     "y-protocols": "^1.0.5"
   },
   "peerDependencies": {
-    "@wangeditor-next/editor": "5.7.7",
+    "@wangeditor-next/editor": ">=5.7.7 <6",
     "@wangeditor-next/yjs": "^2.0.1",
     "react": ">=17.0.2",
     "slate": "^0.124.0",
