@@ -1,5 +1,23 @@
 # Change Log
 
+## 5.7.7
+
+### Patch Changes
+
+- 8a8ae86: feat(table): add configurable width export mode for table html
+  - Added `insertTable.widthExportMode` with `adaptive | explicit`.
+  - Default mode remains `explicit` for backward compatibility.
+  - `adaptive` mode can be enabled to keep `width:auto` on table export.
+
+- Updated dependencies [8a8ae86]
+  - @wangeditor-next/core@1.9.1
+  - @wangeditor-next/table-module@3.0.1
+  - @wangeditor-next/basic-modules@3.0.1
+  - @wangeditor-next/code-highlight@3.0.1
+  - @wangeditor-next/list-module@3.0.1
+  - @wangeditor-next/upload-image-module@3.0.1
+  - @wangeditor-next/video-module@3.0.1
+
 ## 5.7.6
 
 ### Patch Changes
