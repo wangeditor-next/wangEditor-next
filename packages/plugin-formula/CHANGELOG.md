@@ -1,5 +1,13 @@
 # @wangeditor-next/plugin-formula
 
+## 2.0.7
+
+### Patch Changes
+
+- dc64615: fix formula absolute value delimiter rendering by switching formula card output to htmlAndMathml and documenting required css import
+- Updated dependencies [8a8ae86]
+  - @wangeditor-next/editor@5.7.7
+
 ## 2.0.6
 
 ### Patch Changes

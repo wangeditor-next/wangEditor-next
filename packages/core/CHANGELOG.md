@@ -1,5 +1,14 @@
 # Change Log
 
+## 1.9.1
+
+### Patch Changes
+
+- 8a8ae86: feat(table): add configurable width export mode for table html
+  - Added `insertTable.widthExportMode` with `adaptive | explicit`.
+  - Default mode remains `explicit` for backward compatibility.
+  - `adaptive` mode can be enabled to keep `width:auto` on table export.
+
 ## 1.9.0
 
 ### Minor Changes
