@@ -185,7 +185,39 @@ describe('create editor and toolbar', () => {
     expect(exportedHtml).toContain('<p>123</p>')
   })
 
-  test('getHtml exports explicit table width when imported table uses colgroup widths', () => {
+  test('getHtml keeps auto table width when imported table uses colgroup widths in adaptive mode', () => {
+    const html = `<table style="width: auto;table-layout: fixed;height:auto">
+      <colgroup contentEditable="false">
+        <col width="120"></col>
+        <col width="80"></col>
+      </colgroup>
+      <tbody>
+        <tr><td>A</td><td>B</td></tr>
+      </tbody>
+    </table>`
+
+    const editor = customCreateEditor({
+      html,
+      config: {
+        MENU_CONF: {
+          insertTable: {
+            widthExportMode: 'adaptive',
+          },
+        },
+      },
+    })
+    const exportedHtml = editor.getHtml()
+
+    editor.setHtml(exportedHtml)
+    const roundTripHtml = editor.getHtml()
+
+    expect(exportedHtml).toContain('style="width: auto;table-layout: fixed;')
+    expect(roundTripHtml).toContain('style="width: auto;table-layout: fixed;')
+    expect(exportedHtml).not.toContain('height:NaN')
+    expect(exportedHtml).toContain('<colgroup contentEditable="false"><col width=120></col><col width=80></col></colgroup>')
+  })
+
+  test('getHtml exports explicit table width by default for imported colgroup widths', () => {
     const html = `<table style="width: auto;table-layout: fixed;height:auto">
       <colgroup contentEditable="false">
         <col width="120"></col>
@@ -200,7 +232,6 @@ describe('create editor and toolbar', () => {
     const exportedHtml = editor.getHtml()
 
     expect(exportedHtml).toContain('style="width: 200px;table-layout: fixed;')
-    expect(exportedHtml).not.toContain('height:NaN')
     expect(exportedHtml).toContain('<colgroup contentEditable="false"><col width=120></col><col width=80></col></colgroup>')
   })
 

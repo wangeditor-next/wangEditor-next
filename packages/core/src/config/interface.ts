@@ -25,6 +25,7 @@ interface IHoverbarConf {
 export type AlertType = 'success' | 'info' | 'warning' | 'error'
 export type TextStyleMode = 'inline' | 'class'
 export type ClassStylePolicy = 'preserve-data' | 'fallback-inline' | 'strict'
+export type TableWidthExportMode = 'adaptive' | 'explicit'
 export type StyleClassTokenType =
   | 'color'
   | 'bgColor'
@@ -116,12 +117,14 @@ interface IEmotionConfig {
 
 interface IInsertTableConfig {
   minWidth: number;
+  minRowHeight: number;
   tableHeader: {
     selected: boolean;
   };
   tableFullWidth: {
     selected: boolean;
-  }
+  };
+  widthExportMode: TableWidthExportMode;
 }
 
 interface IInsertTableColConfig {
