@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "engines": {
-    "node": "^22.13.0"
+    "node": "^20.19.0 || ^22.13.0"
   },
   "browserslist": [
     "defaults",

@@ -39,7 +39,7 @@
 
 ## 环境与工具
 
-- Node: `^22.13.0`（以 `package.json#engines` 为准）
+- Node: `^20.19.0 || ^22.13.0`（以 `package.json#engines` 为准）
 - Package Manager: `pnpm@9.15.0`
 - Monorepo: `pnpm workspaces` + `turbo`
 - Versioning/Release: `changesets`
