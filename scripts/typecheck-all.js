@@ -7,6 +7,8 @@ const { spawnSync } = require('node:child_process')
 const rootDir = path.resolve(__dirname, '..')
 const scanDirs = ['packages']
 const ignoredDirs = new Set(['node_modules', 'dist', 'lib', 'coverage', '.turbo', '.git'])
+const typecheckCacheDir = path.join(rootDir, '.turbo', 'typecheck')
+const disableIncremental = process.env.TYPECHECK_NO_INCREMENTAL === '1'
 
 function collectTsconfigFiles(startDir) {
   const result = []
@@ -44,17 +46,25 @@ function collectTsconfigFiles(startDir) {
 
 function runTypecheck(tsconfigPath) {
   const relativePath = path.relative(rootDir, tsconfigPath).replace(/\\/g, '/')
+  const args = ['exec', 'tsc', '--noEmit', '--pretty', 'false', '--skipLibCheck']
+  const buildInfoPath = path.join(
+    typecheckCacheDir,
+    `${relativePath.replace(/[\\/]/g, '__').replace(/\.json$/, '')}.tsbuildinfo`
+  )
 
   console.log(`[typecheck] ${relativePath}`)
 
-  const res = spawnSync(
-    'pnpm',
-    ['exec', 'tsc', '--noEmit', '--pretty', 'false', '--skipLibCheck', '-p', relativePath],
-    {
-      cwd: rootDir,
-      stdio: 'inherit',
-    }
-  )
+  if (!disableIncremental) {
+    fs.mkdirSync(path.dirname(buildInfoPath), { recursive: true })
+    args.push('--incremental', '--tsBuildInfoFile', path.relative(rootDir, buildInfoPath))
+  }
+
+  args.push('-p', relativePath)
+
+  const res = spawnSync('pnpm', args, {
+    cwd: rootDir,
+    stdio: 'inherit',
+  })
 
   if (res.status !== 0) {
     process.exit(res.status ?? 1)

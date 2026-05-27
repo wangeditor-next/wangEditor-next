@@ -34,7 +34,11 @@ concurrency:
 
 jobs:
   test:
+    name: Unit Test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['20.19.0', '22.13.0']
 
     steps:
       # 检出代码库
@@ -53,7 +57,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 22.13.0
+          node-version: ${{ matrix.node-version }}
           registry-url: https://registry.npmjs.com
           cache: pnpm
 
@@ -74,15 +78,15 @@ jobs:
 
       # 在 master 上顺带产出覆盖率，避免额外 workflow 重复跑一轮
       - name: Unit test with coverage
-        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_name == 'master')
+        if: matrix.node-version == '22.13.0' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_name == 'master'))
         run: pnpm run test-c
 
       - name: Unit test
-        if: github.event_name != 'workflow_dispatch' && !(github.event_name == 'push' && github.ref_name == 'master')
+        if: matrix.node-version != '22.13.0' || (github.event_name != 'workflow_dispatch' && !(github.event_name == 'push' && github.ref_name == 'master'))
         run: pnpm run test
 
       - name: Upload coverage reports to Codecov
-        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_name == 'master')
+        if: matrix.node-version == '22.13.0' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_name == 'master'))
         uses: codecov/codecov-action@v6.0.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

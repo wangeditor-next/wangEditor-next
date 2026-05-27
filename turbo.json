@@ -1,10 +1,19 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "tsconfig.json",
+    "shared/rollup-config/**"
+  ],
   "tasks": {
     "dev": {
       "inputs": [
+        "$TURBO_DEFAULT$",
         "src/**",
-        "rollup.config.js"
+        "rollup.config.js",
+        "tsconfig.json",
+        "package.json"
       ],
       "dependsOn": [
         "^dev"
@@ -15,8 +24,11 @@
     },
     "build": {
       "inputs": [
+        "$TURBO_DEFAULT$",
         "src/**",
-        "rollup.config.js"
+        "rollup.config.js",
+        "tsconfig.json",
+        "package.json"
       ],
       "dependsOn": [
         "^build"

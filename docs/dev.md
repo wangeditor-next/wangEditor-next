@@ -5,7 +5,7 @@
 - 了解 slate.js
 - 了解 vdom 和 snabbdom.js
 - 了解 turbo 和 changeset
-- 已安装 Node.js `^22.13.0`
+- 已安装 Node.js `^20.19.0 || ^22.13.0`
 - 已安装 pnpm `9.15.0`
 
 ## 本地启动

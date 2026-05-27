@@ -41,7 +41,7 @@
     "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
   },
   "peerDependencies": {
-    "@wangeditor-next/editor": "5.7.7",
+    "@wangeditor-next/editor": ">=5.7.7 <6",
     "snabbdom": "^3.6.0"
   },
   "devDependencies": {

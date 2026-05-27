@@ -46,7 +46,7 @@
   "peerDependencies": {
     "@uppy/core": "^2.1.4 || ^5.0.0",
     "@uppy/xhr-upload": "^2.0.7 || ^5.0.0",
-    "@wangeditor-next/core": "1.9.1",
+    "@wangeditor-next/core": ">=1.9.1 <2",
     "dom7": "^3.0.0 || ^4.0.0",
     "nanoid": "^5.0.0",
     "slate": "^0.124.0",

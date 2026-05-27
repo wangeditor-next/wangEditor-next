@@ -45,7 +45,7 @@
     "katex": "^0.16.0"
   },
   "peerDependencies": {
-    "@wangeditor-next/editor": "5.7.7",
+    "@wangeditor-next/editor": ">=5.7.7 <6",
     "katex": "^0.16.0",
     "snabbdom": "^3.6.0"
   },

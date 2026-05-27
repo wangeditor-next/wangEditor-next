@@ -48,7 +48,7 @@
     "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
   },
   "peerDependencies": {
-    "@wangeditor-next/core": "1.9.1",
+    "@wangeditor-next/core": ">=1.9.1 <2",
     "slate": "^0.124.0",
     "yjs": "^13.5.29"
   },

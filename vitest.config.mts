@@ -64,10 +64,10 @@ export default defineConfig({
         '**/index.ts',
       ], // 忽略覆盖率计算的文件
       thresholds: {
-        lines: 1,
-        functions: 1,
-        branches: 1,
-        statements: 1,
+        lines: 70,
+        functions: 70,
+        branches: 60,
+        statements: 70,
       },
     },
   },
