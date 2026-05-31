@@ -3,6 +3,7 @@
  * @author wangfupeng
  */
 import { $ } from 'dom7'
+import { vi } from 'vitest'
 
 import createEditor from '../../../tests/utils/create-editor'
 import { registerParseElemHtmlConf } from '../../core/src/parse-html'
@@ -90,6 +91,109 @@ describe('table - pre parse html', () => {
         '</td></tr></table>',
       ].join(''),
     )
+  })
+
+  it('should infer column widths for imported fixed-layout auto-width table', () => {
+    const $table = $(
+      [
+        '<table style="width:auto;table-layout: fixed;">',
+        '<tbody>',
+        '<tr>',
+        '<td data-measure-width="120">名称</td>',
+        '<td data-measure-width="360">影响</td>',
+        '</tr>',
+        '<tr>',
+        '<td>鸦片战争</td>',
+        '<td>中国开始沦为半殖民地半封建社会；成为中国近代史的开端</td>',
+        '</tr>',
+        '</tbody>',
+        '</table>',
+      ].join(''),
+    )
+
+    const boundingClientRectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        const widthAttr = this.getAttribute('data-measure-width')
+        const width = widthAttr ? parseInt(widthAttr, 10) : 0
+
+        return {
+          x: 0,
+          y: 0,
+          top: 0,
+          left: 0,
+          right: width,
+          bottom: 20,
+          width,
+          height: 20,
+          toJSON() {
+            return {}
+          },
+        } as DOMRect
+      })
+
+    try {
+      const res = preParseTableHtmlConf.preParseHtml($table[0])
+      const $res = $(res)
+      const cols = $res.find('colgroup col')
+
+      expect(cols.length).toBe(2)
+      expect($(cols[0]).attr('width')).toBe('120')
+      expect($(cols[1]).attr('width')).toBe('360')
+      expect($res.find('td')[0].getAttribute('width')).toBe('auto')
+      expect($res.find('td')[1].getAttribute('width')).toBe('auto')
+    } finally {
+      boundingClientRectSpy.mockRestore()
+    }
+  })
+
+  it('should skip inferred widths when table already has explicit colgroup widths', () => {
+    const $table = $(
+      [
+        '<table style="width:auto;table-layout: fixed;">',
+        '<colgroup>',
+        '<col width="80"></col>',
+        '<col width="120"></col>',
+        '</colgroup>',
+        '<tbody>',
+        '<tr><td data-measure-width="999">A</td><td data-measure-width="999">B</td></tr>',
+        '</tbody>',
+        '</table>',
+      ].join(''),
+    )
+
+    const boundingClientRectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        const widthAttr = this.getAttribute('data-measure-width')
+        const width = widthAttr ? parseInt(widthAttr, 10) : 0
+
+        return {
+          x: 0,
+          y: 0,
+          top: 0,
+          left: 0,
+          right: width,
+          bottom: 20,
+          width,
+          height: 20,
+          toJSON() {
+            return {}
+          },
+        } as DOMRect
+      })
+
+    try {
+      const res = preParseTableHtmlConf.preParseHtml($table[0])
+      const $res = $(res)
+      const cols = $res.find('colgroup col')
+
+      expect(cols.length).toBe(2)
+      expect($(cols[0]).attr('width')).toBe('80')
+      expect($(cols[1]).attr('width')).toBe('120')
+    } finally {
+      boundingClientRectSpy.mockRestore()
+    }
   })
 })
 
