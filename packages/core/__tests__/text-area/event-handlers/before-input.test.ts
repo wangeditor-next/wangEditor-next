@@ -289,6 +289,62 @@ describe('handleBeforeInput', () => {
     expect(Editor.insertText).toHaveBeenCalledWith(editor, 'same')
   })
 
+  it('skips reselection when target range cannot be mapped to Slate', () => {
+    const editor = {
+      selection: createSelection(false),
+      getConfig: () => ({ readOnly: false }),
+      insertData: vi.fn(),
+    } as any
+    const targetRange = { startContainer: document.createTextNode('x') }
+    const event = {
+      inputType: 'insertText',
+      data: 'hello',
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [targetRange],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'toSlateRange').mockReturnValue(null as any)
+    vi.spyOn(Transforms, 'select').mockImplementation(() => {})
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    expect(() => handleBeforeInput(event, {} as any, editor)).not.toThrow()
+    expect(DomEditor.toSlateRange).toHaveBeenCalledWith(editor, targetRange, {
+      exactMatch: false,
+      suppressThrow: true,
+    })
+    expect(Transforms.select).not.toHaveBeenCalled()
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, 'hello')
+  })
+
+  it('does not throw when target range points to stale DOM nodes', () => {
+    const editor = {
+      selection: createSelection(false),
+      getConfig: () => ({ readOnly: false }),
+      insertData: vi.fn(),
+    } as any
+    const targetRange = { startContainer: document.createTextNode('x') }
+    const event = {
+      inputType: 'insertText',
+      data: 'hello',
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [targetRange],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'toSlateRange').mockImplementation(() => {
+      throw new Error('Cannot resolve a Slate node from DOM node')
+    })
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    expect(() => handleBeforeInput(event, {} as any, editor)).not.toThrow()
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, 'hello')
+  })
+
   it('does not delete when selection partially covers a table', () => {
     const editor = {
       selection: createSelection(true),

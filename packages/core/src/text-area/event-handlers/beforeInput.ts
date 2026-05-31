@@ -56,12 +56,20 @@ function handleBeforeInput(e: Event, textarea: TextArea, editor: IDomEditor) {
     const [targetRange] = event.getTargetRanges()
 
     if (targetRange) {
-      const range = DomEditor.toSlateRange(editor, targetRange, {
-        exactMatch: false,
-        suppressThrow: false,
-      })
+      let range: Range | null = null
 
-      if (!selection || !Range.equals(selection, range)) {
+      try {
+        range = DomEditor.toSlateRange(editor, targetRange, {
+          exactMatch: false,
+          suppressThrow: true,
+        })
+      } catch {
+        // Undo/redo or IME transitions can leave beforeinput target ranges
+        // pointing to stale DOM nodes for a short time.
+        range = null
+      }
+
+      if (range && (!selection || !Range.equals(selection, range))) {
         Transforms.select(editor, range)
       }
     }
