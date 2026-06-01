@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.9.3
+
+### Patch Changes
+
+- e512013: fix beforeinput selection recovery after undo on void blocks (e.g. divider and code block) to avoid stale DOM range crashes and dropped input in demo flows
+
 ## 1.9.2
 
 ### Patch Changes
