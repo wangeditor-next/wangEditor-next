@@ -36,7 +36,7 @@ function handleBeforeInput(e: Event, textarea: TextArea, editor: IDomEditor) {
   // 一些输入法和浏览器扩展会先改 DOM 选区，再触发 beforeinput
   textarea.flushDOMSelectionChange?.()
 
-  const { selection } = editor
+  let { selection } = editor
   const { inputType: type } = event
   const data = event.dataTransfer || event.data || undefined
 
@@ -71,6 +71,7 @@ function handleBeforeInput(e: Event, textarea: TextArea, editor: IDomEditor) {
 
       if (range && (!selection || !Range.equals(selection, range))) {
         Transforms.select(editor, range)
+        selection = range
       }
     }
   }
@@ -92,6 +93,41 @@ function handleBeforeInput(e: Event, textarea: TextArea, editor: IDomEditor) {
 
       Editor.deleteFragment(editor, { direction })
       return
+    }
+  }
+
+  if (selection == null && type.startsWith('insert')) {
+    const root = DomEditor.findDocumentOrShadowRoot(editor)
+    const domSelection = root.getSelection()
+
+    if (domSelection) {
+      const domRange = DomEditor.toSlateRange(editor, domSelection, {
+        exactMatch: false,
+        suppressThrow: true,
+      })
+
+      if (domRange) {
+        Transforms.select(editor, domRange)
+        selection = domRange
+      }
+    }
+
+    if (selection == null) {
+      try {
+        editor.restoreSelection?.()
+      } catch {
+        // Undo/redo across void blocks can keep a stale cached selection path.
+        // Fall through to the explicit end-of-document fallback below.
+      }
+      selection = editor.selection
+    }
+
+    if (selection == null) {
+      const fallbackPoint = Editor.end(editor, [])
+      const fallbackRange = { anchor: fallbackPoint, focus: fallbackPoint }
+
+      Transforms.select(editor, fallbackRange)
+      selection = fallbackRange
     }
   }
 
