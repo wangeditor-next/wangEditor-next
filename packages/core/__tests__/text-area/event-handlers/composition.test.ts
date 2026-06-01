@@ -99,6 +99,77 @@ describe('composition handlers', () => {
     expect(Editor.insertText).not.toHaveBeenCalled()
   })
 
+  it('recovers selection before composition commit when selection is null', () => {
+    const paragraph = { type: 'paragraph', children: [{ text: 'x' }] }
+    const recoveredSelection = createSelection(false)
+    const editor = {
+      selection: null,
+      getConfig: () => ({ maxLength: 0 }),
+      restoreSelection() {
+        this.selection = recoveredSelection
+      },
+    } as any
+    const textarea = { changeViewState: vi.fn() } as any
+    const event = { target: {}, data: '拼' } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue({
+      getSelection: () => null,
+    } as any)
+    vi.spyOn(DomEditor, 'cleanExposedTexNodeInSelectionBlock').mockImplementation(() => {})
+    vi.spyOn(Editor, 'node').mockImplementation((_ed, path) => {
+      if (path.length === 1) {
+        return [paragraph, path] as any
+      }
+
+      return [{ text: 'x' }, path] as any
+    })
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    expect(() => handleCompositionEnd(event, textarea, editor)).not.toThrow()
+    expect(editor.selection).toEqual(recoveredSelection)
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, '拼')
+  })
+
+  it('falls back to document end when selection recovery fails before composition commit', () => {
+    const fallbackPoint = { path: [0, 0], offset: 0 }
+    const paragraph = { type: 'paragraph', children: [{ text: 'x' }] }
+    const editor = {
+      selection: null,
+      getConfig: () => ({ maxLength: 0 }),
+      restoreSelection: vi.fn(() => {
+        throw new Error('stale selection path')
+      }),
+    } as any
+    const textarea = { changeViewState: vi.fn() } as any
+    const event = { target: {}, data: '拼' } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue({
+      getSelection: () => null,
+    } as any)
+    vi.spyOn(DomEditor, 'cleanExposedTexNodeInSelectionBlock').mockImplementation(() => {})
+    vi.spyOn(Editor, 'end').mockReturnValue(fallbackPoint as any)
+    vi.spyOn(Transforms, 'select').mockImplementation((_editor: any, range: any) => {
+      _editor.selection = range
+    })
+    vi.spyOn(Editor, 'node').mockImplementation((_ed, path) => {
+      if (path.length === 1) {
+        return [paragraph, path] as any
+      }
+
+      return [{ text: 'x' }, path] as any
+    })
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    expect(() => handleCompositionEnd(event, textarea, editor)).not.toThrow()
+    expect(Transforms.select).toHaveBeenCalledWith(editor, {
+      anchor: fallbackPoint,
+      focus: fallbackPoint,
+    })
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, '拼')
+  })
+
   it('handles composition end with maxLength', () => {
     const paragraph = { type: 'paragraph', children: [{ text: 'x' }] }
     const codeNode = { type: 'code', children: [{ text: 'y' }] }
