@@ -212,19 +212,33 @@ const onMouseMove = throttle((event: Event) => {
 
   if (tableNode === null || tablePath === null) { return }
 
-  const { columnWidths = [], resizingIndex = -1 } = tableNode
+  const {
+    width: tableWidth = 'auto',
+    columnWidths = [],
+    resizingIndex = -1,
+    scrollWidth = 0,
+  } = tableNode
 
   if (columnWidths.length === 0 || resizingIndex < 0 || resizingIndex >= columnWidths.length) {
     return
   }
 
   let adjustColumnWidths: number[]
+  let baseColumnWidths = columnWidths
   let tableDom: HTMLElement | null = null
 
   try {
     tableDom = DomEditor.toDOMNode(editorWhenMouseDown, tableNode)
   } catch {
     tableDom = null
+  }
+
+  if (tableWidth === '100%' && scrollWidth > 0) {
+    const totalColumnWidth = columnWidths.reduce((sum, width) => sum + width, 0)
+
+    if (totalColumnWidth > 0) {
+      baseColumnWidths = getColumnWidthRatios(columnWidths).map(ratio => ratio * scrollWidth)
+    }
   }
 
   // 所有列都采用相同的拖拽逻辑：当前列宽度增加，其他列不变
@@ -235,20 +249,33 @@ const onMouseMove = throttle((event: Event) => {
     const mousePositionInTable = clientX - tableRect.left // 鼠标相对于表格左边的位置
 
     // 计算边界的新位置
-    const cumulativeWidths = getCumulativeWidths(columnWidths)
+    const cumulativeWidths = getCumulativeWidths(baseColumnWidths)
     const newBorderPosition = mousePositionInTable
 
     // 根据新的边界位置计算列宽度
-    adjustColumnWidths = calculateAdjacentWidthsByBorderPosition(columnWidths, resizingIndex, newBorderPosition, cumulativeWidths, editorWhenMouseDown)
+    adjustColumnWidths = calculateAdjacentWidthsByBorderPosition(
+      baseColumnWidths,
+      resizingIndex,
+      newBorderPosition,
+      cumulativeWidths,
+      editorWhenMouseDown,
+    )
   } else {
     // 如果找不到表格元素，则使用简单的宽度变化逻辑
-    adjustColumnWidths = calculateAdjacentWidths(columnWidths, resizingIndex, widthChange, editorWhenMouseDown)
+    adjustColumnWidths = calculateAdjacentWidths(baseColumnWidths, resizingIndex, widthChange, editorWhenMouseDown)
   }
 
-  // 移除容器宽度限制，允许表格宽度超过编辑器宽度，显示横向滚动条
+  const nextTableProps: Partial<TableElement> = {
+    columnWidths: adjustColumnWidths,
+  }
+
+  // 用户在自适应表格中手动拖拽列宽时，切回显式列宽模式，保证拖拽边界与鼠标位置一致。
+  if (tableWidth === '100%') {
+    nextTableProps.width = 'auto'
+  }
 
   // 应用新的列宽度
-  Transforms.setNodes(editorWhenMouseDown, { columnWidths: adjustColumnWidths } as TableElement, {
+  Transforms.setNodes(editorWhenMouseDown, nextTableProps as TableElement, {
     at: tablePath,
   })
 }, 100)
@@ -268,9 +295,7 @@ function onMouseUp(_event: Event) {
   document.body.style.cursor = ''
 
   // 解绑事件
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   $window.off('mousemove', onMouseMove)
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   $window.off('mouseup', onMouseUp)
 }
 /**

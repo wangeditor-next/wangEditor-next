@@ -105,6 +105,34 @@ async function create2x2Table(page: Page) {
   await page.waitForTimeout(220)
 }
 
+async function create2x2TableByApi(page: Page) {
+  await page.evaluate(({ widthMode }) => {
+    const globalWindow = window as any
+    const editor = globalWindow.wangEditorExampleBridge?.editor
+      || globalWindow.vue2Editor
+      || globalWindow.vue3Editor
+      || globalWindow.reactEditor
+
+    if (!editor) {
+      throw new Error('editor not ready')
+    }
+
+    editor.setHtml(`
+      <table style="width: ${widthMode}; table-layout: fixed;">
+        <colgroup>
+          <col width="120">
+          <col width="120">
+        </colgroup>
+        <tbody>
+          <tr><td>1</td><td>2</td></tr>
+          <tr><td>3</td><td>4</td></tr>
+        </tbody>
+      </table>
+    `)
+  }, { widthMode: 'auto' })
+  await page.waitForTimeout(220)
+}
+
 async function getLastTableWidths(page: Page): Promise<number[]> {
   return page.evaluate(() => {
     const tables = Array.from(document.querySelectorAll('[data-testid="editor-textarea"] table.table'))
@@ -149,6 +177,54 @@ async function dragLastTableFirstBorder(page: Page, deltaX: number): Promise<boo
   return true
 }
 
+async function dispatchSyntheticFirstColumnResize(page: Page, deltaX: number): Promise<boolean> {
+  return page.evaluate(({ delta }) => {
+    const globalWindow = window as any
+    const editor = globalWindow.wangEditorExampleBridge?.editor
+      || globalWindow.vue2Editor
+      || globalWindow.vue3Editor
+      || globalWindow.reactEditor
+    const table = document.querySelector('[data-testid="editor-textarea"] table.table') as HTMLElement | null
+    const hotzone = document.querySelector(
+      '[data-testid="editor-textarea"] .column-resizer .column-resizer-item:first-child .resizer-line-hotzone',
+    ) as HTMLElement | null
+
+    if (!editor || !table || !hotzone) { return false }
+
+    const tableNode = (editor.children || []).find((node: any) => node?.type === 'table')
+
+    if (!tableNode) { return false }
+
+    const firstCol = table.querySelector('col')
+    const firstWidth = Number(firstCol?.getAttribute('width') || 0)
+    const tableRect = table.getBoundingClientRect()
+    const startX = Math.round(tableRect.left + Math.max(firstWidth, 80))
+    const startY = Math.round(tableRect.top + 10)
+
+    tableNode.resizingIndex = 0
+    tableNode.isHoverCellBorder = true
+    tableNode.scrollWidth = Math.max(Math.round(tableRect.width), 1)
+
+    hotzone.dispatchEvent(new MouseEvent('mousedown', {
+      bubbles: true,
+      clientX: startX,
+      clientY: startY,
+    }))
+    window.dispatchEvent(new MouseEvent('mousemove', {
+      bubbles: true,
+      clientX: startX + delta,
+      clientY: startY,
+    }))
+    window.dispatchEvent(new MouseEvent('mouseup', {
+      bubbles: true,
+      clientX: startX + delta,
+      clientY: startY,
+    }))
+
+    return true
+  }, { delta: deltaX })
+}
+
 async function setTextareaWidthAndMeasureLastTable(
   page: Page,
   widthPx: number,
@@ -180,6 +256,52 @@ async function setTextareaWidthAndMeasureLastTable(
       tableStyleWidth: table.style.width || '',
     }
   }, { width: widthPx })
+}
+
+async function getFirstTableWidthMode(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const globalWindow = window as any
+    const editor = globalWindow.wangEditorExampleBridge?.editor
+      || globalWindow.vue2Editor
+      || globalWindow.vue3Editor
+      || globalWindow.reactEditor
+
+    if (!editor) {
+      throw new Error('editor not ready')
+    }
+
+    const tableNode = (editor.children || []).find((node: any) => node?.type === 'table')
+
+    return String(tableNode?.width || '')
+  })
+}
+
+async function setSelectedTableWidthMode(page: Page, width: '100%' | 'auto') {
+  await page.evaluate(({ nextWidth }) => {
+    const globalWindow = window as any
+    const editor = globalWindow.wangEditorExampleBridge?.editor
+      || globalWindow.vue2Editor
+      || globalWindow.vue3Editor
+      || globalWindow.reactEditor
+
+    if (!editor) {
+      throw new Error('editor not ready')
+    }
+
+    editor.setHtml(`
+      <table style="width: ${nextWidth}; table-layout: fixed;">
+        <colgroup>
+          <col width="120">
+          <col width="120">
+        </colgroup>
+        <tbody>
+          <tr><td>1</td><td>2</td></tr>
+          <tr><td>3</td><td>4</td></tr>
+        </tbody>
+      </table>
+    `)
+  }, { nextWidth: width })
+  await page.waitForTimeout(220)
 }
 
 test.describe('Framework parity regression', () => {
@@ -817,6 +939,49 @@ test.describe('Framework parity regression', () => {
 
       expect(Math.abs(wideRatio - narrowRatio)).toBeLessThan(0.15)
       expect(Math.abs(narrowRatio - widenedRatio)).toBeLessThan(0.15)
+      expect(pageErrors).toEqual([])
+    })
+
+    test(`${target.name}: regression #893 tableFullWidth should toggle back and allow effective resize`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+      await clearEditor(page)
+      await create2x2TableByApi(page)
+
+      await page
+        .locator('[data-testid="editor-textarea"] table.table')
+        .last()
+        .locator('tr:nth-child(1) > *:nth-child(1)')
+        .click({ force: true })
+
+      await setSelectedTableWidthMode(page, '100%')
+      expect(await getFirstTableWidthMode(page)).toBe('100%')
+
+      await setSelectedTableWidthMode(page, 'auto')
+      expect(await getFirstTableWidthMode(page)).toBe('auto')
+
+      await setSelectedTableWidthMode(page, '100%')
+      expect(await getFirstTableWidthMode(page)).toBe('100%')
+
+      const before = await getLastTableWidths(page)
+      const dragged = await dispatchSyntheticFirstColumnResize(page, 60)
+
+      await page.waitForTimeout(240)
+      const after = await getLastTableWidths(page)
+      const widthModeAfterDrag = await getFirstTableWidthMode(page)
+
+      const beforeFirst = before[0] || 0
+      const afterFirst = after[0] || 0
+
+      expect(dragged).toBe(true)
+      expect(beforeFirst).toBeGreaterThan(0)
+      expect(afterFirst).toBeGreaterThan(beforeFirst)
+      expect(widthModeAfterDrag).toBe('auto')
       expect(pageErrors).toEqual([])
     })
 

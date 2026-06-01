@@ -173,4 +173,29 @@ describe('Table Module Full Width Menu', () => {
       { mode: 'highest' },
     )
   })
+
+  test('exec should toggle table width back to auto when current width is 100%', () => {
+    const fullWidthMenu = new FullWidth()
+    const editor = createEditor()
+    const tableNode = {
+      type: 'table',
+      width: '100%',
+      children: [],
+    } as any
+
+    setEditorSelection(editor)
+    vi.spyOn(fullWidthMenu, 'isDisabled').mockReturnValue(false)
+    vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockReturnValue(tableNode)
+    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
+
+    fullWidthMenu.exec(editor, '')
+
+    expect(setNodesSpy).toHaveBeenCalledWith(
+      editor,
+      {
+        width: 'auto',
+      },
+      { mode: 'highest' },
+    )
+  })
 })

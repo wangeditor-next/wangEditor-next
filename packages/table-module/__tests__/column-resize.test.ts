@@ -318,4 +318,53 @@ describe('column resize module', () => {
       { at: [0] },
     )
   })
+
+  test('dragging in full-width mode should switch to auto width and use rendered column widths', async () => {
+    const table = {
+      ...createTable([100, 100]),
+      width: '100%',
+      scrollWidth: 300,
+      resizingIndex: 0,
+    }
+    const tableDom = document.createElement('div')
+    const innerTable = document.createElement('div')
+
+    innerTable.className = 'table'
+    vi.spyOn(innerTable, 'getBoundingClientRect').mockReturnValue({
+      x: 0,
+      y: 0,
+      top: 0,
+      left: 0,
+      width: 300,
+      height: 120,
+      bottom: 120,
+      right: 300,
+      toJSON: () => ({}),
+    } as DOMRect)
+    tableDom.appendChild(innerTable)
+
+    vi.spyOn(editor, 'getMenuConfig').mockReturnValue({ minWidth: 60 } as any)
+    vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([0] as slate.Path)
+    vi.spyOn(slate.Editor, 'node').mockReturnValue([table as slate.Node, [0]])
+    vi.spyOn(core.DomEditor, 'toDOMNode').mockReturnValue(tableDom)
+    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
+
+    handleCellBorderMouseDown(editor, table)
+
+    const resizeHandle = document.createElement('div')
+
+    resizeHandle.className = 'column-resizer-item'
+    document.body.appendChild(resizeHandle)
+    resizeHandle.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 150 }))
+    window.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 200 }))
+    await new Promise(resolve => {
+      setTimeout(resolve, 120)
+    })
+
+    expect(setNodesSpy).toHaveBeenCalledWith(
+      editor,
+      { width: 'auto', columnWidths: [200, 150] } as TableElement,
+      { at: [0] },
+    )
+  })
 })
