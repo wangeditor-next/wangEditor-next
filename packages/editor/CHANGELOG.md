@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.7.9
+
+### Patch Changes
+
+- e512013: fix beforeinput selection recovery after undo on void blocks (e.g. divider and code block) to avoid stale DOM range crashes and dropped input in demo flows
+- Updated dependencies [e512013]
+  - @wangeditor-next/core@1.9.3
+
 ## 5.7.8
 
 ### Patch Changes
