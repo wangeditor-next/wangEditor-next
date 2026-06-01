@@ -18,14 +18,15 @@ class TableFullWidth implements IButtonMenu {
 
   readonly tag = 'button'
 
-  getValue(_editor: IDomEditor): string | boolean {
-    // 每次点击都执行调整，不需要状态判断
-    return false
+  getValue(editor: IDomEditor): string | boolean {
+    const tableNode = DomEditor.getSelectedNodeByType(editor, 'table') as TableElement | null
+
+    if (tableNode == null) { return false }
+    return tableNode.width === '100%'
   }
 
-  isActive(_editor: IDomEditor): boolean {
-    // 每次点击都执行调整，不需要状态判断
-    return false
+  isActive(editor: IDomEditor): boolean {
+    return !!this.getValue(editor)
   }
 
   isDisabled(editor: IDomEditor): boolean {
@@ -50,10 +51,8 @@ class TableFullWidth implements IButtonMenu {
 
     if (!tableNode) { return }
 
-    // 主流编辑器在“适应宽度”语义下使用 100% 响应式模式，而不是一次性重算像素列宽。
-    // 列宽数据仍然保留，用于后续拖拽列宽时进行比例/最小宽度计算。
     const props: Partial<TableElement> = {
-      width: '100%',
+      width: tableNode.width === '100%' ? 'auto' : '100%',
     }
 
     Transforms.setNodes(editor, props, { mode: 'highest' })
