@@ -4,7 +4,7 @@
  */
 
 import {
-  Editor, Element, Range, Text,
+  Editor, Element, Range, Text, Transforms,
 } from 'slate'
 
 import { DomEditor } from '../../editor/dom-editor'
@@ -68,6 +68,53 @@ function areBothTextNodes(editor, selection) {
       }
     }
   }
+}
+
+function recoverSelectionForCompositionEnd(editor: IDomEditor): Range | null {
+  let { selection } = editor
+
+  if (selection) {
+    return selection
+  }
+
+  try {
+    const root = DomEditor.findDocumentOrShadowRoot(editor)
+    const domSelection = root.getSelection()
+
+    if (domSelection) {
+      const domRange = DomEditor.toSlateRange(editor, domSelection, {
+        exactMatch: false,
+        suppressThrow: true,
+      })
+
+      if (domRange) {
+        Transforms.select(editor, domRange)
+        selection = domRange
+      }
+    }
+  } catch (error) {
+    // Ignore transient DOM/selection mismatches and continue with fallbacks.
+  }
+
+  if (!selection) {
+    try {
+      editor.restoreSelection?.()
+    } catch {
+      // Undo/redo around void blocks can make cached selection paths stale.
+      // Continue to the explicit end-of-document fallback.
+    }
+    selection = editor.selection
+  }
+
+  if (!selection) {
+    const fallbackPoint = Editor.end(editor, [])
+    const fallbackRange = { anchor: fallbackPoint, focus: fallbackPoint }
+
+    Transforms.select(editor, fallbackRange)
+    selection = fallbackRange
+  }
+
+  return selection
 }
 
 /**
@@ -146,7 +193,7 @@ export function handleCompositionEnd(e: Event, textarea: TextArea, editor: IDomE
     EDITOR_TO_PENDING_SELECTION.delete(editor)
   }
 
-  const { selection } = editor
+  const selection = recoverSelectionForCompositionEnd(editor)
 
   if (selection == null) { return }
 
