@@ -1,5 +1,15 @@
 # Change Log
 
+## 3.0.2
+
+### Patch Changes
+
+- a341fd2: chore: relax internal peer dependency ranges to reduce forced lockstep upgrades.
+- Updated dependencies [a341fd2]
+- Updated dependencies [5efc385]
+  - @wangeditor-next/basic-modules@3.0.2
+  - @wangeditor-next/core@1.9.2
+
 ## 3.0.1
 
 ### Patch Changes

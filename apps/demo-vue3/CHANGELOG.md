@@ -1,5 +1,11 @@
 # @wangeditor-next/demo-vue3
 
+## 0.0.14
+
+### Patch Changes
+
+- @wangeditor-next/editor@5.7.8
+
 ## 0.0.13
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @wangeditor-next/plugin-mention
 
+## 2.0.8
+
+### Patch Changes
+
+- a341fd2: chore: relax internal peer dependency ranges to reduce forced lockstep upgrades.
+  - @wangeditor-next/editor@5.7.8
+
 ## 2.0.7
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@wangeditor-next/editor-for-react",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "wangEditor next editor for react",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",
@@ -42,12 +42,12 @@
   },
   "devDependencies": {
     "@wangeditor-next-shared/rollup-config": "workspace:^",
-    "@wangeditor-next/editor": "^5.7.6",
+    "@wangeditor-next/editor": "^5.7.8",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
   "peerDependencies": {
-    "@wangeditor-next/editor": ">=5.7.6 <6",
+    "@wangeditor-next/editor": ">=5.7.8",
     "react": ">=17.0.2",
     "react-dom": ">=17.0.2"
   }

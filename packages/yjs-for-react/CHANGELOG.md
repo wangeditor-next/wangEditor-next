@@ -1,5 +1,14 @@
 # @wangeditor-next/yjs-for-react
 
+## 2.0.2
+
+### Patch Changes
+
+- a341fd2: chore: relax internal peer dependency ranges to reduce forced lockstep upgrades.
+- Updated dependencies [a341fd2]
+  - @wangeditor-next/yjs@2.0.2
+  - @wangeditor-next/editor@5.7.8
+
 ## 2.0.1
 
 ### Patch Changes

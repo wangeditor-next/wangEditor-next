@@ -1,5 +1,15 @@
 # Change Log
 
+## 3.0.2
+
+### Patch Changes
+
+- 4acff46: Fix table import for `width:auto; table-layout: fixed` HTML so initial column widths are auto-fitted from rendered content when no explicit column/cell widths are provided.
+- a341fd2: chore: relax internal peer dependency ranges to reduce forced lockstep upgrades.
+- c26cea3: Fix regression in table full-width workflow: `tableFullWidth` now toggles between `100%` and `auto`, and manual column resize in `100%` mode switches table width back to `auto` while applying rendered-width-based column updates.
+- Updated dependencies [5efc385]
+  - @wangeditor-next/core@1.9.2
+
 ## 3.0.1
 
 ### Patch Changes
