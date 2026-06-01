@@ -1,5 +1,21 @@
 # Change Log
 
+## 5.7.8
+
+### Patch Changes
+
+- Updated dependencies [4acff46]
+- Updated dependencies [a341fd2]
+- Updated dependencies [c26cea3]
+- Updated dependencies [5efc385]
+  - @wangeditor-next/table-module@3.0.2
+  - @wangeditor-next/basic-modules@3.0.2
+  - @wangeditor-next/code-highlight@3.0.2
+  - @wangeditor-next/list-module@3.0.2
+  - @wangeditor-next/upload-image-module@3.0.2
+  - @wangeditor-next/video-module@3.0.2
+  - @wangeditor-next/core@1.9.2
+
 ## 5.7.7
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.9.2
+
+### Patch Changes
+
+- 5efc385: fix beforeinput target range mapping after divider undo to tolerate stale DOM nodes and avoid "Cannot resolve a Slate node from DOM node" errors when typing
+
 ## 1.9.1
 
 ### Patch Changes

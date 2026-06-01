@@ -1,5 +1,13 @@
 # @wangeditor-next/demo-react
 
+## 0.0.14
+
+### Patch Changes
+
+- Updated dependencies [a341fd2]
+  - @wangeditor-next/editor-for-react@2.0.2
+  - @wangeditor-next/editor@5.7.8
+
 ## 0.0.13
 
 ### Patch Changes
