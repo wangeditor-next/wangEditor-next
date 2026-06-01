@@ -502,6 +502,9 @@ export const DomEditor = {
     }
 
     if (anchorNode == null || focusNode == null || anchorOffset == null || focusOffset == null) {
+      if (suppressThrow) {
+        return null as T extends true ? Range | null : Range
+      }
       throw new Error(`Cannot resolve a Slate range from DOM range: ${domRange}`)
     }
 
@@ -734,10 +737,14 @@ export const DomEditor = {
     // COMPAT: If someone is clicking from one Slate editor into another,
     // the select event fires twice, once for the old editor's `element`
     // first, and then afterwards for the correct `element`. (2017/03/03)
-    const slateNode = DomEditor.toSlateNode(editor, textNode!)
     let path: Path
 
     try {
+      // During undo/redo around void blocks, target ranges can briefly point
+      // to stale leaf wrappers that are no longer mapped in KEY_TO_ELEMENT.
+      // Respect suppressThrow and let callers skip reselection for this tick.
+      const slateNode = DomEditor.toSlateNode(editor, textNode!)
+
       path = DomEditor.findPath(editor, slateNode)
     } catch (e) {
       if (suppressThrow) {

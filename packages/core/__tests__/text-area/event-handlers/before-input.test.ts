@@ -345,6 +345,114 @@ describe('handleBeforeInput', () => {
     expect(Editor.insertText).toHaveBeenCalledWith(editor, 'hello')
   })
 
+  it('restores previous selection when insert target range is stale and selection is null', () => {
+    const restoredRange = createSelection(false)
+    const editor = {
+      selection: null,
+      getConfig: () => ({ readOnly: false }),
+      restoreSelection() {
+        this.selection = restoredRange
+      },
+      insertData: vi.fn(),
+    } as any
+    const targetRange = { startContainer: document.createTextNode('x') }
+    const event = {
+      inputType: 'insertText',
+      data: 'hello',
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [targetRange],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'toSlateRange').mockReturnValue(null as any)
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue({
+      getSelection: () => null,
+    } as any)
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    expect(() => handleBeforeInput(event, {} as any, editor)).not.toThrow()
+    expect(editor.selection).toEqual(restoredRange)
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, 'hello')
+  })
+
+  it('falls back to document end when insert target range is stale and selection cannot be restored', () => {
+    const fallbackPoint = { path: [0, 0], offset: 0 }
+    const editor = {
+      selection: null,
+      getConfig: () => ({ readOnly: false }),
+      restoreSelection: vi.fn(),
+      insertData: vi.fn(),
+    } as any
+    const targetRange = { startContainer: document.createTextNode('x') }
+    const event = {
+      inputType: 'insertText',
+      data: 'hello',
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [targetRange],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'toSlateRange').mockReturnValue(null as any)
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue({
+      getSelection: () => null,
+    } as any)
+    vi.spyOn(Editor, 'end').mockReturnValue(fallbackPoint as any)
+    vi.spyOn(Transforms, 'select').mockImplementation((_editor: any, range: any) => {
+      _editor.selection = range
+    })
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    expect(() => handleBeforeInput(event, {} as any, editor)).not.toThrow()
+    expect(Transforms.select).toHaveBeenCalledWith(editor, {
+      anchor: fallbackPoint,
+      focus: fallbackPoint,
+    })
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, 'hello')
+  })
+
+  it('falls back to document end when restoreSelection throws on stale path', () => {
+    const fallbackPoint = { path: [0, 0], offset: 0 }
+    const editor = {
+      selection: null,
+      getConfig: () => ({ readOnly: false }),
+      restoreSelection: vi.fn(() => {
+        throw new Error('Cannot find a descendant at path [0,0,0]')
+      }),
+      insertData: vi.fn(),
+    } as any
+    const targetRange = { startContainer: document.createTextNode('x') }
+    const event = {
+      inputType: 'insertText',
+      data: 'hello',
+      dataTransfer: null,
+      target: {},
+      preventDefault: vi.fn(),
+      getTargetRanges: () => [targetRange],
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(DomEditor, 'toSlateRange').mockReturnValue(null as any)
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue({
+      getSelection: () => null,
+    } as any)
+    vi.spyOn(Editor, 'end').mockReturnValue(fallbackPoint as any)
+    vi.spyOn(Transforms, 'select').mockImplementation((_editor: any, range: any) => {
+      _editor.selection = range
+    })
+    vi.spyOn(Editor, 'insertText').mockImplementation(() => {})
+
+    expect(() => handleBeforeInput(event, {} as any, editor)).not.toThrow()
+    expect(Transforms.select).toHaveBeenCalledWith(editor, {
+      anchor: fallbackPoint,
+      focus: fallbackPoint,
+    })
+    expect(Editor.insertText).toHaveBeenCalledWith(editor, 'hello')
+  })
+
   it('does not delete when selection partially covers a table', () => {
     const editor = {
       selection: createSelection(true),

@@ -25,6 +25,21 @@ describe('Core DomEditor', () => {
     editor.select(genStartLocation())
   })
 
+  function createStaleNonEditableDOMPoint(): [Node, number] {
+    const paragraph = DomEditor.toDOMNode(editor, editor.children[0] as CustomElement)
+    const textNodeWrapper = paragraph.querySelector('[data-slate-node="text"]') as HTMLElement
+    const staleTextNodeWrapper = textNodeWrapper.cloneNode(true) as HTMLElement
+    const leaf = staleTextNodeWrapper.querySelector('[data-slate-leaf]') as HTMLElement
+    const nonEditable = document.createElement('span')
+
+    nonEditable.setAttribute('contenteditable', 'false')
+    nonEditable.textContent = 'x'
+    staleTextNodeWrapper.insertBefore(nonEditable, leaf)
+    textNodeWrapper.replaceWith(staleTextNodeWrapper)
+
+    return [nonEditable.firstChild as Node, 0]
+  }
+
   afterEach(() => {
     editor.destroy()
   })
@@ -294,6 +309,39 @@ describe('Core DomEditor', () => {
     })
 
     expect(slatePoint).toBeNull()
+  })
+
+  test('toSlatePoint returns null when suppressThrow is enabled and dom mapping is stale', async () => {
+    editor.insertText('hello')
+    await flushPromises()
+
+    const staleDomPoint = createStaleNonEditableDOMPoint()
+    const slatePoint = DomEditor.toSlatePoint(editor, staleDomPoint, {
+      exactMatch: false,
+      suppressThrow: true,
+      searchDirection: 'forward',
+    })
+
+    expect(slatePoint).toBeNull()
+  })
+
+  test('toSlateRange returns null when suppressThrow is enabled and dom mapping is stale', async () => {
+    editor.insertText('hello')
+    await flushPromises()
+
+    const staleDomPoint = createStaleNonEditableDOMPoint()
+    const { document } = DomEditor.getWindow(editor)
+    const staleDomRange = document.createRange()
+
+    staleDomRange.setStart(staleDomPoint[0], staleDomPoint[1])
+    staleDomRange.setEnd(staleDomPoint[0], staleDomPoint[1])
+
+    const slateRange = DomEditor.toSlateRange(editor, staleDomRange, {
+      exactMatch: false,
+      suppressThrow: true,
+    })
+
+    expect(slateRange).toBeNull()
   })
 
   test('toSlatePoint finds the next selectable leaf when selection lands inside a non-editable node', async () => {
