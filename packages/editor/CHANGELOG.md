@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.7.10
+
+### Patch Changes
+
+- 8201b0e: fix IME composition commit after undo by recovering selection when editor selection is null to avoid placeholder overlap and dropped CJK input in demo flows
+- Updated dependencies [8201b0e]
+  - @wangeditor-next/core@1.9.4
+
 ## 5.7.9
 
 ### Patch Changes

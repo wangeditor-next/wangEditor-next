@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.9.4
+
+### Patch Changes
+
+- 8201b0e: fix IME composition commit after undo by recovering selection when editor selection is null to avoid placeholder overlap and dropped CJK input in demo flows
+
 ## 1.9.3
 
 ### Patch Changes
