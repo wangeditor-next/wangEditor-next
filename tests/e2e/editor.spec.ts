@@ -76,6 +76,94 @@ const dropImage = async (page: Page) => {
   )
 }
 
+const runToolbarUndoImeCompositionScenario = async (
+  page: Page,
+  menuKey: 'divider' | 'codeBlock',
+) => {
+  const pageErrors: string[] = []
+
+  page.on('pageerror', err => {
+    pageErrors.push(err?.stack || err?.message || String(err))
+  })
+
+  await focusEditor(page)
+
+  if (menuKey === 'codeBlock') {
+    await typeInEditor(page, 'code line')
+    await selectAll(page)
+  }
+
+  await waitForMenuEnabled(page, menuKey)
+  await getToolbarMenu(page, menuKey).click()
+
+  await waitForMenuEnabled(page, 'undo')
+  await getToolbarMenu(page, 'undo').click()
+
+  await page.evaluate(() => {
+    const el = document.querySelector('[data-testid="editor-textarea"] [contenteditable="true"]') as HTMLElement | null
+
+    if (!el) {
+      throw new Error('editable not found')
+    }
+
+    el.focus()
+    const selection = window.getSelection()
+
+    if (!selection) {
+      throw new Error('selection not found')
+    }
+
+    const range = document.createRange()
+
+    range.selectNodeContents(el)
+    range.collapse(false)
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    const fire = (event: Event) => el.dispatchEvent(event)
+
+    fire(new CompositionEvent('compositionstart', { data: '' }))
+    fire(new InputEvent('beforeinput', {
+      inputType: 'insertCompositionText',
+      data: 'ni',
+      bubbles: true,
+      cancelable: true,
+    }))
+    fire(new InputEvent('input', {
+      inputType: 'insertCompositionText',
+      data: 'ni',
+      bubbles: true,
+    }))
+    fire(new CompositionEvent('compositionupdate', { data: 'ni' }))
+    fire(new CompositionEvent('compositionend', { data: '你' }))
+  })
+
+  await page.waitForTimeout(320)
+  await selectAll(page)
+
+  const selectionSnapshot = await page.evaluate(() => {
+    const selection = window.getSelection()
+
+    return {
+      text: selection?.toString() || '',
+      rangeCount: selection?.rangeCount || 0,
+    }
+  })
+
+  await expect(page.getByTestId('editor-html')).toContainText('你')
+  await expect(page.locator('.w-e-text-placeholder')).toBeHidden()
+  expect(selectionSnapshot.rangeCount).toBeGreaterThan(0)
+  expect(selectionSnapshot.text).toContain('你')
+
+  const fatalErrors = pageErrors.filter(msg => {
+    if (msg.includes('Cannot resolve a Slate node from DOM node')) { return true }
+    if (msg.includes('Cannot resolve a DOM point from Slate point')) { return true }
+    return false
+  })
+
+  expect(fatalErrors).toEqual([])
+}
+
 test.describe('Basic Editor', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/examples/default-mode.html')
@@ -266,6 +354,14 @@ test.describe('Basic Editor', () => {
     await expect(page.getByTestId('editor-html')).not.toContainText('中文中文')
     await expect(getEditable(page)).toContainText('中文')
     expect(pageErrors).toEqual([])
+  })
+
+  test('regression #892: divider -> undo -> composition -> select-all should not throw', async ({ page }) => {
+    await runToolbarUndoImeCompositionScenario(page, 'divider')
+  })
+
+  test('regression #892: codeBlock -> undo -> composition -> select-all should not throw', async ({ page }) => {
+    await runToolbarUndoImeCompositionScenario(page, 'codeBlock')
   })
 
   test('regression #282: first-line superscript with large font should not be clipped', async ({ page }) => {

@@ -46,6 +46,85 @@ const setEditorHtml = async (page: Page, html: string) => {
   }, html)
 }
 
+const runDividerUndoImeScenario = async (page: Page) => {
+  const pageErrors: string[] = []
+
+  page.on('pageerror', err => {
+    pageErrors.push(err?.stack || err?.message || String(err))
+  })
+
+  await focusEditor(page)
+  await waitForMenuEnabled(page, 'divider')
+  await getToolbarMenu(page, 'divider').click()
+
+  await waitForMenuEnabled(page, 'undo')
+  await getToolbarMenu(page, 'undo').click()
+
+  await page.evaluate(() => {
+    const el = document.querySelector('[data-testid="editor-textarea"] [contenteditable="true"]') as HTMLElement | null
+
+    if (!el) {
+      throw new Error('editable not found')
+    }
+
+    el.focus()
+    const selection = window.getSelection()
+
+    if (!selection) {
+      throw new Error('selection not found')
+    }
+
+    const range = document.createRange()
+
+    range.selectNodeContents(el)
+    range.collapse(false)
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    const fire = (event: Event) => el.dispatchEvent(event)
+
+    fire(new CompositionEvent('compositionstart', { data: '' }))
+    fire(new InputEvent('beforeinput', {
+      inputType: 'insertCompositionText',
+      data: 'ni',
+      bubbles: true,
+      cancelable: true,
+    }))
+    fire(new InputEvent('input', {
+      inputType: 'insertCompositionText',
+      data: 'ni',
+      bubbles: true,
+    }))
+    fire(new CompositionEvent('compositionupdate', { data: 'ni' }))
+    fire(new CompositionEvent('compositionend', { data: '你' }))
+  })
+
+  await page.waitForTimeout(320)
+  await selectAll(page)
+
+  const selectionSnapshot = await page.evaluate(() => {
+    const selection = window.getSelection()
+
+    return {
+      text: selection?.toString() || '',
+      rangeCount: selection?.rangeCount || 0,
+    }
+  })
+
+  await expect(page.getByTestId('editor-html')).toContainText('你')
+  await expect(page.locator('.w-e-text-placeholder')).toBeHidden()
+  expect(selectionSnapshot.rangeCount).toBeGreaterThan(0)
+  expect(selectionSnapshot.text).toContain('你')
+
+  const fatalErrors = pageErrors.filter(msg => {
+    if (msg.includes('Cannot resolve a Slate node from DOM node')) { return true }
+    if (msg.includes('Cannot resolve a DOM point from Slate point')) { return true }
+    return false
+  })
+
+  expect(fatalErrors).toEqual([])
+}
+
 test.describe('Cross Browser Smoke', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/examples/default-mode.html')
@@ -105,5 +184,9 @@ test.describe('Cross Browser Smoke', () => {
     await waitForMenuEnabled(page, 'redo')
     await getToolbarMenu(page, 'redo').click()
     await expect(page.getByTestId('editor-html')).toContainText('undo text')
+  })
+
+  test('regression #892: divider -> undo -> composition should stay stable', async ({ page }) => {
+    await runDividerUndoImeScenario(page)
   })
 })
