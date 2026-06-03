@@ -1,5 +1,12 @@
 # @wangeditor-next/plugin-ctrl-enter
 
+## 2.0.10
+
+### Patch Changes
+
+- Updated dependencies [8201b0e]
+  - @wangeditor-next/editor@5.7.10
+
 ## 2.0.9
 
 ### Patch Changes

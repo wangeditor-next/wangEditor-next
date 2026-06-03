@@ -1,6 +1,6 @@
 {
   "name": "@wangeditor-next/plugin-ctrl-enter",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "description": "wangEditor ctrl+enter plugin",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",
@@ -41,7 +41,7 @@
     "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
   },
   "peerDependencies": {
-    "@wangeditor-next/editor": "5.7.9"
+    "@wangeditor-next/editor": "5.7.10"
   },
   "devDependencies": {
     "@wangeditor-next-shared/rollup-config": "workspace:^"
