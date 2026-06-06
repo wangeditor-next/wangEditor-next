@@ -14,7 +14,7 @@ class CellProperty extends TableProperty implements IButtonMenu {
 
   readonly showModal = true
 
-  readonly modalWidth = 300
+  readonly modalWidth = 360
 
   readonly menu = 'cell'
 

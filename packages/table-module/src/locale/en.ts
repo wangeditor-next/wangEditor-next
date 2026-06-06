@@ -7,6 +7,7 @@ export default {
   tableModule: {
     modal: {
       border: 'Border',
+      borderColor: 'Border color',
       borderWidth: 'Width',
       bgColor: 'Back color',
       align: 'Text Align',

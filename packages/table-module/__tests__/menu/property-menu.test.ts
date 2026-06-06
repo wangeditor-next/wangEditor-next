@@ -43,15 +43,17 @@ function setSelectionInsideFirstCell(editor) {
 }
 
 function createContextSelection(editor, rows: number[][][]): NodeEntryWithContext[][] {
-  return rows.map(row => row.map(path => [
-    [Node.get(editor, path as any) as any, path as any],
-    {
-      rtl: 0,
-      ltr: 1,
-      ttb: 1,
-      btt: 0,
-    },
-  ]))
+  return rows.map(row =>
+    row.map(path => [
+      [Node.get(editor, path as any) as any, path as any],
+      {
+        rtl: 0,
+        ltr: 1,
+        ttb: 1,
+        btt: 0,
+      },
+    ])
+  )
 }
 
 describe('table property menus', () => {
@@ -73,14 +75,20 @@ describe('table property menus', () => {
     const borderColor = elem.querySelector('[name="borderColor"]') as HTMLInputElement
     const borderWidth = elem.querySelector('[name="borderWidth"]') as HTMLInputElement
     const backgroundColor = elem.querySelector('[name="backgroundColor"]') as HTMLInputElement
-    const textAlign = elem.querySelector('[name="textAlign"]') as HTMLSelectElement
-    const button = elem.querySelector('button') as HTMLButtonElement
+    const textAlign = elem.querySelector('[name="textAlign"]') as HTMLInputElement
+    const centerAlignButton = elem.querySelector(
+      '.w-e-table-property-align-button[data-value="center"]'
+    ) as HTMLButtonElement
+    const button = elem.querySelector('.button-container button') as HTMLButtonElement
 
     borderStyle.value = 'dashed'
     borderColor.value = '#ff0000'
     borderWidth.value = '2'
     backgroundColor.value = '#00ff00'
-    textAlign.value = 'center'
+    centerAlignButton.click()
+
+    expect(textAlign.value).toBe('center')
+    expect(centerAlignButton.classList.contains('active')).toBe(true)
 
     button.click()
     vi.runAllTimers()
@@ -105,20 +113,32 @@ describe('table property menus', () => {
     EDITOR_TO_SELECTION.set(
       editor,
       createContextSelection(editor, [
-        [[0, 0, 0], [0, 0, 1]],
-        [[0, 1, 0], [0, 1, 1]],
-      ]),
+        [
+          [0, 0, 0],
+          [0, 0, 1],
+        ],
+        [
+          [0, 1, 0],
+          [0, 1, 1],
+        ],
+      ])
     )
 
     const elem = menu.getModalContentElem(editor) as HTMLDivElement
     const borderStyle = elem.querySelector('[name="borderStyle"]') as HTMLSelectElement
-    const textAlign = elem.querySelector('[name="textAlign"]') as HTMLSelectElement
+    const textAlign = elem.querySelector('[name="textAlign"]') as HTMLInputElement
+    const rightAlignButton = elem.querySelector(
+      '.w-e-table-property-align-button[data-value="right"]'
+    ) as HTMLButtonElement
     const backgroundColor = elem.querySelector('[name="backgroundColor"]') as HTMLInputElement
-    const button = elem.querySelector('button') as HTMLButtonElement
+    const button = elem.querySelector('.button-container button') as HTMLButtonElement
 
     borderStyle.value = 'solid'
-    textAlign.value = 'right'
+    rightAlignButton.click()
     backgroundColor.value = '#cccccc'
+
+    expect(textAlign.value).toBe('right')
+    expect(rightAlignButton.classList.contains('active')).toBe(true)
 
     button.click()
     vi.runAllTimers()
@@ -138,8 +158,12 @@ describe('table property menus', () => {
 
     setSelectionInsideFirstCell(editor)
     vi.spyOn(editor, 'getMenuConfig').mockImplementation((mark: string) => {
-      if (mark === 'color') { return { colors: ['#ff0000', '#00ff00'] } as any }
-      if (mark === 'bgColor') { return { colors: ['#cccccc'] } as any }
+      if (mark === 'color') {
+        return { colors: ['#ff0000', '#00ff00'] } as any
+      }
+      if (mark === 'bgColor') {
+        return { colors: ['#cccccc'] } as any
+      }
       return {} as any
     })
 
@@ -156,8 +180,9 @@ describe('table property menus', () => {
     colorOption.click()
 
     expect(borderColorInput.value).toBe('#00ff00')
-    expect((borderColorTrigger.querySelector('.color-group-block') as HTMLElement).style.backgroundColor)
-      .toContain('0, 255, 0')
+    expect(
+      (borderColorTrigger.querySelector('.color-group-block') as HTMLElement).style.backgroundColor
+    ).toContain('0, 255, 0')
 
     const clearPanel = menu.getPanelContentElem(editor, {
       mark: 'bgColor',
@@ -167,5 +192,32 @@ describe('table property menus', () => {
 
     expect(clearPanel.text()).toContain('清除')
     expect(clearPanel.find('li.active').attr('data-value')).toBe('#cccccc')
+  })
+
+  test('TableProperty marks the current text alignment button as active', () => {
+    const editor = createEditor({
+      content: [
+        {
+          ...createTableContent()[0],
+          textAlign: 'right',
+        },
+      ],
+    })
+    const menu = new TableProperty()
+
+    setSelectionInsideFirstCell(editor)
+
+    const elem = menu.getModalContentElem(editor) as HTMLDivElement
+    const rightAlignButton = elem.querySelector(
+      '.w-e-table-property-align-button[data-value="right"]'
+    ) as HTMLButtonElement
+    const leftAlignButton = elem.querySelector(
+      '.w-e-table-property-align-button[data-value="left"]'
+    ) as HTMLButtonElement
+
+    expect(rightAlignButton.classList.contains('active')).toBe(true)
+    expect(rightAlignButton.getAttribute('aria-pressed')).toBe('true')
+    expect(leftAlignButton.classList.contains('active')).toBe(false)
+    expect(leftAlignButton.getAttribute('aria-pressed')).toBe('false')
   })
 })
