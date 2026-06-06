@@ -7,6 +7,7 @@ export default {
   tableModule: {
     modal: {
       border: '边框',
+      borderColor: '边框颜色',
       borderWidth: '宽度',
       bgColor: '背景色',
       align: '对齐方式',

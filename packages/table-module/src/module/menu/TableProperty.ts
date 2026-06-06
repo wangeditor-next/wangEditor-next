@@ -3,9 +3,7 @@
  * @author hsuna
  */
 
-import {
-  DomEditor, IButtonMenu, IDomEditor, t,
-} from '@wangeditor-next/core'
+import { DomEditor, IButtonMenu, IDomEditor, t } from '@wangeditor-next/core'
 import { Editor, Transforms } from 'slate'
 
 import {
@@ -29,7 +27,7 @@ class TableProperty implements IButtonMenu {
 
   readonly showModal = true
 
-  readonly modalWidth = 300
+  readonly modalWidth = 360
 
   readonly menu: string = 'table'
 
@@ -88,46 +86,62 @@ class TableProperty implements IButtonMenu {
   getModalContentElem(editor: IDomEditor) {
     const node = this.getModalContentNode(editor)
 
-    if (!node) { return null }
+    if (!node) {
+      return null
+    }
 
     const [data, path] = node
-    const $content = $(`<div>
-      <label class="babel-container">
-        <span>${t('tableModule.modal.border')}</span>
-        <span class="babel-container-border">
-          <select name="borderStyle">
+    const $content = $(`<div class="w-e-table-property-modal">
+      <label class="babel-container w-e-table-property-row">
+        <span class="w-e-table-property-label">${t('tableModule.modal.border')}</span>
+        <span class="babel-container-border w-e-table-property-controls">
+          <select name="borderStyle" aria-label="${t('tableModule.modal.border')}">
             ${this.borderStyle
-    .map(item => `<option value="${item.value}">${item.label}</option>`)
-    .join('')}
+              .map(item => `<option value="${item.value}">${item.label}</option>`)
+              .join('')}
           </select>
-          <span class="color-group" data-mark="color">
+          <span class="color-group" data-mark="color" title="${t('tableModule.modal.borderColor')}">
             <span class="color-group-block"></span>
             <input name="borderColor" type="hidden">
           </span>
-          <input name="borderWidth" type="number" placeholder="${t(
-    'tableModule.modal.borderWidth',
-  )}">
+          <span class="w-e-table-property-number">
+            <input name="borderWidth" type="number" min="0" placeholder="${t(
+              'tableModule.modal.borderWidth'
+            )}" aria-label="${t('tableModule.modal.borderWidth')}">
+            <span class="w-e-table-property-unit">px</span>
+          </span>
         </span>
       </label>
-      <div class="babel-container">
-        <span>${t('tableModule.modal.bgColor')}</span>
-        <span class="babel-container-background">
-          <span class="color-group" data-mark="bgColor">
+      <div class="babel-container w-e-table-property-row">
+        <span class="w-e-table-property-label">${t('tableModule.modal.bgColor')}</span>
+        <span class="babel-container-background w-e-table-property-controls">
+          <span class="color-group" data-mark="bgColor" title="${t('tableModule.modal.bgColor')}">
             <span class="color-group-block"></span>
             <input name="backgroundColor" type="hidden">
           </span>
         </span>
       </div>
-      <label class="babel-container">
-        <span>${t('tableModule.modal.align')}</span>
-        <span class="babel-container-align">
-          <select name="textAlign">
+      <div class="babel-container w-e-table-property-row">
+        <span class="w-e-table-property-label">${t('tableModule.modal.align')}</span>
+        <span class="babel-container-align w-e-table-property-controls">
+          <input name="textAlign" type="hidden">
+          <span class="w-e-table-property-align">
             ${this.textAlignOptions
-    .map(item => `<option value="${item.value}">${item.label}</option>`)
-    .join('')}
-          </select>
+              .map(
+                item => `
+              <button
+                type="button"
+                class="w-e-table-property-align-button"
+                data-value="${item.value}"
+                title="${item.label}"
+                aria-label="${item.label}"
+              >${item.svg}</button>
+            `
+              )
+              .join('')}
+          </span>
         </span>
-      </label>
+      </div>
       <div class="button-container">
         <button type="button">${t('tableModule.modal.ok')}</button>
       </div>
@@ -136,6 +150,37 @@ class TableProperty implements IButtonMenu {
     // 初始化所有表单的值
     $content.find('[name]').each(elem => {
       $(elem).val(data[$(elem).attr('name')])
+    })
+
+    const updateTextAlignButton = value => {
+      $content.find('.w-e-table-property-align-button').each(button => {
+        const $buttonElem = $(button)
+        const isActive = $buttonElem.attr('data-value') === value
+
+        if (isActive) {
+          $buttonElem.addClass('active')
+          $buttonElem.attr('aria-pressed', 'true')
+        } else {
+          $buttonElem.removeClass('active')
+          $buttonElem.attr('aria-pressed', 'false')
+        }
+      })
+    }
+
+    updateTextAlignButton($content.find('[name="textAlign"]').val() || '')
+
+    $content.find('.w-e-table-property-align-button').on('click', e => {
+      const button = e.currentTarget
+
+      if (button == null) {
+        return
+      }
+
+      const $buttonElem = $(button)
+      const value = $buttonElem.attr('data-value') || ''
+
+      $content.find('[name="textAlign"]').val(value)
+      updateTextAlignButton(value)
     })
 
     const setSelectedColor = (elem, color) => {
@@ -175,7 +220,7 @@ class TableProperty implements IButtonMenu {
       })
     })
 
-    const $button = $content.find('button')
+    const $button = $content.find('.button-container button')
 
     $button.on('click', () => {
       const props = Array.from($content.find('[name]')).reduce((obj, elem) => {
@@ -209,7 +254,9 @@ class TableProperty implements IButtonMenu {
     $colorPanel.on('click', 'li', e => {
       const { target } = e
 
-      if (!target) { return }
+      if (!target) {
+        return
+      }
       e.preventDefault()
       e.stopPropagation()
 
@@ -239,8 +286,12 @@ class TableProperty implements IButtonMenu {
 
     let clearText = ''
 
-    if (mark === 'color') { clearText = t('tableModule.color.default') }
-    if (mark === 'bgColor') { clearText = t('tableModule.color.clear') }
+    if (mark === 'color') {
+      clearText = t('tableModule.color.default')
+    }
+    if (mark === 'bgColor') {
+      clearText = t('tableModule.color.clear')
+    }
     const $clearLi = $(`
       <li data-value="" class="clear">
         ${CLEAN_SVG}
