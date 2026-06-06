@@ -11,6 +11,11 @@ export default {
       borderWidth: 'Width',
       bgColor: 'Back color',
       align: 'Text Align',
+      verticalAlign: 'Vertical Align',
+      width: 'Width mode',
+      widthAuto: 'Auto',
+      widthFull: 'Full',
+      mixed: 'Mixed',
       ok: 'OK',
     },
     color: {
@@ -27,6 +32,11 @@ export default {
       ridge: 'Ridge',
       inset: 'Inset',
       outset: 'Outset',
+    },
+    verticalAlign: {
+      top: 'Top',
+      middle: 'Middle',
+      bottom: 'Bottom',
     },
     deleteCol: 'Delete column',
     deleteRow: 'Delete row',

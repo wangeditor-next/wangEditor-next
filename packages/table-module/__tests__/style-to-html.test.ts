@@ -35,14 +35,16 @@ describe('table styleToHtml', () => {
         borderStyle: 'none',
         borderColor: '#000',
         textAlign: 'center',
+        verticalAlign: 'middle',
       },
-      html,
+      html
     )
 
     expect(styled).toContain('background-color: rgb(255, 255, 255);')
     expect(styled).toContain('border-width: 2px;')
     expect(styled).toContain('border-color: #000;')
     expect(styled).toContain('text-align: center;')
+    expect(styled).toContain('vertical-align: middle;')
     expect(styled).not.toContain('border-style:')
   })
 
@@ -61,20 +63,23 @@ describe('table styleToHtml', () => {
         borderStyle: 'dashed',
         borderColor: '#000',
         textAlign: 'center',
+        verticalAlign: 'bottom',
       },
       html,
-      mockEditor,
+      mockEditor
     )
 
     expect(styled).toContain('bgcolor="#fff"')
     expect(styled).toContain('border="2"')
     expect(styled).toContain('bordercolor="#000"')
     expect(styled).toContain('align="center"')
+    expect(styled).toContain('valign="bottom"')
     expect(styled).toContain('data-w-e-background-color="#fff"')
     expect(styled).toContain('data-w-e-border-width="2"')
     expect(styled).toContain('data-w-e-border-line="dashed"')
     expect(styled).toContain('data-w-e-border-color="#000"')
     expect(styled).toContain('data-w-e-text-align="center"')
+    expect(styled).toContain('data-w-e-vertical-align="bottom"')
     expect(styled).toContain('class="w-e-table-border-style-dashed"')
     expect(styled).not.toMatch(/\sstyle=/)
   })
@@ -92,7 +97,7 @@ describe('table styleToHtml', () => {
         borderStyle: 'dotted solid dashed',
       },
       html,
-      mockEditor,
+      mockEditor
     )
 
     expect(styled).toContain('data-w-e-border-line="dotted solid dashed"')
@@ -116,7 +121,7 @@ describe('table styleToHtml', () => {
         borderStyle: 'dotted solid dashed',
       },
       html,
-      mockEditor,
+      mockEditor
     )
 
     expect(styled).toContain('data-w-e-border-line="dotted solid dashed"')
@@ -134,11 +139,17 @@ describe('table styleToHtml', () => {
       },
     } as any
 
-    expect(() => styleToHtml({
-      type: 'table-cell',
-      borderStyle: 'dotted solid dashed',
-    }, html, mockEditor)).toThrow(
-      '[wangeditor] Unsupported table border-style token "dotted solid dashed" in class mode. policy=strict',
+    expect(() =>
+      styleToHtml(
+        {
+          type: 'table-cell',
+          borderStyle: 'dotted solid dashed',
+        },
+        html,
+        mockEditor
+      )
+    ).toThrow(
+      '[wangeditor] Unsupported table border-style token "dotted solid dashed" in class mode. policy=strict'
     )
   })
 })

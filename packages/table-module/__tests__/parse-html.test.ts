@@ -60,13 +60,13 @@ describe('table - pre parse html', () => {
 
   it('should preserve cells that use display:none but still contain imported content', () => {
     const $table = $(
-      '<table><tbody><tr><td>A1</td><td style="display:none">B1</td><td style="display: none">C1</td></tr></tbody></table>',
+      '<table><tbody><tr><td>A1</td><td style="display:none">B1</td><td style="display: none">C1</td></tr></tbody></table>'
     )
 
     const res = preParseTableHtmlConf.preParseHtml($table[0])
 
     expect(res.outerHTML).toBe(
-      '<table><tr><td width="auto">A1</td><td style="display:none" width="auto">B1</td><td style="display: none" width="auto">C1</td></tr></table>',
+      '<table><tr><td width="auto">A1</td><td style="display:none" width="auto">B1</td><td style="display: none" width="auto">C1</td></tr></table>'
     )
   })
 
@@ -77,7 +77,7 @@ describe('table - pre parse html', () => {
         '<p><span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 1</span></p>',
         '<p><span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 2</span></p>',
         '</td></tr></tbody></table>',
-      ].join(''),
+      ].join('')
     )
 
     const res = preParseTableHtmlConf.preParseHtml($table[0])
@@ -89,7 +89,7 @@ describe('table - pre parse html', () => {
         '<br>',
         '<span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 2</span>',
         '</td></tr></table>',
-      ].join(''),
+      ].join('')
     )
   })
 
@@ -108,7 +108,7 @@ describe('table - pre parse html', () => {
         '</tr>',
         '</tbody>',
         '</table>',
-      ].join(''),
+      ].join('')
     )
 
     const boundingClientRectSpy = vi
@@ -159,7 +159,7 @@ describe('table - pre parse html', () => {
         '<tr><td data-measure-width="999">A</td><td data-measure-width="999">B</td></tr>',
         '</tbody>',
         '</table>',
-      ].join(''),
+      ].join('')
     )
 
     const boundingClientRectSpy = vi
@@ -253,7 +253,7 @@ describe('table - parse html', () => {
 
   it('table cell should keep line breaks imported from word-like paragraphs', () => {
     const $cell = $(
-      '<td><span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 1<br>line 2</span></td>',
+      '<td><span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 1<br>line 2</span></td>'
     )
     const [cell] = parseElemHtmlFromCore($($cell[0]), editor) as any[]
 
@@ -307,12 +307,13 @@ describe('table - parse html', () => {
     const stubEditor = {
       isInline: () => false,
     } as any
-    const rows = Array.from($table.find('tr'))
-      .map(row => {
-        const cells = Array.from(row.children).map(cell => parseCellHtmlConf.parseElemHtml(cell as HTMLTableCellElement, [], stubEditor))
+    const rows = Array.from($table.find('tr')).map(row => {
+      const cells = Array.from(row.children).map(cell =>
+        parseCellHtmlConf.parseElemHtml(cell as HTMLTableCellElement, [], stubEditor)
+      )
 
-        return parseRowHtmlConf.parseElemHtml(row as HTMLTableRowElement, cells, stubEditor)
-      })
+      return parseRowHtmlConf.parseElemHtml(row as HTMLTableRowElement, cells, stubEditor)
+    })
     const table = parseTableHtmlConf.parseElemHtml($table[0], rows as any, stubEditor)
 
     expect(table).toMatchObject({
@@ -363,12 +364,13 @@ describe('table - parse html', () => {
     const stubEditor = {
       isInline: () => false,
     } as any
-    const rows = Array.from($table.find('tr'))
-      .map(row => {
-        const cells = Array.from(row.children).map(cell => parseCellHtmlConf.parseElemHtml(cell as HTMLTableCellElement, [], stubEditor))
+    const rows = Array.from($table.find('tr')).map(row => {
+      const cells = Array.from(row.children).map(cell =>
+        parseCellHtmlConf.parseElemHtml(cell as HTMLTableCellElement, [], stubEditor)
+      )
 
-        return parseRowHtmlConf.parseElemHtml(row as HTMLTableRowElement, cells, stubEditor)
-      })
+      return parseRowHtmlConf.parseElemHtml(row as HTMLTableRowElement, cells, stubEditor)
+    })
     const table = parseTableHtmlConf.parseElemHtml($table[0], rows as any, stubEditor)
 
     expect(table).toMatchObject({
@@ -417,7 +419,7 @@ describe('table - parse html', () => {
 
   it('table cell with explicit float border-width (1.5em)', () => {
     const $cell = $(
-      '<td style="border-width: 1.5em; border-style: dotted; border-color: orange;">Cell C</td>',
+      '<td style="border-width: 1.5em; border-style: dotted; border-color: orange;">Cell C</td>'
     )
     const children = [{ text: 'Cell C' }]
 
@@ -434,7 +436,7 @@ describe('table - parse html', () => {
 
   it('table cell with keyword border-width (thin) should be retained', () => {
     const $cell = $(
-      '<td style="border-width: thin; border-style: dotted; border-color: blue;">Cell D</td>',
+      '<td style="border-width: thin; border-style: dotted; border-color: blue;">Cell D</td>'
     )
     const children = [{ text: 'Cell D' }]
 
@@ -451,7 +453,7 @@ describe('table - parse html', () => {
 
   it('table cell with multi-value should be retained', () => {
     const $cell = $(
-      '<td style="border-width: 2px 1em; border-style: dotted solid dashed; border-color: #ff0000 #00ff00 #0000ff rgb(250,0,255)">Cell E</td>',
+      '<td style="border-width: 2px 1em; border-style: dotted solid dashed; border-color: #ff0000 #00ff00 #0000ff rgb(250,0,255)">Cell E</td>'
     )
     const children = [{ text: 'Cell E' }]
 
@@ -486,7 +488,7 @@ describe('table - parse html', () => {
   it('table cell with multi-value border-width mixing keywords, pt, and px should convert correctly', () => {
     const multiPtWidth = 'medium 1pt 0.5pt 2px'
     const $cell = $(
-      `<td style="border-width: ${multiPtWidth}; border-style: dashed; border-color: red;">Cell H</td>`,
+      `<td style="border-width: ${multiPtWidth}; border-style: dashed; border-color: red;">Cell H</td>`
     )
     const children = [{ text: 'Cell H' }]
 
@@ -524,7 +526,7 @@ describe('table - parse html', () => {
 
   it('should use specific border-width/style/color over border shorthand', () => {
     const $cell = $(
-      '<td style="border: 1px solid red; border-width: 5px; border-style: dashed; border-color: blue;">Cell I</td>',
+      '<td style="border: 1px solid red; border-width: 5px; border-style: dashed; border-color: blue;">Cell I</td>'
     )
     const children = [{ text: 'Cell I' }]
 
@@ -541,7 +543,7 @@ describe('table - parse html', () => {
 
   it('should use specific border-width/color over border shorthand', () => {
     const $cell = $(
-      '<td style="border: 1px dashed red; border-width: 5px; border-color: blue;">Cell I</td>',
+      '<td style="border: 1px dashed red; border-width: 5px; border-color: blue;">Cell I</td>'
     )
     const children = [{ text: 'Cell I' }]
 
@@ -695,7 +697,7 @@ describe('table - parse html', () => {
           <td colSpan="1" rowSpan="1" width="auto">数学</td>
           <td colSpan="1" rowSpan="1" width="auto">92</td>
         </tr>
-      </table>`,
+      </table>`
     )
     const children = [
       {
@@ -742,14 +744,12 @@ describe('table - parse html', () => {
 
   it('table should fallback auto height to 0 instead of NaN', () => {
     const $table = $(
-      '<table style="width: auto;table-layout: fixed;height:auto"><tr><td width="auto">A</td></tr></table>',
+      '<table style="width: auto;table-layout: fixed;height:auto"><tr><td width="auto">A</td></tr></table>'
     )
     const children = [
       {
         type: 'table-row',
-        children: [
-          { ...TABLE_CELL_BASE_PROPS, children: [{ text: 'A' }] },
-        ],
+        children: [{ ...TABLE_CELL_BASE_PROPS, children: [{ text: 'A' }] }],
       },
     ]
 
@@ -764,7 +764,7 @@ describe('table - parse html', () => {
 
   it('table should keep columns from excel-like hidden-style cells when they contain text', () => {
     const $table = $(
-      '<table><tr><td width="auto">A1</td><td style="display:none" width="auto">B1</td><td style="display: none" width="auto">C1</td></tr></table>',
+      '<table><tr><td width="auto">A1</td><td style="display:none" width="auto">B1</td><td style="display: none" width="auto">C1</td></tr></table>'
     )
     const children = [
       {
@@ -788,7 +788,7 @@ describe('table - parse html', () => {
 
   it('table - class mode attrs', () => {
     const $table = $(
-      '<table class="w-e-table-layout-fixed" width="320px" height="124" data-w-e-table-height="124"><tr><td width="auto">A</td></tr></table>',
+      '<table class="w-e-table-layout-fixed" width="320px" height="124" data-w-e-table-height="124"><tr><td width="auto">A</td></tr></table>'
     )
     const children = [
       {
@@ -813,7 +813,7 @@ describe('table - parse html', () => {
         '<colgroup><col width="120"></col><col width="180"></col></colgroup>',
         '<tr><td width="auto">A</td><td width="auto">B</td></tr>',
         '</table>',
-      ].join(''),
+      ].join('')
     )
     const children = [
       {
@@ -841,7 +841,7 @@ describe('table - parse html', () => {
         '<colgroup><col width="120"></col><col width="180"></col></colgroup>',
         '<tr><td width="auto">A</td><td width="auto">B</td></tr>',
         '</table>',
-      ].join(''),
+      ].join('')
     )
     const children = [
       {
@@ -860,7 +860,7 @@ describe('table - parse html', () => {
         getConfig() {
           return { textStyleMode: 'class' }
         },
-      } as any,
+      } as any
     )
 
     expect(parsedTable.width).toBe('100%')
@@ -885,17 +885,17 @@ describe('table - parse html', () => {
         },
       ],
     }
-    const exported = tableToHtmlConf.elemToHtml(
-      tableNode as any,
-      '<tr><td>A</td><td>B</td></tr>',
-      {
-        getConfig() {
-          return { textStyleMode: 'class' }
-        },
-      } as any,
-    )
+    const exported = tableToHtmlConf.elemToHtml(tableNode as any, '<tr><td>A</td><td>B</td></tr>', {
+      getConfig() {
+        return { textStyleMode: 'class' }
+      },
+    } as any)
     const $table = $(exported)
-    const parsedBack = parseTableHtmlConf.parseElemHtml($table[0], tableNode.children as any, editor)
+    const parsedBack = parseTableHtmlConf.parseElemHtml(
+      $table[0],
+      tableNode.children as any,
+      editor
+    )
 
     expect(exported).toContain('width="100%"')
     expect(parsedBack).toMatchObject({
@@ -907,7 +907,7 @@ describe('table - parse html', () => {
 
   it('table cell style - class mode attrs', () => {
     const $cell = $(
-      '<td bgcolor="#fff" border="2" bordercolor="#000" align="center" class="w-e-table-border-style-dashed" data-w-e-border-line="dashed">Cell Z</td>',
+      '<td bgcolor="#fff" border="2" bordercolor="#000" align="center" valign="middle" class="w-e-table-border-style-dashed" data-w-e-border-line="dashed">Cell Z</td>'
     )
     const children = [{ text: 'Cell Z' }]
 
@@ -920,6 +920,23 @@ describe('table - parse html', () => {
         borderStyle: 'dashed',
         borderColor: '#000',
         textAlign: 'center',
+        verticalAlign: 'middle',
+      },
+    ])
+  })
+
+  it('table cell style - data vertical align should parse', () => {
+    const $cell = $('<td data-w-e-vertical-align="bottom">Cell Z</td>')
+    const children = [{ text: 'Cell Z' }]
+
+    expect(parseElemHtmlFromCore($($cell[0]), editor)).toEqual([
+      {
+        ...TABLE_CELL_BASE_PROPS,
+        children,
+        borderWidth: '1px',
+        borderStyle: 'solid',
+        borderColor: undefined,
+        verticalAlign: 'bottom',
       },
     ])
   })

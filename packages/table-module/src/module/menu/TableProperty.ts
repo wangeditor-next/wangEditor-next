@@ -3,7 +3,7 @@
  * @author hsuna
  */
 
-import { DomEditor, IButtonMenu, IDomEditor, t } from '@wangeditor-next/core'
+import { IButtonMenu, IDomEditor, t } from '@wangeditor-next/core'
 import { Editor, Transforms } from 'slate'
 
 import {
@@ -18,6 +18,17 @@ import { isOfType } from '../../utils'
 import $ from '../../utils/dom'
 import { EDITOR_TO_SELECTION } from '../weak-maps'
 
+export type FieldName =
+  | 'width'
+  | 'borderStyle'
+  | 'borderColor'
+  | 'borderWidth'
+  | 'backgroundColor'
+  | 'textAlign'
+  | 'verticalAlign'
+
+type FieldValue = string | undefined
+
 class TableProperty implements IButtonMenu {
   readonly title = t('tableModule.tableProperty')
 
@@ -30,6 +41,14 @@ class TableProperty implements IButtonMenu {
   readonly modalWidth = 360
 
   readonly menu: string = 'table'
+
+  readonly propertyFields: FieldName[] = [
+    'width',
+    'borderStyle',
+    'borderColor',
+    'borderWidth',
+    'backgroundColor',
+  ]
 
   readonly borderStyle = [
     { value: 'none', label: t('tableModule.borderStyle.none') },
@@ -50,6 +69,17 @@ class TableProperty implements IButtonMenu {
     { value: 'justify', label: t('justify.justify'), svg: JUSTIFY_JUSTIFY_SVG },
   ]
 
+  readonly widthOptions = [
+    { value: 'auto', label: t('tableModule.modal.widthAuto') },
+    { value: '100%', label: t('tableModule.modal.widthFull') },
+  ]
+
+  readonly verticalAlignOptions = [
+    { value: 'top', label: t('tableModule.verticalAlign.top') },
+    { value: 'middle', label: t('tableModule.verticalAlign.middle') },
+    { value: 'bottom', label: t('tableModule.verticalAlign.bottom') },
+  ]
+
   getValue(_editor: IDomEditor): string | boolean {
     return ''
   }
@@ -59,12 +89,7 @@ class TableProperty implements IButtonMenu {
   }
 
   isDisabled(editor: IDomEditor): boolean {
-    const tableNode = DomEditor.getSelectedNodeByType(editor, 'table')
-
-    if (tableNode == null) {
-      return true
-    }
-    return false
+    return this.getModalContentNode(editor) == null
   }
 
   exec(_editor: IDomEditor, _value: string | boolean) {
@@ -91,7 +116,26 @@ class TableProperty implements IButtonMenu {
     }
 
     const [data, path] = node
+    const fields = this.propertyFields
+    const hasField = (field: FieldName) => fields.includes(field)
+    const isCellMenu = this.menu === 'cell'
     const $content = $(`<div class="w-e-table-property-modal">
+      ${
+        hasField('width')
+          ? `
+        <label class="babel-container w-e-table-property-row">
+          <span class="w-e-table-property-label">${t('tableModule.modal.width')}</span>
+          <span class="babel-container-width w-e-table-property-controls">
+            <select name="width" aria-label="${t('tableModule.modal.width')}">
+              ${this.widthOptions
+                .map(item => `<option value="${item.value}">${item.label}</option>`)
+                .join('')}
+            </select>
+          </span>
+        </label>
+      `
+          : ''
+      }
       <label class="babel-container w-e-table-property-row">
         <span class="w-e-table-property-label">${t('tableModule.modal.border')}</span>
         <span class="babel-container-border w-e-table-property-controls">
@@ -121,39 +165,143 @@ class TableProperty implements IButtonMenu {
           </span>
         </span>
       </div>
-      <div class="babel-container w-e-table-property-row">
-        <span class="w-e-table-property-label">${t('tableModule.modal.align')}</span>
-        <span class="babel-container-align w-e-table-property-controls">
-          <input name="textAlign" type="hidden">
-          <span class="w-e-table-property-align">
-            ${this.textAlignOptions
-              .map(
-                item => `
-              <button
-                type="button"
-                class="w-e-table-property-align-button"
-                data-value="${item.value}"
-                title="${item.label}"
-                aria-label="${item.label}"
-              >${item.svg}</button>
-            `
-              )
-              .join('')}
+      ${
+        hasField('textAlign')
+          ? `
+        <div class="babel-container w-e-table-property-row">
+          <span class="w-e-table-property-label">${t('tableModule.modal.align')}</span>
+          <span class="babel-container-align w-e-table-property-controls">
+            <input name="textAlign" type="hidden">
+            <span class="w-e-table-property-align">
+              ${this.textAlignOptions
+                .map(
+                  item => `
+                <button
+                  type="button"
+                  class="w-e-table-property-align-button"
+                  data-field="textAlign"
+                  data-value="${item.value}"
+                  title="${item.label}"
+                  aria-label="${item.label}"
+                >${item.svg}</button>
+              `
+                )
+                .join('')}
+            </span>
           </span>
-        </span>
-      </div>
+        </div>
+      `
+          : ''
+      }
+      ${
+        hasField('verticalAlign')
+          ? `
+        <div class="babel-container w-e-table-property-row">
+          <span class="w-e-table-property-label">${t('tableModule.modal.verticalAlign')}</span>
+          <span class="babel-container-vertical-align w-e-table-property-controls">
+            <input name="verticalAlign" type="hidden">
+            <span class="w-e-table-property-segment">
+              ${this.verticalAlignOptions
+                .map(
+                  item => `
+                <button
+                  type="button"
+                  class="w-e-table-property-segment-button"
+                  data-field="verticalAlign"
+                  data-value="${item.value}"
+                  title="${item.label}"
+                  aria-label="${item.label}"
+                >${item.label}</button>
+              `
+                )
+                .join('')}
+            </span>
+          </span>
+        </div>
+      `
+          : ''
+      }
       <div class="button-container">
         <button type="button">${t('tableModule.modal.ok')}</button>
       </div>
     </div>`)
 
+    const changedFields = new Set<FieldName>()
+
+    const markChanged = (field: string | undefined) => {
+      if (field == null) {
+        return
+      }
+      if (!fields.includes(field as FieldName)) {
+        return
+      }
+      changedFields.add(field as FieldName)
+    }
+
+    const getCommonFieldValue = (field: FieldName): FieldValue => {
+      if (!isCellMenu) {
+        return data[field]
+      }
+
+      const selection = EDITOR_TO_SELECTION.get(editor)
+
+      if (!selection?.length) {
+        return data[field]
+      }
+
+      let commonValue: FieldValue
+      let hasValue = false
+      let isMixed = false
+
+      selection.forEach(row => {
+        row.forEach(cell => {
+          const [cellNode] = cell[0]
+          const value = cellNode[field] || ''
+
+          if (!hasValue) {
+            commonValue = value
+            hasValue = true
+            return
+          }
+
+          if (commonValue !== value) {
+            isMixed = true
+          }
+        })
+      })
+
+      return isMixed ? undefined : commonValue
+    }
+
     // 初始化所有表单的值
     $content.find('[name]').each(elem => {
-      $(elem).val(data[$(elem).attr('name')])
+      const name = $(elem).attr('name') as FieldName
+      const value = getCommonFieldValue(name)
+
+      if (value == null) {
+        $(elem).val('')
+        $(elem).attr('data-mixed', 'true')
+        if (elem instanceof HTMLInputElement && elem.type !== 'hidden') {
+          elem.placeholder = t('tableModule.modal.mixed')
+        }
+        return
+      }
+
+      $(elem).val(value)
     })
 
-    const updateTextAlignButton = value => {
-      $content.find('.w-e-table-property-align-button').each(button => {
+    $content.find('select,input[name="borderWidth"]').on('change', e => {
+      const target = e.currentTarget
+
+      if (target == null) {
+        return
+      }
+      markChanged($(target).attr('name'))
+      $(target).attr('data-mixed', 'false')
+    })
+
+    const updateButtonGroup = (field: FieldName, value: FieldValue) => {
+      $content.find(`[data-field="${field}"]`).each(button => {
         const $buttonElem = $(button)
         const isActive = $buttonElem.attr('data-value') === value
 
@@ -167,9 +315,10 @@ class TableProperty implements IButtonMenu {
       })
     }
 
-    updateTextAlignButton($content.find('[name="textAlign"]').val() || '')
+    updateButtonGroup('textAlign', getCommonFieldValue('textAlign') || '')
+    updateButtonGroup('verticalAlign', getCommonFieldValue('verticalAlign') || '')
 
-    $content.find('.w-e-table-property-align-button').on('click', e => {
+    $content.find('[data-field]').on('click', e => {
       const button = e.currentTarget
 
       if (button == null) {
@@ -178,9 +327,11 @@ class TableProperty implements IButtonMenu {
 
       const $buttonElem = $(button)
       const value = $buttonElem.attr('data-value') || ''
+      const field = $buttonElem.attr('data-field') as FieldName
 
-      $content.find('[name="textAlign"]').val(value)
-      updateTextAlignButton(value)
+      $content.find(`[name="${field}"]`).val(value)
+      updateButtonGroup(field, value)
+      markChanged(field)
     })
 
     const setSelectedColor = (elem, color) => {
@@ -203,11 +354,16 @@ class TableProperty implements IButtonMenu {
         let $panel = $elem.data('panel')
 
         if (!$panel) {
+          const colorMark = $elem.data('mark')
+
           $panel = this.getPanelContentElem(editor, {
-            mark: $elem.data('mark'),
+            mark: colorMark,
             selectedColor,
             callback: color => {
+              const fieldName = colorMark === 'color' ? 'borderColor' : 'backgroundColor'
+
               $('[type="hidden"]', elem).val(color || '')
+              markChanged(fieldName)
               setSelectedColor(elem, color)
               $panel.hide()
             },
@@ -224,9 +380,20 @@ class TableProperty implements IButtonMenu {
 
     $button.on('click', () => {
       const props = Array.from($content.find('[name]')).reduce((obj, elem) => {
-        obj[$(elem).attr('name')] = $(elem).val()
+        const field = $(elem).attr('name') as FieldName
+
+        if (!changedFields.has(field)) {
+          return obj
+        }
+
+        obj[field] = $(elem).val()
         return obj
       }, {})
+
+      if (Object.keys(props).length === 0) {
+        editor.focus()
+        return
+      }
 
       const selection = EDITOR_TO_SELECTION.get(editor)
 
