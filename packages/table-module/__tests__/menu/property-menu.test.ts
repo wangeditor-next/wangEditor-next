@@ -80,7 +80,10 @@ describe('table property menus', () => {
     const borderWidth = elem.querySelector('[name="borderWidth"]') as HTMLInputElement
     const borderColorTrigger = elem.querySelector('[data-mark="color"]') as HTMLElement
     const backgroundColorTrigger = elem.querySelector('[data-mark="bgColor"]') as HTMLElement
-    const width = elem.querySelector('[name="width"]') as HTMLSelectElement
+    const width = elem.querySelector('[name="width"]') as HTMLInputElement
+    const fullWidthButton = elem.querySelector(
+      '.w-e-table-property-segment-button[data-value="100%"]'
+    ) as HTMLButtonElement
     const textAlign = elem.querySelector('[name="textAlign"]') as HTMLInputElement | null
     const button = elem.querySelector('.button-container button') as HTMLButtonElement
 
@@ -94,7 +97,7 @@ describe('table property menus', () => {
       return {} as any
     })
 
-    changeInputValue(width, '100%')
+    fullWidthButton.click()
     changeInputValue(borderStyle, 'dashed')
     changeInputValue(borderWidth, '2')
     borderColorTrigger.click()
@@ -103,6 +106,8 @@ describe('table property menus', () => {
     ;(backgroundColorTrigger.querySelector('li[data-value="#00ff00"]') as HTMLElement).click()
 
     expect(textAlign).toBeNull()
+    expect(width.value).toBe('100%')
+    expect(fullWidthButton.classList.contains('active')).toBe(true)
 
     button.click()
     vi.runAllTimers()

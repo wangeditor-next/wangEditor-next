@@ -8,7 +8,8 @@ export default {
     modal: {
       border: '边框',
       borderColor: '边框颜色',
-      borderWidth: '宽度',
+      borderStyle: '边框样式',
+      borderWidth: '边框粗细',
       bgColor: '背景色',
       align: '对齐方式',
       verticalAlign: '垂直对齐',

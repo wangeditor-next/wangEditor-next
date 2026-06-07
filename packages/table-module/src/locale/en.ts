@@ -8,7 +8,8 @@ export default {
     modal: {
       border: 'Border',
       borderColor: 'Border color',
-      borderWidth: 'Width',
+      borderStyle: 'Border style',
+      borderWidth: 'Border width',
       bgColor: 'Back color',
       align: 'Text Align',
       verticalAlign: 'Vertical Align',

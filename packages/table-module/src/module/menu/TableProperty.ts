@@ -38,7 +38,7 @@ class TableProperty implements IButtonMenu {
 
   readonly showModal = true
 
-  readonly modalWidth = 360
+  readonly modalWidth: number = 340
 
   readonly menu: string = 'table'
 
@@ -123,31 +123,60 @@ class TableProperty implements IButtonMenu {
       ${
         hasField('width')
           ? `
-        <label class="babel-container w-e-table-property-row">
+        <div class="babel-container w-e-table-property-row">
           <span class="w-e-table-property-label">${t('tableModule.modal.width')}</span>
           <span class="babel-container-width w-e-table-property-controls">
-            <select name="width" aria-label="${t('tableModule.modal.width')}">
+            <input name="width" type="hidden">
+            <span class="w-e-table-property-segment w-e-table-property-segment-fill">
               ${this.widthOptions
-                .map(item => `<option value="${item.value}">${item.label}</option>`)
+                .map(
+                  item => `
+                <button
+                  type="button"
+                  class="w-e-table-property-segment-button"
+                  data-field="width"
+                  data-value="${item.value}"
+                  title="${item.label}"
+                  aria-label="${item.label}"
+                >${item.label}</button>
+              `
+                )
                 .join('')}
-            </select>
+            </span>
           </span>
-        </label>
+        </div>
       `
           : ''
       }
       <label class="babel-container w-e-table-property-row">
-        <span class="w-e-table-property-label">${t('tableModule.modal.border')}</span>
-        <span class="babel-container-border w-e-table-property-controls">
-          <select name="borderStyle" aria-label="${t('tableModule.modal.border')}">
+        <span class="w-e-table-property-label">${t('tableModule.modal.borderStyle')}</span>
+        <span class="babel-container-select w-e-table-property-controls">
+          <select name="borderStyle" aria-label="${t('tableModule.modal.borderStyle')}">
             ${this.borderStyle
               .map(item => `<option value="${item.value}">${item.label}</option>`)
               .join('')}
           </select>
-          <span class="color-group" data-mark="color" title="${t('tableModule.modal.borderColor')}">
+        </span>
+      </label>
+      <div class="babel-container w-e-table-property-row">
+        <span class="w-e-table-property-label">${t('tableModule.modal.borderColor')}</span>
+        <span class="babel-container-color w-e-table-property-controls">
+          <span
+            class="color-group color-group-wide"
+            data-mark="color"
+            title="${t('tableModule.modal.borderColor')}"
+            role="button"
+            tabindex="0"
+          >
             <span class="color-group-block"></span>
+            <span class="color-group-label">${t('tableModule.color.default')}</span>
             <input name="borderColor" type="hidden">
           </span>
+        </span>
+      </div>
+      <label class="babel-container w-e-table-property-row">
+        <span class="w-e-table-property-label">${t('tableModule.modal.borderWidth')}</span>
+        <span class="babel-container-number w-e-table-property-controls">
           <span class="w-e-table-property-number">
             <input name="borderWidth" type="number" min="0" placeholder="${t(
               'tableModule.modal.borderWidth'
@@ -158,9 +187,16 @@ class TableProperty implements IButtonMenu {
       </label>
       <div class="babel-container w-e-table-property-row">
         <span class="w-e-table-property-label">${t('tableModule.modal.bgColor')}</span>
-        <span class="babel-container-background w-e-table-property-controls">
-          <span class="color-group" data-mark="bgColor" title="${t('tableModule.modal.bgColor')}">
+        <span class="babel-container-color w-e-table-property-controls">
+          <span
+            class="color-group color-group-wide"
+            data-mark="bgColor"
+            title="${t('tableModule.modal.bgColor')}"
+            role="button"
+            tabindex="0"
+          >
             <span class="color-group-block"></span>
+            <span class="color-group-label">${t('tableModule.color.clear')}</span>
             <input name="backgroundColor" type="hidden">
           </span>
         </span>
@@ -240,13 +276,13 @@ class TableProperty implements IButtonMenu {
 
     const getCommonFieldValue = (field: FieldName): FieldValue => {
       if (!isCellMenu) {
-        return data[field]
+        return data[field] || ''
       }
 
       const selection = EDITOR_TO_SELECTION.get(editor)
 
       if (!selection?.length) {
-        return data[field]
+        return data[field] || ''
       }
 
       let commonValue: FieldValue
@@ -281,6 +317,13 @@ class TableProperty implements IButtonMenu {
       if (value == null) {
         $(elem).val('')
         $(elem).attr('data-mixed', 'true')
+        if (elem instanceof HTMLInputElement && elem.type === 'hidden') {
+          const colorGroup = elem.closest('.color-group')
+
+          if (colorGroup) {
+            $(colorGroup).attr('data-mixed', 'true')
+          }
+        }
         if (elem instanceof HTMLInputElement && elem.type !== 'hidden') {
           elem.placeholder = t('tableModule.modal.mixed')
         }
@@ -315,6 +358,7 @@ class TableProperty implements IButtonMenu {
       })
     }
 
+    updateButtonGroup('width', getCommonFieldValue('width') || '')
     updateButtonGroup('textAlign', getCommonFieldValue('textAlign') || '')
     updateButtonGroup('verticalAlign', getCommonFieldValue('verticalAlign') || '')
 
@@ -329,17 +373,30 @@ class TableProperty implements IButtonMenu {
       const value = $buttonElem.attr('data-value') || ''
       const field = $buttonElem.attr('data-field') as FieldName
 
-      $content.find(`[name="${field}"]`).val(value)
+      const $input = $content.find(`[name="${field}"]`)
+
+      $input.val(value)
+      $input.attr('data-mixed', 'false')
       updateButtonGroup(field, value)
       markChanged(field)
     })
 
     const setSelectedColor = (elem, color) => {
+      const $elem = $(elem)
+      const $label = $('.color-group-label', elem)
+
       if (color) {
         $('.color-group-block', elem).css('background-color', color).empty()
+        $label.text(color)
+        $elem.removeClass('is-empty')
       } else {
         $('.color-group-block', elem).css('background-color', '').html(CLEAN_SVG)
+        $label.text(
+          $elem.data('mark') === 'color' ? t('tableModule.color.default') : t('tableModule.color.clear')
+        )
+        $elem.addClass('is-empty')
       }
+      $elem.attr('data-empty', color ? 'false' : 'true')
     }
 
     $content.find('.color-group').each(elem => {
@@ -363,6 +420,8 @@ class TableProperty implements IButtonMenu {
               const fieldName = colorMark === 'color' ? 'borderColor' : 'backgroundColor'
 
               $('[type="hidden"]', elem).val(color || '')
+              $('[type="hidden"]', elem).attr('data-mixed', 'false')
+              $(elem).attr('data-mixed', 'false')
               markChanged(fieldName)
               setSelectedColor(elem, color)
               $panel.hide()
