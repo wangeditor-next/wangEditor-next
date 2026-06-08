@@ -10,6 +10,7 @@ export default {
       borderColor: 'Border color',
       borderStyle: 'Border style',
       borderWidth: 'Border width',
+      borderWidthDefault: 'Default 1',
       bgColor: 'Back color',
       align: 'Text Align',
       verticalAlign: 'Vertical Align',

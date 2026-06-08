@@ -10,6 +10,7 @@ export default {
       borderColor: '边框颜色',
       borderStyle: '边框样式',
       borderWidth: '边框粗细',
+      borderWidthDefault: '默认 1',
       bgColor: '背景色',
       align: '对齐方式',
       verticalAlign: '垂直对齐',

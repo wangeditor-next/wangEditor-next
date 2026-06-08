@@ -19,7 +19,6 @@ import $ from '../../utils/dom'
 import { EDITOR_TO_SELECTION } from '../weak-maps'
 
 export type FieldName =
-  | 'width'
   | 'borderStyle'
   | 'borderColor'
   | 'borderWidth'
@@ -28,6 +27,8 @@ export type FieldName =
   | 'verticalAlign'
 
 type FieldValue = string | undefined
+type SelectOption = { value: string; label: string }
+type SegmentOption = SelectOption & { svg?: string }
 
 class TableProperty implements IButtonMenu {
   readonly title = t('tableModule.tableProperty')
@@ -43,7 +44,6 @@ class TableProperty implements IButtonMenu {
   readonly menu: string = 'table'
 
   readonly propertyFields: FieldName[] = [
-    'width',
     'borderStyle',
     'borderColor',
     'borderWidth',
@@ -62,23 +62,130 @@ class TableProperty implements IButtonMenu {
     { value: 'outset', label: t('tableModule.borderStyle.outset') },
   ]
 
-  readonly textAlignOptions = [
+  readonly textAlignOptions: SegmentOption[] = [
     { value: 'left', label: t('justify.left'), svg: JUSTIFY_LEFT_SVG },
     { value: 'center', label: t('justify.center'), svg: JUSTIFY_CENTER_SVG },
     { value: 'right', label: t('justify.right'), svg: JUSTIFY_RIGHT_SVG },
     { value: 'justify', label: t('justify.justify'), svg: JUSTIFY_JUSTIFY_SVG },
   ]
 
-  readonly widthOptions = [
-    { value: 'auto', label: t('tableModule.modal.widthAuto') },
-    { value: '100%', label: t('tableModule.modal.widthFull') },
-  ]
-
-  readonly verticalAlignOptions = [
+  readonly verticalAlignOptions: SegmentOption[] = [
     { value: 'top', label: t('tableModule.verticalAlign.top') },
     { value: 'middle', label: t('tableModule.verticalAlign.middle') },
     { value: 'bottom', label: t('tableModule.verticalAlign.bottom') },
   ]
+
+  private renderRow(label: string, controlsHtml: string, tag = 'div') {
+    return `
+      <${tag} class="babel-container w-e-table-property-row">
+        <span class="w-e-table-property-label">${label}</span>
+        ${controlsHtml}
+      </${tag}>
+    `
+  }
+
+  private renderSelect(field: FieldName, label: string, options: SelectOption[]) {
+    return this.renderRow(
+      label,
+      `
+        <span class="babel-container-select w-e-table-property-controls">
+          <input name="${field}" type="hidden">
+          <span class="w-e-table-property-select" data-select-field="${field}">
+            <button
+              type="button"
+              class="w-e-table-property-select-trigger"
+              aria-label="${label}"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+            >
+              <span class="w-e-table-property-select-value"></span>
+            </button>
+            <span class="w-e-table-property-select-panel" role="listbox">
+              ${options
+                .map(
+                  item => `
+                <button
+                  type="button"
+                  class="w-e-table-property-select-option"
+                  data-select-option-field="${field}"
+                  data-value="${item.value}"
+                  role="option"
+                >${item.label}</button>
+              `
+                )
+                .join('')}
+            </span>
+          </span>
+        </span>
+      `,
+      'div'
+    )
+  }
+
+  private renderNumber(field: FieldName, label: string) {
+    return this.renderRow(
+      label,
+      `
+        <span class="babel-container-number w-e-table-property-controls">
+          <span class="w-e-table-property-number">
+            <input name="${field}" type="number" min="0" placeholder="${t(
+        'tableModule.modal.borderWidthDefault'
+      )}" aria-label="${label}">
+            <span class="w-e-table-property-unit">px</span>
+          </span>
+        </span>
+      `,
+      'label'
+    )
+  }
+
+  private renderColor(field: FieldName, mark: string, label: string, emptyLabel: string) {
+    return this.renderRow(
+      label,
+      `
+        <span class="babel-container-color w-e-table-property-controls">
+          <span
+            class="color-group color-group-wide"
+            data-mark="${mark}"
+            title="${label}"
+            role="button"
+            tabindex="0"
+          >
+            <span class="color-group-block"></span>
+            <span class="color-group-label">${emptyLabel}</span>
+            <input name="${field}" type="hidden">
+          </span>
+        </span>
+      `
+    )
+  }
+
+  private renderSegment(field: FieldName, label: string, options: SegmentOption[], fill = false) {
+    return this.renderRow(
+      label,
+      `
+        <span class="babel-container-align w-e-table-property-controls">
+          <input name="${field}" type="hidden">
+          <span class="w-e-table-property-segment${fill ? ' w-e-table-property-segment-fill' : ''}">
+            ${options
+              .map(
+                item => `
+              <button
+                type="button"
+                class="w-e-table-property-segment-button${item.svg ? ' w-e-table-property-align-button' : ''}"
+                data-field="${field}"
+                data-value="${item.value}"
+                title="${item.label}"
+                aria-label="${item.label}"
+              >${item.svg || item.label}</button>
+            `
+              )
+              .join('')}
+          </span>
+        </span>
+      `
+    )
+  }
 
   getValue(_editor: IDomEditor): string | boolean {
     return ''
@@ -120,141 +227,32 @@ class TableProperty implements IButtonMenu {
     const hasField = (field: FieldName) => fields.includes(field)
     const isCellMenu = this.menu === 'cell'
     const $content = $(`<div class="w-e-table-property-modal">
-      ${
-        hasField('width')
-          ? `
-        <div class="babel-container w-e-table-property-row">
-          <span class="w-e-table-property-label">${t('tableModule.modal.width')}</span>
-          <span class="babel-container-width w-e-table-property-controls">
-            <input name="width" type="hidden">
-            <span class="w-e-table-property-segment w-e-table-property-segment-fill">
-              ${this.widthOptions
-                .map(
-                  item => `
-                <button
-                  type="button"
-                  class="w-e-table-property-segment-button"
-                  data-field="width"
-                  data-value="${item.value}"
-                  title="${item.label}"
-                  aria-label="${item.label}"
-                >${item.label}</button>
-              `
-                )
-                .join('')}
-            </span>
-          </span>
-        </div>
-      `
-          : ''
-      }
-      <label class="babel-container w-e-table-property-row">
-        <span class="w-e-table-property-label">${t('tableModule.modal.borderStyle')}</span>
-        <span class="babel-container-select w-e-table-property-controls">
-          <select name="borderStyle" aria-label="${t('tableModule.modal.borderStyle')}">
-            ${this.borderStyle
-              .map(item => `<option value="${item.value}">${item.label}</option>`)
-              .join('')}
-          </select>
-        </span>
-      </label>
-      <div class="babel-container w-e-table-property-row">
-        <span class="w-e-table-property-label">${t('tableModule.modal.borderColor')}</span>
-        <span class="babel-container-color w-e-table-property-controls">
-          <span
-            class="color-group color-group-wide"
-            data-mark="color"
-            title="${t('tableModule.modal.borderColor')}"
-            role="button"
-            tabindex="0"
-          >
-            <span class="color-group-block"></span>
-            <span class="color-group-label">${t('tableModule.color.default')}</span>
-            <input name="borderColor" type="hidden">
-          </span>
-        </span>
-      </div>
-      <label class="babel-container w-e-table-property-row">
-        <span class="w-e-table-property-label">${t('tableModule.modal.borderWidth')}</span>
-        <span class="babel-container-number w-e-table-property-controls">
-          <span class="w-e-table-property-number">
-            <input name="borderWidth" type="number" min="0" placeholder="${t(
-              'tableModule.modal.borderWidth'
-            )}" aria-label="${t('tableModule.modal.borderWidth')}">
-            <span class="w-e-table-property-unit">px</span>
-          </span>
-        </span>
-      </label>
-      <div class="babel-container w-e-table-property-row">
-        <span class="w-e-table-property-label">${t('tableModule.modal.bgColor')}</span>
-        <span class="babel-container-color w-e-table-property-controls">
-          <span
-            class="color-group color-group-wide"
-            data-mark="bgColor"
-            title="${t('tableModule.modal.bgColor')}"
-            role="button"
-            tabindex="0"
-          >
-            <span class="color-group-block"></span>
-            <span class="color-group-label">${t('tableModule.color.clear')}</span>
-            <input name="backgroundColor" type="hidden">
-          </span>
-        </span>
-      </div>
+      ${this.renderSelect('borderStyle', t('tableModule.modal.borderStyle'), this.borderStyle)}
+      ${this.renderColor(
+        'borderColor',
+        'color',
+        t('tableModule.modal.borderColor'),
+        t('tableModule.color.default')
+      )}
+      ${this.renderNumber('borderWidth', t('tableModule.modal.borderWidth'))}
+      ${this.renderColor(
+        'backgroundColor',
+        'bgColor',
+        t('tableModule.modal.bgColor'),
+        t('tableModule.color.clear')
+      )}
       ${
         hasField('textAlign')
-          ? `
-        <div class="babel-container w-e-table-property-row">
-          <span class="w-e-table-property-label">${t('tableModule.modal.align')}</span>
-          <span class="babel-container-align w-e-table-property-controls">
-            <input name="textAlign" type="hidden">
-            <span class="w-e-table-property-align">
-              ${this.textAlignOptions
-                .map(
-                  item => `
-                <button
-                  type="button"
-                  class="w-e-table-property-align-button"
-                  data-field="textAlign"
-                  data-value="${item.value}"
-                  title="${item.label}"
-                  aria-label="${item.label}"
-                >${item.svg}</button>
-              `
-                )
-                .join('')}
-            </span>
-          </span>
-        </div>
-      `
+          ? this.renderSegment('textAlign', t('tableModule.modal.align'), this.textAlignOptions)
           : ''
       }
       ${
         hasField('verticalAlign')
-          ? `
-        <div class="babel-container w-e-table-property-row">
-          <span class="w-e-table-property-label">${t('tableModule.modal.verticalAlign')}</span>
-          <span class="babel-container-vertical-align w-e-table-property-controls">
-            <input name="verticalAlign" type="hidden">
-            <span class="w-e-table-property-segment">
-              ${this.verticalAlignOptions
-                .map(
-                  item => `
-                <button
-                  type="button"
-                  class="w-e-table-property-segment-button"
-                  data-field="verticalAlign"
-                  data-value="${item.value}"
-                  title="${item.label}"
-                  aria-label="${item.label}"
-                >${item.label}</button>
-              `
-                )
-                .join('')}
-            </span>
-          </span>
-        </div>
-      `
+          ? this.renderSegment(
+              'verticalAlign',
+              t('tableModule.modal.verticalAlign'),
+              this.verticalAlignOptions
+            )
           : ''
       }
       <div class="button-container">
@@ -263,6 +261,23 @@ class TableProperty implements IButtonMenu {
     </div>`)
 
     const changedFields = new Set<FieldName>()
+
+    const closeSelectPanels = () => {
+      $content.find('.w-e-table-property-select-panel').hide()
+      $content.find('.w-e-table-property-select-trigger').attr('aria-expanded', 'false')
+    }
+
+    $content.on('mousedown', e => {
+      const target = e.target
+
+      if (!(target instanceof Element)) {
+        return
+      }
+      if (target.closest('.w-e-table-property-select')) {
+        return
+      }
+      closeSelectPanels()
+    })
 
     const markChanged = (field: string | undefined) => {
       if (field == null) {
@@ -309,10 +324,18 @@ class TableProperty implements IButtonMenu {
       return isMixed ? undefined : commonValue
     }
 
+    const getDisplayFieldValue = (field: FieldName, value: FieldValue): FieldValue => {
+      if (field === 'borderStyle' && !value) {
+        return 'none'
+      }
+      return value
+    }
+
     // 初始化所有表单的值
     $content.find('[name]').each(elem => {
       const name = $(elem).attr('name') as FieldName
       const value = getCommonFieldValue(name)
+      const displayValue = getDisplayFieldValue(name, value)
 
       if (value == null) {
         $(elem).val('')
@@ -330,10 +353,10 @@ class TableProperty implements IButtonMenu {
         return
       }
 
-      $(elem).val(value)
+      $(elem).val(displayValue)
     })
 
-    $content.find('select,input[name="borderWidth"]').on('change', e => {
+    $content.find('input[name="borderWidth"]').on('change', e => {
       const target = e.currentTarget
 
       if (target == null) {
@@ -341,6 +364,80 @@ class TableProperty implements IButtonMenu {
       }
       markChanged($(target).attr('name'))
       $(target).attr('data-mixed', 'false')
+    })
+
+    const updateSelectControl = (field: FieldName, value: FieldValue) => {
+      const $select = $content.find(`[data-select-field="${field}"]`)
+      const $input = $content.find(`[name="${field}"]`)
+      const displayValue = getDisplayFieldValue(field, value)
+      const isMixed = value == null
+
+      $input.val(displayValue || '')
+      $input.attr('data-mixed', isMixed ? 'true' : 'false')
+      $select.attr('data-mixed', isMixed ? 'true' : 'false')
+
+      const selectedOption = this.borderStyle.find(item => item.value === displayValue)
+      const label = isMixed ? t('tableModule.modal.mixed') : selectedOption?.label || ''
+
+      $select.find('.w-e-table-property-select-value').text(label)
+      $select.find('.w-e-table-property-select-option').each(option => {
+        const $option = $(option)
+        const isActive = !isMixed && $option.attr('data-value') === displayValue
+
+        if (isActive) {
+          $option.addClass('active')
+          $option.attr('aria-selected', 'true')
+        } else {
+          $option.removeClass('active')
+          $option.attr('aria-selected', 'false')
+        }
+      })
+    }
+
+    updateSelectControl('borderStyle', getCommonFieldValue('borderStyle'))
+
+    $content.find('.w-e-table-property-select-trigger').on('click', e => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      const trigger = e.currentTarget
+
+      if (trigger == null) {
+        return
+      }
+      const $trigger = $(trigger)
+      const $select = $trigger.parents('.w-e-table-property-select')
+      const $panel = $select.find('.w-e-table-property-select-panel')
+      const isOpen = $trigger.attr('aria-expanded') === 'true'
+
+      $content.find('.color-group .w-e-drop-panel').hide()
+      closeSelectPanels()
+
+      if (!isOpen) {
+        $panel.show()
+        $trigger.attr('aria-expanded', 'true')
+      }
+    })
+
+    $content.find('.w-e-table-property-select-option').on('click', e => {
+      e.preventDefault()
+      e.stopPropagation()
+
+      const option = e.currentTarget
+
+      if (option == null) {
+        return
+      }
+      const $option = $(option)
+      const field = $option.attr('data-select-option-field') as FieldName
+      const value = $option.attr('data-value') || ''
+      const $input = $content.find(`[name="${field}"]`)
+
+      $input.val(value)
+      $input.attr('data-mixed', 'false')
+      markChanged(field)
+      updateSelectControl(field, value)
+      closeSelectPanels()
     })
 
     const updateButtonGroup = (field: FieldName, value: FieldValue) => {
@@ -358,7 +455,6 @@ class TableProperty implements IButtonMenu {
       })
     }
 
-    updateButtonGroup('width', getCommonFieldValue('width') || '')
     updateButtonGroup('textAlign', getCommonFieldValue('textAlign') || '')
     updateButtonGroup('verticalAlign', getCommonFieldValue('verticalAlign') || '')
 
@@ -399,6 +495,26 @@ class TableProperty implements IButtonMenu {
       $elem.attr('data-empty', color ? 'false' : 'true')
     }
 
+    const applyBorderVisibilityDefaults = () => {
+      const $borderStyle = $content.find('[name="borderStyle"]')
+      const $borderWidth = $content.find('[name="borderWidth"]')
+      const currentBorderStyle = $borderStyle.val()
+      const currentBorderWidth = $borderWidth.val()
+
+      if (!currentBorderStyle || currentBorderStyle === 'none') {
+        $borderStyle.val('solid')
+        $borderStyle.attr('data-mixed', 'false')
+        updateSelectControl('borderStyle', 'solid')
+        markChanged('borderStyle')
+      }
+
+      if (!currentBorderWidth || currentBorderWidth === '0') {
+        $borderWidth.val('1')
+        $borderWidth.attr('data-mixed', 'false')
+        markChanged('borderWidth')
+      }
+    }
+
     $content.find('.color-group').each(elem => {
       const selectedColor = $('[type="hidden"]', elem).val() || ''
 
@@ -407,6 +523,7 @@ class TableProperty implements IButtonMenu {
       const $elem = $(elem)
 
       $elem.on('click', () => {
+        closeSelectPanels()
         $content.find('.color-group .w-e-drop-panel').hide()
         let $panel = $elem.data('panel')
 
@@ -423,6 +540,9 @@ class TableProperty implements IButtonMenu {
               $('[type="hidden"]', elem).attr('data-mixed', 'false')
               $(elem).attr('data-mixed', 'false')
               markChanged(fieldName)
+              if (fieldName === 'borderColor' && color) {
+                applyBorderVisibilityDefaults()
+              }
               setSelectedColor(elem, color)
               $panel.hide()
             },
