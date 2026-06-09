@@ -42,6 +42,21 @@ function setSelectionInsideFirstCell(editor) {
   }
 }
 
+function changeInputValue(input: HTMLInputElement | HTMLSelectElement, value: string) {
+  input.value = value
+  input.dispatchEvent(new Event('change', { bubbles: true }))
+}
+
+function selectBorderStyle(elem: HTMLElement, value: string) {
+  const trigger = elem.querySelector('.w-e-table-property-select-trigger') as HTMLButtonElement
+  const option = elem.querySelector(
+    `.w-e-table-property-select-option[data-value="${value}"]`
+  ) as HTMLButtonElement
+
+  trigger.click()
+  option.click()
+}
+
 function createContextSelection(editor, rows: number[][][]): NodeEntryWithContext[][] {
   return rows.map(row =>
     row.map(path => [
@@ -71,36 +86,85 @@ describe('table property menus', () => {
     setSelectionInsideFirstCell(editor)
 
     const elem = menu.getModalContentElem(editor) as HTMLDivElement
-    const borderStyle = elem.querySelector('[name="borderStyle"]') as HTMLSelectElement
-    const borderColor = elem.querySelector('[name="borderColor"]') as HTMLInputElement
+    const borderStyle = elem.querySelector('[name="borderStyle"]') as HTMLInputElement
     const borderWidth = elem.querySelector('[name="borderWidth"]') as HTMLInputElement
-    const backgroundColor = elem.querySelector('[name="backgroundColor"]') as HTMLInputElement
-    const textAlign = elem.querySelector('[name="textAlign"]') as HTMLInputElement
-    const centerAlignButton = elem.querySelector(
-      '.w-e-table-property-align-button[data-value="center"]'
-    ) as HTMLButtonElement
+    const borderColorTrigger = elem.querySelector('[data-mark="color"]') as HTMLElement
+    const backgroundColorTrigger = elem.querySelector('[data-mark="bgColor"]') as HTMLElement
+    const textAlign = elem.querySelector('[name="textAlign"]') as HTMLInputElement | null
+    const width = elem.querySelector('[name="width"]') as HTMLInputElement | null
     const button = elem.querySelector('.button-container button') as HTMLButtonElement
 
-    borderStyle.value = 'dashed'
-    borderColor.value = '#ff0000'
-    borderWidth.value = '2'
-    backgroundColor.value = '#00ff00'
-    centerAlignButton.click()
+    vi.spyOn(editor, 'getMenuConfig').mockImplementation((mark: string) => {
+      if (mark === 'color') {
+        return { colors: ['#ff0000'] } as any
+      }
+      if (mark === 'bgColor') {
+        return { colors: ['#00ff00'] } as any
+      }
+      return {} as any
+    })
 
-    expect(textAlign.value).toBe('center')
-    expect(centerAlignButton.classList.contains('active')).toBe(true)
+    selectBorderStyle(elem, 'dashed')
+    changeInputValue(borderWidth, '2')
+    borderColorTrigger.click()
+    ;(borderColorTrigger.querySelector('li[data-value="#ff0000"]') as HTMLElement).click()
+    backgroundColorTrigger.click()
+    ;(backgroundColorTrigger.querySelector('li[data-value="#00ff00"]') as HTMLElement).click()
+
+    expect(textAlign).toBeNull()
+    expect(width).toBeNull()
+    expect(borderStyle.value).toBe('dashed')
 
     button.click()
     vi.runAllTimers()
 
     const table = editor.children[0] as TableElement & Record<string, string>
 
+    expect(table.width).toBe('auto')
     expect(table.borderStyle).toBe('dashed')
     expect(table.borderColor).toBe('#ff0000')
     expect(table.borderWidth).toBe('2')
     expect(table.backgroundColor).toBe('#00ff00')
-    expect(table.textAlign).toBe('center')
+    expect(table.textAlign).toBeUndefined()
     expect(focusSpy).toHaveBeenCalled()
+  })
+
+  test('TableProperty shows default border style and makes selected border color visible', () => {
+    vi.useFakeTimers()
+    const editor = createEditor({ content: createTableContent() })
+    const menu = new TableProperty()
+
+    setSelectionInsideFirstCell(editor)
+    vi.spyOn(editor, 'getMenuConfig').mockImplementation((mark: string) => {
+      if (mark === 'color') {
+        return { colors: ['#ff0000'] } as any
+      }
+      return {} as any
+    })
+
+    const elem = menu.getModalContentElem(editor) as HTMLDivElement
+    const borderStyle = elem.querySelector('[name="borderStyle"]') as HTMLInputElement
+    const borderWidth = elem.querySelector('[name="borderWidth"]') as HTMLInputElement
+    const borderColorTrigger = elem.querySelector('[data-mark="color"]') as HTMLElement
+    const button = elem.querySelector('.button-container button') as HTMLButtonElement
+
+    expect(borderStyle.value).toBe('none')
+    expect(borderWidth.placeholder).toBe('默认 1')
+
+    borderColorTrigger.click()
+    ;(borderColorTrigger.querySelector('li[data-value="#ff0000"]') as HTMLElement).click()
+
+    expect(borderStyle.value).toBe('solid')
+    expect(borderWidth.value).toBe('1')
+
+    button.click()
+    vi.runAllTimers()
+
+    const table = editor.children[0] as TableElement & Record<string, string>
+
+    expect(table.borderColor).toBe('#ff0000')
+    expect(table.borderStyle).toBe('solid')
+    expect(table.borderWidth).toBe('1')
   })
 
   test('CellProperty applies properties to every selected cell in the batch selection', () => {
@@ -125,20 +189,34 @@ describe('table property menus', () => {
     )
 
     const elem = menu.getModalContentElem(editor) as HTMLDivElement
-    const borderStyle = elem.querySelector('[name="borderStyle"]') as HTMLSelectElement
     const textAlign = elem.querySelector('[name="textAlign"]') as HTMLInputElement
     const rightAlignButton = elem.querySelector(
       '.w-e-table-property-align-button[data-value="right"]'
     ) as HTMLButtonElement
-    const backgroundColor = elem.querySelector('[name="backgroundColor"]') as HTMLInputElement
+    const middleVerticalAlignButton = elem.querySelector(
+      '.w-e-table-property-segment-button[data-value="middle"]'
+    ) as HTMLButtonElement
+    const verticalAlign = elem.querySelector('[name="verticalAlign"]') as HTMLInputElement
+    const backgroundColorTrigger = elem.querySelector('[data-mark="bgColor"]') as HTMLElement
     const button = elem.querySelector('.button-container button') as HTMLButtonElement
 
-    borderStyle.value = 'solid'
+    vi.spyOn(editor, 'getMenuConfig').mockImplementation((mark: string) => {
+      if (mark === 'bgColor') {
+        return { colors: ['#cccccc'] } as any
+      }
+      return {} as any
+    })
+
+    selectBorderStyle(elem, 'solid')
     rightAlignButton.click()
-    backgroundColor.value = '#cccccc'
+    middleVerticalAlignButton.click()
+    backgroundColorTrigger.click()
+    ;(backgroundColorTrigger.querySelector('li[data-value="#cccccc"]') as HTMLElement).click()
 
     expect(textAlign.value).toBe('right')
     expect(rightAlignButton.classList.contains('active')).toBe(true)
+    expect(verticalAlign.value).toBe('middle')
+    expect(middleVerticalAlignButton.classList.contains('active')).toBe(true)
 
     button.click()
     vi.runAllTimers()
@@ -148,8 +226,80 @@ describe('table property menus', () => {
 
     expect(allCells.every(cell => cell.borderStyle === 'solid')).toBe(true)
     expect(allCells.every(cell => cell.textAlign === 'right')).toBe(true)
+    expect(allCells.every(cell => cell.verticalAlign === 'middle')).toBe(true)
     expect(allCells.every(cell => cell.backgroundColor === '#cccccc')).toBe(true)
     expect(focusSpy).toHaveBeenCalled()
+  })
+
+  test('CellProperty only applies changed properties in batch selection', () => {
+    vi.useFakeTimers()
+    const editor = createEditor({
+      content: [
+        {
+          type: 'table',
+          width: 'auto',
+          children: [
+            {
+              type: 'table-row',
+              children: [
+                {
+                  type: 'table-cell',
+                  borderStyle: 'dashed',
+                  backgroundColor: '#ffffff',
+                  children: [{ text: 'A' }],
+                },
+                {
+                  type: 'table-cell',
+                  borderStyle: 'solid',
+                  backgroundColor: '#eeeeee',
+                  children: [{ text: 'B' }],
+                },
+              ],
+            },
+          ],
+          columnWidths: [60, 60],
+          scrollWidth: 120,
+          height: 31,
+        },
+      ],
+    })
+    const menu = new CellProperty()
+
+    setSelectionInsideFirstCell(editor)
+    EDITOR_TO_SELECTION.set(
+      editor,
+      createContextSelection(editor, [
+        [
+          [0, 0, 0],
+          [0, 0, 1],
+        ],
+      ])
+    )
+
+    const elem = menu.getModalContentElem(editor) as HTMLDivElement
+    const backgroundColor = elem.querySelector('[name="backgroundColor"]') as HTMLInputElement
+    const borderStyle = elem.querySelector('[name="borderStyle"]') as HTMLInputElement
+    const rightAlignButton = elem.querySelector(
+      '.w-e-table-property-align-button[data-value="right"]'
+    ) as HTMLButtonElement
+    const button = elem.querySelector('.button-container button') as HTMLButtonElement
+
+    expect(borderStyle.getAttribute('data-mixed')).toBe('true')
+    expect(backgroundColor.getAttribute('data-mixed')).toBe('true')
+
+    rightAlignButton.click()
+    button.click()
+    vi.runAllTimers()
+
+    const table = editor.children[0] as TableElement
+    const [firstCell, secondCell] = table.children[0].children
+
+    expect(firstCell.borderStyle).toBe('dashed')
+    expect(secondCell.borderStyle).toBe('solid')
+    expect(firstCell.backgroundColor).toBe('#ffffff')
+    expect(secondCell.backgroundColor).toBe('#eeeeee')
+    expect(firstCell.textAlign).toBe('right')
+    expect(secondCell.textAlign).toBe('right')
   })
 
   test('TableProperty renders color panels and updates hidden values through the color picker', () => {
@@ -180,6 +330,8 @@ describe('table property menus', () => {
     colorOption.click()
 
     expect(borderColorInput.value).toBe('#00ff00')
+    expect((elem.querySelector('[name="borderStyle"]') as HTMLInputElement).value).toBe('solid')
+    expect((elem.querySelector('[name="borderWidth"]') as HTMLInputElement).value).toBe('1')
     expect(
       (borderColorTrigger.querySelector('.color-group-block') as HTMLElement).style.backgroundColor
     ).toContain('0, 255, 0')
@@ -194,16 +346,32 @@ describe('table property menus', () => {
     expect(clearPanel.find('li.active').attr('data-value')).toBe('#cccccc')
   })
 
-  test('TableProperty marks the current text alignment button as active', () => {
+  test('CellProperty marks the current text alignment button as active', () => {
     const editor = createEditor({
       content: [
         {
-          ...createTableContent()[0],
-          textAlign: 'right',
+          type: 'table',
+          width: 'auto',
+          children: [
+            {
+              type: 'table-row',
+              children: [
+                {
+                  type: 'table-cell',
+                  textAlign: 'right',
+                  verticalAlign: 'bottom',
+                  children: [{ text: 'A' }],
+                },
+              ],
+            },
+          ],
+          columnWidths: [60],
+          scrollWidth: 60,
+          height: 31,
         },
       ],
     })
-    const menu = new TableProperty()
+    const menu = new CellProperty()
 
     setSelectionInsideFirstCell(editor)
 
@@ -214,10 +382,15 @@ describe('table property menus', () => {
     const leftAlignButton = elem.querySelector(
       '.w-e-table-property-align-button[data-value="left"]'
     ) as HTMLButtonElement
+    const bottomVerticalAlignButton = elem.querySelector(
+      '.w-e-table-property-segment-button[data-value="bottom"]'
+    ) as HTMLButtonElement
 
     expect(rightAlignButton.classList.contains('active')).toBe(true)
     expect(rightAlignButton.getAttribute('aria-pressed')).toBe('true')
     expect(leftAlignButton.classList.contains('active')).toBe(false)
     expect(leftAlignButton.getAttribute('aria-pressed')).toBe('false')
+    expect(bottomVerticalAlignButton.classList.contains('active')).toBe(true)
+    expect(bottomVerticalAlignButton.getAttribute('aria-pressed')).toBe('true')
   })
 })

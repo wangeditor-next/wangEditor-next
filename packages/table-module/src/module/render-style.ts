@@ -11,15 +11,18 @@ import { TableCellElement, TableCellProperty } from './custom-types'
  * @returns vnode
  */
 export function renderStyle(node: Descendant, vnode: VNode): VNode {
-  if (!Element.isElement(node)) { return vnode }
+  if (!Element.isElement(node)) {
+    return vnode
+  }
 
-  const {
-    backgroundColor, borderWidth, borderStyle, borderColor, textAlign,
-  } = node as TableCellElement
+  const { backgroundColor, borderWidth, borderStyle, borderColor, textAlign, verticalAlign } =
+    node as TableCellElement
 
   const props: TableCellProperty = {}
 
-  if (backgroundColor) { props.backgroundColor = backgroundColor }
+  if (backgroundColor) {
+    props.backgroundColor = backgroundColor
+  }
   if (borderWidth) {
     const pureNumericRegex = /^\d+(\.\d+)?$/
 
@@ -30,9 +33,18 @@ export function renderStyle(node: Descendant, vnode: VNode): VNode {
       props.borderWidth = borderWidth
     }
   }
-  if (borderStyle) { props.borderStyle = borderStyle === 'none' ? '' : borderStyle }
-  if (borderColor) { props.borderColor = borderColor }
-  if (textAlign) { props.textAlign = textAlign }
+  if (borderStyle) {
+    props.borderStyle = borderStyle === 'none' ? '' : borderStyle
+  }
+  if (borderColor) {
+    props.borderColor = borderColor
+  }
+  if (textAlign) {
+    props.textAlign = textAlign
+  }
+  if (verticalAlign) {
+    props.verticalAlign = verticalAlign
+  }
 
   const styleVnode: VNode = vnode
 

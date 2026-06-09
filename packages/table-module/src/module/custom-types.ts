@@ -13,6 +13,7 @@ export type TableCellProperty = {
   borderStyle?: string // 边框样式
   borderColor?: string // 边框颜色
   textAlign?: string // 对齐方式
+  verticalAlign?: string // 垂直对齐方式
 }
 
 export type TableCellElement = {
