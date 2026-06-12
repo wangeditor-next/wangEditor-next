@@ -1,5 +1,11 @@
 # @wangeditor-next/plugin-ctrl-enter
 
+## 2.0.11
+
+### Patch Changes
+
+- @wangeditor-next/editor@5.7.11
+
 ## 2.0.10
 
 ### Patch Changes

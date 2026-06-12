@@ -1,5 +1,11 @@
 # @wangeditor-next/demo-yjs-vue3
 
+## 0.0.18
+
+### Patch Changes
+
+- @wangeditor-next/editor@5.7.11
+
 ## 0.0.17
 
 ### Patch Changes

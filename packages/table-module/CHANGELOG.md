@@ -1,5 +1,12 @@
 # Change Log
 
+## 3.0.3
+
+### Patch Changes
+
+- f510bbb: Fix Word table imports so `pt` column widths are converted to CSS pixels.
+- 370bc8b: Improve table and cell property modal controls.
+
 ## 3.0.2
 
 ### Patch Changes
