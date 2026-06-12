@@ -352,6 +352,41 @@ describe('table - parse html', () => {
     })
   })
 
+  it('regression #905: table should parse Word pt column widths as CSS pixels', () => {
+    const html = [
+      '<table style="width:auto;table-layout: fixed;">',
+      '<tr>',
+      '<td width="593" style="width:29.65pt">研究中心</td>',
+      '<td width="4045" style="width:202.25pt">受试者编号</td>',
+      '<td width="362" style="width:18.1pt">例数</td>',
+      '</tr>',
+      '<tr>',
+      '<td width="593" style="width:29.65pt">01</td>',
+      '<td width="4045" style="width:202.25pt">S01001~S01009</td>',
+      '<td width="362" style="width:18.1pt">15</td>',
+      '</tr>',
+      '</table>',
+    ].join('')
+    const $table = $(html)
+    const stubEditor = {
+      isInline: () => false,
+    } as any
+    const rows = Array.from($table.find('tr')).map(row => {
+      const cells = Array.from(row.children).map(cell =>
+        parseCellHtmlConf.parseElemHtml(cell as HTMLTableCellElement, [], stubEditor),
+      )
+
+      return parseRowHtmlConf.parseElemHtml(row as HTMLTableRowElement, cells, stubEditor)
+    })
+    const table = parseTableHtmlConf.parseElemHtml($table[0], rows as any, stubEditor)
+
+    expect(table).toMatchObject({
+      type: 'table',
+      width: 'auto',
+      columnWidths: [40, 270, 24],
+    })
+  })
+
   it('table should parse caption text', () => {
     const html = [
       '<table style="width:100%;table-layout:fixed">',
