@@ -57,7 +57,6 @@ async function flushPromises() {
 }
 
 // 当前测试运行环境会把 tsx 编译到 jsx() 调用，补充全局 jsx 工厂即可执行组件渲染
-// eslint-disable-next-line no-underscore-dangle
 (globalThis as any).jsx = React.createElement
 
 describe('editor-for-react onChange behavior', () => {
@@ -217,6 +216,44 @@ describe('editor-for-react onChange behavior', () => {
 
     expect(createEditor).toHaveBeenCalledTimes(1)
     expect(container.querySelector('[data-w-e-loading-overlay="true"]')).toBeNull()
+
+    await act(async () => {
+      ReactDOM.unmountComponentAtNode(container)
+    })
+  })
+
+  it('keeps style and className on the editor selector when loading overlay is enabled', async () => {
+    const onChange = vi.fn()
+    const container = document.createElement('div')
+
+    document.body.appendChild(container)
+    await act(async () => {
+      ReactDOM.render(
+        React.createElement(Editor as any, {
+          value: '<p>123</p>',
+          onChange,
+          defaultConfig: {},
+          mode: 'default',
+          loading: true,
+          loadingText: 'Uploading...',
+          className: 'custom-editor',
+          style: { height: '360px', overflowY: 'hidden' },
+        }),
+        container,
+      )
+    })
+    await flushPromises()
+    await flushPromises()
+
+    const selector = createEditor.mock.calls[0][0].selector as HTMLDivElement
+
+    expect(createEditor).toHaveBeenCalledTimes(1)
+    expect(selector).toBe(container.querySelector('[data-w-e-react-editor-container="true"]'))
+    expect(selector.className).toBe('custom-editor')
+    expect(selector.style.height).toBe('360px')
+    expect(selector.style.overflowY).toBe('hidden')
+    expect(selector.style.position).toBe('relative')
+    expect(selector.querySelector('[data-w-e-loading-overlay="true"]')?.textContent).toBe('Uploading...')
 
     await act(async () => {
       ReactDOM.unmountComponentAtNode(container)

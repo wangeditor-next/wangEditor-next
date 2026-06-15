@@ -307,6 +307,50 @@ async function setSelectedTableWidthMode(page: Page, width: '100%' | 'auto') {
 test.describe('Framework parity regression', () => {
   test.describe.configure({ timeout: process.env.CI ? 240_000 : 90_000 })
 
+  test('react-wrapper: regression #907 Editor style should apply to the actual editor root', async ({ page }) => {
+    const pageErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.stack || err?.message || String(err))
+    })
+
+    await openTarget(page, targets.find(target => target.name === 'react-wrapper')!)
+
+    const snapshot = await page.evaluate(() => {
+      const host = document.querySelector('[data-testid="editor-textarea"] [data-w-e-textarea="true"]')
+      const textContainer = host?.querySelector('.w-e-text-container')
+      const scroll = host?.querySelector('.w-e-scroll')
+
+      if (!host || !textContainer || !scroll) {
+        throw new Error('react editor DOM not ready')
+      }
+
+      const read = (el: Element) => {
+        const computedStyle = getComputedStyle(el)
+        const rect = el.getBoundingClientRect()
+
+        return {
+          attrStyle: el.getAttribute('style') || '',
+          height: rect.height,
+          computedHeight: computedStyle.height,
+          overflowY: computedStyle.overflowY,
+        }
+      }
+
+      return {
+        host: read(host),
+        textContainer: read(textContainer),
+        scroll: read(scroll),
+      }
+    })
+
+    expect(snapshot.host.attrStyle).toContain('height: 360px')
+    expect(snapshot.host.attrStyle).toContain('overflow-y: hidden')
+    expect(snapshot.textContainer.height).toBeGreaterThan(300)
+    expect(snapshot.scroll.height).toBeGreaterThan(300)
+    expect(pageErrors).toEqual([])
+  })
+
   for (const target of targets) {
     test(`${target.name}: ime composition should not throw`, async ({ page }) => {
       const pageErrors: string[] = []

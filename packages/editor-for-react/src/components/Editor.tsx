@@ -10,6 +10,7 @@ import {
 import React, {
   useCallback, useEffect, useRef, useState,
 } from 'react'
+import ReactDOM from 'react-dom'
 
 interface IProps {
   defaultContent?: SlateDescendant[]
@@ -34,10 +35,16 @@ function EditorComponent(props: Partial<IProps>) {
     defaultContent = [], onCreated, defaultHtml = '', value = '', onChange, defaultConfig = {}, mode = 'default', style = {}, className,
     loading = false, loadingText = 'Loading...',
   } = props
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<HTMLDivElement | null>(null)
+  const [editorRoot, setEditorRoot] = useState<HTMLDivElement | null>(null)
   const latestHtmlRef = useRef('')
   const isSyncingFromPropsRef = useRef(false)
   const [editor, setEditor] = useState<ICustomDomEditor | null>(null)
+
+  const setRootRef = useCallback((node: HTMLDivElement | null) => {
+    ref.current = node
+    setEditorRoot(node)
+  }, [])
 
   const handleCreated = useCallback((createdEditor: IDomEditor) => {
     // 组件属性 onCreated
@@ -61,7 +68,6 @@ function EditorComponent(props: Partial<IProps>) {
   useEffect(() => {
     if (editor == null) { return }
 
-    // eslint-disable-next-line no-underscore-dangle
     editor.__react_on_change = (e: IDomEditor) => {
       const latestHtml = e.getHtml()
       const prevHtml = latestHtmlRef.current
@@ -83,7 +89,6 @@ function EditorComponent(props: Partial<IProps>) {
       if (onChangeFromConfig) { onChangeFromConfig(e) }
     }
     return () => {
-      // eslint-disable-next-line no-underscore-dangle
       editor.__react_on_change = undefined
     }
   }, [editor, defaultConfig, onChange])
@@ -117,7 +122,6 @@ function EditorComponent(props: Partial<IProps>) {
       config: {
         ...defaultConfig,
         onCreated: handleCreated,
-        // eslint-disable-next-line no-underscore-dangle
         onChange: (e: IDomEditor) => newEditor?.__react_on_change?.(e),
         onDestroyed: handleDestroyed,
       },
@@ -141,12 +145,12 @@ function EditorComponent(props: Partial<IProps>) {
 
   return (
     <div
+      ref={setRootRef}
       style={{ ...style, position: style.position || 'relative' }}
       className={className}
       data-w-e-react-editor-container="true"
     >
-      <div style={{ minHeight: '1px' }} ref={ref}></div>
-      {loading && (
+      {loading && editorRoot && ReactDOM.createPortal((
       <div
         data-w-e-loading-overlay="true"
         style={{
@@ -164,7 +168,7 @@ function EditorComponent(props: Partial<IProps>) {
       >
         {loadingText}
       </div>
-      )}
+      ), editorRoot)}
     </div>
   )
 }
