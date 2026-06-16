@@ -9,6 +9,8 @@ import { Descendant, Text } from 'slate'
 import $, { DOMElement, getStyleValue, getTagName } from '../utils/dom'
 import { TableCellElement, TableElement, TableRowElement } from './custom-types'
 
+const DEFAULT_PERCENT_TABLE_WIDTH = 600
+
 function parsePixelSize(value: string | null | undefined, fallback = 0): number {
   const parsedValue = parseInt(value || '', 10)
 
@@ -19,7 +21,11 @@ function parsePixelSize(value: string | null | undefined, fallback = 0): number 
   return parsedValue
 }
 
-function parseCssPixelSize(value: string | null | undefined, fallback = 0): number {
+function parseCssPixelSize(
+  value: string | null | undefined,
+  fallback = 0,
+  percentageBase = 0,
+): number {
   const rawValue = (value || '').trim().toLowerCase()
   const parsedValue = parseFloat(rawValue)
 
@@ -30,18 +36,30 @@ function parseCssPixelSize(value: string | null | undefined, fallback = 0): numb
   if (rawValue.endsWith('pt')) {
     return Math.round((parsedValue * 4) / 3)
   }
+  if (rawValue.endsWith('%')) {
+    const base = percentageBase > 0 ? percentageBase : DEFAULT_PERCENT_TABLE_WIDTH
+
+    return Math.round((parsedValue / 100) * base)
+  }
 
   return Math.round(parsedValue)
 }
 
-function getColgroupWidths(colgroupElements: HTMLCollection | null): number[] {
+function getColgroupWidths(
+  colgroupElements: HTMLCollection | null,
+  percentageBase: number,
+): number[] {
   if (!colgroupElements || colgroupElements.length === 0) { return [] }
 
   const columnWidths: number[] = []
 
   Array.from(colgroupElements).forEach((col: any) => {
     const span = parseInt(col.getAttribute('span') || '1', 10)
-    const width = parseCssPixelSize(col.getAttribute('width') || getStyleValue($(col), 'width'), 90)
+    const width = parseCssPixelSize(
+      col.getAttribute('width') || getStyleValue($(col), 'width'),
+      90,
+      percentageBase,
+    )
 
     if (Number.isNaN(width)) { return }
 
@@ -51,6 +69,18 @@ function getColgroupWidths(colgroupElements: HTMLCollection | null): number[] {
   })
 
   return columnWidths
+}
+
+function getTableWidthPixelBase($table: ReturnType<typeof $>): number {
+  const styleWidth = getStyleValue($table, 'width')
+  const widthAttr = $table.attr('width') || ''
+  const rawWidth = styleWidth || widthAttr
+
+  if (!rawWidth || rawWidth.trim() === '100%') {
+    return 0
+  }
+
+  return parseCssPixelSize(rawWidth, 0)
 }
 
 function parseCellHtml(
@@ -174,7 +204,8 @@ function parseTableHtml(
   }
   const tdList = $elem.find('tr')[0]?.children || []
   const colgroupElments: HTMLCollection = $elem.find('colgroup')[0]?.children || null
-  const colgroupWidths = getColgroupWidths(colgroupElments)
+  const percentageBase = getTableWidthPixelBase($elem)
+  const colgroupWidths = getColgroupWidths(colgroupElments, percentageBase)
 
   if (colgroupWidths.length > 0) {
     tableELement.columnWidths = colgroupWidths
@@ -183,7 +214,7 @@ function parseTableHtml(
 
     Array.from(tdList).forEach(td => {
       const colSpan = parseInt($(td).attr('colSpan') || '1', 10) // 获取 colSpan，默认为 1
-      const width = parseCssPixelSize(getStyleValue($(td), 'width'), 90) // 获取 width，默认为 90
+      const width = parseCssPixelSize(getStyleValue($(td), 'width'), 90, percentageBase) // 获取 width，默认为 90
 
       // 根据 colSpan 的值来填充 columnWidths 数组
       columnWidths.push(width)
