@@ -1,5 +1,12 @@
 # Change Log
 
+## 5.7.12
+
+### Patch Changes
+
+- Updated dependencies [0cfccda]
+  - @wangeditor-next/table-module@3.0.4
+
 ## 5.7.11
 
 ### Patch Changes

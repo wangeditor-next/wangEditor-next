@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.0.4
+
+### Patch Changes
+
+- 0cfccda: Fix Word table imports so percentage column widths are converted to usable pixel widths.
+
 ## 3.0.3
 
 ### Patch Changes

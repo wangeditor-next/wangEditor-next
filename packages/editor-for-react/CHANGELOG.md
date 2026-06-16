@@ -1,5 +1,12 @@
 # @wangeditor-next/editor-for-react
 
+## 2.0.3
+
+### Patch Changes
+
+- 0224cbd: Keep Editor style and className props on the actual editor root when using the built-in loading overlay.
+  - @wangeditor-next/editor@5.7.12
+
 ## 2.0.2
 
 ### Patch Changes
