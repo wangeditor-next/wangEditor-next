@@ -103,8 +103,11 @@ export function getOuterHTML($elem: Dom7Array) {
  * @param $elem $elem
  */
 export function getTagName($elem: Dom7Array): string {
-  if ($elem.length) { return $elem[0].tagName.toLowerCase() }
-  return ''
+  if ($elem.length === 0) { return '' }
+  const elem = $elem[0]
+
+  if (elem.nodeType !== DOMNode.ELEMENT_NODE) { return '' }
+  return elem.tagName.toLowerCase()
 }
 
 /**
