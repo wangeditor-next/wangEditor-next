@@ -1,5 +1,13 @@
 # Change Log
 
+## 5.7.13
+
+### Patch Changes
+
+- Updated dependencies [fbc644c]
+  - @wangeditor-next/basic-modules@3.0.3
+  - @wangeditor-next/upload-image-module@3.0.3
+
 ## 5.7.12
 
 ### Patch Changes

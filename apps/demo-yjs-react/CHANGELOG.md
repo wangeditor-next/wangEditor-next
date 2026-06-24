@@ -1,5 +1,11 @@
 # @wangeditor-next/demo-yjs-react
 
+## 0.0.20
+
+### Patch Changes
+
+- @wangeditor-next/editor@5.7.13
+
 ## 0.0.19
 
 ### Patch Changes
