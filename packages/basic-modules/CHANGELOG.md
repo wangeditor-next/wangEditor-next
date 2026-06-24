@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.0.3
+
+### Patch Changes
+
+- fbc644c: fix: guard `getTagName` against non-element nodes so parsing HTML with text/comment nodes no longer throws "Cannot read properties of undefined (reading 'toLowerCase')"
+
 ## 3.0.2
 
 ### Patch Changes
