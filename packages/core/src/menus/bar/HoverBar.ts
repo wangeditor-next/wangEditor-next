@@ -274,11 +274,16 @@ class HoverBar {
 
       // 定义了 match 则用 match 。未定义 match 则用 elemType
       const matchFn = match || ((_editor: IDomEditor, n: Node) => DomEditor.checkNodeType(n, elemType))
+      const selectedNode = match
+        ? null
+        : DomEditor.getSelectedNodeByType(editor, elemType)
 
-      const [nodeEntry] = Editor.nodes(editor, {
-        match: n => matchFn(editor, n),
-        universal: true,
-      })
+      const [nodeEntry] = selectedNode
+        ? [[selectedNode]]
+        : Editor.nodes(editor, {
+          match: n => matchFn(editor, n),
+          universal: true,
+        })
 
       // 匹配成功（找到第一个就停止，不再继续找了）
       if (nodeEntry != null) {

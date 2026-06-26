@@ -706,4 +706,33 @@ describe('editor content API', () => {
     expect(editor.getText()).toBe('hello world')
     expect(editor.getHtml()).toContain('hello world')
   })
+
+  it('insertData keeps Word-like html blocks in source order', () => {
+    const editor = createEditor()
+
+    editor.select(getStartLocation(editor))
+    editor.insertData({
+      getData(type: string) {
+        if (type === 'text/html') {
+          return `
+            <html><body>
+              <div class="WordSection1">
+                <p class="MsoTitle"><span style="font-size:22pt;font-family:宋体">测试标题</span></p>
+                <p class="MsoNormal"><span style="font-family:宋体">第一段内容</span></p>
+                <p class="MsoNormal"><span style="font-family:宋体">第二段内容</span></p>
+              </div>
+            </body></html>`
+        }
+        if (type === 'text/plain') { return '测试标题\n第一段内容\n第二段内容' }
+        return ''
+      },
+    } as DataTransfer)
+
+    expect(editor.children.map(node => Node.string(node))).toEqual([
+      '测试标题',
+      '第一段内容',
+      '第二段内容',
+    ])
+    expect(editor.getText()).toBe('测试标题\n第一段内容\n第二段内容')
+  })
 })
