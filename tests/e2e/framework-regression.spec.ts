@@ -351,6 +351,112 @@ test.describe('Framework parity regression', () => {
     expect(pageErrors).toEqual([])
   })
 
+  test('vue3-wrapper: regression #919 production build should keep image hoverbar and paste order', async ({ page }) => {
+    test.skip(
+      process.env.PLAYWRIGHT_WRAPPER_PREVIEW !== '1',
+      'regression #919 requires wrapper production preview',
+    )
+
+    const pageErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.stack || err?.message || String(err))
+    })
+
+    await openTarget(page, targets.find(target => target.name === 'vue3-wrapper')!)
+
+    await page.evaluate(() => {
+      const globalWindow = window as any
+      const editor = globalWindow.vue3Editor
+
+      if (!editor) {
+        throw new Error('vue3 editor not ready')
+      }
+
+      editor.clear()
+      editor.dangerouslyInsertHtml(
+        '<p><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="tiny" /></p>',
+      )
+    })
+    await page.locator('[data-testid="editor-textarea"] img').first().click({ force: true })
+    await page.waitForTimeout(500)
+
+    const imageState = await page.evaluate(() => {
+      const visibleHoverbar = Array.from(document.querySelectorAll('.w-e-hover-bar')).find(el => {
+        const style = window.getComputedStyle(el)
+        const rect = el.getBoundingClientRect()
+
+        return style.display !== 'none'
+          && style.visibility !== 'hidden'
+          && rect.width > 0
+          && rect.height > 0
+      })
+
+      return {
+        selectedImage: !!document.querySelector('.w-e-selected-image-container'),
+        hoverbarVisible: !!visibleHoverbar,
+        menuKeys: visibleHoverbar
+          ? Array.from(visibleHoverbar.querySelectorAll('[data-menu-key]')).map(el => el.getAttribute('data-menu-key'))
+          : [],
+      }
+    })
+
+    expect(imageState.selectedImage).toBe(true)
+    expect(imageState.hoverbarVisible).toBe(true)
+    expect(imageState.menuKeys).toEqual(expect.arrayContaining([
+      'imageWidth30',
+      'editorImageSizeMenu',
+      'editImage',
+      'deleteImage',
+    ]))
+
+    await openTarget(page, targets.find(target => target.name === 'vue3-wrapper')!)
+
+    const wordLikeHtml = `
+      <html><body>
+        <div class="WordSection1">
+          <p class="MsoTitle"><span style="font-size:22pt;font-family:宋体">测试标题</span></p>
+          <p class="MsoNormal"><span style="font-family:宋体">第一段内容</span></p>
+          <p class="MsoNormal"><span style="font-family:宋体">第二段内容</span></p>
+        </div>
+      </body></html>`
+
+    const pasteState = await page.evaluate(({ html }) => {
+      const globalWindow = window as any
+      const editor = globalWindow.vue3Editor
+
+      if (!editor) {
+        throw new Error('vue3 editor not ready')
+      }
+
+      editor.clear()
+      editor.focus()
+
+      const transfer = new DataTransfer()
+
+      transfer.setData('text/html', html)
+      transfer.setData('text/plain', '测试标题\n第一段内容\n第二段内容')
+      editor.insertData(transfer)
+
+      return {
+        text: editor.getText(),
+        children: editor.children.map((node: any) => {
+          return Array.isArray(node.children)
+            ? node.children.map((child: any) => child.text || '').join('')
+            : ''
+        }),
+      }
+    }, { html: wordLikeHtml })
+
+    expect(pasteState.children).toEqual([
+      '测试标题',
+      '第一段内容',
+      '第二段内容',
+    ])
+    expect(pasteState.text).toBe('测试标题\n第一段内容\n第二段内容')
+    expect(pageErrors).toEqual([])
+  })
+
   for (const target of targets) {
     test(`${target.name}: ime composition should not throw`, async ({ page }) => {
       const pageErrors: string[] = []

@@ -777,21 +777,44 @@ export const DomEditor = {
     return nodes.map(node => Node.string(node)).join('')
   },
 
+  getSelectedVoidNode(editor: IDomEditor): Element | null {
+    const { selection } = editor
+
+    if (!selection) { return null }
+    const voidEntry = Editor.void(editor, { at: selection })
+
+    if (!voidEntry) { return null }
+    const [node] = voidEntry
+
+    return Element.isElement(node) ? node : null
+  },
+
   getSelectedElems(editor: IDomEditor): Element[] {
     const elems: Element[] = []
+    const selectedVoidNode = DomEditor.getSelectedVoidNode(editor)
+
+    if (selectedVoidNode) {
+      elems.push(selectedVoidNode)
+    }
 
     const nodeEntries = Editor.nodes(editor, { universal: true })
 
     for (const nodeEntry of nodeEntries) {
       const [node] = nodeEntry
 
-      if (Element.isElement(node)) { elems.push(node) }
+      if (Element.isElement(node) && node !== selectedVoidNode) { elems.push(node) }
     }
 
     return elems
   },
 
   getSelectedNodeByType(editor: IDomEditor, type: string): Node | null {
+    const selectedVoidNode = DomEditor.getSelectedVoidNode(editor)
+
+    if (selectedVoidNode && this.checkNodeType(selectedVoidNode, type)) {
+      return selectedVoidNode
+    }
+
     const [nodeEntry] = Editor.nodes(editor, {
       match: n => this.checkNodeType(n, type),
       universal: true,
@@ -812,6 +835,10 @@ export const DomEditor = {
   },
 
   isNodeSelected(editor: IDomEditor, node: Node): boolean {
+    const selectedVoidNode = DomEditor.getSelectedVoidNode(editor)
+
+    if (selectedVoidNode === node) { return true }
+
     const [nodeEntry] = Editor.nodes(editor, {
       match: n => n === node,
       universal: true,
@@ -966,15 +993,7 @@ export const DomEditor = {
    * @param editor editor
    */
   isSelectedVoidNode(editor: IDomEditor): boolean {
-    const voidNodes = Editor.nodes(editor, {
-      match: n => editor.isVoid(n as Element),
-    })
-    let len = 0
-
-    for (const n of voidNodes) {
-      if (n) { len += 1 }
-    }
-    return len > 0
+    return DomEditor.getSelectedVoidNode(editor) != null
   },
 
   /**
@@ -988,11 +1007,13 @@ export const DomEditor = {
 
     if (Range.isExpanded(selection)) { return false }
 
-    const selectedNode = DomEditor.getSelectedNodeByType(editor, 'paragraph')
+    const topLevelPath = [selection.focus.path[0]]
 
-    if (selectedNode === null) { return false }
+    if (!Editor.hasPath(editor, topLevelPath)) { return false }
+    const [selectedNode] = Editor.node(editor, topLevelPath)
 
-    const { children } = selectedNode as Element
+    if (!Element.isElement(selectedNode) || selectedNode.type !== 'paragraph') { return false }
+    const { children } = selectedNode
 
     if (children.length !== 1) { return false }
 
