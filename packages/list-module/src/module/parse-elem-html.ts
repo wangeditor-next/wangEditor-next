@@ -5,7 +5,7 @@
 
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
 import { Dom7Array } from 'dom7'
-import { Descendant, Text } from 'slate'
+import { Descendant, Element as SlateElement, Text } from 'slate'
 
 import $, { DOMElement, getTagName } from '../utils/dom'
 import { ListItemElement, OrderedListType } from './custom-types'
@@ -72,6 +72,36 @@ function getLevel($elem: Dom7Array): number {
   return Math.max(0, listAncestorCount - 1)
 }
 
+function isStructuralWhitespaceText(child: Descendant): boolean {
+  return Text.isText(child) && child.text.trim() === ''
+}
+
+function appendTextLikeChildren(
+  target: Descendant[],
+  children: Descendant[],
+  editor: IDomEditor,
+) {
+  children.forEach(child => {
+    if (isStructuralWhitespaceText(child)) {
+      return
+    }
+
+    if (Text.isText(child)) {
+      target.push(child)
+      return
+    }
+
+    if (editor.isInline(child)) {
+      target.push(child)
+      return
+    }
+
+    if (SlateElement.isElement(child)) {
+      appendTextLikeChildren(target, child.children, editor)
+    }
+  })
+}
+
 function parseItemHtml(
   elem: DOMElement,
   children: Descendant[],
@@ -82,6 +112,10 @@ function parseItemHtml(
   const nestedListChildren: ListItemElement[] = []
 
   children.forEach(child => {
+    if (isStructuralWhitespaceText(child)) {
+      return
+    }
+
     if (Text.isText(child)) {
       normalizedChildren.push(child)
       return
@@ -94,6 +128,11 @@ function parseItemHtml(
 
     if (DomEditor.checkNodeType(child, 'list-item')) {
       nestedListChildren.push(child as ListItemElement)
+      return
+    }
+
+    if (SlateElement.isElement(child)) {
+      appendTextLikeChildren(normalizedChildren, child.children, editor)
     }
   })
 
