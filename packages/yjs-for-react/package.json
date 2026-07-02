@@ -4,7 +4,7 @@
   "description": "React specific components/utils for wangeditor-next-yjs.",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",
-  "homepage": "https://github.com/wangeditor-next/wangeditor-next#readme",
+  "homepage": "https://github.com/wangeditor-next/wangEditor-next#readme",
   "license": "MIT",
   "types": "dist/yjs-for-react/src/index.d.ts",
   "main": "dist/index.js",
@@ -52,7 +52,7 @@
     "@wangeditor-next-shared/rollup-config": "workspace:^"
   },
   "bugs": {
-    "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
+    "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
   },
   "dependencies": {
     "use-sync-external-store": "^1.2.0",

@@ -4,7 +4,7 @@
   "description": "wangEditor upload-image module",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",
-  "homepage": "https://github.com/wangeditor-next/wangeditor-next#readme",
+  "homepage": "https://github.com/wangeditor-next/wangEditor-next#readme",
   "license": "MIT",
   "types": "dist/upload-image-module/src/index.d.ts",
   "main": "dist/index.js",
@@ -41,7 +41,7 @@
     "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
   },
   "bugs": {
-    "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
+    "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
   },
   "peerDependencies": {
     "@uppy/core": "^2.0.3 || ^5.0.0",

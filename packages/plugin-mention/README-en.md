@@ -4,7 +4,7 @@
 
 ## Introduction
 
-[wangeditor-next](https://github.com/cycleccc/wangEditor-next) mention plugin, like `@James`.
+[wangeditor-next](https://github.com/wangeditor-next/wangEditor-next) mention plugin, like `@James`.
 
 ![](./_img/demo.png)
 
@@ -86,4 +86,3 @@ You will get a mention's HTML format like this. You need to `decodeURIComponent`
 ```html
 <span data-w-e-type="mention" data-w-e-is-void data-w-e-is-inline data-value="James" data-info="%7B%22x%22%3A10%7D">@James</span>
 ```
-

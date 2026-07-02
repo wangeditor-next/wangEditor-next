@@ -38,7 +38,7 @@
     "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
   },
   "bugs": {
-    "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
+    "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
   },
   "devDependencies": {
     "@wangeditor-next-shared/rollup-config": "workspace:^",
