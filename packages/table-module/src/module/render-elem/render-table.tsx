@@ -60,6 +60,41 @@ function getContentEditable(editor: IDomEditor, tableElem: SlateElement): boolea
   return false
 }
 
+function getColumnResizerHeight(tableElem: TableElement): number {
+  const {
+    height,
+    rowHeights = [],
+    children = [],
+  } = tableElem
+
+  if (typeof height === 'number' && Number.isFinite(height) && height > 0) {
+    return height
+  }
+
+  const hasMeasuredRowHeights = (
+    rowHeights.length === children.length
+    && rowHeights.every(rowHeight => (
+      typeof rowHeight === 'number'
+      && Number.isFinite(rowHeight)
+      && rowHeight > 0
+    ))
+  )
+
+  if (hasMeasuredRowHeights) {
+    return rowHeights.reduce((total, rowHeight) => total + rowHeight, 0)
+  }
+
+  return children.reduce((total, rowNode) => {
+    const rowHeight = (rowNode as TableRowElement).height
+
+    return total + (
+      typeof rowHeight === 'number' && Number.isFinite(rowHeight) && rowHeight > 0
+        ? rowHeight
+        : 30
+    )
+  }, 0)
+}
+
 function renderTable(elemNode: SlateElement, children: VNode[] | null, editor: IDomEditor): VNode {
   // 是否可编辑
   const editable = getContentEditable(editor, elemNode)
@@ -68,7 +103,6 @@ function renderTable(elemNode: SlateElement, children: VNode[] | null, editor: I
   const {
     width: tableWidth = 'auto',
     caption,
-    height,
     columnWidths = [],
     rowHeights = [],
     scrollWidth = 0,
@@ -79,6 +113,7 @@ function renderTable(elemNode: SlateElement, children: VNode[] | null, editor: I
     resizingRowIndex,
     isResizingRow,
   } = elemNode as TableElement
+  const columnResizerHeight = getColumnResizerHeight(elemNode as TableElement)
 
   // 光标是否选中
   const selected = DomEditor.isNodeSelected(editor, elemNode)
@@ -187,7 +222,7 @@ function renderTable(elemNode: SlateElement, children: VNode[] | null, editor: I
                     isHoverCellBorder && index === resizingIndex ? 'visible ' : ''
                   }${isResizing && index === resizingIndex ? 'highlight' : ''}`
                 }
-                style={{ height: `${height}px` }}
+                style={{ height: `${columnResizerHeight}px` }}
                 on={{
                   mouseenter: (e: MouseEvent) => handleCellBorderHighlight(editor, e),
                   mouseleave: (e: MouseEvent) => handleCellBorderHighlight(editor, e),

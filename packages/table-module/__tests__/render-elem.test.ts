@@ -189,4 +189,67 @@ describe('table module - render elem', () => {
     // 验证使用默认高度 30px
     expect(firstRowResizer.data?.style?.minHeight).toBe('30px')
   })
+
+  it('render table column resizer with measured row heights when table height is not specified', () => {
+    const elem = {
+      type: 'table',
+      width: 'auto',
+      columnWidths: [100, 120],
+      rowHeights: [34, 46],
+      children: [
+        {
+          type: 'table-row',
+          children: [
+            { type: 'table-cell', children: [{ text: 'A1' }] },
+            { type: 'table-cell', children: [{ text: 'B1' }] },
+          ],
+        },
+        {
+          type: 'table-row',
+          children: [
+            { type: 'table-cell', children: [{ text: 'A2' }] },
+            { type: 'table-cell', children: [{ text: 'B2' }] },
+          ],
+        },
+      ],
+    }
+
+    const observerVnode = renderTableConf.renderElem(elem, null, editor) as any
+    const containerVnode = observerVnode.children[0] as any
+    const columnResizer = containerVnode.children[1] as any
+    const firstHotzone = columnResizer.children[0].children[0] as any
+    const secondHotzone = columnResizer.children[1].children[0] as any
+
+    expect(firstHotzone.data?.style?.height).toBe('80px')
+    expect(secondHotzone.data?.style?.height).toBe('80px')
+  })
+
+  it('render table column resizer with default row heights before measurement is available', () => {
+    const elem = {
+      type: 'table',
+      width: 'auto',
+      columnWidths: [100],
+      children: [
+        {
+          type: 'table-row',
+          children: [
+            { type: 'table-cell', children: [{ text: 'A1' }] },
+          ],
+        },
+        {
+          type: 'table-row',
+          children: [
+            { type: 'table-cell', children: [{ text: 'A2' }] },
+          ],
+        },
+      ],
+    }
+
+    const observerVnode = renderTableConf.renderElem(elem, null, editor) as any
+    const containerVnode = observerVnode.children[0] as any
+    const columnResizer = containerVnode.children[1] as any
+    const firstHotzone = columnResizer.children[0].children[0] as any
+
+    expect(firstHotzone.data?.style?.height).toBe('60px')
+  })
 })
