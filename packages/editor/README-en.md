@@ -59,4 +59,4 @@ const { editor, toolbar } = factory.create({
 import { createUploader } from '@wangeditor-next/editor/upload'
 ```
 
-You can [commit an issue]((https://github.com/wangeditor-next/wangeditor-next/issues)) if you have any question.
+You can [commit an issue](https://github.com/wangeditor-next/wangEditor-next/issues) if you have any question.
