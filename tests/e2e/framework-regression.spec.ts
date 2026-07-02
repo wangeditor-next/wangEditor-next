@@ -1135,6 +1135,62 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
+    test(`${target.name}: regression #923 table without height should allow column resize`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+      await clearEditor(page)
+      await create2x2TableByApi(page)
+
+      await page.evaluate(() => {
+        const table = document.querySelector('[data-testid="editor-textarea"] table.table') as HTMLTableElement | null
+
+        if (!table) {
+          throw new Error('table not ready')
+        }
+
+        table.removeAttribute('height')
+        table.style.height = ''
+
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+        const tableNode = (editor?.children || []).find((node: any) => node?.type === 'table')
+
+        if (!tableNode) {
+          throw new Error('table node not ready')
+        }
+
+        delete tableNode.height
+      })
+      await page.waitForTimeout(120)
+
+      const hotzoneHeight = await page
+        .locator('[data-testid="editor-textarea"] .column-resizer')
+        .last()
+        .locator('.column-resizer-item')
+        .first()
+        .locator('.resizer-line-hotzone')
+        .evaluate((hotzone: HTMLElement) => hotzone.getBoundingClientRect().height)
+      const before = await getLastTableWidths(page)
+      const dragged = await dispatchSyntheticFirstColumnResize(page, 60)
+
+      await page.waitForTimeout(240)
+      const after = await getLastTableWidths(page)
+
+      expect(hotzoneHeight).toBeGreaterThan(0)
+      expect(dragged).toBe(true)
+      expect(before[0] || 0).toBeGreaterThan(0)
+      expect(after[0] || 0).toBeGreaterThan(before[0] || 0)
+      expect(pageErrors).toEqual([])
+    })
+
     test(`${target.name}: regression #505 fast drag should keep effective resize`, async ({ page }) => {
       const pageErrors: string[] = []
 
