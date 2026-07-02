@@ -1,5 +1,12 @@
 # @wangeditor-next/plugin-attachment
 
+## 2.0.14
+
+### Patch Changes
+
+- Updated dependencies [1e4c59f]
+  - @wangeditor-next/editor@5.7.14
+
 ## 2.0.13
 
 ### Patch Changes

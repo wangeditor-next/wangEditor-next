@@ -1,5 +1,13 @@
 # Change Log
 
+## 3.0.5
+
+### Patch Changes
+
+- b142e71: Fix column resizing for tables without an explicit height.
+- Updated dependencies [1e4c59f]
+  - @wangeditor-next/core@1.9.5
+
 ## 3.0.4
 
 ### Patch Changes
