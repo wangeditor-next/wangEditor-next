@@ -1,5 +1,13 @@
 # Change Log
 
+## 3.0.3
+
+### Patch Changes
+
+- 60910ab: Fix nested list HTML parsing so leading paragraph content inside list items is preserved before child lists.
+- Updated dependencies [1e4c59f]
+  - @wangeditor-next/core@1.9.5
+
 ## 3.0.2
 
 ### Patch Changes

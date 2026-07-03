@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.9.5
+
+### Patch Changes
+
+- 1e4c59f: Fix Vue3 production builds losing selected image hoverbar actions and keep pasted Word-like HTML blocks in source order.
+
 ## 1.9.4
 
 ### Patch Changes
