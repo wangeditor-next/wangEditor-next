@@ -10,6 +10,8 @@ import { TableCellElement, TableElement, TableRowElement } from './custom-types'
 
 type TableWidthExportMode = 'adaptive' | 'explicit'
 
+const CSS_LENGTH_WITH_UNIT_REGEXP = /^-?(?:\d+|\d*\.\d+)(?:px|em|rem|%|vh|vw|vmin|vmax|pt|pc|cm|mm|in|ch|ex|lh|rlh)$/i
+
 function escapeHtml(raw: string): string {
   return raw
     .replace(/&/g, '&amp;')
@@ -57,6 +59,26 @@ function getExportTableWidth(tableNode: TableElement, editor?: IDomEditor): stri
   return 'auto'
 }
 
+function formatTableHeight(height: TableElement['height'] | string = 'auto'): string {
+  const heightValue = `${height || ''}`.trim()
+
+  if (!heightValue || heightValue === 'auto') {
+    return 'auto'
+  }
+
+  const numericHeight = Number(heightValue)
+
+  if (Number.isFinite(numericHeight)) {
+    return `${numericHeight}px`
+  }
+
+  if (CSS_LENGTH_WITH_UNIT_REGEXP.test(heightValue)) {
+    return heightValue
+  }
+
+  return 'auto'
+}
+
 function tableToHtml(elemNode: Element, childrenHtml: string, editor?: IDomEditor): string {
   const tableNode = elemNode as TableElement
   const { columnWidths, caption, height = 'auto' } = tableNode
@@ -70,17 +92,17 @@ function tableToHtml(elemNode: Element, childrenHtml: string, editor?: IDomEdito
   const colgroupStr = cols ? `<colgroup contentEditable="false">${cols}</colgroup>` : ''
   const exportedWidth = getExportTableWidth(tableNode, editor)
   const textStyleMode = getTextStyleMode(editor)
+  const exportedHeight = formatTableHeight(height)
 
   if (textStyleMode === 'class') {
     const widthAttr = exportedWidth ? ` width="${exportedWidth}"` : ''
-    const heightValue = String(height || '').trim()
-    const heightAttr = heightValue && heightValue !== 'auto' ? ` height="${heightValue}"` : ''
-    const heightDataAttr = heightValue ? ` data-w-e-table-height="${heightValue}"` : ''
+    const heightAttr = exportedHeight !== 'auto' ? ` height="${exportedHeight}"` : ''
+    const heightDataAttr = ` data-w-e-table-height="${exportedHeight}"`
 
     return `<table class="w-e-table-layout-fixed"${widthAttr}${heightAttr}${heightDataAttr}>${captionStr}${colgroupStr}<tbody>${childrenHtml}</tbody></table>`
   }
 
-  return `<table style="width: ${exportedWidth};table-layout: fixed;height:${height}">${captionStr}${colgroupStr}<tbody>${childrenHtml}</tbody></table>`
+  return `<table style="width: ${exportedWidth};table-layout: fixed;height:${exportedHeight}">${captionStr}${colgroupStr}<tbody>${childrenHtml}</tbody></table>`
 }
 
 function tableRowToHtml(elem: Element, childrenHtml: string, editor?: IDomEditor): string {

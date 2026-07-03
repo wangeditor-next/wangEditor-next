@@ -183,6 +183,34 @@ describe('TableModule module', () => {
       )
     })
 
+    test('tableToHtmlConf should append px unit for numeric table height', () => {
+      const element = {
+        type: 'table',
+        width: 'auto',
+        height: 93,
+        children: [],
+      }
+      const res = tableToHtmlConf.elemToHtml(element, '<tr><td>123</td></tr>')
+
+      expect(res).toBe(
+        '<table style="width: auto;table-layout: fixed;height:93px"><tbody><tr><td>123</td></tr></tbody></table>',
+      )
+    })
+
+    test('tableToHtmlConf should fallback invalid table height to auto', () => {
+      const element = {
+        type: 'table',
+        width: 'auto',
+        height: 'invalid',
+        children: [],
+      }
+      const res = tableToHtmlConf.elemToHtml(element, '<tr><td>123</td></tr>')
+
+      expect(res).toBe(
+        '<table style="width: auto;table-layout: fixed;height:auto"><tbody><tr><td>123</td></tr></tbody></table>',
+      )
+    })
+
     test('tableToHtmlConf should avoid inline style in class mode', () => {
       const element = {
         type: 'table',
@@ -201,6 +229,26 @@ describe('TableModule module', () => {
         '<table class="w-e-table-layout-fixed" width="100%" height="60px" data-w-e-table-height="60px"><tbody><tr><td>123</td></tr></tbody></table>',
       )
       expect(res).not.toContain('style=')
+    })
+
+    test('tableToHtmlConf should append px unit for numeric table height in class mode', () => {
+      const element = {
+        type: 'table',
+        width: '100%',
+        height: 93,
+        children: [],
+      }
+      const mockEditor = {
+        getConfig() {
+          return { textStyleMode: 'class' }
+        },
+      } as any
+      const res = tableToHtmlConf.elemToHtml(element, '<tr><td>123</td></tr>', mockEditor)
+
+      expect(res).toBe(
+        '<table class="w-e-table-layout-fixed" width="100%" height="93px" data-w-e-table-height="93px"><tbody><tr><td>123</td></tr></tbody></table>',
+      )
+      expect(res).not.toContain('height="93"')
     })
 
     test('tableToHtmlConf should escape caption html', () => {

@@ -235,6 +235,26 @@ describe('create editor and toolbar', () => {
     expect(exportedHtml).toContain('<colgroup contentEditable="false"><col width=120></col><col width=80></col></colgroup>')
   })
 
+  test('getHtml exports table height with a valid css unit', () => {
+    const html = `<table style="width: 240px;table-layout: fixed;height:93">
+      <tbody>
+        <tr><td>A</td><td>B</td></tr>
+        <tr><td>C</td><td>D</td></tr>
+      </tbody>
+    </table>`
+
+    const editor = customCreateEditor({ html })
+    const exportedHtml = editor.getHtml()
+
+    editor.setHtml(exportedHtml)
+    const roundTripHtml = editor.getHtml()
+
+    expect(exportedHtml).toContain('height:93px')
+    expect(exportedHtml).not.toContain('height:93"')
+    expect(roundTripHtml).toContain('height:93px')
+    expect(roundTripHtml).not.toContain('height:93"')
+  })
+
   test('class mode preserve-data policy keeps unknown token through setHtml/getHtml', () => {
     const html = '<p><span style="color: rgb(1, 2, 3);">hello</span></p>'
     const editor = customCreateEditor({
