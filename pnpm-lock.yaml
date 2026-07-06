@@ -568,7 +568,7 @@ importers:
         specifier: 3.0.3
         version: link:../list-module
       '@wangeditor-next/table-module':
-        specifier: 3.0.5
+        specifier: 3.0.6
         version: link:../table-module
       '@wangeditor-next/upload-image-module':
         specifier: 3.0.3
@@ -657,7 +657,7 @@ importers:
   packages/plugin-attachment:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.14
+        specifier: 5.7.15
         version: link:../editor
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -673,7 +673,7 @@ importers:
   packages/plugin-ctrl-enter:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.14
+        specifier: 5.7.15
         version: link:../editor
     devDependencies:
       '@wangeditor-next-shared/rollup-config':

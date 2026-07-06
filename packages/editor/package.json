@@ -1,6 +1,6 @@
 {
   "name": "@wangeditor-next/editor",
-  "version": "5.7.14",
+  "version": "5.7.15",
   "description": "Web rich text editor, Web 富文本编辑器",
   "keywords": [
     "wangeditor",
@@ -70,7 +70,7 @@
     "@wangeditor-next/code-highlight": "3.0.2",
     "@wangeditor-next/core": "1.9.5",
     "@wangeditor-next/list-module": "3.0.3",
-    "@wangeditor-next/table-module": "3.0.5",
+    "@wangeditor-next/table-module": "3.0.6",
     "@wangeditor-next/upload-image-module": "3.0.3",
     "@wangeditor-next/video-module": "3.0.2",
     "dom7": "^4.0.0",
