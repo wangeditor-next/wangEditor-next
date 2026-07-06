@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.0.6
+
+### Patch Changes
+
+- 1386985: Fix table HTML export so numeric table heights include a CSS unit.
+
 ## 3.0.5
 
 ### Patch Changes
