@@ -66,6 +66,10 @@ function createElem<K extends keyof HTMLElementTagNameMap>(
   return elem
 }
 
+function getKeyboardEvent(event: Event): KeyboardEvent | null {
+  return event instanceof KeyboardEvent ? event : null
+}
+
 function isActionKey(event: KeyboardEvent) {
   return event.key === 'Enter' || event.key === ' '
 }
@@ -572,20 +576,21 @@ class TableProperty implements IButtonMenu {
     })
 
     $content.find('.w-e-table-property-select-trigger').on('keydown', e => {
+      const keyboardEvent = getKeyboardEvent(e)
       const trigger = e.currentTarget
 
-      if (trigger == null) {
+      if (keyboardEvent == null || !(trigger instanceof HTMLElement)) {
         return
       }
 
-      if (isActionKey(e)) {
-        e.preventDefault()
+      if (isActionKey(keyboardEvent)) {
+        keyboardEvent.preventDefault()
         trigger.click()
         return
       }
 
-      if (e.key === 'Escape') {
-        e.preventDefault()
+      if (keyboardEvent.key === 'Escape') {
+        keyboardEvent.preventDefault()
         closeSelectPanels()
       }
     })
@@ -609,20 +614,21 @@ class TableProperty implements IButtonMenu {
     })
 
     $content.find('.w-e-table-property-select-option').on('keydown', e => {
+      const keyboardEvent = getKeyboardEvent(e)
       const option = e.currentTarget
 
-      if (option == null) {
+      if (keyboardEvent == null || !(option instanceof HTMLElement)) {
         return
       }
 
-      if (isActionKey(e)) {
-        e.preventDefault()
+      if (isActionKey(keyboardEvent)) {
+        keyboardEvent.preventDefault()
         option.click()
         return
       }
 
-      if (e.key === 'Escape') {
-        e.preventDefault()
+      if (keyboardEvent.key === 'Escape') {
+        keyboardEvent.preventDefault()
         closeSelectPanels()
       }
     })
@@ -694,11 +700,13 @@ class TableProperty implements IButtonMenu {
       })
 
       $elem.on('keydown', e => {
-        if (!isActionKey(e)) {
+        const keyboardEvent = getKeyboardEvent(e)
+
+        if (keyboardEvent == null || !isActionKey(keyboardEvent)) {
           return
         }
 
-        e.preventDefault()
+        keyboardEvent.preventDefault()
         openColorPanel()
       })
     })
