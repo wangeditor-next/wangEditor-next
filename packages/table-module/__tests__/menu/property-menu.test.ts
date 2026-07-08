@@ -346,6 +346,37 @@ describe('table property menus', () => {
     expect(clearPanel.find('li.active').attr('data-value')).toBe('#cccccc')
   })
 
+  test('TableProperty supports keyboard activation for custom controls', () => {
+    const editor = createEditor({ content: createTableContent() })
+    const menu = new TableProperty()
+
+    setSelectionInsideFirstCell(editor)
+    vi.spyOn(editor, 'getMenuConfig').mockImplementation((mark: string) => {
+      if (mark === 'color') {
+        return { colors: ['#ff0000'] } as any
+      }
+      return {} as any
+    })
+
+    const elem = menu.getModalContentElem(editor) as HTMLDivElement
+    const trigger = elem.querySelector('.w-e-table-property-select-trigger') as HTMLButtonElement
+    const borderStyle = elem.querySelector('[name="borderStyle"]') as HTMLInputElement
+    const option = elem.querySelector(
+      '.w-e-table-property-select-option[data-value="dashed"]'
+    ) as HTMLButtonElement
+    const borderColorTrigger = elem.querySelector('[data-mark="color"]') as HTMLElement
+
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    expect(trigger.getAttribute('aria-expanded')).toBe('true')
+
+    option.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }))
+    expect(borderStyle.value).toBe('dashed')
+    expect(trigger.getAttribute('aria-expanded')).toBe('false')
+
+    borderColorTrigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    expect(borderColorTrigger.querySelector('.w-e-drop-panel')).not.toBeNull()
+  })
+
   test('CellProperty marks the current text alignment button as active', () => {
     const editor = createEditor({
       content: [
