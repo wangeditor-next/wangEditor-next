@@ -1,10 +1,10 @@
 {
   "name": "@wangeditor-next/basic-modules",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "wangEditor basic modules",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",
-  "homepage": "https://github.com/wangeditor-next/wangeditor-next#readme",
+  "homepage": "https://github.com/wangeditor-next/wangEditor-next#readme",
   "license": "MIT",
   "types": "dist/basic-modules/src/index.d.ts",
   "main": "dist/index.js",
@@ -41,7 +41,7 @@
     "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
   },
   "bugs": {
-    "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
+    "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
   },
   "peerDependencies": {
     "@wangeditor-next/core": ">=1.9.2",

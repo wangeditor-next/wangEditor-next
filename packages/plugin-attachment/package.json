@@ -1,6 +1,6 @@
 {
   "name": "@wangeditor-next/plugin-attachment",
-  "version": "2.0.10",
+  "version": "2.0.15",
   "description": "wangEditor attachment plugin",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",
@@ -38,10 +38,10 @@
     "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
   },
   "bugs": {
-    "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
+    "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
   },
   "peerDependencies": {
-    "@wangeditor-next/editor": "5.7.10",
+    "@wangeditor-next/editor": "5.7.15",
     "dom7": "^3.0.0 || ^4.0.0",
     "snabbdom": "^3.6.0"
   },

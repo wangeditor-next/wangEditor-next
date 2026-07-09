@@ -47,7 +47,7 @@ describe('editor DOM API', () => {
           'deleteImage',
         ],
       },
-      // 其他参考 https://github.com/wangeditor-next/wangeditor-next/blob/master/packages/editor/src/init-default-config/config/hoverbar.ts
+      // 其他参考 https://github.com/wangeditor-next/wangEditor-next/blob/master/packages/editor/src/init-default-config/config/hoverbar.ts
     }
     const editor = createEditor({ config: editorConfig })
 

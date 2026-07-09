@@ -1,6 +1,6 @@
 {
   "name": "@wangeditor-next/editor",
-  "version": "5.7.10",
+  "version": "5.7.15",
   "description": "Web rich text editor, Web 富文本编辑器",
   "keywords": [
     "wangeditor",
@@ -11,7 +11,7 @@
   ],
   "author": "cycleccc <29912005548@qq.com>",
   "type": "module",
-  "homepage": "https://github.com/wangeditor-next/wangeditor-next#readme",
+  "homepage": "https://github.com/wangeditor-next/wangEditor-next#readme",
   "license": "MIT",
   "types": "dist/editor/src/index.d.ts",
   "main": "dist/index.js",
@@ -61,17 +61,17 @@
     "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
   },
   "bugs": {
-    "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
+    "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
   },
   "dependencies": {
     "@uppy/core": "^5.0.0",
     "@uppy/xhr-upload": "^5.0.0",
-    "@wangeditor-next/basic-modules": "3.0.2",
+    "@wangeditor-next/basic-modules": "3.0.3",
     "@wangeditor-next/code-highlight": "3.0.2",
-    "@wangeditor-next/core": "1.9.4",
-    "@wangeditor-next/list-module": "3.0.2",
-    "@wangeditor-next/table-module": "3.0.2",
-    "@wangeditor-next/upload-image-module": "3.0.2",
+    "@wangeditor-next/core": "1.9.5",
+    "@wangeditor-next/list-module": "3.0.3",
+    "@wangeditor-next/table-module": "3.0.6",
+    "@wangeditor-next/upload-image-module": "3.0.3",
     "@wangeditor-next/video-module": "3.0.2",
     "dom7": "^4.0.0",
     "is-hotkey": "^0.2.0",

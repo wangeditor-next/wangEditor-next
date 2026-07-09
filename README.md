@@ -6,7 +6,7 @@
 [![bundle][bundle-src]][bundle-href]
 [![JSDocs][jsdocs-src]][jsdocs-href]
 [![License][license-src]][license-href]
-[![codecov](https://codecov.io/gh/wangeditor-next/wangeditor-next/graph/badge.svg?token=0ZSXFXJPK3)](https://codecov.io/gh/wangeditor-next/wangeditor-next)
+[![codecov](https://codecov.io/gh/wangeditor-next/wangEditor-next/graph/badge.svg?token=0ZSXFXJPK3)](https://codecov.io/gh/wangeditor-next/wangEditor-next)
 
 🌍 [English](./README-en.md) | 中文
 
@@ -100,7 +100,7 @@ pnpm demo:yjs:vue3
 ## 贡献者
 
 <a href="https://github.com/wangeditor-next/wangEditor-next/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=wangeditor-next/wangeditor-next" />
+  <img src="https://contrib.rocks/image?repo=wangeditor-next/wangEditor-next" />
 </a>
 
 ## License
@@ -111,11 +111,11 @@ pnpm demo:yjs:vue3
 
 [npm-version-src]: https://img.shields.io/npm/v/@wangeditor-next/editor?style=flat&colorA=080f12&colorB=1fa669
 [npm-version-href]: https://npmjs.com/package/@wangeditor-next/editor
-[npm-downloads-src]: https://img.shields.io/npm/dm/@wangeditor-next/core?style=flat&colorA=080f12&colorB=1fa669
+[npm-downloads-src]: https://img.shields.io/npm/dm/@wangeditor-next/editor?style=flat&colorA=080f12&colorB=1fa669
 [npm-downloads-href]: https://npmjs.com/package/@wangeditor-next/editor
 [bundle-src]: https://img.shields.io/bundlephobia/minzip/@wangeditor-next/editor?style=flat&colorA=080f12&colorB=1fa669&label=minzip
 [bundle-href]: https://bundlephobia.com/result?p=@wangeditor-next/editor
-[license-src]: https://img.shields.io/github/license/wangeditor-next/wangeditor-next.svg?style=flat&colorA=080f12&colorB=1fa669
+[license-src]: https://img.shields.io/github/license/wangeditor-next/wangEditor-next.svg?style=flat&colorA=080f12&colorB=1fa669
 [license-href]: https://github.com/wangeditor-next/wangEditor-next/blob/master/LICENSE
 [jsdocs-src]: https://img.shields.io/badge/jsdocs-reference-080f12?style=flat&colorA=080f12&colorB=1fa669
 [jsdocs-href]: https://www.jsdocs.io/package/@wangeditor-next/editor

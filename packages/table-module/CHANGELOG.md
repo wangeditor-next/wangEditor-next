@@ -1,5 +1,32 @@
 # Change Log
 
+## 3.0.6
+
+### Patch Changes
+
+- 1386985: Fix table HTML export so numeric table heights include a CSS unit.
+
+## 3.0.5
+
+### Patch Changes
+
+- b142e71: Fix column resizing for tables without an explicit height.
+- Updated dependencies [1e4c59f]
+  - @wangeditor-next/core@1.9.5
+
+## 3.0.4
+
+### Patch Changes
+
+- 0cfccda: Fix Word table imports so percentage column widths are converted to usable pixel widths.
+
+## 3.0.3
+
+### Patch Changes
+
+- f510bbb: Fix Word table imports so `pt` column widths are converted to CSS pixels.
+- 370bc8b: Improve table and cell property modal controls.
+
 ## 3.0.2
 
 ### Patch Changes

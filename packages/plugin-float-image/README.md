@@ -4,11 +4,11 @@
 
 <br/>
 <br/>
-<a href="https://github.com/hqwlkj/wangEditor-plugin-float-image/releases">
-<img src="https://img.shields.io/github/v/release/hqwlkj/wangEditor-plugin-float-image" alt=""/>
+<a href="https://www.npmjs.com/package/@wangeditor-next/plugin-float-image">
+<img src="https://img.shields.io/npm/v/%40wangeditor-next%2Fplugin-float-image" alt=""/>
 </a>
-<a href="https://www.npmjs.com/package/wangeditor-plugin-float-image">
-<img src="https://img.shields.io/github/downloads/hqwlkj/wangEditor-plugin-float-image/total" alt=""/>
+<a href="https://www.npmjs.com/package/@wangeditor-next/plugin-float-image">
+<img src="https://img.shields.io/npm/dm/%40wangeditor-next%2Fplugin-float-image" alt=""/>
 </a>
 
 ## 介绍
@@ -35,7 +35,7 @@ npm i @wangeditor-next/plugin-float-image
 
 ```js
 import { Boot } from '@wangeditor-next/editor'
-import floatImageModule from 'wangeditor-plugin-float-image'
+import floatImageModule from '@wangeditor-next/plugin-float-image'
 
 // 注册。要在创建编辑器之前注册，且只能注册一次，不可重复注册。
 Boot.registerModule(floatImageModule)
@@ -91,4 +91,4 @@ const editorConfig: Partial<IEditorConfig> = {
 
 ## 许可证
 
-[MIT](https://github.com/hqwlkj/wangEditor-plugin-float-image/blob/master/LICENSE)
+[MIT](https://github.com/wangeditor-next/wangEditor-next/blob/master/LICENSE)

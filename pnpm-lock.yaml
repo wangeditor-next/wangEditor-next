@@ -92,7 +92,7 @@ importers:
         version: 8.59.4(eslint@9.39.4(jiti@2.6.1))(typescript@5.7.2)
       '@vitest/coverage-v8':
         specifier: ^3.2.4
-        version: 3.2.4(vitest@3.2.4(@types/node@24.10.1)(jiti@2.6.1)(jsdom@20.0.3)(less@4.6.4)(terser@5.44.1)(yaml@2.9.0))
+        version: 3.2.4(vitest@3.2.4(@types/node@24.10.1)(jiti@2.6.1)(jsdom@20.0.3)(less@4.6.6)(terser@5.44.1)(yaml@2.9.0))
       autoprefixer:
         specifier: ^10.2.5
         version: 10.4.22(postcss@8.5.6)
@@ -149,7 +149,7 @@ importers:
         version: 29.7.0
       less:
         specifier: ^4.0.0
-        version: 4.6.4
+        version: 4.6.6
       lint-staged:
         specifier: ^17.0.5
         version: 17.0.5
@@ -212,7 +212,7 @@ importers:
         version: 5.7.2
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/node@24.10.1)(jiti@2.6.1)(jsdom@20.0.3)(less@4.6.4)(terser@5.44.1)(yaml@2.9.0)
+        version: 3.2.4(@types/node@24.10.1)(jiti@2.6.1)(jsdom@20.0.3)(less@4.6.6)(terser@5.44.1)(yaml@2.9.0)
       vue-eslint-parser:
         specifier: ^10.3.1
         version: 10.4.0(eslint@9.39.4(jiti@2.6.1))
@@ -245,7 +245,7 @@ importers:
         version: 1.3.2
       vite:
         specifier: ^2.6.13
-        version: 2.9.18(less@4.6.4)
+        version: 2.9.18(less@4.6.6)
 
   apps/demo-vue3:
     dependencies:
@@ -261,13 +261,13 @@ importers:
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^2.3.4
-        version: 2.3.4(vite@2.9.18(less@4.6.4))(vue@3.5.24(typescript@4.5.5))
+        version: 2.3.4(vite@2.9.18(less@4.6.6))(vue@3.5.24(typescript@4.5.5))
       typescript:
         specifier: ~4.5.5
         version: 4.5.5
       vite:
         specifier: ^2.9.16
-        version: 2.9.18(less@4.6.4)
+        version: 2.9.18(less@4.6.6)
       vue-tsc:
         specifier: 1.0.24
         version: 1.0.24(typescript@4.5.5)
@@ -318,7 +318,7 @@ importers:
         version: 6.30.3(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       vite-plugin-windicss:
         specifier: 1.9.3
-        version: 1.9.3(vite@2.9.18(less@4.6.4))
+        version: 1.9.3(vite@2.9.18(less@4.6.6))
       y-protocols:
         specifier: ^1.0.6
         version: 1.0.6(yjs@13.6.27)
@@ -346,7 +346,7 @@ importers:
         version: 10.4.22(postcss@8.5.6)
       vite:
         specifier: ^2.6.13
-        version: 2.9.18(less@4.6.4)
+        version: 2.9.18(less@4.6.6)
       windicss:
         specifier: ^3.5.1
         version: 3.5.6
@@ -398,7 +398,7 @@ importers:
         version: 0.5.9
       '@vitejs/plugin-vue':
         specifier: ^2.3.4
-        version: 2.3.4(vite@2.9.18(less@4.6.4))(vue@3.5.24(typescript@4.5.5))
+        version: 2.3.4(vite@2.9.18(less@4.6.6))(vue@3.5.24(typescript@4.5.5))
       lint-staged:
         specifier: ^15.5.2
         version: 15.5.2
@@ -410,10 +410,10 @@ importers:
         version: 4.5.5
       vite:
         specifier: ^2.9.16
-        version: 2.9.18(less@4.6.4)
+        version: 2.9.18(less@4.6.6)
       vite-plugin-windicss:
         specifier: ^1.8.3
-        version: 1.9.3(vite@2.9.18(less@4.6.4))
+        version: 1.9.3(vite@2.9.18(less@4.6.6))
       vue-tsc:
         specifier: 1.0.24
         version: 1.0.24(typescript@4.5.5)
@@ -556,22 +556,22 @@ importers:
         specifier: ^5.0.0
         version: 5.2.0(@uppy/core@5.2.0)
       '@wangeditor-next/basic-modules':
-        specifier: 3.0.2
+        specifier: 3.0.3
         version: link:../basic-modules
       '@wangeditor-next/code-highlight':
         specifier: 3.0.2
         version: link:../code-highlight
       '@wangeditor-next/core':
-        specifier: 1.9.4
+        specifier: 1.9.5
         version: link:../core
       '@wangeditor-next/list-module':
-        specifier: 3.0.2
+        specifier: 3.0.3
         version: link:../list-module
       '@wangeditor-next/table-module':
-        specifier: 3.0.2
+        specifier: 3.0.6
         version: link:../table-module
       '@wangeditor-next/upload-image-module':
-        specifier: 3.0.2
+        specifier: 3.0.3
         version: link:../upload-image-module
       '@wangeditor-next/video-module':
         specifier: 3.0.2
@@ -626,7 +626,7 @@ importers:
         specifier: workspace:^
         version: link:../../shared/rollup-config
       '@wangeditor-next/editor':
-        specifier: ^5.7.8
+        specifier: ^5.7.12
         version: link:../editor
       react:
         specifier: ^17.0.2
@@ -638,7 +638,7 @@ importers:
   packages/list-module:
     dependencies:
       '@wangeditor-next/core':
-        specifier: '>=1.9.2'
+        specifier: '>=1.9.5'
         version: link:../core
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -657,7 +657,7 @@ importers:
   packages/plugin-attachment:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.10
+        specifier: 5.7.15
         version: link:../editor
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -673,7 +673,7 @@ importers:
   packages/plugin-ctrl-enter:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 5.7.10
+        specifier: 5.7.15
         version: link:../editor
     devDependencies:
       '@wangeditor-next-shared/rollup-config':
@@ -775,7 +775,7 @@ importers:
   packages/table-module:
     dependencies:
       '@wangeditor-next/core':
-        specifier: '>=1.9.2'
+        specifier: '>=1.9.5'
         version: link:../core
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -809,7 +809,7 @@ importers:
         specifier: ^2.0.3 || ^5.0.0
         version: 2.1.3(@uppy/core@2.3.4)
       '@wangeditor-next/basic-modules':
-        specifier: 3.0.2
+        specifier: 3.0.3
         version: link:../basic-modules
       '@wangeditor-next/core':
         specifier: '>=1.9.2'
@@ -3927,7 +3927,7 @@ packages:
   git-raw-commits@4.0.0:
     resolution: {integrity: sha512-ICsMM1Wk8xSGMowkOmPrzo2Fgmfo4bMHLNX6ytHjajRJUqvHOw/TFapQ+QG75c3X/tTDDhOSRPGC52dDbNM8FQ==}
     engines: {node: '>=16'}
-    deprecated: This package is no longer maintained. For the JavaScript API, please use @conventional-changelog/git-client instead.
+    deprecated: Deprecated and no longer maintained. Use @conventional-changelog/git-client instead.
     hasBin: true
 
   glob-parent@5.1.2:
@@ -4494,8 +4494,8 @@ packages:
   kolorist@1.8.0:
     resolution: {integrity: sha512-Y+60/zizpJ3HRH8DCss+q95yr6145JXZo46OTpFvDZWLfRCE4qChOyk1b26nMaNpfHHgxagk9dXT5OP0Tfe+dQ==}
 
-  less@4.6.4:
-    resolution: {integrity: sha512-OJmO5+HxZLLw0RLzkqaNHzcgEAQG7C0y3aMbwtCzIUFZsLMNNq/1IdAdHEycQ58CwUO3jPTHmoN+tE5I7FQxNg==}
+  less@4.6.6:
+    resolution: {integrity: sha512-ooPSwQGQ2sVe8Dh1jVsbKKsRR2gd8lFK72BDkeSzjnD1T5aIHL65hCMfO0GVmtriKgDKrQv6xp9UrihUsWuAzA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -4694,10 +4694,6 @@ packages:
   magicast@0.3.5:
     resolution: {integrity: sha512-L0WhttDl+2BOsybvEOLK7fW3UA0OQ0IQ2d6Zl2x/a6vVRs3bAY0ECOSHHeL5jD+SbOpOCUEi0y1DgHEn9Qn1AQ==}
 
-  make-dir@2.1.0:
-    resolution: {integrity: sha512-LS9X+dc8KLxXCb8dni79fLIIUA5VyZoyjSMCwTluaXA0o27cCK0bhXkpgw+sTXVpPy/lSO57ilRixqk0vDmtRA==}
-    engines: {node: '>=6'}
-
   make-dir@3.1.0:
     resolution: {integrity: sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==}
     engines: {node: '>=8'}
@@ -4705,6 +4701,10 @@ packages:
   make-dir@4.0.0:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
     engines: {node: '>=10'}
+
+  make-dir@5.1.0:
+    resolution: {integrity: sha512-IfpFq6UM39dUNiphpA6uDezNx/AvWyhwfICWPR3t1VspkgkMZrL+Rk1RbN1bx+aeNYwOrqGJgEgV3yotk+ZUVw==}
+    engines: {node: '>=18'}
 
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
@@ -5836,10 +5836,6 @@ packages:
 
   secure-compare@3.0.1:
     resolution: {integrity: sha512-AckIIV90rPDcBcglUwXPF3kg0P0qmPsPXAj6BBEENQE1p5yA1xfmDJzfi1Tappj37Pv2mVbKpL3Z1T+Nn7k1Qw==}
-
-  semver@5.7.2:
-    resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
-    hasBin: true
 
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
@@ -8475,12 +8471,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitejs/plugin-vue@2.3.4(vite@2.9.18(less@4.6.4))(vue@3.5.24(typescript@4.5.5))':
+  '@vitejs/plugin-vue@2.3.4(vite@2.9.18(less@4.6.6))(vue@3.5.24(typescript@4.5.5))':
     dependencies:
-      vite: 2.9.18(less@4.6.4)
+      vite: 2.9.18(less@4.6.6)
       vue: 3.5.24(typescript@4.5.5)
 
-  '@vitest/coverage-v8@3.2.4(vitest@3.2.4(@types/node@24.10.1)(jiti@2.6.1)(jsdom@20.0.3)(less@4.6.4)(terser@5.44.1)(yaml@2.9.0))':
+  '@vitest/coverage-v8@3.2.4(vitest@3.2.4(@types/node@24.10.1)(jiti@2.6.1)(jsdom@20.0.3)(less@4.6.6)(terser@5.44.1)(yaml@2.9.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
@@ -8495,7 +8491,7 @@ snapshots:
       std-env: 3.10.0
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@24.10.1)(jiti@2.6.1)(jsdom@20.0.3)(less@4.6.4)(terser@5.44.1)(yaml@2.9.0)
+      vitest: 3.2.4(@types/node@24.10.1)(jiti@2.6.1)(jsdom@20.0.3)(less@4.6.6)(terser@5.44.1)(yaml@2.9.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -8507,13 +8503,13 @@ snapshots:
       chai: 5.3.3
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.2.4(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.4)(terser@5.44.1)(yaml@2.9.0))':
+  '@vitest/mocker@3.2.4(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.6)(terser@5.44.1)(yaml@2.9.0))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.4)(terser@5.44.1)(yaml@2.9.0)
+      vite: 7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.6)(terser@5.44.1)(yaml@2.9.0)
 
   '@vitest/pretty-format@3.2.4':
     dependencies:
@@ -10807,7 +10803,7 @@ snapshots:
 
   kolorist@1.8.0: {}
 
-  less@4.6.4:
+  less@4.6.6:
     dependencies:
       copy-anything: 3.0.5
       parse-node-version: 1.0.1
@@ -10815,7 +10811,7 @@ snapshots:
       errno: 0.1.8
       graceful-fs: 4.2.11
       image-size: 0.5.5
-      make-dir: 2.1.0
+      make-dir: 5.1.0
       mime: 1.6.0
       needle: 3.5.0
       source-map: 0.6.1
@@ -11034,12 +11030,6 @@ snapshots:
       '@babel/types': 7.28.5
       source-map-js: 1.2.1
 
-  make-dir@2.1.0:
-    dependencies:
-      pify: 4.0.1
-      semver: 5.7.2
-    optional: true
-
   make-dir@3.1.0:
     dependencies:
       semver: 6.3.1
@@ -11047,6 +11037,9 @@ snapshots:
   make-dir@4.0.0:
     dependencies:
       semver: 7.8.1
+
+  make-dir@5.1.0:
+    optional: true
 
   math-intrinsics@1.1.0: {}
 
@@ -12161,9 +12154,6 @@ snapshots:
 
   secure-compare@3.0.1: {}
 
-  semver@5.7.2:
-    optional: true
-
   semver@6.3.1: {}
 
   semver@7.7.3: {}
@@ -12652,13 +12642,13 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  vite-node@3.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.4)(terser@5.44.1)(yaml@2.9.0):
+  vite-node@3.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.6)(terser@5.44.1)(yaml@2.9.0):
     dependencies:
       cac: 6.7.14
       debug: 4.4.3
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.4)(terser@5.44.1)(yaml@2.9.0)
+      vite: 7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.6)(terser@5.44.1)(yaml@2.9.0)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -12673,17 +12663,17 @@ snapshots:
       - tsx
       - yaml
 
-  vite-plugin-windicss@1.9.3(vite@2.9.18(less@4.6.4)):
+  vite-plugin-windicss@1.9.3(vite@2.9.18(less@4.6.6)):
     dependencies:
       '@windicss/plugin-utils': 1.9.3
       debug: 4.4.3
       kolorist: 1.8.0
-      vite: 2.9.18(less@4.6.4)
+      vite: 2.9.18(less@4.6.6)
       windicss: 3.5.6
     transitivePeerDependencies:
       - supports-color
 
-  vite@2.9.18(less@4.6.4):
+  vite@2.9.18(less@4.6.6):
     dependencies:
       esbuild: 0.14.54
       postcss: 8.5.6
@@ -12691,9 +12681,9 @@ snapshots:
       rollup: 2.77.3
     optionalDependencies:
       fsevents: 2.3.3
-      less: 4.6.4
+      less: 4.6.6
 
-  vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.4)(terser@5.44.1)(yaml@2.9.0):
+  vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.6)(terser@5.44.1)(yaml@2.9.0):
     dependencies:
       esbuild: 0.25.12
       fdir: 6.5.0(picomatch@4.0.3)
@@ -12705,15 +12695,15 @@ snapshots:
       '@types/node': 24.10.1
       fsevents: 2.3.3
       jiti: 2.6.1
-      less: 4.6.4
+      less: 4.6.6
       terser: 5.44.1
       yaml: 2.9.0
 
-  vitest@3.2.4(@types/node@24.10.1)(jiti@2.6.1)(jsdom@20.0.3)(less@4.6.4)(terser@5.44.1)(yaml@2.9.0):
+  vitest@3.2.4(@types/node@24.10.1)(jiti@2.6.1)(jsdom@20.0.3)(less@4.6.6)(terser@5.44.1)(yaml@2.9.0):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.4)(terser@5.44.1)(yaml@2.9.0))
+      '@vitest/mocker': 3.2.4(vite@7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.6)(terser@5.44.1)(yaml@2.9.0))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
@@ -12731,8 +12721,8 @@ snapshots:
       tinyglobby: 0.2.15
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-      vite: 7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.4)(terser@5.44.1)(yaml@2.9.0)
-      vite-node: 3.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.4)(terser@5.44.1)(yaml@2.9.0)
+      vite: 7.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.6)(terser@5.44.1)(yaml@2.9.0)
+      vite-node: 3.2.4(@types/node@24.10.1)(jiti@2.6.1)(less@4.6.6)(terser@5.44.1)(yaml@2.9.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 24.10.1

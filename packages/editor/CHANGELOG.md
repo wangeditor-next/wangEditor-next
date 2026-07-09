@@ -1,5 +1,47 @@
 # Change Log
 
+## 5.7.15
+
+### Patch Changes
+
+- Updated dependencies [1386985]
+  - @wangeditor-next/table-module@3.0.6
+
+## 5.7.14
+
+### Patch Changes
+
+- 1e4c59f: Fix Vue3 production builds losing selected image hoverbar actions and keep pasted Word-like HTML blocks in source order.
+- Updated dependencies [1e4c59f]
+- Updated dependencies [60910ab]
+- Updated dependencies [b142e71]
+  - @wangeditor-next/core@1.9.5
+  - @wangeditor-next/list-module@3.0.3
+  - @wangeditor-next/table-module@3.0.5
+
+## 5.7.13
+
+### Patch Changes
+
+- Updated dependencies [fbc644c]
+  - @wangeditor-next/basic-modules@3.0.3
+  - @wangeditor-next/upload-image-module@3.0.3
+
+## 5.7.12
+
+### Patch Changes
+
+- Updated dependencies [0cfccda]
+  - @wangeditor-next/table-module@3.0.4
+
+## 5.7.11
+
+### Patch Changes
+
+- Updated dependencies [f510bbb]
+- Updated dependencies [370bc8b]
+  - @wangeditor-next/table-module@3.0.3
+
 ## 5.7.10
 
 ### Patch Changes

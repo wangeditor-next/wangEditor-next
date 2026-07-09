@@ -43,7 +43,7 @@ jobs:
     steps:
       # 检出代码库
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -87,7 +87,7 @@ jobs:
 
       - name: Upload coverage reports to Codecov
         if: matrix.node-version == '22.13.0' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_name == 'master'))
-        uses: codecov/codecov-action@v6.0.1
+        uses: codecov/codecov-action@v7.0.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage/lcov.info

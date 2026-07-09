@@ -43,7 +43,14 @@ const getMatches = (e: IDomEditor, path: Path) => {
  * @param editor editor
  * @param elem slate elem
  */
-function insertElemToEditor(editor: IDomEditor, elem: Element) {
+function insertElemToEditor(editor: IDomEditor, elem: Node) {
+  if (Text.isText(elem)) {
+    editor.insertNode(elem)
+    return
+  }
+
+  if (!Element.isElement(elem)) { return }
+
   if (editor.isInline(elem)) {
     // inline elem 直接插入
     editor.insertNode(elem)
@@ -52,7 +59,22 @@ function insertElemToEditor(editor: IDomEditor, elem: Element) {
     if (elem.type === 'link') { editor.insertFragment([{ text: '' }]) }
   } else {
     // block elem ，另起一行插入 —— 重要
-    Transforms.insertNodes(editor, elem, { mode: 'highest' })
+    const { selection } = editor
+
+    if (!selection) { return }
+    const topLevelPath = [selection.focus.path[0]]
+
+    if (DomEditor.isSelectedEmptyParagraph(editor)) {
+      Transforms.removeNodes(editor, { at: topLevelPath })
+      Transforms.insertNodes(editor, elem, { at: topLevelPath })
+      Transforms.select(editor, Editor.end(editor, topLevelPath))
+      return
+    }
+
+    const insertPath = Path.next(topLevelPath)
+
+    Transforms.insertNodes(editor, elem, { at: insertPath })
+    Transforms.select(editor, Editor.end(editor, insertPath))
   }
 }
 

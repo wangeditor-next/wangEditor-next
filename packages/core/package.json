@@ -1,10 +1,10 @@
 {
   "name": "@wangeditor-next/core",
-  "version": "1.9.4",
+  "version": "1.9.5",
   "description": "wangEditor core",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",
-  "homepage": "https://github.com/wangeditor-next/wangeditor-next#readme",
+  "homepage": "https://github.com/wangeditor-next/wangEditor-next#readme",
   "license": "MIT",
   "types": "dist/core/src/index.d.ts",
   "main": "dist/index.js",
@@ -46,7 +46,7 @@
     "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
   },
   "bugs": {
-    "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
+    "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
   },
   "peerDependencies": {
     "@uppy/core": "^2.1.1 || ^5.0.0",

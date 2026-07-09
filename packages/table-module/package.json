@@ -1,10 +1,10 @@
 {
   "name": "@wangeditor-next/table-module",
-  "version": "3.0.2",
+  "version": "3.0.6",
   "description": "wangEditor table module",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",
-  "homepage": "https://github.com/wangeditor-next/wangeditor-next#readme",
+  "homepage": "https://github.com/wangeditor-next/wangEditor-next#readme",
   "license": "MIT",
   "types": "dist/table-module/src/index.d.ts",
   "main": "dist/index.js",
@@ -41,10 +41,10 @@
     "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
   },
   "bugs": {
-    "url": "https://github.com/wangeditor-next/wangeditor-next/issues"
+    "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
   },
   "peerDependencies": {
-    "@wangeditor-next/core": ">=1.9.2",
+    "@wangeditor-next/core": ">=1.9.5",
     "dom7": "^3.0.0 || ^4.0.0",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",

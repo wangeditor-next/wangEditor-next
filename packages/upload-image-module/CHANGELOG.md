@@ -1,5 +1,12 @@
 # Change Log
 
+## 3.0.3
+
+### Patch Changes
+
+- Updated dependencies [fbc644c]
+  - @wangeditor-next/basic-modules@3.0.3
+
 ## 3.0.2
 
 ### Patch Changes

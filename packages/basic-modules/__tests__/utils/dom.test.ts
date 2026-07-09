@@ -16,4 +16,12 @@ describe('redo menu', () => {
 
     expect(result).toBe('') // 验证返回的是空字符串
   })
+
+  it('returns empty string for non-element nodes', () => {
+    // 文本节点没有 tagName，读取 tagName.toLowerCase() 会抛错
+    const textNode = document.createTextNode('hello')
+    const elem: Dom7Array = [textNode] as unknown as Dom7Array
+
+    expect(getTagName(elem)).toBe('')
+  })
 })

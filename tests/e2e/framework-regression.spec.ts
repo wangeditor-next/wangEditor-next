@@ -307,6 +307,156 @@ async function setSelectedTableWidthMode(page: Page, width: '100%' | 'auto') {
 test.describe('Framework parity regression', () => {
   test.describe.configure({ timeout: process.env.CI ? 240_000 : 90_000 })
 
+  test('react-wrapper: regression #907 Editor style should apply to the actual editor root', async ({ page }) => {
+    const pageErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.stack || err?.message || String(err))
+    })
+
+    await openTarget(page, targets.find(target => target.name === 'react-wrapper')!)
+
+    const snapshot = await page.evaluate(() => {
+      const host = document.querySelector('[data-testid="editor-textarea"] [data-w-e-textarea="true"]')
+      const textContainer = host?.querySelector('.w-e-text-container')
+      const scroll = host?.querySelector('.w-e-scroll')
+
+      if (!host || !textContainer || !scroll) {
+        throw new Error('react editor DOM not ready')
+      }
+
+      const read = (el: Element) => {
+        const computedStyle = getComputedStyle(el)
+        const rect = el.getBoundingClientRect()
+
+        return {
+          attrStyle: el.getAttribute('style') || '',
+          height: rect.height,
+          computedHeight: computedStyle.height,
+          overflowY: computedStyle.overflowY,
+        }
+      }
+
+      return {
+        host: read(host),
+        textContainer: read(textContainer),
+        scroll: read(scroll),
+      }
+    })
+
+    expect(snapshot.host.attrStyle).toContain('height: 360px')
+    expect(snapshot.host.attrStyle).toContain('overflow-y: hidden')
+    expect(snapshot.textContainer.height).toBeGreaterThan(300)
+    expect(snapshot.scroll.height).toBeGreaterThan(300)
+    expect(pageErrors).toEqual([])
+  })
+
+  test('vue3-wrapper: regression #919 production build should keep image hoverbar and paste order', async ({ page }) => {
+    test.skip(
+      process.env.PLAYWRIGHT_WRAPPER_PREVIEW !== '1',
+      'regression #919 requires wrapper production preview',
+    )
+
+    const pageErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.stack || err?.message || String(err))
+    })
+
+    await openTarget(page, targets.find(target => target.name === 'vue3-wrapper')!)
+
+    await page.evaluate(() => {
+      const globalWindow = window as any
+      const editor = globalWindow.vue3Editor
+
+      if (!editor) {
+        throw new Error('vue3 editor not ready')
+      }
+
+      editor.clear()
+      editor.dangerouslyInsertHtml(
+        '<p><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="tiny" /></p>',
+      )
+    })
+    await page.locator('[data-testid="editor-textarea"] img').first().click({ force: true })
+    await page.waitForTimeout(500)
+
+    const imageState = await page.evaluate(() => {
+      const visibleHoverbar = Array.from(document.querySelectorAll('.w-e-hover-bar')).find(el => {
+        const style = window.getComputedStyle(el)
+        const rect = el.getBoundingClientRect()
+
+        return style.display !== 'none'
+          && style.visibility !== 'hidden'
+          && rect.width > 0
+          && rect.height > 0
+      })
+
+      return {
+        selectedImage: !!document.querySelector('.w-e-selected-image-container'),
+        hoverbarVisible: !!visibleHoverbar,
+        menuKeys: visibleHoverbar
+          ? Array.from(visibleHoverbar.querySelectorAll('[data-menu-key]')).map(el => el.getAttribute('data-menu-key'))
+          : [],
+      }
+    })
+
+    expect(imageState.selectedImage).toBe(true)
+    expect(imageState.hoverbarVisible).toBe(true)
+    expect(imageState.menuKeys).toEqual(expect.arrayContaining([
+      'imageWidth30',
+      'editorImageSizeMenu',
+      'editImage',
+      'deleteImage',
+    ]))
+
+    await openTarget(page, targets.find(target => target.name === 'vue3-wrapper')!)
+
+    const wordLikeHtml = `
+      <html><body>
+        <div class="WordSection1">
+          <p class="MsoTitle"><span style="font-size:22pt;font-family:宋体">测试标题</span></p>
+          <p class="MsoNormal"><span style="font-family:宋体">第一段内容</span></p>
+          <p class="MsoNormal"><span style="font-family:宋体">第二段内容</span></p>
+        </div>
+      </body></html>`
+
+    const pasteState = await page.evaluate(({ html }) => {
+      const globalWindow = window as any
+      const editor = globalWindow.vue3Editor
+
+      if (!editor) {
+        throw new Error('vue3 editor not ready')
+      }
+
+      editor.clear()
+      editor.focus()
+
+      const transfer = new DataTransfer()
+
+      transfer.setData('text/html', html)
+      transfer.setData('text/plain', '测试标题\n第一段内容\n第二段内容')
+      editor.insertData(transfer)
+
+      return {
+        text: editor.getText(),
+        children: editor.children.map((node: any) => {
+          return Array.isArray(node.children)
+            ? node.children.map((child: any) => child.text || '').join('')
+            : ''
+        }),
+      }
+    }, { html: wordLikeHtml })
+
+    expect(pasteState.children).toEqual([
+      '测试标题',
+      '第一段内容',
+      '第二段内容',
+    ])
+    expect(pasteState.text).toBe('测试标题\n第一段内容\n第二段内容')
+    expect(pageErrors).toEqual([])
+  })
+
   for (const target of targets) {
     test(`${target.name}: ime composition should not throw`, async ({ page }) => {
       const pageErrors: string[] = []
@@ -982,6 +1132,62 @@ test.describe('Framework parity regression', () => {
       expect(beforeFirst).toBeGreaterThan(0)
       expect(afterFirst).toBeGreaterThan(beforeFirst)
       expect(widthModeAfterDrag).toBe('auto')
+      expect(pageErrors).toEqual([])
+    })
+
+    test(`${target.name}: regression #923 table without height should allow column resize`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+      await clearEditor(page)
+      await create2x2TableByApi(page)
+
+      await page.evaluate(() => {
+        const table = document.querySelector('[data-testid="editor-textarea"] table.table') as HTMLTableElement | null
+
+        if (!table) {
+          throw new Error('table not ready')
+        }
+
+        table.removeAttribute('height')
+        table.style.height = ''
+
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+        const tableNode = (editor?.children || []).find((node: any) => node?.type === 'table')
+
+        if (!tableNode) {
+          throw new Error('table node not ready')
+        }
+
+        delete tableNode.height
+      })
+      await page.waitForTimeout(120)
+
+      const hotzoneHeight = await page
+        .locator('[data-testid="editor-textarea"] .column-resizer')
+        .last()
+        .locator('.column-resizer-item')
+        .first()
+        .locator('.resizer-line-hotzone')
+        .evaluate((hotzone: HTMLElement) => hotzone.getBoundingClientRect().height)
+      const before = await getLastTableWidths(page)
+      const dragged = await dispatchSyntheticFirstColumnResize(page, 60)
+
+      await page.waitForTimeout(240)
+      const after = await getLastTableWidths(page)
+
+      expect(hotzoneHeight).toBeGreaterThan(0)
+      expect(dragged).toBe(true)
+      expect(before[0] || 0).toBeGreaterThan(0)
+      expect(after[0] || 0).toBeGreaterThan(before[0] || 0)
       expect(pageErrors).toEqual([])
     })
 

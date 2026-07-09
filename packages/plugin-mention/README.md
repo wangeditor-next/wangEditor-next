@@ -4,7 +4,7 @@
 
 ## 介绍
 
-[wangeditor-next](https://github.com/cycleccc/wangEditor-next) mention 插件，如 `@张三`。
+[wangeditor-next](https://github.com/wangeditor-next/wangEditor-next) mention 插件，如 `@张三`。
 
 ![](./_img/demo.png)
 
