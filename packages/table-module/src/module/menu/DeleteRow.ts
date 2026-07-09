@@ -3,12 +3,8 @@
  * @author wangfupeng
  */
 
-import {
-  DomEditor, IButtonMenu, IDomEditor, t,
-} from '@wangeditor-next/core'
-import {
-  Editor, Path, Range, Transforms,
-} from 'slate'
+import { DomEditor, IButtonMenu, IDomEditor, t } from '@wangeditor-next/core'
+import { Editor, Path, Range, Transforms } from 'slate'
 
 import { DEL_ROW_SVG } from '../../constants/svg'
 import { filledMatrix } from '../../utils'
@@ -34,8 +30,12 @@ class DeleteRow implements IButtonMenu {
   isDisabled(editor: IDomEditor): boolean {
     const { selection } = editor
 
-    if (selection == null) { return true }
-    if (!Range.isCollapsed(selection)) { return true }
+    if (selection == null) {
+      return true
+    }
+    if (!Range.isCollapsed(selection)) {
+      return true
+    }
 
     const rowNode = DomEditor.getSelectedNodeByType(editor, 'table-row')
 
@@ -47,7 +47,9 @@ class DeleteRow implements IButtonMenu {
   }
 
   exec(editor: IDomEditor, _value: string | boolean) {
-    if (this.isDisabled(editor)) { return }
+    if (this.isDisabled(editor)) {
+      return
+    }
 
     const [rowEntry] = Editor.nodes(editor, {
       match: n => DomEditor.checkNodeType(n, 'table-row'),
@@ -103,7 +105,12 @@ class DeleteRow implements IButtonMenu {
           const originalRowIndex = trIndex - (ttb - 1)
 
           // 安全检查：确保目标行和列都存在
-          if (originalRowIndex < 0 || originalRowIndex >= matrix.length || !matrix[originalRowIndex] || !matrix[originalRowIndex][y]) {
+          if (
+            originalRowIndex < 0 ||
+            originalRowIndex >= matrix.length ||
+            !matrix[originalRowIndex] ||
+            !matrix[originalRowIndex][y]
+          ) {
             continue
           }
 
@@ -119,7 +126,7 @@ class DeleteRow implements IButtonMenu {
                 rowSpan: Math.max(rowSpan - 1, 1),
                 colSpan,
               },
-              { at: path },
+              { at: path }
             )
           } else if (ttb === 1 && rtl === 1) {
             // 只处理合并单元格的真正位置（左上角）：ttb=1且rtl=1
@@ -137,13 +144,30 @@ class DeleteRow implements IButtonMenu {
               }
 
               // 继承原单元格的其他属性
-              if (typedOriginalCell.isHeader) { newCell.isHeader = typedOriginalCell.isHeader }
-              if (typedOriginalCell.width) { newCell.width = typedOriginalCell.width }
-              if (typedOriginalCell.backgroundColor) { newCell.backgroundColor = typedOriginalCell.backgroundColor }
-              if (typedOriginalCell.borderWidth) { newCell.borderWidth = typedOriginalCell.borderWidth }
-              if (typedOriginalCell.borderStyle) { newCell.borderStyle = typedOriginalCell.borderStyle }
-              if (typedOriginalCell.borderColor) { newCell.borderColor = typedOriginalCell.borderColor }
-              if (typedOriginalCell.textAlign) { newCell.textAlign = typedOriginalCell.textAlign }
+              if (typedOriginalCell.isHeader) {
+                newCell.isHeader = typedOriginalCell.isHeader
+              }
+              if (typedOriginalCell.width) {
+                newCell.width = typedOriginalCell.width
+              }
+              if (typedOriginalCell.backgroundColor) {
+                newCell.backgroundColor = typedOriginalCell.backgroundColor
+              }
+              if (typedOriginalCell.borderWidth) {
+                newCell.borderWidth = typedOriginalCell.borderWidth
+              }
+              if (typedOriginalCell.borderStyle) {
+                newCell.borderStyle = typedOriginalCell.borderStyle
+              }
+              if (typedOriginalCell.borderColor) {
+                newCell.borderColor = typedOriginalCell.borderColor
+              }
+              if (typedOriginalCell.textAlign) {
+                newCell.textAlign = typedOriginalCell.textAlign
+              }
+              if (typedOriginalCell.verticalAlign) {
+                newCell.verticalAlign = typedOriginalCell.verticalAlign
+              }
 
               // 记录需要插入的单元格信息
               cellsToInsert.push({
@@ -158,7 +182,7 @@ class DeleteRow implements IButtonMenu {
                   rowSpan: Math.max(rowSpan - 1, 1),
                   colSpan,
                 },
-                { at: path },
+                { at: path }
               )
             }
           } else {
@@ -170,7 +194,7 @@ class DeleteRow implements IButtonMenu {
                 rowSpan: Math.max(rowSpan - 1, 1),
                 colSpan,
               },
-              { at: path },
+              { at: path }
             )
           }
         }

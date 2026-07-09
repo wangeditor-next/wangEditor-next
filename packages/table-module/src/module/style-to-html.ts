@@ -27,7 +27,9 @@ const REPORTED_UNSUPPORTED_BORDER_STYLE = new Set<string>()
 function getBorderStyleClass(borderStyle: string): string {
   const val = (borderStyle || '').trim().toLowerCase()
 
-  if (!val || val === 'none') { return '' }
+  if (!val || val === 'none') {
+    return ''
+  }
   return `w-e-table-border-style-${val}`
 }
 
@@ -37,12 +39,16 @@ function normalizeBorderStyle(borderStyle: string): string {
 
 function resolveBorderStyleAction(
   editor: IDomEditor | undefined,
-  borderStyle: string,
+  borderStyle: string
 ): 'skip' | 'class' | 'inline' | 'preserve-data' {
   const normalized = normalizeBorderStyle(borderStyle)
 
-  if (!normalized || normalized === 'none') { return 'skip' }
-  if (SUPPORTED_TABLE_BORDER_STYLE.has(normalized)) { return 'class' }
+  if (!normalized || normalized === 'none') {
+    return 'skip'
+  }
+  if (SUPPORTED_TABLE_BORDER_STYLE.has(normalized)) {
+    return 'class'
+  }
 
   const policy = getClassStylePolicy(editor)
   let fallback: 'preserve-data' | 'inline' | 'throw' = 'preserve-data'
@@ -80,13 +86,17 @@ function resolveBorderStyleAction(
 }
 
 export function styleToHtml(node, elemHtml, editor?: IDomEditor) {
-  if (node.type !== 'table' && node.type !== 'table-cell') { return elemHtml }
+  if (node.type !== 'table' && node.type !== 'table-cell') {
+    return elemHtml
+  }
 
-  const {
-    backgroundColor, borderWidth, borderStyle, borderColor, textAlign,
-  } = node
+  const { backgroundColor, borderWidth, borderStyle, borderColor, textAlign, verticalAlign } = node
 
-  if (!(backgroundColor || borderWidth || borderStyle || borderColor || textAlign)) { return elemHtml }
+  if (
+    !(backgroundColor || borderWidth || borderStyle || borderColor || textAlign || verticalAlign)
+  ) {
+    return elemHtml
+  }
 
   const $elem = $(elemHtml)
   const textStyleMode = getTextStyleMode(editor)
@@ -131,15 +141,33 @@ export function styleToHtml(node, elemHtml, editor?: IDomEditor) {
       $elem.attr('data-w-e-text-align', textAlign)
     }
 
+    if (verticalAlign) {
+      $elem.attr('valign', verticalAlign)
+      $elem.attr('data-w-e-vertical-align', verticalAlign)
+    }
+
     return getOuterHTML($elem)
   }
 
   // 设置样式
-  if (backgroundColor) { $elem.css('background-color', backgroundColor) }
-  if (borderWidth) { $elem.css('border-width', `${borderWidth}px`) }
-  if (borderStyle) { $elem.css('border-style', borderStyle === 'none' ? '' : borderStyle) }
-  if (borderColor) { $elem.css('border-color', borderColor) }
-  if (textAlign) { $elem.css('text-align', textAlign) }
+  if (backgroundColor) {
+    $elem.css('background-color', backgroundColor)
+  }
+  if (borderWidth) {
+    $elem.css('border-width', `${borderWidth}px`)
+  }
+  if (borderStyle) {
+    $elem.css('border-style', borderStyle === 'none' ? '' : borderStyle)
+  }
+  if (borderColor) {
+    $elem.css('border-color', borderColor)
+  }
+  if (textAlign) {
+    $elem.css('text-align', textAlign)
+  }
+  if (verticalAlign) {
+    $elem.css('vertical-align', verticalAlign)
+  }
 
   // 输出 html
   return getOuterHTML($elem)

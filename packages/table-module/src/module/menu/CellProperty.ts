@@ -3,7 +3,7 @@ import { Editor } from 'slate'
 
 import { CELL_PROPERTY_SVG } from '../../constants/svg'
 import { isOfType } from '../../utils'
-import TableProperty from './TableProperty'
+import TableProperty, { FieldName } from './TableProperty'
 
 class CellProperty extends TableProperty implements IButtonMenu {
   readonly title = t('tableModule.cellProperty')
@@ -17,6 +17,15 @@ class CellProperty extends TableProperty implements IButtonMenu {
   readonly modalWidth = 360
 
   readonly menu = 'cell'
+
+  readonly propertyFields: FieldName[] = [
+    'borderStyle',
+    'borderColor',
+    'borderWidth',
+    'backgroundColor',
+    'textAlign',
+    'verticalAlign',
+  ]
 
   getModalContentNode(editor: IDomEditor) {
     const [node] = Editor.nodes(editor, {

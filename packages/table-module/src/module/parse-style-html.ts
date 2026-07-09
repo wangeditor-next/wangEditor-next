@@ -35,17 +35,29 @@ function convertPtToPx(cssValue: string): string {
   })
 }
 
-export function parseStyleHtml(elem: DOMElement, node: Descendant, _editor: IDomEditor): Descendant {
-  if (!['TABLE', 'TD', 'TH'].includes(elem.tagName)) { return node }
+export function parseStyleHtml(
+  elem: DOMElement,
+  node: Descendant,
+  _editor: IDomEditor
+): Descendant {
+  if (!['TABLE', 'TD', 'TH'].includes(elem.tagName)) {
+    return node
+  }
 
   const $elem = $(elem)
 
   const tableNode = node as TableCellElement
   let backgroundColor = getStyleValue($elem, 'background-color')
 
-  if (!backgroundColor) { backgroundColor = getStyleValue($elem, 'background') } // word 背景色
-  if (!backgroundColor) { backgroundColor = $elem.attr('bgcolor') || '' }
-  if (!backgroundColor) { backgroundColor = $elem.attr('data-w-e-background-color') || '' }
+  if (!backgroundColor) {
+    backgroundColor = getStyleValue($elem, 'background')
+  } // word 背景色
+  if (!backgroundColor) {
+    backgroundColor = $elem.attr('bgcolor') || ''
+  }
+  if (!backgroundColor) {
+    backgroundColor = $elem.attr('data-w-e-background-color') || ''
+  }
   if (backgroundColor) {
     tableNode.backgroundColor = backgroundColor
   }
@@ -64,12 +76,21 @@ export function parseStyleHtml(elem: DOMElement, node: Descendant, _editor: IDom
   for (let i = 0; i < classList.length; i += 1) {
     const className = classList[i]
 
-    if (!className.startsWith('w-e-table-border-style-')) { continue }
+    if (!className.startsWith('w-e-table-border-style-')) {
+      continue
+    }
     borderStyleFromClass = className.replace('w-e-table-border-style-', '')
     break
   }
 
-  const hasDataBorder = !!(dataBorderWidth || dataBorderLine || dataBorderColor || borderAttr || borderColorAttr || borderStyleFromClass)
+  const hasDataBorder = !!(
+    dataBorderWidth ||
+    dataBorderLine ||
+    dataBorderColor ||
+    borderAttr ||
+    borderColorAttr ||
+    borderStyleFromClass
+  )
 
   if (!border && elem.tagName === 'TD' && !hasDataBorder) {
     // https://github.com/wangeditor-next/wangEditor-next/blob/master/packages/table-module/src/assets/index.less#L20
@@ -80,20 +101,32 @@ export function parseStyleHtml(elem: DOMElement, node: Descendant, _editor: IDom
   let [borderWidth, borderStyle, borderColor] = border?.split(' ') || []
 
   borderWidth = getStyleValue($elem, 'border-width') || borderWidth // border 宽度
-  if (!borderWidth) { borderWidth = dataBorderWidth }
-  if (!borderWidth) { borderWidth = borderAttr }
+  if (!borderWidth) {
+    borderWidth = dataBorderWidth
+  }
+  if (!borderWidth) {
+    borderWidth = borderAttr
+  }
   if (borderWidth) {
     tableNode.borderWidth = convertPtToPx(borderWidth.trim())
   }
   borderStyle = getStyleValue($elem, 'border-style') || borderStyle // border 样式
-  if (!borderStyle) { borderStyle = dataBorderLine }
-  if (!borderStyle) { borderStyle = borderStyleFromClass }
+  if (!borderStyle) {
+    borderStyle = dataBorderLine
+  }
+  if (!borderStyle) {
+    borderStyle = borderStyleFromClass
+  }
   if (borderStyle) {
     tableNode.borderStyle = borderStyle === 'none' ? '' : borderStyle
   }
   borderColor = getStyleValue($elem, 'border-color') || borderColor // border 颜色
-  if (!borderColor) { borderColor = borderColorAttr }
-  if (!borderColor) { borderColor = dataBorderColor }
+  if (!borderColor) {
+    borderColor = borderColorAttr
+  }
+  if (!borderColor) {
+    borderColor = dataBorderColor
+  }
   if (borderColor) {
     tableNode.borderColor = borderColor
   }
@@ -101,10 +134,27 @@ export function parseStyleHtml(elem: DOMElement, node: Descendant, _editor: IDom
   let textAlign = getStyleValue($elem, 'text-align')
 
   textAlign = getStyleValue($elem, 'text-align') || textAlign // 文本 对齐
-  if (!textAlign) { textAlign = $elem.attr('align') || '' }
-  if (!textAlign) { textAlign = $elem.attr('data-w-e-text-align') || '' }
+  if (!textAlign) {
+    textAlign = $elem.attr('align') || ''
+  }
+  if (!textAlign) {
+    textAlign = $elem.attr('data-w-e-text-align') || ''
+  }
   if (textAlign) {
     tableNode.textAlign = textAlign
   }
+
+  let verticalAlign = getStyleValue($elem, 'vertical-align')
+
+  if (!verticalAlign) {
+    verticalAlign = $elem.attr('valign') || ''
+  }
+  if (!verticalAlign) {
+    verticalAlign = $elem.attr('data-w-e-vertical-align') || ''
+  }
+  if (verticalAlign) {
+    tableNode.verticalAlign = verticalAlign
+  }
+
   return node
 }
