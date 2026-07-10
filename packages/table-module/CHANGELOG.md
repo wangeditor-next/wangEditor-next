@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.0.7
+
+### Patch Changes
+
+- c3c8def: Improve table and cell property modal behavior.
+
 ## 3.0.6
 
 ### Patch Changes
