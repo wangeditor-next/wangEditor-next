@@ -14,12 +14,14 @@ export type videoStyle = {
   height?: string
 }
 
+export type VideoAlign = 'left' | 'center' | 'right'
+
 export type VideoElement = {
   type: 'video'
   key?: string
   src: string
   poster?: string
-  textAlign?: string
+  align?: VideoAlign
   width?: string
   height?: string
   style?: videoStyle

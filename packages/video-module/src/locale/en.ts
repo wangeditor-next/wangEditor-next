@@ -17,5 +17,8 @@ export default {
     edit: 'Edit video',
     width: 'Width',
     height: 'Height',
+    alignLeft: 'Align video left',
+    alignCenter: 'Center video',
+    alignRight: 'Align video right',
   },
 }

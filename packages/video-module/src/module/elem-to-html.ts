@@ -7,18 +7,8 @@ import { getTextStyleMode, IDomEditor } from '@wangeditor-next/core'
 import { Element } from 'slate'
 
 import { genSizeStyledIframeHtml } from '../utils/dom'
+import { getVideoAlign, getVideoAlignClass, getVideoJustifyContent } from './alignment'
 import { VideoElement } from './custom-types'
-
-function getVideoAlignClass(textAlign: string): string {
-  const align = (textAlign || '').trim().toLowerCase()
-
-  if (!align) { return 'w-e-video-align-center' }
-  if (['left', 'center', 'right', 'justify'].includes(align)) {
-    return `w-e-video-align-${align}`
-  }
-
-  return 'w-e-video-align-center'
-}
 
 function videoToHtml(elemNode: Element, _childrenHtml?: string, editor?: IDomEditor): string {
   const {
@@ -27,15 +17,14 @@ function videoToHtml(elemNode: Element, _childrenHtml?: string, editor?: IDomEdi
     width = 'auto',
     height = 'auto',
     style = {},
-    textAlign = 'center',
   } = elemNode as VideoElement
   const mode = getTextStyleMode(editor)
-  const containerAlign = textAlign || 'center'
-  const alignData = ` data-w-e-text-align="${containerAlign}"`
+  const align = getVideoAlign(elemNode)
+  const alignData = ` data-w-e-align="${align}"`
   const containerAttrs = mode === 'class'
-    ? ` class="${getVideoAlignClass(containerAlign)}"${alignData}`
-    : ` style="text-align: ${containerAlign};"`
-  let res = `<div data-w-e-type="video" data-w-e-is-void${containerAttrs}>\n`
+    ? `${alignData} class="w-e-video ${getVideoAlignClass(align)}"`
+    : `${alignData} style="display: flex; justify-content: ${getVideoJustifyContent(align)}; margin: 0; max-width: 100%; width: 100%;"`
+  let res = `<figure data-w-e-type="video" data-w-e-is-void${containerAttrs}>\n`
 
   if (src.trim().indexOf('<iframe ') === 0) {
     // iframe 形式
@@ -52,14 +41,14 @@ function videoToHtml(elemNode: Element, _childrenHtml?: string, editor?: IDomEdi
 
       res += `<video poster="${poster}" controls="true" width="${width}" height="${height}"${widthData}${heightData}><source src="${src}" type="video/mp4"/></video>`
     } else {
-      let styleStr = ''
+      let styleStr = 'display: block; max-width: 100%;'
 
-      if (styleWidth) { styleStr += `width: ${styleWidth};` }
-      if (styleHeight) { styleStr += `height: ${styleHeight};` }
+      if (styleWidth) { styleStr += ` width: ${styleWidth};` }
+      if (styleHeight) { styleStr += ` height: ${styleHeight};` }
       res += `<video poster="${poster}" controls="true" width="${width}" height="${height}" style="${styleStr}"><source src="${src}" type="video/mp4"/></video>`
     }
   }
-  res += '\n</div>'
+  res += '\n</figure>'
 
   return res
 }

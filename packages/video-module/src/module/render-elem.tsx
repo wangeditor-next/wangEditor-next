@@ -9,6 +9,7 @@ import { Element } from 'slate'
 import { h, jsx, VNode } from 'snabbdom'
 
 import { genSizeStyledIframeHtml } from '../utils/dom'
+import { getVideoAlign, getVideoAlignClass } from './alignment'
 import { VideoElement } from './custom-types'
 
 function renderVideo(elemNode: Element, children: VNode[] | null, editor: IDomEditor): VNode {
@@ -19,8 +20,13 @@ function renderVideo(elemNode: Element, children: VNode[] | null, editor: IDomEd
     width = 'auto',
     height = 'auto',
     style = {},
-    textAlign = 'center',
   } = elemNode as VideoElement
+  const align = getVideoAlign(elemNode)
+  const containerClassName = [
+    'w-e-video',
+    'w-e-textarea-video-container',
+    getVideoAlignClass(align),
+  ].join(' ')
 
   // 是否选中
   const selected = DomEditor.isNodeSelected(editor, elemNode)
@@ -33,12 +39,12 @@ function renderVideo(elemNode: Element, children: VNode[] | null, editor: IDomEd
 
     // iframe 形式，第三方视频
     vnode = (
-      <div
-        className="w-e-textarea-video-container"
+      <figure
+        className={containerClassName}
         data-selected={selected ? 'true' : ''} // 标记为 选中
-        style={{ textAlign }}
+        data-w-e-align={align}
         innerHTML={iframeHtml} // 内嵌第三方 iframe 视频
-      ></div>
+      ></figure>
     )
   } else {
     // 其他，mp4 格式
@@ -55,13 +61,13 @@ function renderVideo(elemNode: Element, children: VNode[] | null, editor: IDomEd
     if (height !== 'auto') { videoVnode.data.height = height }
 
     vnode = (
-      <div
-        className="w-e-textarea-video-container"
+      <figure
+        className={containerClassName}
         data-selected={selected ? 'true' : ''} // 标记为 选中
-        style={{ textAlign }}
+        data-w-e-align={align}
       >
         {videoVnode}
-      </div>
+      </figure>
     )
   }
 

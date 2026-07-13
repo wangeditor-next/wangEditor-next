@@ -23,7 +23,7 @@ describe('video - pre parse html', () => {
     const res = preParseHtmlConf.preParseHtml($iframe[0])
 
     expect(res.outerHTML).toBe(
-      '<div data-w-e-type="video" data-w-e-is-void="" class="w-e-video-align-center" data-w-e-text-align="center"><iframe></iframe></div>',
+      '<figure data-w-e-type="video" data-w-e-is-void="" data-w-e-align="center" class="w-e-video w-e-video-align-center"><iframe></iframe></figure>',
     )
   })
 
@@ -37,7 +37,7 @@ describe('video - pre parse html', () => {
     const res = preParseHtmlConf.preParseHtml($video[0])
 
     expect(res.outerHTML).toBe(
-      '<div data-w-e-type="video" data-w-e-is-void="" class="w-e-video-align-center" data-w-e-text-align="center"><video></video></div>',
+      '<figure data-w-e-type="video" data-w-e-is-void="" data-w-e-align="center" class="w-e-video w-e-video-align-center"><video></video></figure>',
     )
   })
 
@@ -51,7 +51,7 @@ describe('video - pre parse html', () => {
     const res = preParseHtmlConf.preParseHtml($video[0])
 
     expect(res.outerHTML).toBe(
-      '<div data-w-e-type="video" data-w-e-is-void="" class="w-e-video-align-center" data-w-e-text-align="center"><video></video></div>',
+      '<figure data-w-e-type="video" data-w-e-is-void="" data-w-e-align="center" class="w-e-video w-e-video-align-center"><video></video></figure>',
     )
   })
 })
@@ -66,7 +66,7 @@ describe('video - parse html', () => {
   it('iframe', () => {
     const iframeHtml = '<iframe src="xxx" width="500" height="300"></iframe>'
     const $container = $(
-      `<div data-w-e-type="video" data-w-e-is-void style="text-align: center;">${iframeHtml}</div>`,
+      `<figure data-w-e-type="video" data-w-e-is-void data-w-e-align="left" style="display: flex; justify-content: flex-start;">${iframeHtml}</figure>`,
     )
 
     // match selector
@@ -80,7 +80,7 @@ describe('video - parse html', () => {
       width: '500',
       height: '300',
       style: {},
-      textAlign: 'center',
+      align: 'left',
       children: [{ text: '' }], // void 元素有一个空 text
     })
   })
@@ -88,9 +88,9 @@ describe('video - parse html', () => {
   it('video', () => {
     const src = 'xxx.mp4'
     const poster = 'xxx.png'
-    const videoHtml = `<video poster="${poster}"><source src="${src}"/></video>`
+    const videoHtml = `<video poster="${poster}" style="display: block; max-width: 100%;"><source src="${src}"/></video>`
     const $container = $(
-      `<div data-w-e-type="video" data-w-e-is-void style="text-align: center;">${videoHtml}</div>`,
+      `<figure data-w-e-type="video" data-w-e-is-void data-w-e-align="center">${videoHtml}</figure>`,
     )
 
     // match selector
@@ -104,7 +104,7 @@ describe('video - parse html', () => {
       width: 'auto',
       height: 'auto',
       style: {},
-      textAlign: 'center',
+      align: 'center',
       children: [{ text: '' }], // void 元素有一个空 text
     })
   })
@@ -114,7 +114,7 @@ describe('video - parse html', () => {
     const poster = 'xxx.png'
     const videoHtml = `<video poster="${poster}" width="640" height="360" data-w-e-style-width="640px" data-w-e-style-height="360px"><source src="${src}"/></video>`
     const $container = $(
-      `<div data-w-e-type="video" data-w-e-is-void class="w-e-video-align-right" data-w-e-text-align="right">${videoHtml}</div>`,
+      `<figure data-w-e-type="video" data-w-e-is-void data-w-e-align="right" class="w-e-video w-e-video-align-right">${videoHtml}</figure>`,
     )
 
     expect($container[0].matches(parseHtmlConf.selector)).toBeTruthy()
@@ -129,8 +129,32 @@ describe('video - parse html', () => {
         width: '640px',
         height: '360px',
       },
-      textAlign: 'right',
+      align: 'right',
       children: [{ text: '' }],
     })
+  })
+
+  it.each([
+    ['style', 'style="text-align: right;"'],
+    ['data', 'data-w-e-text-align="right"'],
+    ['class', 'class="w-e-video-align-right"'],
+  ])('migrates legacy %s alignment', (_source, attrs) => {
+    const $container = $(
+      `<div data-w-e-type="video" data-w-e-is-void ${attrs}><video src="legacy.mp4"></video></div>`,
+    )
+
+    expect(parseHtmlConf.parseElemHtml($container[0], [], editor)).toEqual(
+      expect.objectContaining({ align: 'right' }),
+    )
+  })
+
+  it('maps unsupported legacy justify alignment to the media default', () => {
+    const $container = $(
+      '<div data-w-e-type="video" data-w-e-is-void style="text-align: justify;"><video src="legacy.mp4"></video></div>',
+    )
+
+    expect(parseHtmlConf.parseElemHtml($container[0], [], editor)).toEqual(
+      expect.objectContaining({ align: 'center' }),
+    )
   })
 })

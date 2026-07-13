@@ -30,7 +30,7 @@ abstract class BaseMenu implements IButtonMenu {
     const notMatch = selectedElems.some((elem: Element) => {
       const { type } = elem
 
-      if (Editor.isVoid(editor, elem) && Editor.isBlock(editor, elem) && type !== 'video') { return true }
+      if (Editor.isVoid(editor, elem) && Editor.isBlock(editor, elem)) { return true }
 
       if (['pre', 'code'].includes(type)) { return true }
       return false
