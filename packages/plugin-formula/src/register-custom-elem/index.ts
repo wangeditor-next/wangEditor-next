@@ -44,7 +44,10 @@ class WangEditorFormulaCard extends HTMLElement {
     const document = this.ownerDocument || window.document
     const span = document.createElement('span')
 
+    this.style.display = 'inline-block'
+    this.style.maxWidth = '100%'
     span.style.display = 'inline-block'
+    span.style.maxWidth = '100%'
     this.appendChild(span)
     this.span = span
 
@@ -58,6 +61,14 @@ class WangEditorFormulaCard extends HTMLElement {
       throwOnError: false,
       output: 'htmlAndMathml',
     })
+
+    const errorElem = span.querySelector<HTMLElement>('.katex-error')
+
+    if (errorElem) {
+      errorElem.style.whiteSpace = 'normal'
+      errorElem.style.overflowWrap = 'anywhere'
+      errorElem.style.wordBreak = 'break-word'
+    }
   }
 }
 

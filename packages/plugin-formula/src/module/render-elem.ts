@@ -32,6 +32,8 @@ function renderFormula(elem: SlateElement, children: VNode[] | null, editor: IDo
       },
       style: {
         display: 'inline-block', // inline
+        maxWidth: '100%',
+        overflowX: 'auto',
         marginLeft: '3px',
         marginRight: '3px',
         border: selected // 选中/不选中，样式不一样

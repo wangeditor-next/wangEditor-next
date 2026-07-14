@@ -246,7 +246,7 @@ describe('menu position helpers', () => {
     expect(styleStore.left).toBe('60px')
   })
 
-  it('correctPosition adjusts bottom and right when element is out of bounds', async () => {
+  it('correctPosition adjusts bottom and right to the container bounds', async () => {
     const editor = {} as IDomEditor
 
     mockTextContainer({
@@ -262,7 +262,8 @@ describe('menu position helpers', () => {
     }
 
     const positionElem = {
-      offset: () => ({ top: -10, left: -5 }),
+      // The element is still inside the viewport, but 10px left of the editor container.
+      offset: () => ({ top: -10, left: 10 }),
       width: () => 30,
       height: () => 20,
       attr: () => 'bottom: 10px; right: 10px;',
@@ -279,6 +280,6 @@ describe('menu position helpers', () => {
     await flushPromises()
 
     expect(styleStore.bottom).toBe('0px')
-    expect(styleStore.right).toBe('5px')
+    expect(styleStore.right).toBe('0px')
   })
 })
