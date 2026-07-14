@@ -313,11 +313,11 @@ export function correctPosition(editor: IDomEditor, $positionElem: Dom7Array) {
 
     if (styleStr.indexOf('right') >= 0) {
       // 设置了 right ，则有可能超过 textContainer 的左边界
-      if (positionElemLeft < 0) {
+      if (relativeLeft < 0) {
         // 已超出了左边界
         const curRightStr = $positionElem.css('right')
         const curRight = parseInt(curRightStr.toString(), 10)
-        const newRight = curRight - Math.abs(positionElemLeft) // 保证左边界和 textContainer 对齐即可，右边界不管
+        const newRight = curRight - Math.abs(relativeLeft) // 保证左边界和 textContainer 对齐即可，右边界不管
 
         $positionElem.css('right', `${newRight}px`)
       }
