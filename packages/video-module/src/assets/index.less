@@ -1,10 +1,22 @@
 @import "../../../vars.less";
 
+.w-e-video {
+  box-sizing: border-box;
+  display: flex;
+  margin: 0;
+  max-width: 100%;
+  width: 100%;
+
+  > iframe,
+  > video {
+    display: block;
+    max-width: 100%;
+  }
+}
+
 .w-e-textarea-video-container {
-  text-align: center;
   border: 1px dashed @textarea-border-color;
   padding: 10px 0;
-  margin: 0 auto;
   margin-top: 10px;
   border-radius: 5px;
   overflow: auto;
@@ -14,17 +26,13 @@
 }
 
 .w-e-video-align-left {
-  text-align: left;
+  justify-content: flex-start;
 }
 
 .w-e-video-align-center {
-  text-align: center;
+  justify-content: center;
 }
 
 .w-e-video-align-right {
-  text-align: right;
-}
-
-.w-e-video-align-justify {
-  text-align: justify;
+  justify-content: flex-end;
 }

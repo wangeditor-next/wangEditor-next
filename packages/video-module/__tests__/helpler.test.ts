@@ -62,7 +62,14 @@ describe('Video module helper', () => {
       await insertVideo(baseEditor, 'test.mp4', 'xxx.png')
       await flushPromises()
 
-      expect(fn).toBeCalled()
+      expect(fn).toBeCalledWith(
+        baseEditor,
+        expect.objectContaining({
+          type: 'video',
+          align: 'center',
+        }),
+        { mode: 'highest' },
+      )
     })
 
     test('it should invoke onInsertedVideo callback if pass the option when create editor', async () => {

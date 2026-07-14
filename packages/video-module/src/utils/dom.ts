@@ -66,10 +66,10 @@ export function genSizeStyledIframeHtml(
   $iframe.attr('height', height)
 
   if (!classMode) {
-    let styleStr = ''
+    let styleStr = 'display: block; max-width: 100%;'
 
-    if (styleWidth) { styleStr += `width: ${styleWidth};` }
-    if (styleHeight) { styleStr += `height: ${styleHeight};` }
+    if (styleWidth) { styleStr += ` width: ${styleWidth};` }
+    if (styleHeight) { styleStr += ` height: ${styleHeight};` }
     $iframe.attr('style', styleStr)
   } else {
     if (widthData) { $iframe.attr('data-w-e-style-width', styleWidth) }

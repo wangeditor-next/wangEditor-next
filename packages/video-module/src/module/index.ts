@@ -11,6 +11,9 @@ import {
   editorVideoSrcMenuConf,
   insertVideoMenuConf,
   uploadVideoMenuConf,
+  videoAlignCenterMenuConf,
+  videoAlignLeftMenuConf,
+  videoAlignRightMenuConf,
 } from './menu/index'
 import { parseHtmlConf } from './parse-elem-html'
 import withVideo from './plugin'
@@ -27,6 +30,9 @@ const video: Partial<IModuleConf> = {
     uploadVideoMenuConf,
     editorVideoSizeMenuConf,
     editorVideoSrcMenuConf,
+    videoAlignLeftMenuConf,
+    videoAlignCenterMenuConf,
+    videoAlignRightMenuConf,
   ],
   editorPlugin: withVideo,
 }

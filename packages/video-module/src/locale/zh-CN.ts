@@ -17,5 +17,8 @@ export default {
     edit: '编辑视频',
     width: '宽度',
     height: '高度',
+    alignLeft: '视频左对齐',
+    alignCenter: '视频居中',
+    alignRight: '视频右对齐',
   },
 }

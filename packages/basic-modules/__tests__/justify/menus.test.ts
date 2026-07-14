@@ -43,6 +43,10 @@ describe('justify menus', () => {
 
     editor.insertNode({ type: 'divider', children: [{ text: '' }] })
     expect(centerMenu.isDisabled(editor)).toBeTruthy()
+
+    Transforms.removeNodes(editor, { mode: 'highest' })
+    editor.insertNode({ type: 'video', src: 'test.mp4', children: [{ text: '' }] })
+    expect(centerMenu.isDisabled(editor)).toBeTruthy()
   })
 
   it('exec', () => {

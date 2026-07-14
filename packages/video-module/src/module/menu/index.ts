@@ -3,12 +3,18 @@
  * @author wangfupeng
  */
 
+import {
+  VIDEO_ALIGN_CENTER_SVG,
+  VIDEO_ALIGN_LEFT_SVG,
+  VIDEO_ALIGN_RIGHT_SVG,
+} from '../../constants/svg'
 import { genInsertVideoMenuConfig, genUploadVideoMenuConfig } from './config'
 import EditorVideoSizeMenu from './EditVideoSizeMenu'
 import EditorVideoSrcMenu from './EditVideoSrcMenu'
 import InsertVideoMenu from './InsertVideoMenu'
 // import DeleteVideoMenu from './DeleteVideoMenu'
 import UploadVideoMenu from './UploadVideoMenu'
+import VideoAlignMenu from './VideoAlignMenu'
 
 export const insertVideoMenuConf = {
   key: 'insertVideo',
@@ -43,6 +49,27 @@ export const editorVideoSrcMenuConf = {
   key: 'editVideoSrc',
   factory() {
     return new EditorVideoSrcMenu()
+  },
+}
+
+export const videoAlignLeftMenuConf = {
+  key: 'videoAlignLeft',
+  factory() {
+    return new VideoAlignMenu('left', 'videoModule.alignLeft', VIDEO_ALIGN_LEFT_SVG)
+  },
+}
+
+export const videoAlignCenterMenuConf = {
+  key: 'videoAlignCenter',
+  factory() {
+    return new VideoAlignMenu('center', 'videoModule.alignCenter', VIDEO_ALIGN_CENTER_SVG)
+  },
+}
+
+export const videoAlignRightMenuConf = {
+  key: 'videoAlignRight',
+  factory() {
+    return new VideoAlignMenu('right', 'videoModule.alignRight', VIDEO_ALIGN_RIGHT_SVG)
   },
 }
 

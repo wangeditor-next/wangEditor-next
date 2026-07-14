@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video alignment</title>
+  <link href="https://cdn.bootcdn.net/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet">
+  <link href="./css/editor.css" rel="stylesheet">
+  <link href="../dist/css/style.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 24px auto;
+      max-width: 1100px;
+      padding: 0 16px;
+    }
+
+    video,
+    iframe {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="editor-toolbar" class="editor-toolbar"></div>
+  <div id="editor-text-area" class="editor-text-area"></div>
+
+  <script src="../dist/index.js"></script>
+  <script>
+    const { createEditor, createToolbar } = window.wangEditor
+    const videoSrc = 'https://media.w3.org/2010/05/sintel/trailer.mp4'
+    const createVideo = align => ({
+      type: 'video',
+      src: videoSrc,
+      align,
+      style: { width: '360px', height: '203px' },
+      children: [{ text: '' }],
+    })
+    const editor = createEditor({
+      selector: '#editor-text-area',
+      content: [
+        { type: 'header3', children: [{ text: 'Left' }] },
+        createVideo('left'),
+        { type: 'header3', children: [{ text: 'Center' }] },
+        createVideo('center'),
+        { type: 'header3', children: [{ text: 'Right' }] },
+        createVideo('right'),
+        { type: 'paragraph', children: [{ text: '' }] },
+      ],
+    })
+
+    createToolbar({
+      editor,
+      selector: '#editor-toolbar',
+    })
+  </script>
+</body>
+</html>

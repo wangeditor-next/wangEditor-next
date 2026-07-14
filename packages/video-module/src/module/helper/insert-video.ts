@@ -53,6 +53,7 @@ export default async function (
     type: 'video',
     src: parsedSrc,
     poster,
+    align: 'center',
     children: [{ text: '' }],
     style: {
       width,

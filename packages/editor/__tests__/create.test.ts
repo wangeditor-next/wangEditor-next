@@ -346,10 +346,11 @@ describe('create editor and toolbar', () => {
     expect(exportedHtml).not.toMatch(/<img[^>]*style=/)
 
     expect(exportedHtml).toContain('data-w-e-type="video"')
+    expect(exportedHtml).toContain('data-w-e-align="right"')
     expect(exportedHtml).toContain('w-e-video-align-right')
     expect(exportedHtml).toContain('data-w-e-style-width="640px"')
     expect(exportedHtml).toContain('data-w-e-style-height="360px"')
-    expect(exportedHtml).not.toMatch(/<div data-w-e-type="video"[^>]*style=/)
+    expect(exportedHtml).not.toMatch(/<figure data-w-e-type="video"[^>]*style=/)
 
     expect(exportedHtml).toContain('w-e-table-layout-fixed')
     expect(exportedHtml).toContain('data-w-e-row-height="50px"')
@@ -370,7 +371,7 @@ describe('create editor and toolbar', () => {
     expect(roundTripHtml).toContain('w-e-table-border-style-dashed')
     expect(roundTripHtml).toContain('data-w-e-row-height="50px"')
     expect(roundTripHtml).not.toMatch(/<img[^>]*style=/)
-    expect(roundTripHtml).not.toMatch(/<div data-w-e-type="video"[^>]*style=/)
+    expect(roundTripHtml).not.toMatch(/<figure data-w-e-type="video"[^>]*style=/)
     expect(roundTripHtml).not.toMatch(/<table[^>]*style=/)
     expect(roundTripHtml).not.toMatch(/<tr[^>]*style=/)
   })

@@ -55,7 +55,11 @@ const editorConfig = {
 - `table-module`
   - `border-style` 在 class 模式仅支持标准单值（如 `solid`、`dashed`）。
   - 复合值（如 `dotted solid dashed`）按 `classStylePolicy` 处理。
-- `video-module` / `image` / `plugin-float-image`
+- `video-module`
+  - 视频是块级媒体节点，对齐使用 `align`、`data-w-e-align` 与 `w-e-video-align-*`，
+    不复用文本 `textAlign` token。
+  - class 模式通过 `w-e-video` flex 容器和对齐 class 输出布局，宽高通过 data 保留。
+- `image` / `plugin-float-image`
   - 宽高、对齐等输出优先走 `class/data`，避免内联样式。
 
 ## 回环保证（必须验证）

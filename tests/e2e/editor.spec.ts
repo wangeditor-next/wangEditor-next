@@ -1524,6 +1524,119 @@ test('regression #625: duplicated legacy ids should not break DOM-to-Slate mappi
   await expect(page.getByTestId('editor-html')).toContainText('hello-next')
 })
 
+test('regression #929: block video keeps explicit media alignment under CSS resets', async ({
+  page,
+}) => {
+  await page.goto('/examples/default-mode.html')
+  await page.getByTestId('btn-create').click()
+  await expect(getEditable(page)).toBeVisible()
+
+  await page.addStyleTag({
+    content: `
+      [data-testid="editor-textarea"] video,
+      [data-testid="editor-textarea"] iframe {
+        display: block !important;
+      }
+    `,
+  })
+  await page.evaluate(() => {
+    const editor = (window as any).wangEditorExampleBridge.editor
+
+    editor.setHtml(
+      [
+        '<figure data-w-e-type="video" data-w-e-is-void data-w-e-align="center">',
+        '<video width="400" height="200" style="width: 400px; height: 200px;">',
+        '<source src="data:video/mp4;base64," type="video/mp4"/>',
+        '</video>',
+        '</figure>',
+        '<p><br></p>',
+      ].join(''),
+    )
+  })
+
+  const figure = page.locator('[data-testid="editor-textarea"] .w-e-video')
+  const video = figure.locator('video')
+  const readLayout = () =>
+    page.evaluate(() => {
+      const container = document.querySelector(
+        '[data-testid="editor-textarea"] .w-e-video',
+      ) as HTMLElement | null
+      const media = container?.querySelector('video') as HTMLElement | null
+
+      if (!container || !media) {
+        throw new Error('video layout not found')
+      }
+
+      const containerRect = container.getBoundingClientRect()
+      const mediaRect = media.getBoundingClientRect()
+
+      return {
+        align: container.dataset.wEAlign,
+        containerDisplay: getComputedStyle(container).display,
+        mediaDisplay: getComputedStyle(media).display,
+        leftGap: Math.round(mediaRect.left - containerRect.left),
+        rightGap: Math.round(containerRect.right - mediaRect.right),
+      }
+    })
+
+  await expect(figure).toBeVisible()
+  await expect(video).toBeVisible()
+
+  const centered = await readLayout()
+
+  expect(centered.align).toBe('center')
+  expect(centered.containerDisplay).toBe('flex')
+  expect(centered.mediaDisplay).toBe('block')
+  expect(Math.abs(centered.leftGap - centered.rightGap)).toBeLessThanOrEqual(1)
+
+  await video.click()
+  const hoverbar = page.locator('.w-e-hover-bar:visible')
+
+  await expect(hoverbar.locator('[data-menu-key="videoAlignLeft"]')).toBeVisible()
+  await expect(hoverbar.locator('[data-menu-key="videoAlignCenter"]')).toBeVisible()
+  await expect(hoverbar.locator('[data-menu-key="videoAlignRight"]')).toBeVisible()
+
+  await hoverbar.locator('[data-menu-key="videoAlignRight"]').click()
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const editor = (window as any).wangEditorExampleBridge.editor
+        const videoNode = editor.getElemsByTypePrefix('video')[0]
+
+        return videoNode?.align
+      }),
+    )
+    .toBe('right')
+
+  const rightAligned = await readLayout()
+
+  expect(rightAligned.align).toBe('right')
+  expect(rightAligned.leftGap).toBeGreaterThan(rightAligned.rightGap)
+
+  await hoverbar.locator('[data-menu-key="videoAlignLeft"]').click()
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const editor = (window as any).wangEditorExampleBridge.editor
+        const videoNode = editor.getElemsByTypePrefix('video')[0]
+
+        return videoNode?.align
+      }),
+    )
+    .toBe('left')
+
+  const leftAligned = await readLayout()
+  const exportedHtml = await page.evaluate(() => {
+    return (window as any).wangEditorExampleBridge.editor.getHtml()
+  })
+
+  expect(leftAligned.align).toBe('left')
+  expect(leftAligned.leftGap).toBeLessThan(leftAligned.rightGap)
+  expect(exportedHtml).toContain('<figure data-w-e-type="video"')
+  expect(exportedHtml).toContain('data-w-e-align="left"')
+  expect(exportedHtml).toContain('justify-content: flex-start')
+})
+
 test.describe('Multi Editors', () => {
   test('edits each editor independently', async ({ page }) => {
     await page.goto('/examples/multi-editors.html')
