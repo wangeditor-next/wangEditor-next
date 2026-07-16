@@ -4,8 +4,27 @@
  */
 
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
+import { Element as SlateElement, Transforms } from 'slate'
 
 import { TableCellElement, TableElement } from './custom-types'
+
+/**
+ * Update a rendered table by its own path instead of relying on the current selection.
+ * Async DOM callbacks may retain a table node after setHtml replaces it, so stale paths are ignored.
+ */
+export function setTableNodeProps(
+  editor: IDomEditor,
+  tableNode: SlateElement,
+  props: Partial<TableElement>,
+) {
+  try {
+    const tablePath = DomEditor.findPath(editor, tableNode)
+
+    Transforms.setNodes(editor, props as TableElement, { at: tablePath })
+  } catch {
+    // The rendered table may have been removed before an async callback runs.
+  }
+}
 
 /**
  * 获取第一行所有 cells

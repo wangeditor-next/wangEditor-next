@@ -9,6 +9,7 @@ import {
 
 import $ from '../utils/dom'
 import { TableElement } from './custom-types'
+import { setTableNodeProps } from './helpers'
 
 /** *
  * 计算 cell border 距离 table 左侧距离
@@ -55,7 +56,11 @@ function getTableRowHeights(table: Element): number[] {
   })
 }
 
-export function observerTableResize(editor: IDomEditor, elm: Node | undefined) {
+export function observerTableResize(
+  editor: IDomEditor,
+  elm: Node | undefined,
+  elemNode: SlateElement,
+) {
   if (isHTMLElememt(elm)) {
     const table = elm.querySelector('table')
 
@@ -64,14 +69,14 @@ export function observerTableResize(editor: IDomEditor, elm: Node | undefined) {
         const rowHeights = getTableRowHeights(table)
 
         // 当非拖动引起的宽度变化，需要调整 columnWidths
-        Transforms.setNodes(
+        setTableNodeProps(
           editor,
+          elemNode,
           {
             scrollWidth: contentRect.width,
             height: contentRect.height,
             rowHeights,
-          } as TableElement,
-          { mode: 'highest' },
+          },
         )
       })
       resizeObserver.observe(table)
@@ -328,10 +333,10 @@ export function handleCellBorderVisible(
 
     if (clientX > rect.x + 5 && clientX < rect.x + rect.width - 5) {
       if (isHoverCellBorder) {
-        Transforms.setNodes(
+        setTableNodeProps(
           editor,
+          elemNode,
           { isHoverCellBorder: false, resizingIndex: -1 } as TableElement,
-          { mode: 'highest' },
         )
       }
       return
@@ -358,10 +363,10 @@ export function handleCellBorderVisible(
         ) {
           // 节流，防止多次引起Transforms.setNodes重绘
           if (resizingIndex === i) { return }
-          Transforms.setNodes(
+          setTableNodeProps(
             editor,
+            elemNode,
             { isHoverCellBorder: true, resizingIndex: i } as TableElement,
-            { mode: 'highest' },
           )
           return
         }
@@ -371,9 +376,7 @@ export function handleCellBorderVisible(
 
   // 鼠标移出时，重置
   if (isHoverCellBorder === true) {
-    Transforms.setNodes(editor, { isHoverCellBorder: false, resizingIndex: -1 } as TableElement, {
-      mode: 'highest',
-    })
+    setTableNodeProps(editor, elemNode, { isHoverCellBorder: false, resizingIndex: -1 })
   }
 }
 
@@ -381,11 +384,15 @@ export function handleCellBorderVisible(
  * 设置 class highlight
  * 将 render-cell.tsx 拖动功能迁移至 div.column-resize
  */
-export function handleCellBorderHighlight(editor: IDomEditor, e: MouseEvent) {
+export function handleCellBorderHighlight(
+  editor: IDomEditor,
+  elemNode: SlateElement,
+  e: MouseEvent,
+) {
   if (e.type === 'mouseenter') {
-    Transforms.setNodes(editor, { isResizing: true } as TableElement, { mode: 'highest' })
+    setTableNodeProps(editor, elemNode, { isResizing: true })
   } else {
-    Transforms.setNodes(editor, { isResizing: false } as TableElement, { mode: 'highest' })
+    setTableNodeProps(editor, elemNode, { isResizing: false })
   }
 }
 

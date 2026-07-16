@@ -7,6 +7,8 @@ import {
   handleCellBorderHighlight,
   handleCellBorderMouseDown,
   handleCellBorderVisible,
+  observerTableResize,
+  unObserveTableResize,
 } from '../src/module/column-resize'
 import { TableElement } from '../src/module/custom-types'
 
@@ -77,13 +79,68 @@ describe('column resize module', () => {
   })
 
   afterEach(() => {
+    unObserveTableResize()
     document.body.style.cursor = ''
     window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
+    vi.unstubAllGlobals()
     vi.restoreAllMocks()
   })
 
   test('getColumnWidthRatios returns normalized ratios', () => {
     expect(getColumnWidthRatios([100, 200, 100])).toEqual([0.25, 0.5, 0.25])
+  })
+
+  test('observerTableResize updates the rendered table when selection is outside it', () => {
+    const tableNode = createTable([80, 120, 100])
+    const container = document.createElement('div')
+    const table = document.createElement('table')
+    const row = document.createElement('tr')
+    let resizeCallback: ResizeObserverCallback | undefined
+    const observe = vi.fn()
+    const disconnect = vi.fn()
+
+    vi.spyOn(row, 'getBoundingClientRect').mockReturnValue({
+      x: 0,
+      y: 0,
+      top: 0,
+      left: 0,
+      width: 320,
+      height: 40,
+      bottom: 40,
+      right: 320,
+      toJSON: () => ({}),
+    } as DOMRect)
+    table.appendChild(row)
+    container.appendChild(table)
+
+    vi.stubGlobal('ResizeObserver', class {
+      constructor(callback: ResizeObserverCallback) {
+        resizeCallback = callback
+      }
+
+      observe = observe
+
+      disconnect = disconnect
+    })
+    vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([2] as slate.Path)
+    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
+
+    observerTableResize(editor, container, tableNode)
+    resizeCallback?.([
+      {
+        contentRect: {
+          width: 320,
+          height: 80,
+        } as DOMRectReadOnly,
+      } as ResizeObserverEntry,
+    ], {} as ResizeObserver)
+
+    expect(observe).toHaveBeenCalledWith(table)
+    expect(setNodesSpy).toHaveBeenCalledWith(
+      editor,
+      { scrollWidth: 320, height: 80, rowHeights: [40] },
+      { at: [2] },
+    )
   })
 
   test('handleCellBorderVisible does nothing when editor is disabled', () => {
@@ -109,14 +166,15 @@ describe('column resize module', () => {
     } as MouseEvent
 
     vi.spyOn(editor, 'isDisabled').mockReturnValue(false)
-    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes')
+    vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([2] as slate.Path)
+    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
 
     handleCellBorderVisible(editor, table, event, 300)
 
     expect(setNodesSpy).toHaveBeenCalledWith(
       editor,
       { isHoverCellBorder: true, resizingIndex: 0 },
-      { mode: 'highest' },
+      { at: [2] },
     )
   })
 
@@ -132,34 +190,38 @@ describe('column resize module', () => {
     } as MouseEvent
 
     vi.spyOn(editor, 'isDisabled').mockReturnValue(false)
-    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes')
+    vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([2] as slate.Path)
+    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
 
     handleCellBorderVisible(editor, table, event, 300)
 
     expect(setNodesSpy).toHaveBeenCalledWith(
       editor,
       { isHoverCellBorder: false, resizingIndex: -1 },
-      { mode: 'highest' },
+      { at: [2] },
     )
   })
 
   test('handleCellBorderHighlight toggles resizing state', () => {
-    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes')
+    const table = createTable([80, 120, 100])
 
-    handleCellBorderHighlight(editor, { type: 'mouseenter' } as MouseEvent)
-    handleCellBorderHighlight(editor, { type: 'mouseleave' } as MouseEvent)
+    vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([2] as slate.Path)
+    const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
+
+    handleCellBorderHighlight(editor, table, { type: 'mouseenter' } as MouseEvent)
+    handleCellBorderHighlight(editor, table, { type: 'mouseleave' } as MouseEvent)
 
     expect(setNodesSpy).toHaveBeenNthCalledWith(
       1,
       editor,
       { isResizing: true },
-      { mode: 'highest' },
+      { at: [2] },
     )
     expect(setNodesSpy).toHaveBeenNthCalledWith(
       2,
       editor,
       { isResizing: false },
-      { mode: 'highest' },
+      { at: [2] },
     )
   })
 

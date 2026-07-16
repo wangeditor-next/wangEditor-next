@@ -1,10 +1,15 @@
 import { DomEditor, IDomEditor, isHTMLElememt } from '@wangeditor-next/core'
 import throttle from 'lodash.throttle'
-import { Editor, Element as SlateElement, Transforms } from 'slate'
+import {
+  Editor,
+  Element as SlateElement,
+  Path,
+  Transforms,
+} from 'slate'
 
-import { isOfType } from '../utils'
 import $ from '../utils/dom'
 import { TableElement, TableRowElement } from './custom-types'
+import { setTableNodeProps } from './helpers'
 
 /**
  * 计算行高度的比例
@@ -54,6 +59,7 @@ function getRowHeightsForResize(tableNode: TableElement): number[] {
 let isMouseDownForRowResize = false
 let clientYWhenMouseDown = 0
 let editorWhenMouseDownForRow: IDomEditor | null = null
+let tablePathWhenMouseDownForRow: Path | null = null
 const $window = $(window)
 
 /**
@@ -114,25 +120,43 @@ function calculateRowHeightsByBorderPosition(
 function onMouseMoveForRowHandler(event: Event) {
   if (!isMouseDownForRowResize) { return }
   if (editorWhenMouseDownForRow === null) { return }
+  if (tablePathWhenMouseDownForRow === null) { return }
   event.preventDefault()
 
   const { clientY } = event as MouseEvent
   const heightChange = clientY - clientYWhenMouseDown
 
-  const [[elemNode]] = Editor.nodes(editorWhenMouseDownForRow, {
-    match: isOfType(editorWhenMouseDownForRow, 'table'),
-  })
-  const tableNode = elemNode as TableElement
+  let tableNode: TableElement
+  let tablePath: Path
+
+  try {
+    const [node, path] = Editor.node(editorWhenMouseDownForRow, tablePathWhenMouseDownForRow)
+
+    if (Editor.isEditor(node) || !SlateElement.isElement(node) || node.type !== 'table') {
+      return
+    }
+
+    tableNode = node as TableElement
+    tablePath = path
+  } catch {
+    return
+  }
+
   const { resizingRowIndex = -1 } = tableNode
 
   // 优先使用 ResizeObserver 采集到的真实 DOM 行高
   const rowHeights = getRowHeightsForResize(tableNode)
 
   let adjustRowHeights: number[]
-  const selectedTableNode = DomEditor.getSelectedNodeByType(editorWhenMouseDownForRow, 'table') as TableElement
-  const tableDom = DomEditor.toDOMNode(editorWhenMouseDownForRow, selectedTableNode)
+  let tableDom: HTMLElement | null = null
 
-  const tableElement = tableDom.querySelector('.table')
+  try {
+    tableDom = DomEditor.toDOMNode(editorWhenMouseDownForRow, tableNode)
+  } catch {
+    tableDom = null
+  }
+
+  const tableElement = tableDom?.querySelector('.table')
 
   if (tableElement) {
     const tableRect = tableElement.getBoundingClientRect()
@@ -150,10 +174,7 @@ function onMouseMoveForRowHandler(event: Event) {
   }
 
   // 直接更新对应行元素的高度
-  const currentTableNode = DomEditor.getSelectedNodeByType(editorWhenMouseDownForRow, 'table') as TableElement
-
-  if (currentTableNode && resizingRowIndex >= 0 && resizingRowIndex < adjustRowHeights.length) {
-    const tablePath = DomEditor.findPath(editorWhenMouseDownForRow, currentTableNode)
+  if (resizingRowIndex >= 0 && resizingRowIndex < adjustRowHeights.length) {
     const rowPath = [...tablePath, resizingRowIndex]
 
     try {
@@ -172,8 +193,15 @@ function onMouseMoveForRowHandler(event: Event) {
 const onMouseMoveForRowThrottled = throttle(onMouseMoveForRowHandler, 100)
 
 function onMouseUpForRow(_event: Event) {
+  // Preserve the final movement when mouseup arrives before the throttle interval elapses.
+  if (isMouseDownForRowResize) {
+    onMouseMoveForRowThrottled.flush()
+  }
+  onMouseMoveForRowThrottled.cancel()
+
   isMouseDownForRowResize = false
   editorWhenMouseDownForRow = null
+  tablePathWhenMouseDownForRow = null
   document.body.style.cursor = ''
 
   // 解绑事件
@@ -216,11 +244,10 @@ export function handleRowBorderVisible(
         ) {
           // 节流，防止多次引起Transforms.setNodes重绘
           if (resizingRowIndex === i) { return }
-          Transforms.setNodes(
-            editor,
-            { isHoverRowBorder: true, resizingRowIndex: i } as TableElement,
-            { mode: 'highest' },
-          )
+          setTableNodeProps(editor, elemNode, {
+            isHoverRowBorder: true,
+            resizingRowIndex: i,
+          })
           return
         }
       }
@@ -229,8 +256,9 @@ export function handleRowBorderVisible(
 
   // 鼠标移出时，重置
   if (isHoverRowBorder === true) {
-    Transforms.setNodes(editor, { isHoverRowBorder: false, resizingRowIndex: -1 } as TableElement, {
-      mode: 'highest',
+    setTableNodeProps(editor, elemNode, {
+      isHoverRowBorder: false,
+      resizingRowIndex: -1,
     })
   }
 }
@@ -238,17 +266,27 @@ export function handleRowBorderVisible(
 /**
  * 设置行拖拽高亮
  */
-export function handleRowBorderHighlight(editor: IDomEditor, e: MouseEvent) {
+export function handleRowBorderHighlight(
+  editor: IDomEditor,
+  elemNode: SlateElement,
+  e: MouseEvent,
+) {
   if (e.type === 'mouseenter') {
-    Transforms.setNodes(editor, { isResizingRow: true } as TableElement, { mode: 'highest' })
+    setTableNodeProps(editor, elemNode, { isResizingRow: true })
   } else {
-    Transforms.setNodes(editor, { isResizingRow: false } as TableElement, { mode: 'highest' })
+    setTableNodeProps(editor, elemNode, { isResizingRow: false })
   }
 }
 
-export function handleRowBorderMouseDown(editor: IDomEditor, _elemNode: SlateElement) {
+export function handleRowBorderMouseDown(editor: IDomEditor, elemNode: SlateElement) {
   if (isMouseDownForRowResize) { return }
   editorWhenMouseDownForRow = editor
+
+  try {
+    tablePathWhenMouseDownForRow = DomEditor.findPath(editor, elemNode)
+  } catch {
+    tablePathWhenMouseDownForRow = null
+  }
 }
 
 function onMouseDownForRow(event: Event) {

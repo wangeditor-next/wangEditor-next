@@ -1005,86 +1005,131 @@ test.describe('Basic Editor', () => {
       `)
     })
 
+    await page.locator('[data-testid="editor-textarea"] p').last().click()
+
     const metrics = await page.evaluate(() => {
       const table = document.querySelector('[data-testid="editor-textarea"] table.table') as HTMLTableElement | null
-      const firstCol = table?.querySelector('col') as HTMLTableColElement | null
+      const firstCell = table?.querySelector('tr > :first-child') as HTMLTableCellElement | null
 
-      if (!table || !firstCol) {
+      if (!table || !firstCell) {
         throw new Error('table not ready')
       }
 
       table.scrollIntoView({ block: 'center', inline: 'nearest' })
-      const tableRect = table.getBoundingClientRect()
-      const firstColWidth = Number(firstCol.getAttribute('width') || 0)
+      const firstCellRect = firstCell.getBoundingClientRect()
 
-      if (!Number.isFinite(firstColWidth) || firstColWidth <= 0) {
+      if (!Number.isFinite(firstCellRect.width) || firstCellRect.width <= 0) {
         throw new Error('first column width is invalid')
       }
 
       return {
-        borderX: tableRect.left + firstColWidth,
-        borderY: tableRect.top + tableRect.height / 2,
-        beforeWidth: firstColWidth,
+        borderX: firstCellRect.right,
+        borderY: firstCellRect.top + firstCellRect.height / 2,
+        beforeWidth: firstCellRect.width,
       }
     })
 
-    await page.locator('[data-testid="editor-textarea"] p').last().click()
-    await page.evaluate(() => {
-      const editor = (window as any).wangEditorExampleBridge?.editor
-      const tableNode = editor?.children?.find((n: any) => n?.type === 'table')
+    await page.mouse.move(metrics.borderX, metrics.borderY)
 
-      if (!tableNode) {
-        throw new Error('table node not found')
-      }
+    const firstResizeHandle = page.locator('.column-resizer .resizer-line-hotzone').first()
 
-      // 在 e2e 中直接设置索引，稳定触发列拖拽逻辑
-      tableNode.resizingIndex = 0
-    })
+    await expect(firstResizeHandle).toHaveClass(/visible/)
+    await firstResizeHandle.hover()
+    await expect(firstResizeHandle).toHaveClass(/highlight/)
 
-    await page.evaluate(({ borderX, borderY }) => {
-      const hotzone = document.querySelector('.column-resizer .resizer-line-hotzone') as HTMLElement | null
-
-      if (!hotzone) {
-        throw new Error('resize hotzone not found')
-      }
-
-      hotzone.dispatchEvent(new MouseEvent('mousedown', {
-        bubbles: true,
-        cancelable: true,
-        clientX: borderX,
-        clientY: borderY,
-      }))
-      window.dispatchEvent(new MouseEvent('mousemove', {
-        bubbles: true,
-        cancelable: true,
-        clientX: borderX + 60,
-        clientY: borderY,
-      }))
-      window.dispatchEvent(new MouseEvent('mouseup', {
-        bubbles: true,
-        cancelable: true,
-        clientX: borderX + 60,
-        clientY: borderY,
-      }))
-    }, {
-      borderX: metrics.borderX,
-      borderY: metrics.borderY,
-    })
+    await page.mouse.down()
+    await page.mouse.move(metrics.borderX + 60, metrics.borderY)
+    await page.mouse.up()
     await page.waitForTimeout(150)
 
     const afterWidth = await page.evaluate(() => {
-      const firstCol = document.querySelector(
-        '[data-testid="editor-textarea"] table col',
-      ) as HTMLTableColElement | null
+      const firstCell = document.querySelector(
+        '[data-testid="editor-textarea"] table tr > :first-child',
+      ) as HTMLTableCellElement | null
 
-      if (!firstCol) {
-        throw new Error('first table col not found')
+      if (!firstCell) {
+        throw new Error('first table cell not found')
       }
 
-      return Number(firstCol.getAttribute('width') || 0)
+      return firstCell.getBoundingClientRect().width
     })
 
     expect(afterWidth).toBeGreaterThan(metrics.beforeWidth + 8)
+  })
+
+  test('row resize should work after setHtml without selecting table first', async ({ page }) => {
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      editor.setHtml(`
+        <p>before table</p>
+        <table style="width: 100%;">
+          <tbody>
+            <tr><td>row-1-a</td><td>row-1-b</td></tr>
+            <tr><td>row-2-a</td><td>row-2-b</td></tr>
+          </tbody>
+        </table>
+        <p>after table</p>
+      `)
+    })
+
+    await page.locator('[data-testid="editor-textarea"] p').last().click()
+
+    const metrics = await page.evaluate(() => {
+      const firstRow = document.querySelector(
+        '[data-testid="editor-textarea"] table.table tr',
+      ) as HTMLTableRowElement | null
+
+      if (!firstRow) {
+        throw new Error('first table row not found')
+      }
+
+      firstRow.scrollIntoView({ block: 'center', inline: 'nearest' })
+      const firstRowRect = firstRow.getBoundingClientRect()
+
+      if (!Number.isFinite(firstRowRect.height) || firstRowRect.height <= 0) {
+        throw new Error('first row height is invalid')
+      }
+
+      return {
+        borderX: firstRowRect.left + firstRowRect.width / 2,
+        borderY: firstRowRect.bottom,
+        beforeHeight: firstRowRect.height,
+      }
+    })
+
+    await page.mouse.move(metrics.borderX, metrics.borderY)
+
+    const firstResizeHandle = page.locator(
+      '.row-resizer .resizer-line-hotzone-horizontal',
+    ).first()
+
+    await expect(firstResizeHandle).toHaveClass(/visible/)
+    await firstResizeHandle.hover()
+    await expect(firstResizeHandle).toHaveClass(/highlight/)
+
+    await page.mouse.down()
+    await page.mouse.move(metrics.borderX, metrics.borderY + 40)
+    await page.mouse.up()
+    await page.waitForTimeout(150)
+
+    const afterHeight = await page.evaluate(() => {
+      const firstRow = document.querySelector(
+        '[data-testid="editor-textarea"] table.table tr',
+      ) as HTMLTableRowElement | null
+
+      if (!firstRow) {
+        throw new Error('first table row not found')
+      }
+
+      return firstRow.getBoundingClientRect().height
+    })
+
+    expect(afterHeight).toBeGreaterThan(metrics.beforeHeight + 8)
   })
 
   test('regression #574: cutting batch-selected table cells should keep table shape and only clear selected cells', async ({ page }) => {
