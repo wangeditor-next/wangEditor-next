@@ -224,8 +224,8 @@ function renderTable(elemNode: SlateElement, children: VNode[] | null, editor: I
                 }
                 style={{ height: `${columnResizerHeight}px` }}
                 on={{
-                  mouseenter: (e: MouseEvent) => handleCellBorderHighlight(editor, e),
-                  mouseleave: (e: MouseEvent) => handleCellBorderHighlight(editor, e),
+                  mouseenter: (e: MouseEvent) => handleCellBorderHighlight(editor, elemNode, e),
+                  mouseleave: (e: MouseEvent) => handleCellBorderHighlight(editor, elemNode, e),
                   mousedown: (_e: MouseEvent) => handleCellBorderMouseDown(editor, elemNode),
                 }}
               >
@@ -254,8 +254,8 @@ function renderTable(elemNode: SlateElement, children: VNode[] | null, editor: I
                 }
                 style={{ width: `${totalTableWidth}px` }}
                 on={{
-                  mouseenter: (e: MouseEvent) => handleRowBorderHighlight(editor, e),
-                  mouseleave: (e: MouseEvent) => handleRowBorderHighlight(editor, e),
+                  mouseenter: (e: MouseEvent) => handleRowBorderHighlight(editor, elemNode, e),
+                  mouseleave: (e: MouseEvent) => handleRowBorderHighlight(editor, elemNode, e),
                   mousedown: (_e: MouseEvent) => handleRowBorderMouseDown(editor, elemNode),
                 }}
               >
@@ -277,9 +277,9 @@ function renderTable(elemNode: SlateElement, children: VNode[] | null, editor: I
     'div',
     {
       hook: {
-        insert: ({ elm }: VNode) => observerTableResize(editor, elm),
-        destroy: () => {
-          unObserveTableResize()
+        insert: ({ elm }: VNode) => observerTableResize(editor, elm, elemNode),
+        destroy: ({ elm }: VNode) => {
+          unObserveTableResize(elm)
         },
       },
     },

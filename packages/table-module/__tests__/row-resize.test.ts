@@ -107,7 +107,7 @@ describe('Row Resize Module', () => {
       expect(transformsSpy).not.toHaveBeenCalled()
     })
 
-    test('should set hover state when mouse is on row border', () => {
+    test('should update the rendered table when selection is outside it', () => {
       const table = createTableWithRows([30, 40, 50])
 
       // Create a mock target with closest method
@@ -134,15 +134,20 @@ describe('Row Resize Module', () => {
         target: mockTarget,
       } as MouseEvent
 
+      setEditorSelection(editor, {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      })
       vi.spyOn(editor, 'isDisabled').mockReturnValue(false)
-      const transformsSpy = vi.spyOn(slate.Transforms, 'setNodes')
+      vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([2])
+      const transformsSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
 
       handleRowBorderVisible(editor, table, mockEvent)
 
       expect(transformsSpy).toHaveBeenCalledWith(
         editor,
         { isHoverRowBorder: true, resizingRowIndex: 0 },
-        { mode: 'highest' },
+        { at: [2] },
       )
     })
 
@@ -158,42 +163,49 @@ describe('Row Resize Module', () => {
       } as MouseEvent
 
       vi.spyOn(editor, 'isDisabled').mockReturnValue(false)
-      const transformsSpy = vi.spyOn(slate.Transforms, 'setNodes')
+      vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([2])
+      const transformsSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
 
       handleRowBorderVisible(editor, table, mockEvent)
 
       expect(transformsSpy).toHaveBeenCalledWith(
         editor,
         { isHoverRowBorder: false, resizingRowIndex: -1 },
-        { mode: 'highest' },
+        { at: [2] },
       )
     })
   })
 
   describe('handleRowBorderHighlight', () => {
     test('should set resizing state on mouseenter', () => {
+      const table = createTableWithRows([30, 40, 50])
       const mockEvent = { type: 'mouseenter' } as MouseEvent
-      const transformsSpy = vi.spyOn(slate.Transforms, 'setNodes')
 
-      handleRowBorderHighlight(editor, mockEvent)
+      vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([2])
+      const transformsSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
+
+      handleRowBorderHighlight(editor, table, mockEvent)
 
       expect(transformsSpy).toHaveBeenCalledWith(
         editor,
         { isResizingRow: true },
-        { mode: 'highest' },
+        { at: [2] },
       )
     })
 
     test('should clear resizing state on mouseleave', () => {
+      const table = createTableWithRows([30, 40, 50])
       const mockEvent = { type: 'mouseleave' } as MouseEvent
-      const transformsSpy = vi.spyOn(slate.Transforms, 'setNodes')
 
-      handleRowBorderHighlight(editor, mockEvent)
+      vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([2])
+      const transformsSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
+
+      handleRowBorderHighlight(editor, table, mockEvent)
 
       expect(transformsSpy).toHaveBeenCalledWith(
         editor,
         { isResizingRow: false },
-        { mode: 'highest' },
+        { at: [2] },
       )
     })
   })
@@ -231,12 +243,9 @@ describe('Row Resize Module', () => {
       tableDom.appendChild(innerTable)
 
       vi.spyOn(editor, 'getMenuConfig').mockReturnValue({ minRowHeight: 35 } as any)
-      vi.spyOn(slate.Editor, 'nodes').mockReturnValue((function* () {
-        yield [table, [0]] as slate.NodeEntry<slate.Node>
-      }()))
-      vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockReturnValue(table as any)
+      vi.spyOn(slate.Editor, 'node').mockReturnValue([table, [2]] as slate.NodeEntry<slate.Node>)
       vi.spyOn(core.DomEditor, 'toDOMNode').mockReturnValue(tableDom)
-      vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([0])
+      vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([2])
       const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
 
       handleRowBorderMouseDown(editor, table)
@@ -255,7 +264,7 @@ describe('Row Resize Module', () => {
       expect(setNodesSpy).toHaveBeenCalledWith(
         editor,
         { height: 65 } as TableRowElement,
-        { at: [0, 1] },
+        { at: [2, 1] },
       )
 
       window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
@@ -271,10 +280,7 @@ describe('Row Resize Module', () => {
       const tableDom = document.createElement('div')
 
       vi.spyOn(editor, 'getMenuConfig').mockReturnValue({ minRowHeight: 45 } as any)
-      vi.spyOn(slate.Editor, 'nodes').mockReturnValue((function* () {
-        yield [table, [0]] as slate.NodeEntry<slate.Node>
-      }()))
-      vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockReturnValue(table as any)
+      vi.spyOn(slate.Editor, 'node').mockReturnValue([table, [0]] as slate.NodeEntry<slate.Node>)
       vi.spyOn(core.DomEditor, 'toDOMNode').mockReturnValue(tableDom)
       vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([0])
       const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
@@ -321,10 +327,7 @@ describe('Row Resize Module', () => {
       tableDom.appendChild(innerTable)
 
       vi.spyOn(editor, 'getMenuConfig').mockReturnValue({ minRowHeight: 30 } as any)
-      vi.spyOn(slate.Editor, 'nodes').mockReturnValue((function* () {
-        yield [table, [0]] as slate.NodeEntry<slate.Node>
-      }()))
-      vi.spyOn(core.DomEditor, 'getSelectedNodeByType').mockReturnValue(table as any)
+      vi.spyOn(slate.Editor, 'node').mockReturnValue([table, [0]] as slate.NodeEntry<slate.Node>)
       vi.spyOn(core.DomEditor, 'toDOMNode').mockReturnValue(tableDom)
       vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([0])
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
@@ -383,7 +386,8 @@ describe('Row Resize Module', () => {
       } as MouseEvent
 
       vi.spyOn(editor, 'isDisabled').mockReturnValue(false)
-      const transformsSpy = vi.spyOn(slate.Transforms, 'setNodes')
+      vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([2])
+      const transformsSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
 
       handleRowBorderVisible(editor, table, hoverEvent)
 
@@ -391,7 +395,7 @@ describe('Row Resize Module', () => {
       expect(transformsSpy).toHaveBeenCalledWith(
         editor,
         { isHoverRowBorder: true, resizingRowIndex: 0 },
-        { mode: 'highest' },
+        { at: [2] },
       )
 
       // 模拟鼠标按下
@@ -400,12 +404,12 @@ describe('Row Resize Module', () => {
       // 模拟鼠标进入高亮状态
       const enterEvent = { type: 'mouseenter' } as MouseEvent
 
-      handleRowBorderHighlight(editor, enterEvent)
+      handleRowBorderHighlight(editor, table, enterEvent)
 
       expect(transformsSpy).toHaveBeenCalledWith(
         editor,
         { isResizingRow: true },
-        { mode: 'highest' },
+        { at: [2] },
       )
     })
   })
