@@ -14,6 +14,10 @@ import {
 import { h, jsx, VNode } from 'snabbdom'
 
 import {
+  handleCellDragSelectionMouseDown,
+  handleCellDragSelectionMouseMove,
+} from '../cell-selection'
+import {
   getColumnWidthRatios,
   handleCellBorderHighlight,
   handleCellBorderMouseDown,
@@ -136,6 +140,8 @@ function renderTable(elemNode: SlateElement, children: VNode[] | null, editor: I
           // @ts-ignore 如果用户行为是获取焦点输入文本时，需释放选区
           if (e.target.closest('[data-block-type="table-cell"]')) {
             TableCursor.unselect(editor)
+            // Capture the anchor before native selection updates can be interrupted by a hotzone.
+            handleCellDragSelectionMouseDown(editor, e)
           }
 
           // 是否需要定位到 table 内部
@@ -155,6 +161,8 @@ function renderTable(elemNode: SlateElement, children: VNode[] | null, editor: I
             editor.select(tableStart)
           } // 选中 table 内部
         },
+        // Resize hotzones are siblings of the table, so selection tracking belongs on the container.
+        mousemove: (e: MouseEvent) => handleCellDragSelectionMouseMove(editor, e),
       }}
     >
       <table

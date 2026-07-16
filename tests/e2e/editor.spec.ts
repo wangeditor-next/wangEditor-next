@@ -985,6 +985,111 @@ test.describe('Basic Editor', () => {
     expect(hoverAtDomBorder.resizingRowIndex).toBe(0)
   })
 
+  test('regression #935: first-row multi-cell selection should survive the row resize hotzone', async ({ page }) => {
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      editor.setHtml(`
+        <p>before table</p>
+        <table style="width: 839px; table-layout: fixed; height: 80px;">
+          <colgroup contenteditable="false">
+            <col width="65" />
+            <col width="75" />
+            <col width="75" />
+            <col width="84" />
+            <col width="75" />
+            <col width="64" />
+            <col width="64" />
+            <col width="64" />
+            <col width="64" />
+            <col width="64" />
+            <col width="64" />
+            <col width="81" />
+          </colgroup>
+          <tbody>
+            <tr style="height: 71px;">
+              <td><strong>需求编号</strong></td>
+              <td><strong>需求名称</strong></td>
+              <td><strong>测试状态</strong></td>
+              <td><strong>延迟提测天数</strong></td>
+              <td><strong>设计案例数</strong></td>
+              <td><strong>执行案例数</strong></td>
+              <td><strong>测试进度</strong></td>
+              <td><strong>缺陷总数</strong></td>
+              <td><strong>未决缺陷数</strong></td>
+              <td><strong>冒烟不通过次数</strong></td>
+              <td><strong>测试人员</strong></td>
+              <td><strong>开发人员</strong></td>
+            </tr>
+            <tr>
+              <td>REQ-DEMO-001</td><td>年度报表导出清晰度优化示例需求</td><td>测试中</td>
+              <td>1.2</td><td>9</td><td>8</td><td>88%</td><td>0</td><td>0</td><td>0</td>
+              <td>测试人员甲</td><td>开发人员甲</td>
+            </tr>
+            <tr>
+              <td>REQ-DEMO-002</td><td>电子文档模板更新与兼容性验证示例需求</td><td>测试中</td>
+              <td>未延期</td><td>18</td><td>15</td><td>83%</td><td>0</td><td>0</td><td>0</td>
+              <td>测试人员乙</td><td>开发人员乙</td>
+            </tr>
+            <tr>
+              <td>REQ-DEMO-003</td><td>业务流程重构与数据校验示例需求</td><td>测试中</td>
+              <td>0.1</td><td>30</td><td>18</td><td>60%</td><td>0</td><td>0</td><td>0</td>
+              <td>测试人员丙</td><td>开发人员丙</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>after table</p>
+      `.replace(/>\s+</g, '><').trim())
+    })
+
+    const firstRowCells = page.locator(
+      '[data-testid="editor-textarea"] table tr:first-child td',
+    )
+
+    await expect(firstRowCells).toHaveCount(12)
+    await expect(firstRowCells.first()).toHaveText('需求编号')
+    await page.locator('[data-testid="editor-textarea"] p').first().click()
+    const firstCell = await firstRowCells.nth(0).boundingBox()
+    const lastCell = await firstRowCells.nth(4).boundingBox()
+
+    if (!firstCell || !lastCell) {
+      throw new Error('first-row cells are not visible')
+    }
+
+    await page.mouse.move(
+      firstCell.x + firstCell.width / 2,
+      firstCell.y + firstCell.height / 2,
+    )
+    await page.mouse.down()
+    await page.mouse.move(
+      lastCell.x + lastCell.width / 2,
+      lastCell.y + lastCell.height - 2,
+      { steps: 60 },
+    )
+    await page.mouse.up()
+
+    const selectionState = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+      const tableSelection = editor?.getTableSelection?.() || []
+
+      return {
+        cells: tableSelection.flat().length,
+        selectedCells: document.querySelectorAll(
+          '[data-testid="editor-textarea"] table .w-e-selected',
+        ).length,
+      }
+    })
+
+    expect(selectionState).toEqual({
+      cells: 5,
+      selectedCells: 5,
+    })
+  })
+
   test('regression #297: column resize should work after setHtml without selecting table first', async ({ page }) => {
     await page.evaluate(() => {
       const editor = (window as any).wangEditorExampleBridge?.editor
