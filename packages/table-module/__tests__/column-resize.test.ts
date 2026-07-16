@@ -123,6 +123,7 @@ describe('column resize module', () => {
       disconnect = disconnect
     })
     vi.spyOn(core.DomEditor, 'findPath').mockReturnValue([2] as slate.Path)
+    vi.spyOn(slate.Editor, 'node').mockReturnValue([tableNode, [2]] as slate.NodeEntry<slate.Node>)
     const setNodesSpy = vi.spyOn(slate.Transforms, 'setNodes').mockImplementation(() => {})
 
     observerTableResize(editor, container, tableNode)
@@ -141,6 +142,56 @@ describe('column resize module', () => {
       { scrollWidth: 320, height: 80, rowHeights: [40] },
       { at: [2] },
     )
+  })
+
+  test('disconnects each table observer and ignores stale callbacks after setHtml', async () => {
+    const callbacks: ResizeObserverCallback[] = []
+    const disconnected: boolean[] = []
+
+    vi.stubGlobal('ResizeObserver', class {
+      private readonly index: number
+
+      constructor(callback: ResizeObserverCallback) {
+        this.index = callbacks.length
+        callbacks.push(callback)
+        disconnected.push(false)
+      }
+
+      observe() {}
+
+      disconnect() {
+        disconnected[this.index] = true
+      }
+    })
+
+    const table = createTable([60, 60, 60])
+    const editorWithTables = createEditor({
+      content: [
+        { type: 'paragraph', children: [{ text: 'before' }] },
+        table,
+        { type: 'paragraph', children: [{ text: 'between' }] },
+        createTable([80, 80, 80]),
+      ],
+    })
+
+    expect(callbacks).toHaveLength(2)
+
+    editorWithTables.setHtml('<p>one</p><p>replacement</p><p>three</p>')
+    await Promise.resolve()
+
+    expect(disconnected).toEqual([true, true])
+
+    callbacks[0]([
+      {
+        contentRect: { width: 480, height: 40 } as DOMRectReadOnly,
+      } as ResizeObserverEntry,
+    ], {} as ResizeObserver)
+    await Promise.resolve()
+
+    expect(editorWithTables.children[1]).toEqual({
+      type: 'paragraph',
+      children: [{ text: 'replacement' }],
+    })
   })
 
   test('handleCellBorderVisible does nothing when editor is disabled', () => {

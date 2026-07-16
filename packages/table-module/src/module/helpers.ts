@@ -10,7 +10,6 @@ import { TableCellElement, TableElement } from './custom-types'
 
 /**
  * Update a rendered table by its own path instead of relying on the current selection.
- * Async DOM callbacks may retain a table node after setHtml replaces it, so stale paths are ignored.
  */
 export function setTableNodeProps(
   editor: IDomEditor,

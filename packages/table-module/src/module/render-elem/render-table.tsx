@@ -278,8 +278,8 @@ function renderTable(elemNode: SlateElement, children: VNode[] | null, editor: I
     {
       hook: {
         insert: ({ elm }: VNode) => observerTableResize(editor, elm, elemNode),
-        destroy: () => {
-          unObserveTableResize()
+        destroy: ({ elm }: VNode) => {
+          unObserveTableResize(elm)
         },
       },
     },

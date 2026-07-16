@@ -4,6 +4,7 @@ import {
   Editor,
   Element as SlateElement,
   Path,
+  PathRef,
   Transforms,
 } from 'slate'
 
@@ -44,7 +45,10 @@ export function getColumnWidthRatios(columnWidths: number[]) {
  * 监听 table 内部变化，如新增行、列，删除行列等操作，引起的高度变化。
  * ResizeObserver 需要即时释放，以免引起内存泄露
  */
-let resizeObserver: ResizeObserver | null = null
+const resizeObserverMap = new Map<Element, {
+  observer: ResizeObserver
+  tablePathRef: PathRef
+}>()
 
 function getTableRowHeights(table: Element): number[] {
   const tableRows = Array.from(table.querySelectorAll('tr'))
@@ -56,6 +60,27 @@ function getTableRowHeights(table: Element): number[] {
   })
 }
 
+function disconnectTableResizeObserver(elm: Element) {
+  const entry = resizeObserverMap.get(elm)
+
+  if (entry) {
+    entry.observer.disconnect()
+    entry.tablePathRef.unref()
+    resizeObserverMap.delete(elm)
+  }
+}
+
+export function unObserveTableResize(elm?: Node) {
+  if (isHTMLElememt(elm)) {
+    disconnectTableResizeObserver(elm)
+    return
+  }
+
+  for (const container of resizeObserverMap.keys()) {
+    disconnectTableResizeObserver(container)
+  }
+}
+
 export function observerTableResize(
   editor: IDomEditor,
   elm: Node | undefined,
@@ -65,29 +90,48 @@ export function observerTableResize(
     const table = elm.querySelector('table')
 
     if (table) {
-      resizeObserver = new ResizeObserver(([{ contentRect }]) => {
+      unObserveTableResize(elm)
+
+      let tablePathRef: PathRef
+
+      try {
+        tablePathRef = Editor.pathRef(editor, DomEditor.findPath(editor, elemNode))
+      } catch {
+        return
+      }
+
+      const observer = new ResizeObserver(([{ contentRect }]) => {
+        const tablePath = tablePathRef.current
+
+        if (tablePath === null) { return }
+
+        try {
+          const [node] = Editor.node(editor, tablePath)
+
+          if (Editor.isEditor(node) || !SlateElement.isElement(node) || node.type !== 'table') {
+            return
+          }
+        } catch {
+          return
+        }
+
         const rowHeights = getTableRowHeights(table)
 
         // 当非拖动引起的宽度变化，需要调整 columnWidths
-        setTableNodeProps(
+        Transforms.setNodes(
           editor,
-          elemNode,
           {
             scrollWidth: contentRect.width,
             height: contentRect.height,
             rowHeights,
-          },
+          } as TableElement,
+          { at: tablePath },
         )
       })
-      resizeObserver.observe(table)
-    }
-  }
-}
 
-export function unObserveTableResize() {
-  if (resizeObserver) {
-    resizeObserver?.disconnect()
-    resizeObserver = null
+      observer.observe(table)
+      resizeObserverMap.set(elm, { observer, tablePathRef })
+    }
   }
 }
 
