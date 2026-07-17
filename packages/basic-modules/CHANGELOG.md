@@ -1,5 +1,19 @@
 # Change Log
 
+## 3.1.0
+
+### Minor Changes
+
+- 588b6d3: Redesign built-in video alignment as explicit block-media layout. Video nodes now use
+  `align: 'left' | 'center' | 'right'`, render and export through a responsive flex-based `<figure>`,
+  and expose dedicated alignment controls in the video hoverbar. Legacy `text-align` HTML remains
+  importable and is migrated to the new media alignment model.
+
+### Patch Changes
+
+- Updated dependencies [c9898cf]
+  - @wangeditor-next/core@1.9.6
+
 ## 3.0.3
 
 ### Patch Changes

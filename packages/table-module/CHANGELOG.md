@@ -1,5 +1,20 @@
 # Change Log
 
+## 3.0.8
+
+### Patch Changes
+
+- 79cf24b: Keep cross-cell mouse selection anchored when wrapped table content or resize hotzones cause the
+  browser's native range to collapse. Text selection inside a single cell remains unchanged.
+- f60d3a7: Fix row and column resize handles after `setHtml` when the current selection is outside the table.
+
+  Table measurement and resizer state now update the rendered table by its Slate path. Row dragging also
+  keeps the target table path captured on pointer down, so imported tables expose working resize handles
+  without first selecting a cell.
+
+- Updated dependencies [c9898cf]
+  - @wangeditor-next/core@1.9.6
+
 ## 3.0.7
 
 ### Patch Changes

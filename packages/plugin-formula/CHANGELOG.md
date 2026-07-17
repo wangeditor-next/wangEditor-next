@@ -1,5 +1,15 @@
 # @wangeditor-next/plugin-formula
 
+## 3.0.0
+
+### Patch Changes
+
+- c9898cf: Keep long formulas and their edit modal within the editor's visible bounds.
+- Updated dependencies [79cf24b]
+- Updated dependencies [f60d3a7]
+- Updated dependencies [588b6d3]
+  - @wangeditor-next/editor@6.0.0
+
 ## 2.0.8
 
 ### Patch Changes

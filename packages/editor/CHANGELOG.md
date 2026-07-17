@@ -1,5 +1,34 @@
 # Change Log
 
+## 6.0.0
+
+### Major Changes
+
+- 588b6d3: Redesign built-in video alignment as explicit block-media layout. Video nodes now use
+  `align: 'left' | 'center' | 'right'`, render and export through a responsive flex-based `<figure>`,
+  and expose dedicated alignment controls in the video hoverbar. Legacy `text-align` HTML remains
+  importable and is migrated to the new media alignment model.
+
+### Patch Changes
+
+- 79cf24b: Keep cross-cell mouse selection anchored when wrapped table content or resize hotzones cause the
+  browser's native range to collapse. Text selection inside a single cell remains unchanged.
+- f60d3a7: Fix row and column resize handles after `setHtml` when the current selection is outside the table.
+
+  Table measurement and resizer state now update the rendered table by its Slate path. Row dragging also
+  keeps the target table path captured on pointer down, so imported tables expose working resize handles
+  without first selecting a cell.
+
+- Updated dependencies [79cf24b]
+- Updated dependencies [c9898cf]
+- Updated dependencies [f60d3a7]
+- Updated dependencies [588b6d3]
+  - @wangeditor-next/table-module@3.0.8
+  - @wangeditor-next/core@1.9.6
+  - @wangeditor-next/video-module@4.0.0
+  - @wangeditor-next/basic-modules@3.1.0
+  - @wangeditor-next/upload-image-module@4.0.0
+
 ## 5.7.16
 
 ### Patch Changes
