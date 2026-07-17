@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.9.6
+
+### Patch Changes
+
+- c9898cf: Keep long formulas and their edit modal within the editor's visible bounds.
+
 ## 1.9.5
 
 ### Patch Changes
