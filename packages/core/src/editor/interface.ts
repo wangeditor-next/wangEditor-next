@@ -3,10 +3,9 @@
  * @author wangfupeng
  */
 
-import { NodeEntryWithContext } from '@wangeditor-next/table-module/src/utils'
 import ee from 'event-emitter'
 import {
-  Ancestor, Editor, Element, Location, Node,
+  Ancestor, Editor, Element, Location, Node, NodeEntry,
 } from 'slate'
 
 import {
@@ -16,6 +15,15 @@ import { IPositionStyle } from '../menus/interface'
 import { DOMElement } from '../utils/dom'
 
 export type ElementWithId = Element & { id: string }
+export type TableSelectionEntry = [
+  NodeEntry<Element & { type: unknown; rowSpan?: number; colSpan?: number; hidden?: boolean }>,
+  {
+    rtl: number
+    ltr: number
+    ttb: number
+    btt: number
+  },
+]
 type MoveOptions = Parameters<Editor['move']>[0]
 
 export type getMenuConfigReturnType<K> = K extends keyof IMenuConfig ? IMenuConfig[K] : ISingleMenuConfig
@@ -75,7 +83,7 @@ export interface IDomEditor extends Editor {
   move(distance: number, reverse?: boolean): void
   moveReverse: (distance: number) => void
   restoreSelection: () => void
-  getTableSelection?: () => NodeEntryWithContext[][] | null
+  getTableSelection?: () => TableSelectionEntry[][] | null
   getSelectionPosition: () => Partial<IPositionStyle>
   getNodePosition: (node: Node) => Partial<IPositionStyle>
   isSelectedAll: () => boolean

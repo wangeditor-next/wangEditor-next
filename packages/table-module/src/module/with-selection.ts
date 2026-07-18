@@ -1,5 +1,5 @@
 import {
-  Editor, Element, Operation, Path, Range,
+  BaseElement, Editor, Element, Operation, Path, Range,
 } from 'slate'
 
 import {
@@ -143,7 +143,7 @@ export function withSelection<T extends Editor>(editor: T) {
       }
 
       const selected: NodeEntryWithContext[][] = []
-      const selectedSet = new WeakSet<Element>()
+      const selectedSet = new WeakSet<BaseElement>()
 
       for (let x = start.x; x <= end.x && x < filled.length; x += 1) {
         if (!filled[x]) { continue }

@@ -11,6 +11,7 @@ import type {
   IPreParseHtmlConf,
   IRegisterMenuConf,
   IRenderElemConf,
+  ISingleMenuConfig,
   IToolbarConfig,
   ParseStyleHtmlFnType,
   RenderStyleFnType,
@@ -28,7 +29,6 @@ import {
   registerStyleHandler,
   registerStyleToHtmlHandler,
 } from '@wangeditor-next/core'
-import type { ISingleMenuConfig } from 'packages/core/src/config/interface'
 
 import registerModule from './register-builtin-modules/register'
 

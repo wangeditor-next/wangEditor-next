@@ -3,8 +3,6 @@
  * @author wangfupeng
  */
 
-import type { ImageElement } from 'packages/basic-modules/src/modules/image/custom-types'
-import type { VideoElement } from 'packages/video-module/src/module/custom-types'
 import type {
   Descendant, Node, NodeEntry, Range,
 } from 'slate'
@@ -13,6 +11,31 @@ import type { IDomEditor } from '../editor/interface'
 import type { IMenuGroup } from '../menus/interface'
 import type { IUploadConfig } from '../upload/interface'
 import type { DOMElement } from '../utils/dom'
+
+type EmptyText = { text: '' }
+
+type ImageElement = {
+  type: 'image'
+  src: string
+  alt?: string
+  href?: string
+  width?: string
+  height?: string
+  style?: { width?: string; height?: string }
+  children: EmptyText[]
+}
+
+type VideoElement = {
+  type: 'video'
+  key?: string
+  src: string
+  poster?: string
+  align?: 'left' | 'center' | 'right'
+  width?: string
+  height?: string
+  style?: { width?: string; height?: string }
+  children: EmptyText[]
+}
 
 interface IHoverbarConf {
   // key 即 element type

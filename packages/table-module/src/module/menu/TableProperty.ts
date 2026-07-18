@@ -4,7 +4,9 @@
  */
 
 import { IButtonMenu, IDomEditor, t } from '@wangeditor-next/core'
-import { Editor, Transforms } from 'slate'
+import {
+  Editor, NodeEntry, Transforms,
+} from 'slate'
 
 import {
   CLEAN_SVG,
@@ -366,7 +368,7 @@ class TableProperty implements IButtonMenu {
     // 此处空着即可
   }
 
-  getModalContentNode(editor: IDomEditor) {
+  getModalContentNode(editor: IDomEditor): NodeEntry {
     const [node] = Editor.nodes(editor, {
       match: isOfType(editor, 'table'),
     })
