@@ -1,6 +1,5 @@
-import { BaseElement } from 'packages/custom-types'
 import {
-  MergeNodeOperation, Node, Path, Text,
+  Element, MergeNodeOperation, Node, Path, Text,
 } from 'slate'
 import * as Y from 'yjs'
 
@@ -35,7 +34,7 @@ export function mergeNode(sharedRoot: Y.XmlText, slateRoot: Node, op: MergeNodeO
       throw new Error('Path points to Y.Text but not a Slate text node.')
     }
 
-    const targetProps = getProperties(slateTarget as BaseElement)
+    const targetProps = getProperties(slateTarget as Element)
     const prevSiblingProps = getProperties(prevSibling)
     const unsetProps = Object.keys(targetProps).reduce((acc, key) => {
       const prevSiblingHasProp = key in prevSiblingProps

@@ -14,6 +14,16 @@
   "homepage": "https://github.com/wangeditor-next/wangEditor-next#readme",
   "license": "MIT",
   "types": "dist/editor/src/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "core": [
+        "dist/editor/src/core.d.ts"
+      ],
+      "upload": [
+        "dist/editor/src/upload.d.ts"
+      ]
+    }
+  },
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "exports": {

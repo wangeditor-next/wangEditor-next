@@ -22,6 +22,7 @@ export type {
   ClassStylePolicy,
   IClassStyleUnsupportedPayload,
   IEditorConfig,
+  ISingleMenuConfig,
   IToolbarConfig,
   IUploadImageConfig,
   IUploadVideoConfig,

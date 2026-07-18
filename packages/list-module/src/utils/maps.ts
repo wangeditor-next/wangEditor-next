@@ -4,6 +4,6 @@
  */
 
 import { IDomEditor } from '@wangeditor-next/core'
-import { Element as SlateElement } from 'slate'
+import { BaseElement } from 'slate'
 
-export const ELEM_TO_EDITOR = new WeakMap<SlateElement, IDomEditor>()
+export const ELEM_TO_EDITOR = new WeakMap<BaseElement, IDomEditor>()

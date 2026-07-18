@@ -1,5 +1,5 @@
 import { IButtonMenu, IDomEditor, t } from '@wangeditor-next/core'
-import { Editor } from 'slate'
+import { Editor, NodeEntry } from 'slate'
 
 import { CELL_PROPERTY_SVG } from '../../constants/svg'
 import { isOfType } from '../../utils'
@@ -27,7 +27,7 @@ class CellProperty extends TableProperty implements IButtonMenu {
     'verticalAlign',
   ]
 
-  getModalContentNode(editor: IDomEditor) {
+  getModalContentNode(editor: IDomEditor): NodeEntry {
     const [node] = Editor.nodes(editor, {
       match: isOfType(editor, 'td'),
     })
