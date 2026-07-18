@@ -1,4 +1,4 @@
-# wangEditor-next 5
+# wangEditor-next 6
 
 
 [![npm version][npm-version-src]][npm-version-href]
@@ -45,6 +45,16 @@ npm install @wangeditor-next/editor-for-react --save
 ```html
 <script src="https://unpkg.com/@wangeditor-next/editor@latest/dist/index.js"></script>
 ```
+
+## 从 v5 升级到 v6
+
+v6 将内置视频对齐方式改为明确的块级媒体布局：视频节点使用
+`align: 'left' | 'center' | 'right'`，渲染和导出的 HTML 使用响应式 `<figure>` 容器。
+旧版 `text-align` 视频 HTML 仍可导入，并会自动转换为新的对齐模型。
+
+React 项目升级 editor 时，请同时升级到 `@wangeditor-next/editor-for-react@^3.0.0`。
+Vue 2 和 Vue 3 项目请使用各自适配器的最新版本。完整变更见
+[v6.0.0 release notes](https://github.com/wangeditor-next/wangEditor-next/releases/tag/v6.0.0)。
 
 ## 使用示例
 

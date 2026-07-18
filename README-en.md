@@ -1,4 +1,4 @@
-# wangEditor-next 5
+# wangEditor-next 6
 
 [![codecov](https://codecov.io/gh/wangeditor-next/wangEditor-next/graph/badge.svg?token=0ZSXFXJPK3)](https://codecov.io/gh/wangeditor-next/wangEditor-next)
 [![GitHub stars](https://img.shields.io/github/stars/wangeditor-next/wangEditor-next)](https://github.com/wangeditor-next/wangEditor-next/stargazers)
@@ -34,6 +34,19 @@ npm install @wangeditor-next/editor --save
 ```html
 <script src="https://unpkg.com/@wangeditor-next/editor@latest/dist/index.js"></script>
 ```
+
+## Upgrading from v5 to v6
+
+v6 replaces built-in video text alignment with an explicit block-media layout. Video nodes now use
+`align: 'left' | 'center' | 'right'`, and rendered or exported HTML uses a responsive `<figure>`
+container. Legacy video HTML that uses `text-align` remains importable and is migrated to the new
+alignment model.
+
+When upgrading the editor in a React project, also upgrade to
+`@wangeditor-next/editor-for-react@^3.0.0`. Vue 2 and Vue 3 projects should use the latest version of
+their corresponding wrapper. See the
+[v6.0.0 release notes](https://github.com/wangeditor-next/wangEditor-next/releases/tag/v6.0.0) for the
+complete changes.
 
 ## Usage Examples
 
