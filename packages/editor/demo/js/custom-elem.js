@@ -22,15 +22,15 @@
  * this.constructor so that the native HTMLElement constructor can access the
  * current under-construction element's definition.
  */
-(function () {
+;(function () {
   if (
     // No Reflect, no classes, no need for shim because native custom elements
     // require ES2015 classes or Reflect.
-    window.Reflect === undefined
-    || window.customElements === undefined
+    window.Reflect === undefined ||
+    window.customElements === undefined ||
     // The webcomponentsjs custom elements polyfill doesn't require
     // ES2015-compatible construction (`super()` or `Reflect.construct`).
-    || window.customElements.polyfillWrapFlushCallback
+    window.customElements.polyfillWrapFlushCallback
   ) {
     return
   }
@@ -51,7 +51,7 @@
   HTMLElement.prototype = BuiltInHTMLElement.prototype
   HTMLElement.prototype.constructor = HTMLElement
   Object.setPrototypeOf(HTMLElement, BuiltInHTMLElement)
-}())
+})()
 // ------------------------------------------ native-shim end ------------------------------------------
 
 // ------------------------------------------ 顶部导航 start ------------------------------------------
@@ -110,15 +110,15 @@
       rightContainer.className = 'right-container'
       if (LANG === 'en') {
         rightContainer.innerHTML = `
-        <a href="https://wangeditor-next.github.io/docs/en/">Document</a>
+        <a href="https://wangeditor-next.github.io/docs/en/" target="_blank" rel="noopener noreferrer">Document</a>
         &nbsp;
-        <a href="https://github.com/wangeditor-next/wangEditor-next/tree/master/packages/editor/demo">Source</a>
+        <a href="https://github.com/wangeditor-next/wangEditor-next/tree/master/packages/editor/demo" target="_blank" rel="noopener noreferrer">Source</a>
       `
       } else {
         rightContainer.innerHTML = `
-        <a href="https://wangeditor-next.github.io/docs/">文档</a>
+        <a href="https://wangeditor-next.github.io/docs/" target="_blank" rel="noopener noreferrer">文档</a>
         &nbsp;
-        <a href="https://github.com/wangeditor-next/wangEditor-next/tree/master/packages/editor/demo">源码</a>
+        <a href="https://github.com/wangeditor-next/wangEditor-next/tree/master/packages/editor/demo" target="_blank" rel="noopener noreferrer">源码</a>
       `
       }
 
@@ -139,7 +139,7 @@
   }
   MyNav.observedAttributes = ['title']
   window.customElements.define('demo-nav', MyNav)
-}())
+})()
 // ------------------------------------------ 顶部导航 end ------------------------------------------
 
 // ------------------------------------------ 左侧菜单 start ------------------------------------------
@@ -167,22 +167,12 @@ const MENU_CONF = [
   },
   {
     'zh-CN': {
-      text: '上传图片',
-      link: 'https://github.com/wangeditor-team/server',
+      text: '上传服务示例',
+      link: 'https://github.com/wangeditor-next/server',
     },
     en: {
-      text: 'Upload Image',
-      link: 'https://github.com/wangeditor-team/server',
-    },
-  },
-  {
-    'zh-CN': {
-      text: '上传视频',
-      link: 'https://github.com/wangeditor-team/server',
-    },
-    en: {
-      text: 'Upload Video',
-      link: 'https://github.com/wangeditor-team/server',
+      text: 'Upload server',
+      link: 'https://github.com/wangeditor-next/server',
     },
   },
   {
@@ -232,12 +222,24 @@ const MENU_CONF = [
     en: { text: 'Extend modal menu', link: './extend-menu-modal.html?lang=en' },
   },
   {
-    'zh-CN': { text: 'Vue2 demo', link: 'https://wangeditor-next.github.io/docs/guide/for-frame#vue2' },
-    en: { text: 'Vue2 demo', link: 'https://wangeditor-next.github.io/docs/en/guide/for-frame#vue2' },
+    'zh-CN': {
+      text: 'Vue2 demo',
+      link: 'https://wangeditor-next.github.io/docs/guide/for-frame#vue2',
+    },
+    en: {
+      text: 'Vue2 demo',
+      link: 'https://wangeditor-next.github.io/docs/en/guide/for-frame#vue2',
+    },
   },
   {
-    'zh-CN': { text: 'Vue3 demo', link: 'https://wangeditor-next.github.io/docs/guide/for-frame#vue3' },
-    en: { text: 'Vue3 demo', link: 'https://wangeditor-next.github.io/docs/en/guide/for-frame#vue3' },
+    'zh-CN': {
+      text: 'Vue3 demo',
+      link: 'https://wangeditor-next.github.io/docs/guide/for-frame#vue3',
+    },
+    en: {
+      text: 'Vue3 demo',
+      link: 'https://wangeditor-next.github.io/docs/en/guide/for-frame#vue3',
+    },
   },
   {
     'zh-CN': {
@@ -254,7 +256,10 @@ const MENU_CONF = [
       text: 'Webpack demo',
       link: 'https://github.com/wangeditor-next/wangEditor-next/tree/master/apps/demo-html',
     },
-    en: { text: 'Webpack demo', link: 'https://github.com/wangeditor-next/wangEditor-next/tree/master/apps/demo-html' },
+    en: {
+      text: 'Webpack demo',
+      link: 'https://github.com/wangeditor-next/wangEditor-next/tree/master/apps/demo-html',
+    },
   },
 ]
 
@@ -296,15 +301,18 @@ const MENU_CONF = [
 
       container.innerHTML = `<ul>
         ${MENU_CONF.map(item => {
-    const { link, text } = item[LANG]
+          const { link, text } = item[LANG]
+          const externalAttrs = /^https?:\/\//.test(link)
+            ? ' target="_blank" rel="noopener noreferrer"'
+            : ''
 
-    return `<li><a href="${link}">${text}</a></li>`
-  }).join('')}
+          return `<li><a href="${link}"${externalAttrs}>${text}</a></li>`
+        }).join('')}
       </ul>`
 
       shadow.appendChild(container)
     }
   }
   window.customElements.define('demo-menu', MyMenu)
-}())
+})()
 // ------------------------------------------ 左侧菜单 end ------------------------------------------
