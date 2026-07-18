@@ -1,6 +1,4 @@
-import {
-  MoveNodeOperation, Node, Path, Text,
-} from 'slate'
+import { MoveNodeOperation, Node, Path, Text } from 'slate'
 import * as Y from 'yjs'
 
 import { Delta } from '../../module/custom-types'
@@ -29,13 +27,23 @@ export function moveNode(sharedRoot: Y.XmlText, slateRoot: Node, op: MoveNodeOpe
   const storedPositions = getStoredPositionsInDeltaAbsolute(
     sharedRoot,
     origin.yParent,
-    origin.targetDelta,
+    origin.targetDelta
   )
 
-  origin.yParent.delete(origin.textRange.start, origin.textRange.end - origin.textRange.start)
+  const originLength = origin.textRange.end - origin.textRange.start
+  const originPathOffset = op.path[op.path.length - 1]
+  const movesForwardInSameParent =
+    Path.equals(Path.parent(op.path), newParentPath) && originPathOffset < newPathOffset
+  let targetOffset = movesForwardInSameParent ? target.textRange.end : target.textRange.start
+
+  origin.yParent.delete(origin.textRange.start, originLength)
+
+  if (origin.yParent === target.yParent && origin.textRange.start < targetOffset) {
+    targetOffset -= originLength
+  }
 
   const targetLength = getInsertDeltaLength(yTextToInsertDelta(target.yParent))
-  const deltaApplyYOffset = Math.min(target.textRange.start, targetLength)
+  const deltaApplyYOffset = Math.min(targetOffset, targetLength)
   const applyDelta: Delta = [{ retain: deltaApplyYOffset }, ...insertDelta]
 
   target.yParent.applyDelta(applyDelta, { sanitize: false })
@@ -46,6 +54,6 @@ export function moveNode(sharedRoot: Y.XmlText, slateRoot: Node, op: MoveNodeOpe
     storedPositions,
     insertDelta,
     deltaApplyYOffset,
-    origin.textRange.start,
+    origin.textRange.start
   )
 }

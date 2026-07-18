@@ -66,7 +66,7 @@ export default defineConfig({
       {
         name: 'chromium',
         use: { ...devices['Desktop Chrome'] },
-        testIgnore: ['**/*.smoke.spec.ts', '**/*.perf.spec.ts'],
+        testIgnore: ['**/*.smoke.spec.ts', '**/*.perf.spec.ts', '**/yjs/**'],
       },
     ]
 

@@ -18,6 +18,10 @@ export function randomCursorData(): CursorData {
   }
 }
 
+export function getCollaborationRoom(): string {
+  return new URLSearchParams(window.location.search).get('room') || 'wangeditor-next-yjs'
+}
+
 export function addAlpha(hexColor: string, opacity: number): string {
   const normalized = Math.round(Math.min(Math.max(opacity, 0), 1) * 255)
 

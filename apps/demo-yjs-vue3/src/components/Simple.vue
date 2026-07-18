@@ -24,12 +24,10 @@
 <script lang="ts">
 import '@wangeditor-next/editor/dist/css/style.css'
 
-import type { IEditorConfig, IToolbarConfig, SlateDescendant } from '@wangeditor-next/editor'
+import type { IEditorConfig, IToolbarConfig } from '@wangeditor-next/editor'
 import { Boot } from '@wangeditor-next/editor'
 import { Editor, Toolbar } from '@wangeditor-next/editor-for-vue'
-import {
-  slateNodesToInsertDelta, withYHistory, withYjs, YjsEditor,
-} from '@wangeditor-next/yjs'
+import { withYHistory, withYjs, YjsEditor } from '@wangeditor-next/yjs'
 import {
   defineComponent,
   onBeforeUnmount,
@@ -41,13 +39,15 @@ import {
 import { WebsocketProvider } from 'y-websocket'
 import * as Y from 'yjs'
 
+import { getCollaborationRoom } from '../utils'
+
 export default defineComponent({
   name: 'Simple',
   components: { Editor, Toolbar },
   setup() {
     // -------------------- y.js --------------------
     const yDoc = new Y.Doc()
-    const wsProvider = new WebsocketProvider('ws://localhost:1234', 'wangeditor-next-yjs', yDoc)
+    const wsProvider = new WebsocketProvider('ws://localhost:1234', getCollaborationRoom(), yDoc)
     const sharedType = yDoc.get('content', Y.XmlText)
 
     Boot.registerPlugin(withYjs(sharedType))
@@ -59,7 +59,7 @@ export default defineComponent({
     // -------------------- y.js --------------------
 
     // -------------------------- Editor --------------------------
-    const html = ref('<p>hello</p>')
+    const html = ref('<p><br></p>')
     const selectionString = ref('')
     const toolbarConfig: Partial<IToolbarConfig> = {}
     const editorConfig: Partial<IEditorConfig> = {
@@ -71,9 +71,16 @@ export default defineComponent({
       const editor = editorRef.value
 
       if (editor == null) {
+        wsProvider.destroy()
+        yDoc.destroy()
         return
       }
+      if (YjsEditor.connected(editor)) {
+        YjsEditor.disconnect(editor)
+      }
       editor.destroy()
+      wsProvider.destroy()
+      yDoc.destroy()
     })
     const handleCreated = (editor: typeof Editor) => {
       editorRef.value = editor // 记录 editor 实例，重要！
@@ -84,25 +91,14 @@ export default defineComponent({
     // -------------------------- Editor --------------------------
 
     // -------- Y.js <-> Editor --------------------------
-    const initialValue: SlateDescendant[] = [
-      {
-        type: 'paragraph',
-        children: [{ text: 'hello' }],
-      },
-    ]
-
-    watchEffect(async () => {
+    watchEffect(() => {
       onWatcherCleanup(() => {
-        if (
-          editorRef.value
-          && Object.prototype.hasOwnProperty.call(editorRef.value, 'diisconnect')
-        ) {
+        if (editorRef.value && YjsEditor.connected(editorRef.value)) {
           YjsEditor.disconnect(editorRef.value)
         }
       })
 
       if (editorRef.value) {
-        sharedType.applyDelta(slateNodesToInsertDelta(initialValue))
         YjsEditor.connect(editorRef.value)
       }
     })

@@ -6,7 +6,7 @@
   "scripts": {
     "dev-client": "vite --force",
     "dev": "pnpm run dev-client",
-    "dev-server": "pnpm exec y-websocket --port 1234 --path /wangeditor-next-yjs",
+    "dev-server": "pnpm --filter @wangeditor-next/demo-yjs-server dev",
     "dev:all": "pnpm exec concurrently \"pnpm --dir ../../packages/editor dev-watch\" \"pnpm --dir ../../packages/yjs dev-watch\" \"pnpm --dir ../../packages/yjs-for-vue dev-watch\" \"pnpm run dev-server\" \"pnpm run dev-client\"",
     "build": "vite build",
     "smoke": "pnpm --dir ../.. exec turbo build --filter=@wangeditor-next/demo-yjs-vue3",

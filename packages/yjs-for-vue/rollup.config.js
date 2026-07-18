@@ -3,6 +3,12 @@ import { createRollupConfig } from '@wangeditor-next-shared/rollup-config'
 import pkg from './package.json' with { type: 'json' }
 
 const name = 'WangEditorYjsForVue'
+const globals = {
+  '@wangeditor-next/editor': 'wangEditor',
+  '@wangeditor-next/yjs': 'WangEditorYjsModule',
+  slate: 'Slate',
+  vue: 'Vue',
+}
 
 const configList = []
 
@@ -22,6 +28,7 @@ const umdConf = createRollupConfig({
   output: {
     file: pkg.main,
     format: 'umd',
+    globals,
     name,
   },
 })

@@ -1,6 +1,4 @@
-import {
-  Editor, Element, Node, Operation, Path, Text,
-} from 'slate'
+import { Editor, Element, Node, Operation, Path, Text } from 'slate'
 import * as Y from 'yjs'
 
 import { Delta } from '../module/custom-types'
@@ -29,7 +27,7 @@ function applyDelta(node: Element, slatePath: Path, delta: Delta): Operation[] {
     if ('attributes' in change && 'retain' in change) {
       const [startPathOffset, startTextOffset] = yOffsetToSlateOffsets(
         node,
-        yOffset - change.retain,
+        yOffset - change.retain
       )
       const [endPathOffset, endTextOffset] = yOffsetToSlateOffsets(node, yOffset, { assoc: -1 })
 
@@ -91,7 +89,7 @@ function applyDelta(node: Element, slatePath: Path, delta: Delta): Operation[] {
     if ('delete' in change) {
       const [startPathOffset, startTextOffset] = yOffsetToSlateOffsets(
         node,
-        yOffset - change.delete,
+        yOffset - change.delete
       )
       const [endPathOffset, endTextOffset] = yOffsetToSlateOffsets(node, yOffset, { assoc: -1 })
 
@@ -104,8 +102,8 @@ function applyDelta(node: Element, slatePath: Path, delta: Delta): Operation[] {
         const childPath = [...slatePath, pathOffset]
 
         if (
-          Text.isText(child)
-          && (pathOffset === startPathOffset || pathOffset === endPathOffset)
+          Text.isText(child) &&
+          (pathOffset === startPathOffset || pathOffset === endPathOffset)
         ) {
           const start = pathOffset === startPathOffset ? startTextOffset : 0
           const end = pathOffset === endPathOffset ? endTextOffset : child.text.length
@@ -133,10 +131,29 @@ function applyDelta(node: Element, slatePath: Path, delta: Delta): Operation[] {
     }
 
     if ('insert' in change) {
-      const [pathOffset, textOffset] = yOffsetToSlateOffsets(node, yOffset, {
+      let [pathOffset, textOffset] = yOffsetToSlateOffsets(node, yOffset, {
         insert: true,
       })
-      const child = node.children[pathOffset]
+      let child = node.children[pathOffset]
+
+      if (
+        typeof change.insert === 'string' &&
+        pathOffset > 0 &&
+        (child == null || textOffset === 0)
+      ) {
+        const previousPathOffset = pathOffset - 1
+        const previousChild = node.children[previousPathOffset]
+
+        if (
+          Text.isText(previousChild) &&
+          deepEquals(change.attributes ?? {}, getProperties(previousChild))
+        ) {
+          pathOffset = previousPathOffset
+          textOffset = previousChild.text.length
+          child = previousChild
+        }
+      }
+
       const childPath = [...slatePath, pathOffset]
 
       if (Text.isText(child)) {
@@ -147,16 +164,17 @@ function applyDelta(node: Element, slatePath: Path, delta: Delta): Operation[] {
          * Since we're not actually using slate to update the node
          * this is a simulation
          */
-        const currentProps = lastOp != null && lastOp.type === 'insert_node' ? lastOp.node : getProperties(child)
+        const currentProps =
+          lastOp != null && lastOp.type === 'insert_node' ? lastOp.node : getProperties(child)
 
         let lastPath: Path = []
 
         if (
-          lastOp != null
-          && (lastOp.type === 'insert_node'
-            || lastOp.type === 'insert_text'
-            || lastOp.type === 'split_node'
-            || lastOp.type === 'set_node')
+          lastOp != null &&
+          (lastOp.type === 'insert_node' ||
+            lastOp.type === 'insert_text' ||
+            lastOp.type === 'split_node' ||
+            lastOp.type === 'set_node')
         ) {
           lastPath = lastOp.path
         }
@@ -166,9 +184,9 @@ function applyDelta(node: Element, slatePath: Path, delta: Delta): Operation[] {
          * props at the current path, we can just insert a text node
          */
         if (
-          typeof change.insert === 'string'
-          && deepEquals(change.attributes ?? {}, currentProps)
-          && Path.equals(childPath, lastPath)
+          typeof change.insert === 'string' &&
+          deepEquals(change.attributes ?? {}, currentProps) &&
+          (lastOp == null || Path.equals(childPath, lastPath))
         ) {
           return ops.push({
             type: 'insert_text',
@@ -218,7 +236,7 @@ function applyDelta(node: Element, slatePath: Path, delta: Delta): Operation[] {
 export function translateYTextEvent(
   sharedRoot: Y.XmlText,
   editor: Editor,
-  event: Y.YTextEvent,
+  event: Y.YTextEvent
 ): Operation[] {
   const { target, changes } = event
   const delta = event.delta as Delta
@@ -242,13 +260,16 @@ export function translateYTextEvent(
       keyChanges.map(([key, info]) => [
         key,
         info.action === 'delete' ? null : target.getAttribute(key),
-      ]),
+      ])
     )
 
     const properties = Object.fromEntries(keyChanges.map(([key]) => [key, targetElement[key]]))
 
     ops.push({
-      type: 'set_node', newProperties, properties, path: slatePath,
+      type: 'set_node',
+      newProperties,
+      properties,
+      path: slatePath,
     })
   }
 
