@@ -30,6 +30,7 @@
     "e2e": "playwright test",
     "e2e:matrix": "cross-env PLAYWRIGHT_CROSS_BROWSER=1 playwright test --project=chromium-smoke --project=firefox-smoke --project=webkit-smoke",
     "e2e:perf": "cross-env PLAYWRIGHT_INCLUDE_PERF=1 playwright test --project=chromium-perf",
+    "e2e:yjs": "node scripts/run-yjs-e2e.js",
     "prepare": "husky install",
     "changeset": "changeset",
     "version:release": "pnpm changeset version && pnpm install --lockfile-only --no-frozen-lockfile",

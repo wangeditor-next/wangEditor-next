@@ -26,6 +26,8 @@ pnpm demo:yjs:vue3
 
 打开命令行输出的本地地址。
 
+协作文档的初始空段落由 `apps/demo-yjs-server/server.js` 在服务端创建一次，客户端不应各自写入初始内容，否则多人同时进入空房间时会产生重复节点。
+
 
 ## 代码讲解
 
@@ -50,4 +52,3 @@ pnpm demo:yjs:vue3
     <remote-cursors-overlay-page></remote-cursors-overlay-page>
 </template>
 ```
-
