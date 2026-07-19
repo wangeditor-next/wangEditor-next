@@ -65,6 +65,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check compatibility inventory
+        run: pnpm run check:compatibility
+
       # Full lint gate
       - name: Lint
         run: pnpm lint
