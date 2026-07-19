@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "id": "core-root-upload-exports",
+      "category": "public-api",
+      "package": "@wangeditor-next/core",
+      "paths": [
+        "packages/core/src/index.ts",
+        "packages/core/__tests__/upload/deprecated-export.test.ts"
+      ],
+      "behavior": "Keeps createUploader and createUppyUploader available from the core root entry.",
+      "status": "deprecated",
+      "removalMajor": 2,
+      "migration": "Import the functions from @wangeditor-next/core/upload."
+    },
+    {
+      "id": "core-toolbar-insert-keys-shapes",
+      "category": "public-api",
+      "package": "@wangeditor-next/core",
+      "paths": ["packages/core/src/config/interface.ts", "packages/core/src/menus/bar/Toolbar.ts"],
+      "behavior": "Accepts one insertKeys object or an array, with keys as a string or an array.",
+      "status": "retained",
+      "removalMajor": 2,
+      "migration": "Use an array of insertKeys entries and an array for each keys value."
+    },
+    {
+      "id": "core-editor-move-overload",
+      "category": "public-api",
+      "package": "@wangeditor-next/core",
+      "paths": [
+        "packages/core/src/editor/interface.ts",
+        "packages/core/src/editor/plugins/with-selection.ts"
+      ],
+      "behavior": "Accepts move(distance, reverse) in addition to Slate MoveOptions.",
+      "status": "retained",
+      "removalMajor": 2,
+      "migration": "Use editor.move({ distance, reverse })."
+    },
+    {
+      "id": "builtin-v4-v5-html-preparse",
+      "category": "stored-data",
+      "package": "@wangeditor-next/basic-modules",
+      "paths": [
+        "packages/basic-modules/src/modules/color/pre-parse-html.ts",
+        "packages/basic-modules/src/modules/font-size-family/pre-parse-html.ts",
+        "packages/basic-modules/src/modules/code-block/pre-parse-html.ts",
+        "packages/basic-modules/src/modules/todo/pre-parse-html.ts",
+        "packages/basic-modules/src/modules/indent/pre-parse-html.ts"
+      ],
+      "behavior": "Normalizes historical font, code, todo and indent HTML before parsing.",
+      "status": "retained",
+      "migration": "Keep historical HTML readable and preserve values through round trips."
+    },
+    {
+      "id": "list-legacy-json-types",
+      "category": "stored-data",
+      "package": "@wangeditor-next/list-module",
+      "paths": ["packages/list-module/src/module/plugin.ts"],
+      "behavior": "Normalizes numbered-list and bulleted-list nodes created by older editors.",
+      "status": "retained",
+      "migration": "Normalize loaded documents to the current list-item model without losing content."
+    },
+    {
+      "id": "upload-image-legacy-response-array",
+      "category": "stored-data",
+      "package": "@wangeditor-next/upload-image-module",
+      "paths": ["packages/upload-image-module/src/module/upload-images.ts"],
+      "behavior": "Accepts the historical array form of a successful upload response.",
+      "status": "retained",
+      "migration": "Backends should return one data object; existing array responses remain supported."
+    },
+    {
+      "id": "video-legacy-html",
+      "category": "stored-data",
+      "package": "@wangeditor-next/video-module",
+      "paths": ["packages/video-module/src/module/pre-parse-html.ts"],
+      "behavior": "Normalizes historical iframe and video attributes before parsing.",
+      "status": "retained",
+      "migration": "Keep historical video HTML readable and preserve media attributes."
+    },
+    {
+      "id": "table-legacy-html",
+      "category": "stored-data",
+      "package": "@wangeditor-next/table-module",
+      "paths": ["packages/table-module/src/module/pre-parse-html.ts"],
+      "behavior": "Normalizes historical table structure, widths and alignment before parsing.",
+      "status": "retained",
+      "migration": "Keep historical table HTML readable and verify width and alignment round trips."
+    },
+    {
+      "id": "editor-browser-polyfills",
+      "category": "runtime-environment",
+      "package": "@wangeditor-next/editor",
+      "paths": ["packages/editor/src/utils/browser-polyfill.ts"],
+      "behavior": "Provides globalThis and AggregateError fallbacks for supported browser environments.",
+      "status": "retained",
+      "migration": "Raise and publish the browser support baseline before removing fallbacks."
+    },
+    {
+      "id": "editor-node-ssr-polyfills",
+      "category": "runtime-environment",
+      "package": "@wangeditor-next/editor",
+      "paths": ["packages/editor/src/utils/node-polyfill.ts"],
+      "behavior": "Provides minimal browser globals when the editor is imported in Node or SSR.",
+      "status": "retained",
+      "migration": "Define the SSR import contract and verify supported frameworks before removal."
+    },
+    {
+      "id": "core-beforeinput-fallback",
+      "category": "runtime-environment",
+      "package": "@wangeditor-next/core",
+      "paths": [
+        "packages/core/src/text-area/event-handlers/beforeInput.ts",
+        "packages/core/src/text-area/event-handlers/keydown.ts",
+        "packages/core/src/text-area/event-handlers/keypress.ts"
+      ],
+      "behavior": "Uses keydown and keypress when beforeinput is absent or incomplete.",
+      "status": "retained",
+      "migration": "Raise the browser support baseline and verify IME behavior before removal."
+    }
+  ]
+}
