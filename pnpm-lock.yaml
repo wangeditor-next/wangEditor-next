@@ -574,13 +574,13 @@ importers:
         specifier: 3.0.2
         version: link:../code-highlight
       '@wangeditor-next/core':
-        specifier: 1.9.6
+        specifier: 1.9.7
         version: link:../core
       '@wangeditor-next/list-module':
-        specifier: 3.0.3
+        specifier: 3.0.4
         version: link:../list-module
       '@wangeditor-next/table-module':
-        specifier: 3.0.8
+        specifier: 3.0.9
         version: link:../table-module
       '@wangeditor-next/upload-image-module':
         specifier: 4.0.0
@@ -650,7 +650,7 @@ importers:
   packages/list-module:
     dependencies:
       '@wangeditor-next/core':
-        specifier: '>=1.9.5'
+        specifier: '>=1.9.7'
         version: link:../core
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -669,7 +669,7 @@ importers:
   packages/plugin-attachment:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 6.0.0
+        specifier: 6.0.1
         version: link:../editor
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -685,7 +685,7 @@ importers:
   packages/plugin-ctrl-enter:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: 6.0.0
+        specifier: 6.0.1
         version: link:../editor
     devDependencies:
       '@wangeditor-next-shared/rollup-config':
@@ -787,7 +787,7 @@ importers:
   packages/table-module:
     dependencies:
       '@wangeditor-next/core':
-        specifier: '>=1.9.6'
+        specifier: '>=1.9.7'
         version: link:../core
       dom7:
         specifier: ^3.0.0 || ^4.0.0
@@ -874,7 +874,7 @@ importers:
   packages/yjs:
     dependencies:
       '@wangeditor-next/core':
-        specifier: '>=1.9.2'
+        specifier: '>=1.9.7'
         version: link:../core
       y-protocols:
         specifier: ^1.0.5
@@ -896,10 +896,10 @@ importers:
   packages/yjs-for-react:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: '>=6.0.0'
+        specifier: '>=6.0.1'
         version: link:../editor
       '@wangeditor-next/yjs':
-        specifier: ^2.0.2
+        specifier: ^2.0.3
         version: link:../yjs
       react:
         specifier: '>=17.0.2'
@@ -927,10 +927,10 @@ importers:
   packages/yjs-for-vue:
     dependencies:
       '@wangeditor-next/editor':
-        specifier: '>=6.0.0'
+        specifier: '>=6.0.1'
         version: link:../editor
       '@wangeditor-next/yjs':
-        specifier: ^2.0.2
+        specifier: ^2.0.3
         version: link:../yjs
       slate:
         specifier: ^0.124.0

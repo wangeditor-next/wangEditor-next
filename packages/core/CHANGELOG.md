@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.9.7
+
+### Patch Changes
+
+- 96541bb: Remove monorepo-only imports from published declarations and expose subpath declaration mappings for
+  TypeScript consumers using classic Node module resolution.
+
 ## 1.9.6
 
 ### Patch Changes
