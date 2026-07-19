@@ -33,7 +33,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  unit-tests:
     name: Unit Test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
     strategy:
@@ -96,3 +96,12 @@ jobs:
           files: coverage/lcov.info
           disable_search: true
           verbose: true
+
+  test:
+    name: test
+    if: always()
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all unit test jobs to pass
+        run: test "${{ needs.unit-tests.result }}" = 'success'
