@@ -162,6 +162,10 @@ const MENU_CONF = [
     en: { text: 'Set HTML', link: './set-html.html?lang=en' },
   },
   {
+    'zh-CN': { text: '自定义样式', link: './custom-styles.html' },
+    en: { text: 'Custom styles', link: './custom-styles.html?lang=en' },
+  },
+  {
     'zh-CN': { text: '模拟腾讯文档', link: './like-qq-doc.html' },
     en: { text: 'Like QQ doc', link: './like-qq-doc.html?lang=en' },
   },
