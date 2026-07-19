@@ -8,6 +8,7 @@ import { IStylePreset, IStylePresetMenuConfig } from './types'
 
 const PRESET_KEY_REGEXP = /^[a-z][a-z0-9-]{0,63}$/
 const CLASS_NAME_REGEXP = /^-?[_a-zA-Z]+[_a-zA-Z0-9-]*$/
+const validatedConfigCache = new WeakMap<IStylePreset[], IStylePresetMenuConfig>()
 
 export function genStylePresetMenuConfig(): IStylePresetMenuConfig {
   return { presets: [] }
@@ -51,8 +52,8 @@ function validatePresets(presets: IStylePreset[]) {
 
     validateClassNames(preset)
 
-    const classNames = (preset.className || `w-e-style-preset-${preset.key}`)
-      .trim()
+    const trimmedClassName = (preset.className || '').trim()
+    const classNames = (trimmedClassName || `w-e-style-preset-${preset.key}`)
       .split(/\s+/)
       .filter(Boolean)
       .sort()
@@ -70,9 +71,9 @@ function validatePresets(presets: IStylePreset[]) {
     })
 
     if (conflictingMapping) {
-      throw new Error(
-        `Ambiguous class mapping between style presets "${conflictingMapping.key}" and "${preset.key}".`
-      )
+      const conflictingKeys = `"${conflictingMapping.key}" and "${preset.key}"`
+
+      throw new Error(`Ambiguous class mapping between style presets ${conflictingKeys}.`)
     }
 
     keys.add(preset.key)
@@ -93,8 +94,17 @@ export function getStylePresetConfig(editor: IDomEditor): IStylePresetMenuConfig
     throw new Error('Style preset config "presets" must be an array.')
   }
 
+  const cached = validatedConfigCache.get(presets)
+
+  if (cached) {
+    return cached
+  }
+
   validatePresets(presets)
-  return { presets }
+  const config = { presets }
+
+  validatedConfigCache.set(presets, config)
+  return config
 }
 
 export function findStylePreset(editor: IDomEditor, key: string): IStylePreset | undefined {

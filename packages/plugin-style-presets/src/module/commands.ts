@@ -2,14 +2,20 @@
  * @description style preset commands
  */
 
-import { IDomEditor, SlateEditor, SlateElement, SlateTransforms } from '@wangeditor-next/editor'
+import {
+  IDomEditor,
+  SlateEditor,
+  SlateElement,
+  SlateNode,
+  SlateTransforms,
+} from '@wangeditor-next/editor'
 
 import { findStylePreset } from './config'
 import { getNodeStylePreset, STYLE_PRESET_PROPERTY } from './helpers'
 import { StylePresetScope } from './types'
 
 function getBlockMatch(editor: IDomEditor) {
-  return node =>
+  return (node: SlateNode) =>
     SlateElement.isElement(node) &&
     SlateEditor.isBlock(editor, node) &&
     !SlateEditor.isVoid(editor, node)

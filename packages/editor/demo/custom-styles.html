@@ -107,7 +107,9 @@
     </div>
 
     <script src="https://unpkg.com/@wangeditor-next/editor@latest/dist/index.js"></script>
-    <script src="https://unpkg.com/@wangeditor-next/plugin-style-presets@latest/dist/index.js"></script>
+    <script
+      src="https://unpkg.com/@wangeditor-next/plugin-style-presets@latest/dist/index.js"
+    ></script>
     <script>
       const LANG = location.href.indexOf('lang=en') > 0 ? 'en' : 'zh-CN'
       const E = window.wangEditor
@@ -122,8 +124,7 @@
               callout: 'Callout',
               highlight: 'Highlight',
               lead: 'Lead paragraph',
-              missing:
-                'The style presets package is not published yet. Reload this page after its release.',
+              missing: 'The style presets package is not published yet. Reload after its release.',
               muted: 'Muted text',
               preview: 'Rendered content',
             }
@@ -157,9 +158,11 @@
             className: 'article-highlight',
           },
         ]
-        const initialHtml = `<p class="article-lead">Semantic styles keep content stable while themes change.</p>
-        <p>Select text or place the caret in a block, then choose a preset from the toolbar.</p>
-        <p><span class="article-muted">This text is rendered from a configured business class.</span></p>`
+        const initialHtml = [
+          '<p class="article-lead">Semantic styles stay stable across themes.</p>',
+          '<p>Select text or place the caret in a block, then choose a preset.</p>',
+          '<p><span class="article-muted">Imported from a configured business class.</span></p>',
+        ].join('\n')
         const htmlOutput = document.getElementById('editor-content-html')
         const contentView = document.getElementById('editor-content-view')
 

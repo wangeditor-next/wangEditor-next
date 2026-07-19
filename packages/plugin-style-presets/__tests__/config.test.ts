@@ -27,6 +27,33 @@ describe('style preset config', () => {
     expect(getStylePresetConfig(createEditorWithConfig({ presets }))).toEqual({ presets })
   })
 
+  it('treats a whitespace-only class name as an omitted class mapping', () => {
+    const presets = [
+      {
+        key: 'generated-class',
+        title: 'Generated class',
+        scope: 'text' as const,
+        className: '   ',
+      },
+      {
+        key: 'business-class',
+        title: 'Business class',
+        scope: 'text' as const,
+        className: 'article-text',
+      },
+    ]
+
+    expect(getStylePresetConfig(createEditorWithConfig({ presets }))).toEqual({ presets })
+  })
+
+  it('caches validated config for the same preset array', () => {
+    const presets = [{ key: 'muted-text', title: 'Muted text', scope: 'text' as const }]
+    const editor = createEditorWithConfig({ presets })
+    const firstConfig = getStylePresetConfig(editor)
+
+    expect(getStylePresetConfig(editor)).toBe(firstConfig)
+  })
+
   it.each([
     [{ key: 'Invalid Key', title: 'Bad', scope: 'text' }],
     [{ key: 'valid', title: '', scope: 'text' }],
