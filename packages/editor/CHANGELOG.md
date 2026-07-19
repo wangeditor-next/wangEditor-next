@@ -1,5 +1,16 @@
 # Change Log
 
+## 6.0.1
+
+### Patch Changes
+
+- 96541bb: Remove monorepo-only imports from published declarations and expose subpath declaration mappings for
+  TypeScript consumers using classic Node module resolution.
+- Updated dependencies [96541bb]
+  - @wangeditor-next/core@1.9.7
+  - @wangeditor-next/list-module@3.0.4
+  - @wangeditor-next/table-module@3.0.9
+
 ## 6.0.0
 
 ### Major Changes

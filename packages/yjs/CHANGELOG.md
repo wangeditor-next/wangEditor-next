@@ -1,5 +1,16 @@
 # @wangeditor-next/yjs
 
+## 2.0.3
+
+### Patch Changes
+
+- 96541bb: Remove monorepo-only imports from published declarations and expose subpath declaration mappings for
+  TypeScript consumers using classic Node module resolution.
+- 9c363d7: Fix remote text insertion and same-parent node movement convergence, define UMD dependency globals,
+  and harden the React and Vue demos against duplicate initialization and stale connections.
+- Updated dependencies [96541bb]
+  - @wangeditor-next/core@1.9.7
+
 ## 2.0.2
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @wangeditor-next/demo-vue3
 
+## 0.0.24
+
+### Patch Changes
+
+- Updated dependencies [96541bb]
+  - @wangeditor-next/editor@6.0.1
+
 ## 0.0.23
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @wangeditor-next/yjs-for-react
 
+## 3.0.1
+
+### Patch Changes
+
+- 9c363d7: Fix remote text insertion and same-parent node movement convergence, define UMD dependency globals,
+  and harden the React and Vue demos against duplicate initialization and stale connections.
+- Updated dependencies [96541bb]
+- Updated dependencies [9c363d7]
+  - @wangeditor-next/editor@6.0.1
+  - @wangeditor-next/yjs@2.0.3
+
 ## 3.0.0
 
 ### Patch Changes
