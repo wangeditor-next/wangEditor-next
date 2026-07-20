@@ -173,6 +173,69 @@ test.describe('Cross Browser Smoke', () => {
     await expect(page.getByTestId('editor-html')).toContainText('<table')
   })
 
+  test('shows colored multi-cell selections as one outer border', async ({ page }) => {
+    await setEditorHtml(page, `
+      <table>
+        <tbody>
+          <tr>
+            <td style="background-color: rgb(254, 242, 203);">A</td>
+            <td style="background-color: rgb(254, 242, 203);">B</td>
+            <td style="background-color: rgb(254, 242, 203);">C</td>
+          </tr>
+          <tr><td>1</td><td>2</td><td>3</td></tr>
+        </tbody>
+      </table>
+      <p><br></p>
+    `.replace(/>\s+</g, '><').trim())
+
+    const cells = page.locator('[data-testid="editor-textarea"] table tr:first-child td')
+    const firstCell = await cells.first().boundingBox()
+    const lastCell = await cells.last().boundingBox()
+
+    if (!firstCell || !lastCell) {
+      throw new Error('colored table cells are not visible')
+    }
+
+    await page.mouse.move(
+      firstCell.x + firstCell.width / 2,
+      firstCell.y + firstCell.height / 2,
+    )
+    await page.mouse.down()
+    await page.mouse.move(
+      lastCell.x + lastCell.width / 2,
+      lastCell.y + lastCell.height / 2,
+      { steps: 20 },
+    )
+    await page.mouse.up()
+
+    const selectedCells = page.locator(
+      '[data-testid="editor-textarea"] table tr:first-child td.w-e-selected',
+    )
+
+    await expect(selectedCells).toHaveCount(3)
+    await expect(selectedCells.first()).toHaveCSS('background-color', 'rgb(254, 242, 203)')
+    await expect(selectedCells.first()).toHaveClass(/w-e-selected-start/)
+    await expect(selectedCells.nth(1)).not.toHaveClass(/w-e-selected-(start|end)/)
+    await expect(selectedCells.last()).toHaveClass(/w-e-selected-end/)
+
+    const renderedBorders = await selectedCells.evaluateAll(elements => elements.map(element => {
+      const style = getComputedStyle(element, '::after')
+
+      return [
+        style.borderTopWidth,
+        style.borderRightWidth,
+        style.borderBottomWidth,
+        style.borderLeftWidth,
+      ]
+    }))
+
+    expect(renderedBorders).toEqual([
+      ['2px', '0px', '2px', '2px'],
+      ['2px', '0px', '2px', '0px'],
+      ['2px', '2px', '2px', '0px'],
+    ])
+  })
+
   test('undoes and redoes changes', async ({ page }) => {
     await typeInEditor(page, 'undo text')
     await expect(page.getByTestId('editor-html')).toContainText('undo text')

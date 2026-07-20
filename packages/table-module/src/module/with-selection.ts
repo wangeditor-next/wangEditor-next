@@ -3,10 +3,14 @@ import {
 } from 'slate'
 
 import {
-  filledMatrix, hasCommon, NodeEntryWithContext, Point,
+  Edge, filledMatrix, hasCommon, NodeEntryWithContext, Point,
 } from '../utils'
 import { TableCursor } from './table-cursor'
-import { EDITOR_TO_SELECTION, EDITOR_TO_SELECTION_SET } from './weak-maps'
+import {
+  EDITOR_TO_SELECTION,
+  EDITOR_TO_SELECTION_EDGES,
+  EDITOR_TO_SELECTION_SET,
+} from './weak-maps'
 
 export function withSelection<T extends Editor>(editor: T) {
   const { apply } = editor
@@ -144,6 +148,7 @@ export function withSelection<T extends Editor>(editor: T) {
 
       const selected: NodeEntryWithContext[][] = []
       const selectedSet = new WeakSet<BaseElement>()
+      const selectedEdges = new WeakMap<BaseElement, ReadonlySet<Edge>>()
 
       for (let x = start.x; x <= end.x && x < filled.length; x += 1) {
         if (!filled[x]) { continue }
@@ -158,6 +163,17 @@ export function withSelection<T extends Editor>(editor: T) {
           if (!element) { continue }
 
           selectedSet.add(element)
+
+          // A merged cell can occupy multiple matrix coordinates. Accumulate only coordinates
+          // touching the range perimeter so shared borders inside the selection remain unchanged.
+          const edges = new Set<Edge>(selectedEdges.get(element) || [])
+
+          if (x === start.x) { edges.add('top') }
+          if (x === end.x) { edges.add('bottom') }
+          if (y === start.y) { edges.add('start') }
+          if (y === end.y) { edges.add('end') }
+
+          selectedEdges.set(element, edges)
           cells.push(filled[x][y])
         }
 
@@ -168,6 +184,7 @@ export function withSelection<T extends Editor>(editor: T) {
 
       EDITOR_TO_SELECTION.set(editor, selected)
       EDITOR_TO_SELECTION_SET.set(editor, selectedSet)
+      EDITOR_TO_SELECTION_EDGES.set(editor, selectedEdges)
 
     } catch (error) {
       TableCursor.unselect(editor)

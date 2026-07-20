@@ -1,5 +1,16 @@
 @import "../../../vars.less";
 
+@keyframes w-e-table-cell-selection-pulse {
+  0%,
+  100% {
+    opacity: 0.95;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
 .w-e-text-container [data-slate-editor] {
   .table-container {
     width: 100%;
@@ -33,10 +44,40 @@
       font-weight: bold;
     }
 
-    /* 选区拖影 */
+    /* Draw one visible perimeter without replacing an authored cell background. */
     td.w-e-selected,
     th.w-e-selected {
-      background-color: rgba(20, 86, 240, 0.18);
+      position: relative;
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        box-sizing: border-box;
+        border: 0 solid rgb(20, 86, 240);
+        pointer-events: none;
+        animation: w-e-table-cell-selection-pulse 1.2s ease-in-out infinite;
+      }
+    }
+
+    td.w-e-selected-start::after,
+    th.w-e-selected-start::after {
+      border-left-width: 2px;
+    }
+
+    td.w-e-selected-end::after,
+    th.w-e-selected-end::after {
+      border-right-width: 2px;
+    }
+
+    td.w-e-selected-top::after,
+    th.w-e-selected-top::after {
+      border-top-width: 2px;
+    }
+
+    td.w-e-selected-bottom::after,
+    th.w-e-selected-bottom::after {
+      border-bottom-width: 2px;
     }
   }
 
@@ -126,6 +167,17 @@
 .resizer-line-hotzone-horizontal.highlight {
   opacity: 1;
 }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .w-e-text-container [data-slate-editor] table {
+    td.w-e-selected,
+    th.w-e-selected {
+      &::after {
+        animation: none;
+      }
+    }
+  }
 }
 
 // --------------------------------- 分割线 ---------------------------------

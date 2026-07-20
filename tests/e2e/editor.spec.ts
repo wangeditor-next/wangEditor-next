@@ -1090,6 +1090,97 @@ test.describe('Basic Editor', () => {
     })
   })
 
+  test('shows colored multi-cell selections as one animated outer border', async ({ page }) => {
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      editor.setHtml(`
+        <table>
+          <tbody>
+            <tr>
+              <td style="background-color: rgb(254, 242, 203);">A</td>
+              <td style="background-color: rgb(254, 242, 203);">B</td>
+              <td style="background-color: rgb(254, 242, 203);">C</td>
+            </tr>
+            <tr><td>1</td><td>2</td><td>3</td></tr>
+          </tbody>
+        </table>
+        <p><br></p>
+      `.replace(/>\s+</g, '><').trim())
+    })
+
+    const cells = page.locator('[data-testid="editor-textarea"] table tr:first-child td')
+    const firstCell = await cells.first().boundingBox()
+    const lastCell = await cells.last().boundingBox()
+
+    if (!firstCell || !lastCell) {
+      throw new Error('colored table cells are not visible')
+    }
+
+    await page.mouse.move(
+      firstCell.x + firstCell.width / 2,
+      firstCell.y + firstCell.height / 2,
+    )
+    await page.mouse.down()
+    await page.mouse.move(
+      lastCell.x + lastCell.width / 2,
+      lastCell.y + lastCell.height / 2,
+      { steps: 20 },
+    )
+    await page.mouse.up()
+
+    const selectionState = await page.evaluate(() => {
+      const selectedCells = Array.from(document.querySelectorAll<HTMLElement>(
+        '[data-testid="editor-textarea"] table .w-e-selected',
+      ))
+
+      return {
+        backgrounds: selectedCells.map(cell => getComputedStyle(cell).backgroundColor),
+        borders: selectedCells.map(cell => {
+          const style = getComputedStyle(cell, '::after')
+
+          return [
+            style.borderTopWidth,
+            style.borderRightWidth,
+            style.borderBottomWidth,
+            style.borderLeftWidth,
+          ]
+        }),
+        animations: selectedCells.map(cell => getComputedStyle(cell, '::after').animationName),
+      }
+    })
+
+    expect(selectionState).toEqual({
+      backgrounds: Array(3).fill('rgb(254, 242, 203)'),
+      borders: [
+        ['2px', '0px', '2px', '2px'],
+        ['2px', '0px', '2px', '0px'],
+        ['2px', '2px', '2px', '0px'],
+      ],
+      animations: Array(3).fill('w-e-table-cell-selection-pulse'),
+    })
+
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+
+    const reducedMotionStyle = await cells.first().evaluate(cell => {
+      const style = getComputedStyle(cell, '::after')
+
+      return {
+        animationName: style.animationName,
+        borderTopWidth: style.borderTopWidth,
+      }
+    })
+
+    expect(reducedMotionStyle).toEqual({
+      animationName: 'none',
+      borderTopWidth: '2px',
+    })
+  })
+
   test('regression #297: column resize should work after setHtml without selecting table first', async ({ page }) => {
     await page.evaluate(() => {
       const editor = (window as any).wangEditorExampleBridge?.editor
