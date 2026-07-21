@@ -5,7 +5,6 @@ import {
 import { TableCursor } from '../src/module/table-cursor'
 import {
   EDITOR_TO_SELECTION,
-  EDITOR_TO_SELECTION_EDGES,
   EDITOR_TO_SELECTION_SET,
 } from '../src/module/weak-maps'
 import { withSelection } from '../src/module/with-selection'
@@ -68,22 +67,17 @@ describe('table cursor and selection helpers', () => {
     const editor = {} as Editor
     const cell = { type: 'table-cell', children: [{ text: 'A' }] } as any
     const selectedSet = new WeakSet<any>([cell])
-    const selectedEdges = new WeakMap([[cell, new Set(['top'] as const)]])
 
     EDITOR_TO_SELECTION.set(editor, [] as any)
     EDITOR_TO_SELECTION_SET.set(editor, selectedSet)
-    EDITOR_TO_SELECTION_EDGES.set(editor, selectedEdges)
 
     expect(TableCursor.hasSelected(editor)).toBe(true)
     expect(TableCursor.isSelected(editor, cell)).toBe(true)
-    expect([...TableCursor.getSelectionEdges(editor, cell)]).toEqual(['top'])
 
     TableCursor.unselect(editor)
 
     expect(TableCursor.hasSelected(editor)).toBe(false)
     expect(TableCursor.isSelected(editor, cell)).toBe(false)
-    expect(TableCursor.getSelectionEdges(editor, cell).size).toBe(0)
-    expect(EDITOR_TO_SELECTION_EDGES.has(editor)).toBe(false)
   })
 
   test('withSelection stores expanded matrix selection for a valid multi-cell selection', () => {
@@ -133,69 +127,7 @@ describe('table cursor and selection helpers', () => {
     expect(EDITOR_TO_SELECTION.get(editor)).toHaveLength(2)
     expect(EDITOR_TO_SELECTION_SET.get(editor)?.has(fromCell)).toBe(true)
     expect(EDITOR_TO_SELECTION_SET.get(editor)?.has(toCell)).toBe(true)
-    expect([...TableCursor.getSelectionEdges(editor, fromCell)].sort()).toEqual([
-      'end', 'start', 'top',
-    ])
-    expect([...TableCursor.getSelectionEdges(editor, toCell)].sort()).toEqual([
-      'bottom', 'end', 'start',
-    ])
     expect(apply).toHaveBeenCalledWith(op)
-  })
-
-  test('withSelection stores only the outer edges of a rectangular selection', () => {
-    const apply = vi.fn()
-    const editor = withSelection({
-      selection: null,
-      apply,
-    } as unknown as Editor)
-    const cells = Array.from({ length: 2 }, (_rowValue, row) => (
-      Array.from({ length: 3 }, (_columnValue, column) => ({
-        type: 'table-cell',
-        children: [{ text: `${row}-${column}` }],
-      }) as any)
-    ))
-    const op = {
-      type: 'set_selection',
-      properties: null,
-      newProperties: {
-        anchor: { path: [0, 0, 0], offset: 0 },
-        focus: { path: [0, 1, 2], offset: 0 },
-      },
-    } as Operation
-
-    vi.spyOn(Editor, 'nodes').mockImplementation((_editor, options: any) => {
-      const at = options?.at
-
-      if (JSON.stringify(at) === JSON.stringify(op.newProperties.anchor)) {
-        return createGenerator([[cells[0][0], [0, 0, 0]]])
-      }
-      if (JSON.stringify(at) === JSON.stringify(op.newProperties.focus)) {
-        return createGenerator([[cells[1][2], [0, 1, 2]]])
-      }
-      return createGenerator([])
-    })
-    vi.spyOn(utils, 'hasCommon').mockReturnValue(true)
-    vi.spyOn(utils, 'filledMatrix').mockReturnValue(cells.map((row, rowIndex) => (
-      row.map((cell, columnIndex) => [
-        [cell, [0, rowIndex, columnIndex]],
-        { rtl: 1, ltr: 1, ttb: 1, btt: 1 },
-      ])
-    )) as any)
-
-    editor.apply(op)
-
-    expect([...TableCursor.getSelectionEdges(editor, cells[0][0])].sort()).toEqual([
-      'start', 'top',
-    ])
-    expect([...TableCursor.getSelectionEdges(editor, cells[0][1])]).toEqual(['top'])
-    expect([...TableCursor.getSelectionEdges(editor, cells[0][2])].sort()).toEqual(['end', 'top'])
-    expect([...TableCursor.getSelectionEdges(editor, cells[1][0])].sort()).toEqual([
-      'bottom', 'start',
-    ])
-    expect([...TableCursor.getSelectionEdges(editor, cells[1][1])]).toEqual(['bottom'])
-    expect([...TableCursor.getSelectionEdges(editor, cells[1][2])].sort()).toEqual([
-      'bottom', 'end',
-    ])
   })
 
   test('withSelection clears table selection when the range stays in the same cell', () => {

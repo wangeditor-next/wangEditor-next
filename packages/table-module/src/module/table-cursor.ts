@@ -5,15 +5,8 @@ import {
   NodeEntry,
 } from 'slate'
 
-import { Edge, isOfType } from '../utils'
-import {
-  EDITOR_TO_SELECTION,
-  EDITOR_TO_SELECTION_EDGES,
-  EDITOR_TO_SELECTION_SET,
-} from './weak-maps'
-
-// Cell rendering is frequent, so reuse one empty immutable-by-contract fallback.
-const EMPTY_SELECTION_EDGES: ReadonlySet<Edge> = new Set()
+import { isOfType } from '../utils'
+import { EDITOR_TO_SELECTION, EDITOR_TO_SELECTION_SET } from './weak-maps'
 
 export const TableCursor = {
   /** @returns {boolean} `true` if the selection is inside a table, otherwise `false`. */
@@ -74,7 +67,6 @@ export const TableCursor = {
     // }
 
     EDITOR_TO_SELECTION_SET.delete(editor)
-    EDITOR_TO_SELECTION_EDGES.delete(editor)
     EDITOR_TO_SELECTION.delete(editor)
     // 清除选区
     // document.getSelection()?.removeAllRanges()
@@ -91,14 +83,6 @@ export const TableCursor = {
     }
 
     return selectedElements.has(element)
-  },
-
-  /**
-   * Returns the selected range edges owned by a cell. Interior cells return an empty set so
-   * adjacent selected cells do not render internal blue borders.
-   */
-  getSelectionEdges<T extends Element>(editor: Editor, element: T): ReadonlySet<Edge> {
-    return EDITOR_TO_SELECTION_EDGES.get(editor)?.get(element) || EMPTY_SELECTION_EDGES
   },
 
   hasSelected(editor: Editor) {

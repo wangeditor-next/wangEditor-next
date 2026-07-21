@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 
 const getEditable = (page: Page) => page.locator('[data-testid="editor-textarea"] [contenteditable="true"]')
@@ -44,6 +44,20 @@ const setEditorHtml = async (page: Page, html: string) => {
 
     editor.setHtml(value)
   }, html)
+}
+
+const dragTableCellSelection = async (page: Page, fromCell: Locator, toCell: Locator) => {
+  const from = await fromCell.boundingBox()
+  const to = await toCell.boundingBox()
+
+  if (!from || !to) {
+    throw new Error('[smoke] table cells are not visible')
+  }
+
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 20 })
+  await page.mouse.up()
 }
 
 const runDividerUndoImeScenario = async (page: Page) => {
@@ -173,20 +187,31 @@ test.describe('Cross Browser Smoke', () => {
     await expect(page.getByTestId('editor-html')).toContainText('<table')
   })
 
-  test('shows colored multi-cell selections as one outer border', async ({ page }) => {
-    await setEditorHtml(page, `
+  test('shows colored RTL multi-cell selections as one outer border', async ({ page }) => {
+    const background = 'rgb(20, 86, 240)'
+    const selectionBorder = 'rgb(0, 45, 135)'
+
+    await setEditorHtml(
+      page,
+      `
       <table>
         <tbody>
           <tr>
-            <td style="background-color: rgb(254, 242, 203);">A</td>
-            <td style="background-color: rgb(254, 242, 203);">B</td>
-            <td style="background-color: rgb(254, 242, 203);">C</td>
+            <td style="background-color: ${background};">A</td>
+            <td style="background-color: ${background};">B</td>
+            <td style="background-color: ${background};">C</td>
           </tr>
           <tr><td>1</td><td>2</td><td>3</td></tr>
         </tbody>
       </table>
       <p><br></p>
-    `.replace(/>\s+</g, '><').trim())
+    `
+        .replace(/>\s+</g, '><')
+        .trim()
+    )
+    await page.addStyleTag({
+      content: '[data-testid="editor-textarea"] table { direction: rtl !important; }',
+    })
 
     const cells = page.locator('[data-testid="editor-textarea"] table tr:first-child td')
     const firstCell = await cells.first().boundingBox()
@@ -196,44 +221,40 @@ test.describe('Cross Browser Smoke', () => {
       throw new Error('colored table cells are not visible')
     }
 
-    await page.mouse.move(
-      firstCell.x + firstCell.width / 2,
-      firstCell.y + firstCell.height / 2,
-    )
-    await page.mouse.down()
-    await page.mouse.move(
-      lastCell.x + lastCell.width / 2,
-      lastCell.y + lastCell.height / 2,
-      { steps: 20 },
-    )
-    await page.mouse.up()
+    expect(firstCell.x).toBeGreaterThan(lastCell.x)
+    await dragTableCellSelection(page, cells.first(), cells.last())
 
     const selectedCells = page.locator(
       '[data-testid="editor-textarea"] table tr:first-child td.w-e-selected',
     )
 
     await expect(selectedCells).toHaveCount(3)
-    await expect(selectedCells.first()).toHaveCSS('background-color', 'rgb(254, 242, 203)')
-    await expect(selectedCells.first()).toHaveClass(/w-e-selected-start/)
-    await expect(selectedCells.nth(1)).not.toHaveClass(/w-e-selected-(start|end)/)
-    await expect(selectedCells.last()).toHaveClass(/w-e-selected-end/)
+    await expect(selectedCells.first()).toHaveCSS('background-color', background)
+    const segments = page.locator('.w-e-table-selection-segment')
+    const leftSegment = page.locator('.w-e-table-selection-segment[data-selection-edge="left"]')
+    const rightSegment = page.locator('.w-e-table-selection-segment[data-selection-edge="right"]')
 
-    const renderedBorders = await selectedCells.evaluateAll(elements => elements.map(element => {
-      const style = getComputedStyle(element, '::after')
+    await expect(segments).toHaveCount(4)
+    await expect(leftSegment).toHaveCount(1)
+    await expect(rightSegment).toHaveCount(1)
 
-      return [
-        style.borderTopWidth,
-        style.borderRightWidth,
-        style.borderBottomWidth,
-        style.borderLeftWidth,
-      ]
+    const selectionLayers = await segments.first().evaluate(segment => ({
+      haloColor: getComputedStyle(segment).backgroundColor,
+      borderColor: getComputedStyle(segment, '::after').backgroundColor,
     }))
+    const leftSegmentBox = await leftSegment.boundingBox()
+    const rightSegmentBox = await rightSegment.boundingBox()
 
-    expect(renderedBorders).toEqual([
-      ['2px', '0px', '2px', '2px'],
-      ['2px', '0px', '2px', '0px'],
-      ['2px', '2px', '2px', '0px'],
-    ])
+    if (!leftSegmentBox || !rightSegmentBox) {
+      throw new Error('colored selection segments are not visible')
+    }
+
+    expect(selectionLayers).toEqual({
+      haloColor: 'rgba(255, 255, 255, 0.95)',
+      borderColor: selectionBorder,
+    })
+    expect(leftSegmentBox.x).toBeCloseTo(lastCell.x, 0)
+    expect(rightSegmentBox.x + rightSegmentBox.width).toBeCloseTo(firstCell.x + firstCell.width, 0)
   })
 
   test('undoes and redoes changes', async ({ page }) => {

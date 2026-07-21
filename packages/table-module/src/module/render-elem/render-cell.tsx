@@ -25,10 +25,6 @@ function renderTableCell(
     hidden = false,
   } = cellNode as TableCellElement
   const selected = TableCursor.isSelected(editor, cellNode)
-  const selectionEdges = TableCursor.getSelectionEdges(editor, cellNode)
-  const selectionClasses = selected
-    ? ['w-e-selected', ...Array.from(selectionEdges, edge => `w-e-selected-${edge}`)].join(' ')
-    : ''
 
   // ------------------ 不是第一行，直接渲染 <td> ------------------
   if (!isFirstRow) {
@@ -42,7 +38,7 @@ function renderTableCell(
          * 3. 合并单元格时，判断隐藏
          */
         data-block-type="table-cell"
-        className={selectionClasses}
+        className={selected ? 'w-e-selected' : ''}
         style={{ display: hidden ? 'none' : '' }}
       >
         {children}
@@ -63,7 +59,7 @@ function renderTableCell(
        * 3. 合并单元格时，判断隐藏
        */
       data-block-type="table-cell"
-      className={selectionClasses}
+      className={selected ? 'w-e-selected' : ''}
       style={{ display: hidden ? 'none' : '' }}
     >
       {children}
