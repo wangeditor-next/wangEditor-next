@@ -53,7 +53,19 @@ const runDividerUndoImeScenario = async (page: Page) => {
     pageErrors.push(err?.stack || err?.message || String(err))
   })
 
-  await focusEditor(page)
+  await setEditorHtml(page, '<p>ime anchor</p>')
+  await page.evaluate(() => {
+    const editor = (window as any).wangEditorExampleBridge?.editor
+
+    if (!editor) {
+      throw new Error('[smoke] editor instance is not ready')
+    }
+    editor.focus()
+    editor.select({
+      anchor: { path: [0, 0], offset: 10 },
+      focus: { path: [0, 0], offset: 10 },
+    })
+  })
   await waitForMenuEnabled(page, 'divider')
   await getToolbarMenu(page, 'divider').click()
 
@@ -125,6 +137,98 @@ const runDividerUndoImeScenario = async (page: Page) => {
   expect(fatalErrors).toEqual([])
 }
 
+const runSelectedTextImeScenario = async (page: Page) => {
+  const pageErrors: string[] = []
+
+  page.on('pageerror', err => {
+    pageErrors.push(err?.stack || err?.message || String(err))
+  })
+
+  await setEditorHtml(page, '<p>abc</p>')
+  await page.evaluate(() => {
+    const editor = (window as any).wangEditorExampleBridge?.editor
+    const editable = document.querySelector(
+      '[data-testid="editor-textarea"] [contenteditable="true"]',
+    )
+
+    if (!editor || !editable) {
+      throw new Error('[smoke] editor is not ready')
+    }
+    editor.focus()
+    editor.select({
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 3 },
+    })
+    editable.dispatchEvent(new CompositionEvent('compositionstart', {
+      data: '',
+      bubbles: true,
+    }))
+  })
+
+  await expect.poll(() => page.evaluate(() => {
+    const editor = (window as any).wangEditorExampleBridge?.editor
+    const editable = document.querySelector(
+      '[data-testid="editor-textarea"] [contenteditable="true"]',
+    )
+    const selection = window.getSelection()
+
+    return {
+      anchorConnected: selection?.anchorNode?.isConnected ?? false,
+      collapsed: selection?.isCollapsed ?? false,
+      html: editor?.getHtml() || '',
+      rangeCount: selection?.rangeCount || 0,
+      selectionInside: !!selection?.anchorNode && !!editable?.contains(selection.anchorNode),
+    }
+  })).toEqual({
+    anchorConnected: true,
+    collapsed: true,
+    html: '<p><br></p>',
+    rangeCount: 1,
+    selectionInside: true,
+  })
+
+  await page.evaluate(() => {
+    const editable = document.querySelector(
+      '[data-testid="editor-textarea"] [contenteditable="true"]',
+    )
+
+    if (!editable) {
+      throw new Error('[smoke] editable not found')
+    }
+    editable.dispatchEvent(new CompositionEvent('compositionend', {
+      data: '你',
+      bubbles: true,
+    }))
+  })
+  await expect.poll(() => page.evaluate(() => {
+    const editor = (window as any).wangEditorExampleBridge?.editor
+    const editable = document.querySelector(
+      '[data-testid="editor-textarea"] [contenteditable="true"]',
+    )
+
+    return {
+      domText: (editable?.textContent || '').replace(/\uFEFF/g, ''),
+      html: editor?.getHtml() || '',
+      modelText: editor?.getText() || '',
+    }
+  })).toEqual({
+    domText: '你',
+    html: '<p>你</p>',
+    modelText: '你',
+  })
+
+  await page.keyboard.type('x')
+  await expect.poll(() => page.evaluate(() => {
+    return (window as any).wangEditorExampleBridge?.editor?.getHtml() || ''
+  })).toBe('<p>你x</p>')
+
+  await page.keyboard.press('Backspace')
+  await expect.poll(() => page.evaluate(() => {
+    return (window as any).wangEditorExampleBridge?.editor?.getHtml() || ''
+  })).toBe('<p>你</p>')
+  expect(pageErrors).toEqual([])
+}
+
 test.describe('Cross Browser Smoke', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/examples/default-mode.html')
@@ -188,5 +292,9 @@ test.describe('Cross Browser Smoke', () => {
 
   test('regression #892: divider -> undo -> composition should stay stable', async ({ page }) => {
     await runDividerUndoImeScenario(page)
+  })
+
+  test('regression #947: selected text composition keeps the caret connected', async ({ page }) => {
+    await runSelectedTextImeScenario(page)
   })
 })

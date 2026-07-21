@@ -27,6 +27,206 @@ const selectAll = async (page: Page) => {
   await page.keyboard.press('Control+A')
 }
 
+type NativeImeSelection = {
+  anchor: { path: number[], offset: number }
+  focus: { path: number[], offset: number }
+}
+
+type NativeImeSelectionCase = {
+  name: string
+  html: string
+  selection: NativeImeSelection | null
+  selectedText: string
+  composingText: string
+  committedHtml: string
+  committedText: string
+}
+
+const nativeImeSelectionCases: NativeImeSelectionCase[] = [
+  {
+    name: 'full selection',
+    html: '<p>abc</p>',
+    selection: null,
+    selectedText: 'abc',
+    composingText: 's',
+    committedHtml: '<p>是</p>',
+    committedText: '是',
+  },
+  {
+    name: 'backward partial selection',
+    html: '<p>abcdef</p>',
+    selection: {
+      anchor: { path: [0, 0], offset: 4 },
+      focus: { path: [0, 0], offset: 1 },
+    },
+    selectedText: 'bcd',
+    composingText: 'asef',
+    committedHtml: '<p>a是ef</p>',
+    committedText: 'a是ef',
+  },
+  {
+    name: 'cross-block formatted selection',
+    html: '<p>A<strong>BC</strong></p><p><em>DE</em>F</p>',
+    selection: {
+      anchor: { path: [0, 0], offset: 1 },
+      focus: { path: [1, 1], offset: 0 },
+    },
+    selectedText: 'BCDE',
+    composingText: 'AsF',
+    committedHtml: '<p>A是F</p>',
+    committedText: 'A是F',
+  },
+]
+
+const runNativeImeSelectionScenario = async (
+  page: Page,
+  scenario: NativeImeSelectionCase,
+) => {
+  const pageErrors: string[] = []
+
+  page.on('pageerror', err => {
+    pageErrors.push(err?.stack || err?.message || String(err))
+  })
+
+  await page.evaluate(html => {
+    const editor = (window as any).wangEditorExampleBridge?.editor
+
+    if (!editor) {
+      throw new Error('editor not ready')
+    }
+    editor.setHtml(html)
+  }, scenario.html)
+  await expect.poll(() => page.evaluate(() => {
+    return (window as any).wangEditorExampleBridge?.editor?.getHtml() || ''
+  })).toBe(scenario.html)
+
+  if (scenario.selection) {
+    await page.evaluate(selection => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+      editor.focus()
+      editor.select(selection)
+    }, scenario.selection)
+  } else {
+    await selectAll(page)
+  }
+
+  await expect.poll(() => page.evaluate(() => {
+    const editor = (window as any).wangEditorExampleBridge?.editor
+    const domText = window.getSelection()?.toString().replace(/\s/g, '') || ''
+
+    return {
+      domText,
+      modelText: editor?.getSelectionText() || '',
+    }
+  })).toEqual({
+    domText: scenario.selectedText,
+    modelText: scenario.selectedText,
+  })
+
+  await page.evaluate(() => {
+    const editable = document.querySelector(
+      '[data-testid="editor-textarea"] [contenteditable="true"]',
+    )
+
+    if (!editable) {
+      throw new Error('editable not found')
+    }
+    const eventStore = window as any
+
+    eventStore.__nativeImeEvents = []
+    for (const type of ['compositionstart', 'compositionend']) {
+      editable.addEventListener(type, () => {
+        eventStore.__nativeImeEvents.push(type)
+      })
+    }
+  })
+
+  const cdp = await page.context().newCDPSession(page)
+
+  await cdp.send('Input.imeSetComposition', {
+    text: 's',
+    selectionStart: 1,
+    selectionEnd: 1,
+  })
+
+  await expect.poll(() => page.evaluate(() => {
+    const editable = document.querySelector(
+      '[data-testid="editor-textarea"] [contenteditable="true"]',
+    )
+    const selection = window.getSelection()
+
+    return {
+      active: document.activeElement === editable,
+      anchorConnected: selection?.anchorNode?.isConnected ?? false,
+      collapsed: selection?.isCollapsed ?? false,
+      domText: (editable?.textContent || '').replace(/\uFEFF/g, ''),
+      focusConnected: selection?.focusNode?.isConnected ?? false,
+      rangeCount: selection?.rangeCount || 0,
+      selectionInside: !!selection?.anchorNode && !!editable?.contains(selection.anchorNode),
+    }
+  })).toEqual({
+    active: true,
+    anchorConnected: true,
+    collapsed: true,
+    domText: scenario.composingText,
+    focusConnected: true,
+    rangeCount: 1,
+    selectionInside: true,
+  })
+
+  await cdp.send('Input.insertText', { text: '是' })
+
+  await expect.poll(() => page.evaluate(() => {
+    const editor = (window as any).wangEditorExampleBridge?.editor
+    const editable = document.querySelector(
+      '[data-testid="editor-textarea"] [contenteditable="true"]',
+    )
+    const selection = window.getSelection()
+    const modelSelection = editor?.selection
+
+    return {
+      anchorConnected: selection?.anchorNode?.isConnected ?? false,
+      collapsed: selection?.isCollapsed ?? false,
+      domText: (editable?.textContent || '').replace(/\uFEFF/g, ''),
+      html: editor?.getHtml() || '',
+      modelSelectionCollapsed: !!modelSelection
+        && JSON.stringify(modelSelection.anchor) === JSON.stringify(modelSelection.focus),
+      modelText: editor?.getText() || '',
+      rangeCount: selection?.rangeCount || 0,
+    }
+  })).toEqual({
+    anchorConnected: true,
+    collapsed: true,
+    domText: scenario.committedText,
+    html: scenario.committedHtml,
+    modelSelectionCollapsed: true,
+    modelText: scenario.committedText,
+    rangeCount: 1,
+  })
+
+  const typedHtml = scenario.committedHtml.replace('是', '是x')
+
+  await page.keyboard.type('x')
+  await expect.poll(() => page.evaluate(() => {
+    return (window as any).wangEditorExampleBridge?.editor?.getHtml() || ''
+  })).toBe(typedHtml)
+
+  await page.keyboard.press('Backspace')
+  await expect.poll(() => page.evaluate(() => {
+    return (window as any).wangEditorExampleBridge?.editor?.getHtml() || ''
+  })).toBe(scenario.committedHtml)
+
+  const imeEvents = await page.evaluate(() => (window as any).__nativeImeEvents) as string[]
+
+  expect(imeEvents.filter(type => type === 'compositionstart')).toHaveLength(1)
+  expect(imeEvents.filter(type => type === 'compositionend')).toHaveLength(1)
+  expect(pageErrors).toEqual([])
+}
+
 const waitForMenuEnabled = async (page: Page, menuKey: string) => {
   const menu = getToolbarMenu(page, menuKey)
 
@@ -225,6 +425,13 @@ test.describe('Basic Editor', () => {
     await expect(page.getByTestId('editor-html')).toContainText('<p>你</p>')
     expect(pageErrors).toEqual([])
   })
+
+  for (const scenario of nativeImeSelectionCases) {
+    test(`regression #947: native IME replaces ${scenario.name}`, async ({ page, browserName }) => {
+      test.skip(browserName !== 'chromium', 'CDP IME input is only available in Chromium')
+      await runNativeImeSelectionScenario(page, scenario)
+    })
+  }
 
   test('regression #793: repeated composition on long text should not throw DOM point error', async ({ page }) => {
     const pageErrors: string[] = []
