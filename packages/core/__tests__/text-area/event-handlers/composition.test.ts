@@ -47,24 +47,62 @@ const createSelection = (expanded: boolean) => ({
 
 describe('composition handlers', () => {
   it('handles composition start on expanded selection', async () => {
+    const callOrder: string[] = []
     const editor = {
       selection: createSelection(true),
     } as any
-    const textarea = { isComposing: false } as any
+    const textarea = {
+      isComposing: false,
+      changeViewState: vi.fn(() => callOrder.push('view')),
+    } as any
     const event = { target: {} } as any
-    const startContainer = { textContent: 'old' }
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+    vi.spyOn(Editor, 'deleteFragment').mockImplementation(() => {
+      expect(textarea.isComposing).toBe(true)
+      callOrder.push('delete')
+    })
+    vi.mocked(editorSelectionToDOM).mockImplementation(() => {
+      callOrder.push('selection')
+    })
+
+    handleCompositionStart(event, textarea, editor)
+
+    expect(callOrder).toEqual(['delete', 'view'])
+    await flushPromises()
+
+    expect(callOrder).toEqual(['delete', 'view', 'selection'])
+    expect(Editor.deleteFragment).toHaveBeenCalledWith(editor)
+    expect(textarea.changeViewState).toHaveBeenCalledOnce()
+    expect(textarea.isComposing).toBe(true)
+    expect(hidePlaceholder).toHaveBeenCalledWith(textarea, editor)
+    expect(editorSelectionToDOM).toHaveBeenCalledWith(textarea, editor, true)
+  })
+
+  it('does not force a view refresh when composition starts on a collapsed selection', async () => {
+    const editor = {
+      selection: createSelection(false),
+    } as any
+    const textarea = { isComposing: false, changeViewState: vi.fn() } as any
+    const event = { target: {} } as any
+    const startContainer = document.createTextNode('old')
 
     vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
     vi.spyOn(Editor, 'deleteFragment').mockImplementation(() => {})
-    vi.spyOn(DomEditor, 'toDOMRange').mockReturnValue({ startContainer } as any)
+    vi.spyOn(DomEditor, 'findDocumentOrShadowRoot').mockReturnValue({
+      getSelection: () => ({
+        rangeCount: 1,
+        getRangeAt: () => ({ startContainer }),
+      }),
+    } as any)
 
     handleCompositionStart(event, textarea, editor)
     await flushPromises()
 
-    expect(Editor.deleteFragment).toHaveBeenCalledWith(editor)
+    expect(Editor.deleteFragment).not.toHaveBeenCalled()
+    expect(textarea.changeViewState).not.toHaveBeenCalled()
+    expect(editorSelectionToDOM).not.toHaveBeenCalled()
     expect(textarea.isComposing).toBe(true)
-    expect(hidePlaceholder).toHaveBeenCalledWith(textarea, editor)
-    expect(editorSelectionToDOM).toHaveBeenCalledWith(textarea, editor, true)
   })
 
   it('marks composing state on update', () => {

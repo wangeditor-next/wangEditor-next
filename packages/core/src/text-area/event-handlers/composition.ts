@@ -128,6 +128,7 @@ export function handleCompositionStart(e: Event, textarea: TextArea, editor: IDo
 
   if (!hasEditableTarget(editor, event.target)) { return }
   EDITOR_TO_PENDING_SELECTION.delete(editor)
+  textarea.isComposing = true
 
   const { selection } = editor
 
@@ -146,16 +147,14 @@ export function handleCompositionStart(e: Event, textarea: TextArea, editor: IDo
 
   if (selection && Range.isExpanded(selection)) {
     Editor.deleteFragment(editor)
-
+    // Flush the deletion before the browser mutates the native composition range.
+    // This also queues the new Slate-to-DOM mappings ahead of the caret restore.
+    textarea.changeViewState()
     Promise.resolve().then(() => {
-      // deleteFragment 会在一个 Promise 后更新 dom，导致浏览器选区不正确
-      // 因此这里延迟一下再设置选区，使选区在正确位置
-      // 这里 model 选区没有发生变化，不能使用 editor.restoreSelection
-      // restoreSelection 会对比前后 model 选区是否相同，相同就不更新了
+      // Restore the collapsed caret after the new mappings point at connected nodes.
       editorSelectionToDOM(textarea, editor, true)
     })
   }
-  textarea.isComposing = true
 
   // 隐藏 placeholder
   hidePlaceholder(textarea, editor)
