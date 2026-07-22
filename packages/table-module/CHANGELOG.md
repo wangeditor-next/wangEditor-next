@@ -1,5 +1,13 @@
 # Change Log
 
+## 3.0.10
+
+### Patch Changes
+
+- c3c8574: Display multi-cell table selections as a visible outer border without covering custom cell backgrounds.
+- Updated dependencies [cc95abb]
+  - @wangeditor-next/core@1.9.8
+
 ## 3.0.9
 
 ### Patch Changes

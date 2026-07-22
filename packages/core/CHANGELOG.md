@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.9.8
+
+### Patch Changes
+
+- cc95abb: Preserve the caret when IME composition replaces selected editor content.
+
 ## 1.9.7
 
 ### Patch Changes

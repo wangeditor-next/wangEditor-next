@@ -1,5 +1,11 @@
 # @wangeditor-next/demo-react
 
+## 0.0.25
+
+### Patch Changes
+
+- @wangeditor-next/editor@6.0.2
+
 ## 0.0.24
 
 ### Patch Changes

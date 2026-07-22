@@ -1,5 +1,11 @@
 # @wangeditor-next/plugin-attachment
 
+## 3.0.2
+
+### Patch Changes
+
+- @wangeditor-next/editor@6.0.2
+
 ## 3.0.1
 
 ### Patch Changes
