@@ -1,5 +1,14 @@
 # Change Log
 
+## 6.0.2
+
+### Patch Changes
+
+- Updated dependencies [c3c8574]
+- Updated dependencies [cc95abb]
+  - @wangeditor-next/table-module@3.0.10
+  - @wangeditor-next/core@1.9.8
+
 ## 6.0.1
 
 ### Patch Changes
