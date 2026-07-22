@@ -32,6 +32,7 @@ import {
   handleRowBorderVisible,
 } from '../row-resize'
 import { TableCursor } from '../table-cursor'
+import { renderSelectionOverlay } from './selection-overlay'
 
 /**
  * 计算 table 是否可编辑。如果选区跨域 table 和外部内容，删除，会导致 table 结构打乱。所以，有时要让 table 不可编辑
@@ -273,6 +274,8 @@ function renderTable(elemNode: SlateElement, children: VNode[] | null, editor: I
           )
         })}
       </div>
+
+      {renderSelectionOverlay()}
     </div>
   )
 

@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 
 const getEditable = (page: Page) => page.locator('[data-testid="editor-textarea"] [contenteditable="true"]')
@@ -232,6 +232,32 @@ const waitForMenuEnabled = async (page: Page, menuKey: string) => {
 
   await expect(menu).not.toHaveClass(/disabled/)
   return menu
+}
+
+const setEditorHtml = async (page: Page, html: string) => {
+  await page.evaluate(value => {
+    const editor = (window as any).wangEditorExampleBridge?.editor
+
+    if (!editor) {
+      throw new Error('editor not ready')
+    }
+
+    editor.setHtml(value)
+  }, html)
+}
+
+const dragTableCellSelection = async (page: Page, fromCell: Locator, toCell: Locator) => {
+  const from = await fromCell.boundingBox()
+  const to = await toCell.boundingBox()
+
+  if (!from || !to) {
+    throw new Error('table cells are not visible')
+  }
+
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 20 })
+  await page.mouse.up()
 }
 
 const pasteText = async (page: Page, text: string) => {
@@ -1295,6 +1321,311 @@ test.describe('Basic Editor', () => {
       cells: 5,
       selectedCells: 5,
     })
+  })
+
+  test('shows a blue 10x10 selection with a two-tone perimeter only', async ({ page }) => {
+    const background = 'rgb(20, 86, 240)'
+    const selectionBorder = 'rgb(0, 45, 135)'
+    const size = 10
+    const rows = Array.from(
+      { length: size },
+      (_rowValue, row) =>
+        `<tr>${Array.from(
+          { length: size },
+          (_columnValue, column) =>
+            `<td style="background-color: ${background};">${row}-${column}</td>`
+        ).join('')}</tr>`
+    ).join('')
+
+    await setEditorHtml(
+      page,
+      `
+      <table><tbody>${rows}</tbody></table>
+      <p><br></p>
+    `
+        .replace(/>\s+</g, '><')
+        .trim()
+    )
+
+    const tableContainer = page.locator('[data-testid="editor-textarea"] .table-container')
+    const table = tableContainer.locator('table')
+
+    await tableContainer.evaluate(element => {
+      element.style.width = '500.390625px'
+    })
+    await page.addStyleTag({
+      content: '[data-testid="editor-textarea"] table.table { width: 2000px !important; }',
+    })
+    await expect
+      .poll(async () => {
+        const tableBox = await table.boundingBox()
+
+        return tableBox?.width || 0
+      })
+      .toBeGreaterThan(1999)
+    await expect
+      .poll(async () => tableContainer.evaluate(element => element.scrollWidth > 1999))
+      .toBe(true)
+    const fractionalWidthDelta = await tableContainer.evaluate(element => Math.abs(
+      element.getBoundingClientRect().width - element.offsetWidth
+    ))
+
+    expect(fractionalWidthDelta).toBeGreaterThan(0.3)
+
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      editor.select({
+        anchor: { path: [0, 0, 0, 0], offset: 0 },
+        focus: { path: [0, 9, 9, 0], offset: 3 },
+      })
+    })
+
+    const segments = page.locator('.w-e-table-selection-segment')
+
+    await expect(segments).toHaveCount(4)
+
+    const selectionState = await page.evaluate(() => {
+      const cellElements = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-testid="editor-textarea"] table td')
+      )
+      const segmentElements = Array.from(
+        document.querySelectorAll<HTMLElement>('.w-e-table-selection-segment')
+      )
+
+      return {
+        selectedCells: cellElements.filter(cell => cell.classList.contains('w-e-selected')).length,
+        backgrounds: cellElements.map(cell => getComputedStyle(cell).backgroundColor),
+        haloColors: [
+          ...new Set(segmentElements.map(segment => getComputedStyle(segment).backgroundColor)),
+        ],
+        haloWidths: [
+          ...new Set(
+            segmentElements.map(segment => {
+              const style = getComputedStyle(segment)
+
+              return segment.classList.contains('w-e-table-selection-segment-horizontal')
+                ? style.height
+                : style.width
+            })
+          ),
+        ],
+        borderColors: [
+          ...new Set(
+            segmentElements.map(segment => getComputedStyle(segment, '::after').backgroundColor)
+          ),
+        ],
+        borderWidths: [
+          ...new Set(
+            segmentElements.map(segment => {
+              const style = getComputedStyle(segment, '::after')
+
+              return segment.classList.contains('w-e-table-selection-segment-horizontal')
+                ? style.height
+                : style.width
+            })
+          ),
+        ],
+        animationCount: segmentElements.filter(
+          segment => getComputedStyle(segment, '::after').animationName !== 'none'
+        ).length,
+      }
+    })
+
+    expect(selectionState.selectedCells).toBe(size * size)
+    expect(selectionState.backgrounds).toEqual(Array(size * size).fill(background))
+    expect(selectionState.haloColors).toEqual(['rgba(255, 255, 255, 0.95)'])
+    expect(selectionState.haloWidths).toEqual(['3px'])
+    expect(selectionState.borderColors).toEqual([selectionBorder])
+    expect(selectionState.borderWidths).toEqual(['2px'])
+    expect(selectionState.animationCount).toBe(4)
+
+    await tableContainer.evaluate(element => {
+      element.scrollLeft = element.scrollWidth
+    })
+
+    await expect
+      .poll(async () => page.evaluate(() => {
+        const tableCells = document.querySelectorAll<HTMLElement>(
+          '[data-testid="editor-textarea"] table td'
+        )
+        const lastCell = tableCells[tableCells.length - 1]
+        const rightSegment = document.querySelector<HTMLElement>(
+          '.w-e-table-selection-segment[data-selection-edge="right"]'
+        )
+
+        if (!lastCell || !rightSegment) {
+          return Number.POSITIVE_INFINITY
+        }
+
+        const lastCellRect = lastCell.getBoundingClientRect()
+        const rightSegmentRect = rightSegment.getBoundingClientRect()
+
+        return Math.abs(rightSegmentRect.right - lastCellRect.right)
+      }))
+      .toBeLessThan(0.5)
+
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+
+    await expect
+      .poll(async () =>
+        segments.evaluateAll(elements =>
+          elements.every(segment => getComputedStyle(segment, '::after').animationName === 'none')
+        )
+      )
+      .toBe(true)
+  })
+
+  test('draws only the exposed part of a merged cell edge in a ragged table', async ({ page }) => {
+    await setEditorHtml(
+      page,
+      `
+      <table>
+        <tbody>
+          <tr><td>C</td><td>D</td></tr>
+          <tr><td>B</td></tr>
+          <tr><td colspan="2">A</td></tr>
+        </tbody>
+      </table>
+      <p><br></p>
+    `
+        .replace(/>\s+</g, '><')
+        .trim()
+    )
+
+    const cells = page.locator('[data-testid="editor-textarea"] table td')
+
+    await expect(cells).toHaveText(['C', 'D', 'B', 'A'])
+
+    await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
+
+      editor.select({
+        anchor: { path: [0, 1, 0, 0], offset: 0 },
+        focus: { path: [0, 2, 0, 0], offset: 1 },
+      })
+    })
+
+    await expect(page.locator('[data-testid="editor-textarea"] table td.w-e-selected')).toHaveCount(
+      2
+    )
+
+    const segments = page.locator('.w-e-table-selection-segment')
+
+    await expect(segments).toHaveCount(6)
+
+    const partialEdge = await page.evaluate(() => {
+      const tableCells = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-testid="editor-textarea"] table td')
+      )
+      const cellB = tableCells.find(cell => cell.textContent === 'B')
+      const cellA = tableCells.find(cell => cell.textContent === 'A')
+
+      if (!cellB || !cellA) {
+        throw new Error('ragged table cells are not visible')
+      }
+
+      const rectB = cellB.getBoundingClientRect()
+      const rectA = cellA.getBoundingClientRect()
+      const topSegments = Array.from(
+        document.querySelectorAll<HTMLElement>(
+          '.w-e-table-selection-segment[data-selection-edge="top"]'
+        )
+      )
+        .map(segment => segment.getBoundingClientRect())
+        .filter(rect => Math.abs(rect.top - rectA.top) < 1)
+
+      return {
+        selectedTexts: tableCells
+          .filter(cell => cell.classList.contains('w-e-selected'))
+          .map(cell => cell.textContent),
+        bRight: rectB.right,
+        aRight: rectA.right,
+        topSegments: topSegments.map(rect => ({ left: rect.left, right: rect.right })),
+      }
+    })
+
+    expect(partialEdge.selectedTexts).toEqual(['B', 'A'])
+    expect(partialEdge.topSegments).toHaveLength(1)
+    expect(partialEdge.topSegments[0].left).toBeCloseTo(partialEdge.bRight, 0)
+    expect(partialEdge.topSegments[0].right).toBeCloseTo(partialEdge.aRight, 0)
+  })
+
+  test('uses the physical outer edges for a scaled RTL table selection', async ({ page }) => {
+    await setEditorHtml(
+      page,
+      `
+      <table><tbody><tr><td>A</td><td>B</td><td>C</td></tr></tbody></table>
+      <p><br></p>
+    `
+        .replace(/>\s+</g, '><')
+        .trim()
+    )
+    await page.addStyleTag({
+      content: `
+        [data-testid="editor-textarea"] {
+          transform: scale(0.8);
+          transform-origin: top left;
+        }
+        [data-testid="editor-textarea"] table { direction: rtl !important; }
+      `,
+    })
+
+    const table = page.locator('[data-testid="editor-textarea"] table')
+    const cells = table.locator('td')
+    const firstCellBox = await cells.first().boundingBox()
+    const lastCellBox = await cells.last().boundingBox()
+
+    if (!firstCellBox || !lastCellBox) {
+      throw new Error('RTL table cells are not visible')
+    }
+
+    expect(firstCellBox.x).toBeGreaterThan(lastCellBox.x)
+    await dragTableCellSelection(page, cells.first(), cells.last())
+
+    const segments = page.locator('.w-e-table-selection-segment')
+    const topSegment = page.locator('.w-e-table-selection-segment[data-selection-edge="top"]')
+    const bottomSegment = page.locator(
+      '.w-e-table-selection-segment[data-selection-edge="bottom"]',
+    )
+    const leftSegment = page.locator('.w-e-table-selection-segment[data-selection-edge="left"]')
+    const rightSegment = page.locator('.w-e-table-selection-segment[data-selection-edge="right"]')
+
+    await expect(segments).toHaveCount(4)
+    await expect(leftSegment).toHaveCount(1)
+    await expect(rightSegment).toHaveCount(1)
+
+    const topSegmentBox = await topSegment.boundingBox()
+    const bottomSegmentBox = await bottomSegment.boundingBox()
+    const leftSegmentBox = await leftSegment.boundingBox()
+    const rightSegmentBox = await rightSegment.boundingBox()
+
+    if (!topSegmentBox || !bottomSegmentBox || !leftSegmentBox || !rightSegmentBox) {
+      throw new Error('RTL selection segments are not visible')
+    }
+
+    expect(await table.evaluate(element => getComputedStyle(element).direction)).toBe('rtl')
+    expect(topSegmentBox.y).toBeCloseTo(firstCellBox.y, 0)
+    expect(bottomSegmentBox.y + bottomSegmentBox.height).toBeCloseTo(
+      firstCellBox.y + firstCellBox.height,
+      0,
+    )
+    expect(leftSegmentBox.x).toBeCloseTo(lastCellBox.x, 0)
+    expect(rightSegmentBox.x + rightSegmentBox.width).toBeCloseTo(
+      firstCellBox.x + firstCellBox.width,
+      0,
+    )
+
+    await page.locator('[data-testid="editor-textarea"] p').last().click()
+    await expect(segments).toHaveCount(0)
   })
 
   test('regression #297: column resize should work after setHtml without selecting table first', async ({ page }) => {

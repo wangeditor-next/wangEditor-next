@@ -1,5 +1,16 @@
 @import "../../../vars.less";
 
+@keyframes w-e-table-cell-selection-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.72;
+  }
+}
+
 .w-e-text-container [data-slate-editor] {
   .table-container {
     width: 100%;
@@ -33,11 +44,60 @@
       font-weight: bold;
     }
 
-    /* 选区拖影 */
-    td.w-e-selected,
-    th.w-e-selected {
-      background-color: rgba(20, 86, 240, 0.18);
+  }
+
+  /* Draw measured edge segments so merged cells can expose only part of one side. */
+  .w-e-table-selection-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .w-e-table-selection-segment {
+    position: absolute;
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 255, 0.95);
+    pointer-events: none;
+
+    &::after {
+      content: '';
+      position: absolute;
+      background-color: rgb(0, 45, 135);
+      animation: w-e-table-cell-selection-pulse 1.2s ease-in-out infinite;
     }
+  }
+
+  .w-e-table-selection-segment-horizontal::after {
+    left: 0;
+    width: 100%;
+    height: 2px;
+  }
+
+  .w-e-table-selection-segment-vertical::after {
+    top: 0;
+    width: 2px;
+    height: 100%;
+  }
+
+  .w-e-table-selection-segment-top::after {
+    top: 0;
+  }
+
+  .w-e-table-selection-segment-right::after {
+    right: 0;
+  }
+
+  .w-e-table-selection-segment-bottom::after {
+    bottom: 0;
+  }
+
+  .w-e-table-selection-segment-left::after {
+    left: 0;
   }
 
   /* 干掉 Chrome 默认选区样式*/
@@ -126,6 +186,14 @@
 .resizer-line-hotzone-horizontal.highlight {
   opacity: 1;
 }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .w-e-text-container [data-slate-editor] .w-e-table-selection-segment {
+    &::after {
+      animation: none;
+    }
+  }
 }
 
 // --------------------------------- 分割线 ---------------------------------
