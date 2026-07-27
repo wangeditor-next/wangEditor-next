@@ -4,31 +4,26 @@ on:
   push:
     branches:
       - master
-      - dev
-      - develop
-      - 'dev-*'
-      - 'dev/**'
-  workflow_dispatch:
 
 permissions:
-  id-token: write
-  contents: write
-  pull-requests: write
+  contents: read
+  pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  # Ensure release jobs on master are not interrupted by subsequent pushes.
-  cancel-in-progress: ${{ github.ref_name != 'master' }}
+  # npm publishes are immutable, so provenance steps must never be cancelled mid-release.
+  cancel-in-progress: false
 
 jobs:
-  release:
-    name: Release
+  validate:
+    name: Validate release source
+    outputs:
+      requires_release: ${{ steps.release_work.outputs.requires_release }}
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     strategy:
       matrix:
         node-version: ['22.13.0']
-    env:
-      DOCS_REPO_DISPATCH_TOKEN: ${{ secrets.DOCS_REPO_DISPATCH_TOKEN }}
 
     steps:
       # 检出代码库
@@ -36,6 +31,19 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify release branch
+        env:
+          RELEASE_BRANCH: ${{ github.ref_name }}
+          RELEASE_REF_TYPE: ${{ github.ref_type }}
+        run: |
+          set -euo pipefail
+
+          if [ "${RELEASE_REF_TYPE}" != 'branch' ] || [ "${RELEASE_BRANCH}" != 'master' ]; then
+            echo 'Release runs are limited to pushes on the protected master branch.' >&2
+            exit 1
+          fi
 
       # 安装 pnpm
       - name: Install pnpm
@@ -75,66 +83,138 @@ jobs:
           pnpm exec playwright install --with-deps chromium
           pnpm e2e
 
-      # 创建测试版本或稳定版本的 Release PR
-      - name: Manage Changeset Pre-release Mode
-        if: startsWith(github.ref_name, 'dev') || github.ref_name == 'develop'
-        run: pnpm changeset pre enter alpha || true
+      - name: Determine whether release work is needed
+        id: release_work
+        run: |
+          set -euo pipefail
+
+          release_subject="$(git log -1 --format=%s)"
+          release_subject_pattern='^chore\(release\): publish (a new )?release version'
+          release_subject_pattern+='( \(#[0-9]+\))?$'
+          changeset_file=''
+          requires_release=false
+
+          if [ -d .changeset ]; then
+            changeset_file="$(find .changeset -maxdepth 1 -type f -name '*.md' ! -name 'README.md' \
+              -print -quit)"
+          fi
+
+          if [ -n "${changeset_file}" ]; then
+            requires_release=true
+          elif [[ "${release_subject}" =~ ${release_subject_pattern} ]]; then
+            requires_release=true
+          fi
+
+          echo "requires_release=${requires_release}" >> "$GITHUB_OUTPUT"
+
+  release:
+    name: Release
+    needs: validate
+    if: needs.validate.outputs.requires_release == 'true'
+    environment: release-automation
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Verify release branch
+        env:
+          RELEASE_BRANCH: ${{ github.ref_name }}
+          RELEASE_REF_TYPE: ${{ github.ref_type }}
+        run: |
+          set -euo pipefail
+
+          if [ "${RELEASE_REF_TYPE}" != 'branch' ] || [ "${RELEASE_BRANCH}" != 'master' ]; then
+            echo 'Release runs are limited to pushes on the protected master branch.' >&2
+            exit 1
+          fi
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.13.0
+          registry-url: https://registry.npmjs.org/
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
 
       - name: Exit Changeset Pre-release Mode
-        if: github.ref_name == 'master'
         run: pnpm changeset pre exit || true
+
+      - name: Verify release credentials
+        env:
+          NPM_RELEASE_TOKEN: ${{ secrets.NPM_RELEASE_TOKEN }}
+          RELEASE_AUTOMATION_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${NPM_RELEASE_TOKEN}" ] || [ -z "${RELEASE_AUTOMATION_TOKEN}" ]; then
+            echo 'Configure NPM_RELEASE_TOKEN and RELEASE_AUTOMATION_TOKEN' >&2
+            echo 'in release-automation.' >&2
+            exit 1
+          fi
 
       - name: Create Release PR or publish version to npm
         id: changesets
         uses: changesets/action@v1
         with:
           # Disable per-package releases; a single consolidated release is
-          # created by the step below instead.
+          # created only for public editor releases below. Source provenance
+          # for every published package is maintained by immutable package tags.
           createGithubReleases: false
           version: pnpm run version:release
           publish: pnpm changeset publish --access=public
-          title: >-
-            ${{ github.ref_name == 'master' && 'Publish a new stable version' || 'Publish a new pre-release version' }}
+          title: Publish a new stable version
           commit: >-
-            ${{ github.ref_name == 'master' && 'chore(release): publish a new release version' || 'chore(release): publish a new pre-release version' }}
+            chore(release): publish a new release version
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_RELEASE_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_RELEASE_TOKEN }}
 
-      # Create one consolidated GitHub Release that aggregates all published
-      # packages into a single entry instead of one release per package.
+      - name: Verify published npm packages
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        run: node .github/scripts/verify-published-packages.js
+
+      - name: Push package source tags
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        run: |
+          gh auth setup-git
+          node .github/scripts/push-package-release-tags.js
+
+      # The editor gets a product-level Release. Leaf packages remain
+      # discoverable through their @scope/package@version source tags.
       - name: Create consolidated GitHub Release
         id: consolidated_release
         if: steps.changesets.outputs.published == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: >-
-          node .github/scripts/create-consolidated-release.js
-          '${{ steps.changesets.outputs.publishedPackages }}'
-
-      - name: Resolve published editor version
-        if: steps.changesets.outputs.published == 'true' && github.ref_name == 'master'
-        id: editor_version
-        env:
+          GH_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
           PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
-        run: |
-          set -euo pipefail
-
-          version="$(node -e "const pkgs = JSON.parse(process.env.PUBLISHED_PACKAGES || '[]'); const editor = pkgs.find(p => p.name === '@wangeditor-next/editor'); if (editor?.version) process.stdout.write(editor.version)")"
-          if [ -z "$version" ]; then
-            version="$(node -p "require('./packages/editor/package.json').version")"
-            echo "Fallback to packages/editor/package.json version: $version"
-          else
-            echo "Published @wangeditor-next/editor version: $version"
-          fi
-
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+        run: node .github/scripts/create-consolidated-release.js
 
       - name: Upload editor sourcemaps to GitHub Release assets
-        if: steps.changesets.outputs.published == 'true'
+        if: steps.consolidated_release.outputs.editor_published == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
           RELEASE_TAG: ${{ steps.consolidated_release.outputs.tag }}
         run: |
           set -euo pipefail
@@ -157,16 +237,30 @@ jobs:
           gh release upload "${RELEASE_TAG}" "${asset_name}" --clobber
 
       - name: Trigger docs site deployment for released editor version
-        if: steps.changesets.outputs.published == 'true' && github.ref_name == 'master' && env.DOCS_REPO_DISPATCH_TOKEN != ''
+        if: >-
+          steps.consolidated_release.outputs.editor_published == 'true' &&
+          github.ref_name == 'master' &&
+          env.DOCS_RELEASE_DISPATCH_TOKEN != ''
+        env:
+          DOCS_RELEASE_DISPATCH_TOKEN: ${{ secrets.DOCS_RELEASE_DISPATCH_TOKEN }}
         uses: peter-evans/repository-dispatch@v4
         with:
-          token: ${{ env.DOCS_REPO_DISPATCH_TOKEN }}
+          token: ${{ env.DOCS_RELEASE_DISPATCH_TOKEN }}
           repository: wangeditor-next/docs
           event-type: editor-release-published
           client-payload: >-
-            {"version":"${{ steps.editor_version.outputs.version }}","sourceRepo":"${{ github.repository }}","sourceSha":"${{ github.sha }}","sourceRunId":"${{ github.run_id }}"}
+            {"version":"${{ steps.consolidated_release.outputs.version }}",
+            "sourceRepo":"${{ github.repository }}","sourceSha":"${{ github.sha }}",
+            "sourceRunId":"${{ github.run_id }}"}
 
       - name: Warn when docs dispatch token is missing
-        if: steps.changesets.outputs.published == 'true' && github.ref_name == 'master' && env.DOCS_REPO_DISPATCH_TOKEN == ''
+        if: >-
+          steps.consolidated_release.outputs.editor_published == 'true' &&
+          github.ref_name == 'master' &&
+          env.DOCS_RELEASE_DISPATCH_TOKEN == ''
+        env:
+          DOCS_RELEASE_DISPATCH_TOKEN: ${{ secrets.DOCS_RELEASE_DISPATCH_TOKEN }}
         run: |
-          echo "::warning::DOCS_REPO_DISPATCH_TOKEN is not set. Skip triggering wangeditor-next/docs deployment."
+          printf '::warning::%s%s\n' \
+            'DOCS_RELEASE_DISPATCH_TOKEN is not set. Skip triggering ' \
+            'wangeditor-next/docs deployment.'

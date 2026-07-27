@@ -1,0 +1,242 @@
+name: Repair Release Provenance
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_sha:
+        description: Lowercase 40-character SHA of the published automated release commit
+        required: true
+        type: string
+      release_run_id:
+        description: Numeric ID of the original Release workflow run for release_sha
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: repair-release-provenance-${{ inputs.release_sha }}
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    name: Repair release provenance
+    if: github.ref == 'refs/heads/master'
+    environment: release-automation
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout release tooling
+        uses: actions/checkout@v7
+        with:
+          ref: master
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout release source
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.release_sha }}
+          fetch-depth: 0
+          path: release-source
+          persist-credentials: false
+
+      - name: Verify release source
+        id: target
+        working-directory: release-source
+        env:
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          RELEASE_RUN_ID: ${{ inputs.release_run_id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if ! [[ "${RELEASE_SHA}" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "release_sha must be a lowercase 40-character commit SHA" >&2
+            exit 1
+          fi
+
+          if ! [[ "${RELEASE_RUN_ID}" =~ ^[1-9][0-9]*$ ]]; then
+            echo "release_run_id must be a positive numeric workflow run ID" >&2
+            exit 1
+          fi
+
+          expected="$(git rev-parse --verify "${RELEASE_SHA}^{commit}")"
+          checked_out="$(git rev-parse HEAD)"
+          if [ "${expected}" != "${checked_out}" ]; then
+            echo "Checked-out commit ${checked_out} does not match ${RELEASE_SHA}" >&2
+            exit 1
+          fi
+
+          release_run="$(timeout 60s gh api \
+            "repos/${GITHUB_REPOSITORY}/actions/runs/${RELEASE_RUN_ID}")"
+          release_run_fields="$(node -e '
+            const run = JSON.parse(process.argv[1])
+            process.stdout.write(
+              [run.path, run.event, run.status, run.head_sha, run.head_branch].join("\\t")
+            )
+          ' "${release_run}")"
+          IFS=$'\t' read -r run_path run_event run_status run_sha run_branch \
+            <<< "${release_run_fields}"
+
+          if [ "${run_path}" != '.github/workflows/release.yml' ] || \
+            [ "${run_status}" != 'completed' ] || [ "${run_sha}" != "${checked_out}" ]; then
+            echo "release_run_id must identify the completed Release run for release_sha" >&2
+            exit 1
+          fi
+
+          if [ "${run_event}" != 'push' ] && [ "${run_event}" != 'workflow_dispatch' ]; then
+            echo 'release_run_id must identify a push or manual Release run.' >&2
+            exit 1
+          fi
+
+          if [ "${run_branch}" != 'master' ]; then
+            echo 'release_run_id must come from the protected master branch.' >&2
+            exit 1
+          fi
+
+          release_subject="$(git log -1 --format=%s "${checked_out}")"
+          release_subject_pattern='^chore\(release\): publish (a new )?(pre-)?release version'
+          release_subject_pattern+='( \(#[0-9]+\))?$'
+          if [[ ! "${release_subject}" =~ ${release_subject_pattern} ]]; then
+            echo "release_sha must point to an automated chore(release) publish commit." >&2
+            exit 1
+          fi
+
+          echo "sha=${checked_out}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify release automation credential
+        env:
+          RELEASE_AUTOMATION_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${RELEASE_AUTOMATION_TOKEN}" ]; then
+            echo 'Configure RELEASE_AUTOMATION_TOKEN in release-automation.' >&2
+            exit 1
+          fi
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.13.0
+          registry-url: https://registry.npmjs.org/
+          cache: pnpm
+          cache-dependency-path: release-source/pnpm-lock.yaml
+
+      - name: Derive packages from the release commit
+        id: packages
+        working-directory: release-source
+        env:
+          RELEASE_SHA: ${{ steps.target.outputs.sha }}
+        run: |
+          set -euo pipefail
+          packages="$(node ../.github/scripts/derive-release-packages.js)"
+          echo "published_packages=${packages}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify packages were published to npm
+        working-directory: release-source
+        env:
+          PUBLISHED_PACKAGES: ${{ steps.packages.outputs.published_packages }}
+        run: node ../.github/scripts/verify-published-packages.js
+
+      - name: Install dependencies
+        working-directory: release-source
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        working-directory: release-source
+        run: pnpm build
+
+      - name: Restore package source tags
+        working-directory: release-source
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
+          PUBLISHED_PACKAGES: ${{ steps.packages.outputs.published_packages }}
+        run: |
+          gh auth setup-git
+          node ../.github/scripts/push-package-release-tags.js
+
+      - name: Restore product GitHub Release
+        id: consolidated_release
+        working-directory: release-source
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
+          PUBLISHED_PACKAGES: ${{ steps.packages.outputs.published_packages }}
+        run: node ../.github/scripts/create-consolidated-release.js
+
+      - name: Upload editor sourcemaps to GitHub Release assets
+        if: steps.consolidated_release.outputs.editor_published == 'true'
+        working-directory: release-source
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
+          RELEASE_TAG: ${{ steps.consolidated_release.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          map_count="$(find packages/editor/dist -type f -name '*.map' | wc -l | tr -d ' ')"
+          if [ "${map_count}" = "0" ]; then
+            echo "::warning::No sourcemap files found under packages/editor/dist. Skip upload."
+            exit 0
+          fi
+
+          asset_name="editor-sourcemaps-${RELEASE_TAG}.tar.gz"
+          find packages/editor/dist -type f -name '*.map' -print0 \
+            | tar --null -T - -czf "${asset_name}"
+
+          gh release upload "${RELEASE_TAG}" "${asset_name}" --clobber
+
+      - name: Determine docs dispatch eligibility
+        id: docs_source
+        if: steps.consolidated_release.outputs.editor_published == 'true'
+        working-directory: release-source
+        env:
+          RELEASE_VERSION: ${{ steps.consolidated_release.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          latest_version="$(npm view @wangeditor-next/editor dist-tags.latest)"
+          if [ "${latest_version}" = "${RELEASE_VERSION}" ]; then
+            echo "dispatch=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "dispatch=false" >> "$GITHUB_OUTPUT"
+            message="Skip docs dispatch because ${RELEASE_VERSION} is not npm latest"
+            message+=" (${latest_version})."
+            echo "::notice::${message}"
+          fi
+
+      - name: Trigger docs site deployment for repaired editor release
+        if: >-
+          steps.consolidated_release.outputs.editor_published == 'true' &&
+          steps.docs_source.outputs.dispatch == 'true' &&
+          env.DOCS_RELEASE_DISPATCH_TOKEN != ''
+        env:
+          DOCS_RELEASE_DISPATCH_TOKEN: ${{ secrets.DOCS_RELEASE_DISPATCH_TOKEN }}
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          token: ${{ env.DOCS_RELEASE_DISPATCH_TOKEN }}
+          repository: wangeditor-next/docs
+          event-type: editor-release-published
+          client-payload: >-
+            {"version":"${{ steps.consolidated_release.outputs.version }}",
+            "sourceRepo":"${{ github.repository }}","sourceSha":"${{ steps.target.outputs.sha }}",
+            "sourceRunId":"${{ github.run_id }}"}
+
+      - name: Warn when docs dispatch is skipped
+        if: >-
+          steps.consolidated_release.outputs.editor_published == 'true' &&
+          (steps.docs_source.outputs.dispatch != 'true' || env.DOCS_RELEASE_DISPATCH_TOKEN == '')
+        env:
+          DOCS_RELEASE_DISPATCH_TOKEN: ${{ secrets.DOCS_RELEASE_DISPATCH_TOKEN }}
+        run: |
+          printf '::warning::%s%s\n' \
+            'Skip docs dispatch because the version is not npm latest or ' \
+            'DOCS_RELEASE_DISPATCH_TOKEN is not set.'
