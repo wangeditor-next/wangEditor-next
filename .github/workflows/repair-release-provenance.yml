@@ -57,6 +57,13 @@ jobs:
             exit 1
           fi
 
+          release_subject="$(git log -1 --format=%s "${checked_out}")"
+          release_subject_pattern='^chore\(release\): publish (a new )?(pre-)?release version'
+          if [[ ! "${release_subject}" =~ ${release_subject_pattern} ]]; then
+            echo "release_sha must point to an automated chore(release) publish commit." >&2
+            exit 1
+          fi
+
           release_branch_pattern='^(master|dev|develop|dev-[^/]*|dev/.+)$'
           remote_refs="$(timeout 60s git ls-remote --heads origin)"
           release_refspecs=()
