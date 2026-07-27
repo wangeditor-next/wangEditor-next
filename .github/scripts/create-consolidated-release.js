@@ -9,7 +9,7 @@ const os = require('os')
 const path = require('path')
 const { getEditorRelease, parsePublishedPackages, writeGitHubOutput } = require('./release-utils')
 
-const publishedPackages = parsePublishedPackages(process.argv[2])
+const publishedPackages = parsePublishedPackages(process.argv[2] || process.env.PUBLISHED_PACKAGES)
 
 if (publishedPackages.length === 0) {
   console.log('No packages published, skipping release creation.')
@@ -35,7 +35,7 @@ function git(args) {
   return execFileSync('git', args, { encoding: 'utf8' }).trim()
 }
 
-const target = process.env.GITHUB_SHA || git(['rev-parse', 'HEAD'])
+const target = git(['rev-parse', 'HEAD'])
 
 function resolveLocalTag(tagName) {
   try {

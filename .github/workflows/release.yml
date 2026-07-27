@@ -103,6 +103,12 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Verify published npm packages
+        if: steps.changesets.outputs.published == 'true'
+        env:
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        run: node .github/scripts/verify-published-packages.js
+
       - name: Push package source tags
         if: steps.changesets.outputs.published == 'true'
         env:
@@ -116,9 +122,8 @@ jobs:
         if: steps.changesets.outputs.published == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: >-
-          node .github/scripts/create-consolidated-release.js
-          '${{ steps.changesets.outputs.publishedPackages }}'
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        run: node .github/scripts/create-consolidated-release.js
 
       - name: Upload editor sourcemaps to GitHub Release assets
         if: steps.consolidated_release.outputs.editor_published == 'true'

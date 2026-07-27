@@ -24,11 +24,13 @@ function getWorkspacePackage(rootDir, packageName) {
 }
 
 function git(args, options = {}) {
-  return execFileSync('git', args, {
+  const output = execFileSync('git', args, {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
     ...options,
-  }).trim()
+  })
+
+  return typeof output === 'string' ? output.trim() : ''
 }
 
 function resolveLocalTag(tag) {
@@ -40,13 +42,7 @@ function resolveLocalTag(tag) {
 }
 
 function resolveRemoteTag(tag) {
-  const output = git([
-    'ls-remote',
-    '--tags',
-    'origin',
-    `refs/tags/${tag}`,
-    `refs/tags/${tag}^{}`,
-  ])
+  const output = git(['ls-remote', '--tags', 'origin', `refs/tags/${tag}`, `refs/tags/${tag}^{}`])
   if (!output) return null
 
   const entries = output
@@ -94,7 +90,7 @@ function main() {
   }
 
   const rootDir = process.cwd()
-  const target = process.env.GITHUB_SHA || git(['rev-parse', 'HEAD'])
+  const target = git(['rev-parse', 'HEAD'])
 
   for (const publishedPackage of packages) {
     const { packageJson, packageJsonPath } = getWorkspacePackage(rootDir, publishedPackage.name)
