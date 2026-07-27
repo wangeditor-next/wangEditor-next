@@ -1,45 +1,80 @@
 #!/usr/bin/env node
-// Creates a single consolidated GitHub Release from all published packages.
+// Creates the product-level GitHub Release when the editor package is published.
 // Usage: node create-consolidated-release.js '<publishedPackagesJSON>'
 //   publishedPackagesJSON: JSON array of { name, version } objects (from changesets/action output)
 
-const { execSync } = require('child_process')
+const { execFileSync } = require('child_process')
 const fs = require('fs')
+const os = require('os')
 const path = require('path')
+const { getEditorRelease, parsePublishedPackages, writeGitHubOutput } = require('./release-utils')
 
-const publishedPackages = JSON.parse(process.argv[2] || '[]')
+const publishedPackages = parsePublishedPackages(process.argv[2])
 
 if (publishedPackages.length === 0) {
   console.log('No packages published, skipping release creation.')
+  writeGitHubOutput({ editor_published: 'false', tag: '', version: '' })
   process.exit(0)
 }
 
-// ── Tag ────────────────────────────────────────────────────────────────────
-// Prefer @wangeditor-next/editor version as the release tag.
-function resolveTag(packages) {
-  const priority = ['@wangeditor-next/editor', '@wangeditor-next/core']
-  for (const name of priority) {
-    const pkg = packages.find(p => p.name === name)
-    if (pkg) return `v${pkg.version}`
-  }
-  return `release/${new Date().toISOString().slice(0, 10)}`
+// ── Product release ────────────────────────────────────────────────────────
+// Leaf packages have their own @scope/package@version source tags. A product
+// release only exists when the public editor package itself is published.
+const editorRelease = getEditorRelease(publishedPackages)
+
+if (!editorRelease) {
+  console.log('No editor package was published; skip the product-level GitHub Release.')
+  writeGitHubOutput({ editor_published: 'false', tag: '', version: '' })
+  process.exit(0)
 }
 
-let tag = resolveTag(publishedPackages)
+const editorPkg = editorRelease
+const { tag } = editorRelease
 
-function tagExists(t) {
+function git(args) {
+  return execFileSync('git', args, { encoding: 'utf8' }).trim()
+}
+
+const target = process.env.GITHUB_SHA || git(['rev-parse', 'HEAD'])
+
+function resolveLocalTag(tagName) {
   try {
-    execSync(`gh release view "${t}"`, { stdio: 'pipe' })
-    return true
+    return git(['rev-parse', `${tagName}^{}`])
   } catch {
-    return false
+    return null
   }
 }
 
-if (tagExists(tag)) {
-  let i = 2
-  while (tagExists(`${tag}-${i}`)) i++
-  tag = `${tag}-${i}`
+function resolveRemoteTag(tagName) {
+  const output = git([
+    'ls-remote',
+    '--tags',
+    'origin',
+    `refs/tags/${tagName}`,
+    `refs/tags/${tagName}^{}`,
+  ])
+
+  if (!output) return null
+
+  const entries = output
+    .split('\n')
+    .map(line => line.split('\t'))
+    .filter(parts => parts.length === 2)
+  const dereferenced = entries.find(([, ref]) => ref === `refs/tags/${tagName}^{}`)
+
+  return (dereferenced || entries[0])[0]
+}
+
+const existingLocalTagTarget = resolveLocalTag(tag)
+if (existingLocalTagTarget && existingLocalTagTarget !== target) {
+  throw new Error(
+    `Local product tag ${tag} points to ${existingLocalTagTarget}, expected ${target}`
+  )
+}
+
+const existingTagTarget = resolveRemoteTag(tag)
+if (existingTagTarget && existingTagTarget !== target) {
+  throw new Error(`Product tag ${tag} points to ${existingTagTarget}, expected ${target}`)
 }
 
 // ── CHANGELOG helpers ──────────────────────────────────────────────────────
@@ -66,7 +101,11 @@ function parseChangelogSection(changelogPath, version, pkgName) {
 
   for (const line of lines) {
     if (/^## /.test(line)) {
-      if (line.includes(version)) { inSection = true; continue }
+      const headerVersion = line.match(/^##\s+\[?([^\]\s]+)\]?/)?.[1]
+      if (headerVersion === version) {
+        inSection = true
+        continue
+      }
       if (inSection) break
     }
     if (!inSection) continue
@@ -153,18 +192,21 @@ if (allChanges.length === 0) {
 }
 
 // ── Build package versions table ──────────────────────────────────────────
+const repository = process.env.GITHUB_REPOSITORY || 'wangeditor-next/wangEditor-next'
 const versionRows = publishedPackages
-  .map(({ name, version }) => `| \`${name}\` | \`${version}\` |`)
+  .map(({ name, version }) => {
+    const packageTag = `${name}@${version}`
+    const encodedTag = encodeURIComponent(packageTag)
+    const sourceUrl = `https://github.com/${repository}/tree/${encodedTag}`
+    const archiveUrl = `https://github.com/${repository}/archive/refs/tags/${encodedTag}.tar.gz`
+    return `| \`${name}\` | \`${version}\` | [Source](${sourceUrl}) ([tar.gz](${archiveUrl})) |`
+  })
   .join('\n')
 
-const versionsTable =
-  `| Package | Version |\n` +
-  `| --- | --- |\n` +
-  versionRows
+const versionsTable = `| Package | Version | Source |\n` + `| --- | --- | --- |\n` + versionRows
 
 // ── Compose full release body ──────────────────────────────────────────────
-const editorPkg = publishedPackages.find(p => p.name === '@wangeditor-next/editor')
-const title = editorPkg ? `v${editorPkg.version}` : tag
+const title = `v${editorPkg.version}`
 
 const body = `## What's Changed
 
@@ -177,17 +219,42 @@ ${versionsTable}
 
 </details>`
 
-const bodyFile = path.join(require('os').tmpdir(), 'release-body.md')
+const bodyFile = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'wangeditor-release-')), 'body.md')
 fs.writeFileSync(bodyFile, body)
 
-// ── Create GitHub Release ──────────────────────────────────────────────────
-execSync(
-  `gh release create "${tag}" --title "${title}" --notes-file "${bodyFile}"`,
-  { stdio: 'inherit' },
-)
-
-console.log(`\nConsolidated GitHub release created: ${tag}`)
-
-if (process.env.GITHUB_OUTPUT) {
-  fs.appendFileSync(process.env.GITHUB_OUTPUT, `tag=${tag}\n`)
+// ── Create or update GitHub Release ────────────────────────────────────────
+function isMissingReleaseError(error) {
+  const message = `${error.stdout || ''}\n${error.stderr || ''}`
+  return /release not found|could not resolve to a release|http 404/i.test(message)
 }
+
+function releaseExists(tagName) {
+  try {
+    execFileSync('gh', ['release', 'view', tagName, '--json', 'id'], { stdio: 'pipe' })
+    return true
+  } catch (error) {
+    if (isMissingReleaseError(error)) return false
+    throw error
+  }
+}
+
+const releaseArgs = ['--title', title, '--notes-file', bodyFile]
+if (editorPkg.version.includes('-')) {
+  releaseArgs.push('--prerelease')
+}
+
+if (releaseExists(tag)) {
+  execFileSync('gh', ['release', 'edit', tag, ...releaseArgs], { stdio: 'inherit' })
+  console.log(`\nProduct GitHub release updated: ${tag}`)
+} else {
+  const createArgs = ['release', 'create', tag]
+  if (!existingTagTarget) {
+    createArgs.push('--target', target)
+  }
+  createArgs.push(...releaseArgs)
+
+  execFileSync('gh', createArgs, { stdio: 'inherit' })
+  console.log(`\nProduct GitHub release created: ${tag}`)
+}
+
+writeGitHubOutput({ editor_published: 'true', tag, version: editorPkg.version })
