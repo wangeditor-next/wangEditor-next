@@ -10,6 +10,15 @@ const repairWorkflow = fs.readFileSync(
   'utf8'
 )
 
+function getReleaseSubjectPattern(workflow) {
+  const match = workflow.match(
+    /release_subject_pattern='([^']+)'\n\s+release_subject_pattern\+='([^']+)'/
+  )
+
+  assert.ok(match, 'workflow must define a release subject pattern')
+  return new RegExp(`${match[1]}${match[2]}`)
+}
+
 test('release only publishes from master through the protected automation environment', () => {
   assert.match(releaseWorkflow, /push:\n\s+branches:\n\s+- master\n/)
   assert.doesNotMatch(releaseWorkflow, /workflow_dispatch:/)
@@ -27,15 +36,22 @@ test('release only publishes from master through the protected automation enviro
   assert.doesNotMatch(releaseWorkflow, /secrets\.GITHUB_TOKEN/)
 })
 
-test(
-  'repair only trusts master release runs and uses the protected automation token to write',
-  () => {
-    assert.match(repairWorkflow, /workflow_dispatch:/)
-    assert.match(repairWorkflow, /if: github\.ref == 'refs\/heads\/master'/)
-    assert.match(repairWorkflow, /\[ "\$\{run_branch\}" != 'master' \]/)
-    assert.match(repairWorkflow, /environment: release-automation/)
-    assert.match(repairWorkflow, /contents: read/)
-    assert.match(repairWorkflow, /GH_TOKEN: \$\{\{ secrets\.RELEASE_AUTOMATION_TOKEN \}\}/)
-    assert.doesNotMatch(repairWorkflow, /secrets\.DOCS_REPO_DISPATCH_TOKEN/)
-  }
-)
+test('release detection recognizes the Changesets merge commit subject', () => {
+  const pattern = getReleaseSubjectPattern(releaseWorkflow)
+
+  assert.match('chore(release): publish a new release version (#949)', pattern)
+  assert.doesNotMatch('chore(release): publish a new release version forged', pattern)
+})
+
+test('repair trusts master runs and uses the protected automation token', () => {
+  assert.match(repairWorkflow, /workflow_dispatch:/)
+  assert.match(repairWorkflow, /if: github\.ref == 'refs\/heads\/master'/)
+  assert.match(repairWorkflow, /\[ "\$\{run_branch\}" != 'master' \]/)
+  assert.match(repairWorkflow, /environment: release-automation/)
+  assert.match(repairWorkflow, /contents: read/)
+  assert.match(repairWorkflow, /GH_TOKEN: \$\{\{ secrets\.RELEASE_AUTOMATION_TOKEN \}\}/)
+  assert.doesNotMatch(repairWorkflow, /secrets\.DOCS_REPO_DISPATCH_TOKEN/)
+  const pattern = getReleaseSubjectPattern(repairWorkflow)
+
+  assert.match('chore(release): publish a new release version (#949)', pattern)
+})

@@ -89,7 +89,8 @@ jobs:
           set -euo pipefail
 
           release_subject="$(git log -1 --format=%s)"
-          release_subject_pattern='^chore\(release\): publish (a new )?release version$'
+          release_subject_pattern='^chore\(release\): publish (a new )?release version'
+          release_subject_pattern+='( \(#[0-9]+\))?$'
           changeset_file=''
           requires_release=false
 
