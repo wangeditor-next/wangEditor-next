@@ -4,11 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       release_sha:
-        description: Lowercase 40-character SHA of the already-published master release commit
+        description: Lowercase 40-character SHA of the published automated release commit
+        required: true
+        type: string
+      release_run_id:
+        description: Numeric ID of the original Release workflow run for release_sha
         required: true
         type: string
 
 permissions:
+  actions: read
   contents: write
 
 concurrency:
@@ -18,6 +23,7 @@ concurrency:
 jobs:
   repair:
     name: Repair release provenance
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -42,11 +48,18 @@ jobs:
         working-directory: release-source
         env:
           RELEASE_SHA: ${{ inputs.release_sha }}
+          RELEASE_RUN_ID: ${{ inputs.release_run_id }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
 
           if ! [[ "${RELEASE_SHA}" =~ ^[a-f0-9]{40}$ ]]; then
             echo "release_sha must be a lowercase 40-character commit SHA" >&2
+            exit 1
+          fi
+
+          if ! [[ "${RELEASE_RUN_ID}" =~ ^[1-9][0-9]*$ ]]; then
+            echo "release_run_id must be a positive numeric workflow run ID" >&2
             exit 1
           fi
 
@@ -57,6 +70,32 @@ jobs:
             exit 1
           fi
 
+          release_run="$(timeout 60s gh api \
+            "repos/${GITHUB_REPOSITORY}/actions/runs/${RELEASE_RUN_ID}")"
+          release_run_fields="$(node -e '
+            const run = JSON.parse(process.argv[1])
+            process.stdout.write(
+              [run.path, run.event, run.status, run.head_sha, run.head_branch].join("\\t")
+            )
+          ' "${release_run}")"
+          IFS=$'\t' read -r run_path run_event run_status run_sha run_branch <<< "${release_run_fields}"
+
+          if [ "${run_path}" != '.github/workflows/release.yml' ] || \
+            [ "${run_status}" != 'completed' ] || [ "${run_sha}" != "${checked_out}" ]; then
+            echo "release_run_id must identify the completed Release run for release_sha" >&2
+            exit 1
+          fi
+
+          if [ "${run_event}" != 'push' ] && [ "${run_event}" != 'workflow_dispatch' ]; then
+            echo 'release_run_id must identify a push or manual Release run.' >&2
+            exit 1
+          fi
+
+          if [ "${run_branch}" != 'master' ] && [ "${run_branch}" != 'develop' ]; then
+            echo 'release_run_id must come from master or the protected develop branch.' >&2
+            exit 1
+          fi
+
           release_subject="$(git log -1 --format=%s "${checked_out}")"
           release_subject_pattern='^chore\(release\): publish (a new )?(pre-)?release version'
           if [[ ! "${release_subject}" =~ ${release_subject_pattern} ]]; then
@@ -64,42 +103,8 @@ jobs:
             exit 1
           fi
 
-          release_branch_pattern='^(master|dev|develop|dev-[^/]*|dev/.+)$'
-          remote_refs="$(timeout 60s git ls-remote --heads origin)"
-          release_refspecs=()
-
-          while IFS=$'\t' read -r _remote_sha remote_ref; do
-            branch="${remote_ref#refs/heads/}"
-            if [[ "${branch}" =~ ${release_branch_pattern} ]]; then
-              release_refspecs+=("+${remote_ref}:refs/remotes/origin/${branch}")
-            fi
-          done <<< "${remote_refs}"
-
-          if [ "${#release_refspecs[@]}" -eq 0 ]; then
-            echo "No configured release branches were found on origin." >&2
-            exit 1
-          fi
-
-          timeout 60s git fetch --no-tags origin "${release_refspecs[@]}"
-
-          trusted_ref=''
-          for refspec in "${release_refspecs[@]}"; do
-            remote_ref="${refspec#*:}"
-            if git merge-base --is-ancestor "${checked_out}" "${remote_ref}"; then
-              trusted_ref="${remote_ref}"
-              break
-            fi
-          done
-
-          if [ -z "${trusted_ref}" ]; then
-            message="Release source ${checked_out} must be reachable from"
-            message+=" a configured release branch."
-            echo "${message}" >&2
-            exit 1
-          fi
-
           echo "sha=${checked_out}" >> "$GITHUB_OUTPUT"
-          echo "branch=${trusted_ref#refs/remotes/origin/}" >> "$GITHUB_OUTPUT"
+          echo "branch=${run_branch}" >> "$GITHUB_OUTPUT"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v5

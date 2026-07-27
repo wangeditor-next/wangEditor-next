@@ -4,10 +4,7 @@ on:
   push:
     branches:
       - master
-      - dev
       - develop
-      - 'dev-*'
-      - 'dev/**'
   workflow_dispatch:
 
 permissions:
@@ -17,8 +14,8 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  # Ensure release jobs on master are not interrupted by subsequent pushes.
-  cancel-in-progress: ${{ github.ref_name != 'master' }}
+  # npm publishes are immutable, so provenance steps must never be cancelled mid-release.
+  cancel-in-progress: false
 
 jobs:
   release:
@@ -39,11 +36,17 @@ jobs:
       - name: Verify release branch
         env:
           RELEASE_BRANCH: ${{ github.ref_name }}
+          RELEASE_REF_TYPE: ${{ github.ref_type }}
         run: |
           set -euo pipefail
 
-          if [[ ! "${RELEASE_BRANCH}" =~ ^(master|dev|develop|dev-[^/]*|dev/.+)$ ]]; then
-            echo "Release runs are limited to master, dev, develop, dev-*, and dev/**." >&2
+          if [ "${RELEASE_REF_TYPE}" != 'branch' ]; then
+            echo 'Release runs must use a branch ref.' >&2
+            exit 1
+          fi
+
+          if [ "${RELEASE_BRANCH}" != 'master' ] && [ "${RELEASE_BRANCH}" != 'develop' ]; then
+            echo 'Release runs are limited to master and the protected develop branch.' >&2
             exit 1
           fi
 
@@ -87,7 +90,7 @@ jobs:
 
       # 创建测试版本或稳定版本的 Release PR
       - name: Manage Changeset Pre-release Mode
-        if: startsWith(github.ref_name, 'dev') || github.ref_name == 'develop'
+        if: github.ref_name == 'develop'
         run: pnpm changeset pre enter alpha || true
 
       - name: Exit Changeset Pre-release Mode
