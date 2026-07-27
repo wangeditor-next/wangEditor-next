@@ -19,6 +19,7 @@ jobs:
   repair:
     name: Repair release provenance
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     steps:
       - name: Checkout release tooling
@@ -153,11 +154,16 @@ jobs:
             echo "dispatch=true" >> "$GITHUB_OUTPUT"
           else
             echo "dispatch=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Skip docs dispatch because ${RELEASE_VERSION} is not npm latest (${latest_version})."
+            message="Skip docs dispatch because ${RELEASE_VERSION} is not npm latest"
+            message+=" (${latest_version})."
+            echo "::notice::${message}"
           fi
 
       - name: Trigger docs site deployment for repaired editor release
-        if: steps.consolidated_release.outputs.editor_published == 'true' && steps.docs_source.outputs.dispatch == 'true' && env.DOCS_REPO_DISPATCH_TOKEN != ''
+        if: >-
+          steps.consolidated_release.outputs.editor_published == 'true' &&
+          steps.docs_source.outputs.dispatch == 'true' &&
+          env.DOCS_REPO_DISPATCH_TOKEN != ''
         env:
           DOCS_REPO_DISPATCH_TOKEN: ${{ secrets.DOCS_REPO_DISPATCH_TOKEN }}
         uses: peter-evans/repository-dispatch@v4
@@ -166,11 +172,17 @@ jobs:
           repository: wangeditor-next/docs
           event-type: editor-release-published
           client-payload: >-
-            {"version":"${{ steps.consolidated_release.outputs.version }}","sourceRepo":"${{ github.repository }}","sourceSha":"${{ steps.target.outputs.sha }}","sourceRunId":"${{ github.run_id }}"}
+            {"version":"${{ steps.consolidated_release.outputs.version }}",
+            "sourceRepo":"${{ github.repository }}","sourceSha":"${{ steps.target.outputs.sha }}",
+            "sourceRunId":"${{ github.run_id }}"}
 
       - name: Warn when docs dispatch is skipped
-        if: steps.consolidated_release.outputs.editor_published == 'true' && (steps.docs_source.outputs.dispatch != 'true' || env.DOCS_REPO_DISPATCH_TOKEN == '')
+        if: >-
+          steps.consolidated_release.outputs.editor_published == 'true' &&
+          (steps.docs_source.outputs.dispatch != 'true' || env.DOCS_REPO_DISPATCH_TOKEN == '')
         env:
           DOCS_REPO_DISPATCH_TOKEN: ${{ secrets.DOCS_REPO_DISPATCH_TOKEN }}
         run: |
-          echo "::warning::Skip docs dispatch because the version is not npm latest or DOCS_REPO_DISPATCH_TOKEN is not set."
+          printf '::warning::%s%s\n' \
+            'Skip docs dispatch because the version is not npm latest or ' \
+            'DOCS_REPO_DISPATCH_TOKEN is not set.'

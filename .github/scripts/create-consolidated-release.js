@@ -9,6 +9,8 @@ const os = require('os')
 const path = require('path')
 const { getEditorRelease, parsePublishedPackages, writeGitHubOutput } = require('./release-utils')
 
+const GIT_TIMEOUT_MS = 60_000
+
 const publishedPackages = parsePublishedPackages(process.argv[2] || process.env.PUBLISHED_PACKAGES)
 
 if (publishedPackages.length === 0) {
@@ -32,7 +34,7 @@ const editorPkg = editorRelease
 const { tag } = editorRelease
 
 function git(args) {
-  return execFileSync('git', args, { encoding: 'utf8' }).trim()
+  return execFileSync('git', args, { encoding: 'utf8', timeout: GIT_TIMEOUT_MS }).trim()
 }
 
 const target = git(['rev-parse', 'HEAD'])

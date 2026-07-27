@@ -5,6 +5,8 @@ const fs = require('fs')
 const path = require('path')
 const { parsePublishedPackages } = require('./release-utils')
 
+const NPM_TIMEOUT_MS = 60_000
+
 function getWorkspacePackage(rootDir, packageName) {
   const packagesDir = path.join(rootDir, 'packages')
 
@@ -25,6 +27,7 @@ function getNpmVersion(packageName, version) {
   const output = execFileSync('npm', ['view', `${packageName}@${version}`, 'version', '--json'], {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: NPM_TIMEOUT_MS,
   }).trim()
 
   let reportedVersion

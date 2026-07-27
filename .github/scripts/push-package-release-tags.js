@@ -5,6 +5,8 @@ const fs = require('fs')
 const path = require('path')
 const { getPackageTag, parsePublishedPackages } = require('./release-utils')
 
+const NETWORK_TIMEOUT_MS = 60_000
+
 function getWorkspacePackage(rootDir, packageName) {
   const packagesDir = path.join(rootDir, 'packages')
 
@@ -27,6 +29,7 @@ function git(args, options = {}) {
   const output = execFileSync('git', args, {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: NETWORK_TIMEOUT_MS,
     ...options,
   })
 
