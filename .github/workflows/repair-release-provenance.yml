@@ -57,13 +57,42 @@ jobs:
             exit 1
           fi
 
-          git fetch --no-tags origin '+refs/heads/master:refs/remotes/origin/master'
-          if ! git merge-base --is-ancestor "${checked_out}" origin/master; then
-            echo "Release source ${checked_out} must be reachable from master" >&2
+          release_branch_pattern='^(master|dev|develop|dev-[^/]*|dev/.+)$'
+          remote_refs="$(timeout 60s git ls-remote --heads origin)"
+          release_refspecs=()
+
+          while IFS=$'\t' read -r _remote_sha remote_ref; do
+            branch="${remote_ref#refs/heads/}"
+            if [[ "${branch}" =~ ${release_branch_pattern} ]]; then
+              release_refspecs+=("+${remote_ref}:refs/remotes/origin/${branch}")
+            fi
+          done <<< "${remote_refs}"
+
+          if [ "${#release_refspecs[@]}" -eq 0 ]; then
+            echo "No configured release branches were found on origin." >&2
+            exit 1
+          fi
+
+          timeout 60s git fetch --no-tags origin "${release_refspecs[@]}"
+
+          trusted_ref=''
+          for refspec in "${release_refspecs[@]}"; do
+            remote_ref="${refspec#*:}"
+            if git merge-base --is-ancestor "${checked_out}" "${remote_ref}"; then
+              trusted_ref="${remote_ref}"
+              break
+            fi
+          done
+
+          if [ -z "${trusted_ref}" ]; then
+            message="Release source ${checked_out} must be reachable from"
+            message+=" a configured release branch."
+            echo "${message}" >&2
             exit 1
           fi
 
           echo "sha=${checked_out}" >> "$GITHUB_OUTPUT"
+          echo "branch=${trusted_ref#refs/remotes/origin/}" >> "$GITHUB_OUTPUT"
 
       - name: Install pnpm
         uses: pnpm/action-setup@v5

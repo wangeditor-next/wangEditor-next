@@ -5,7 +5,10 @@ const fs = require('fs')
 const path = require('path')
 
 function git(args) {
-  return execFileSync('git', args, { encoding: 'utf8' }).trim()
+  return execFileSync('git', args, {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  }).trim()
 }
 
 function readPackageJsonAtCommit(commit, packageDir) {

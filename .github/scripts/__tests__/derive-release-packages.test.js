@@ -48,6 +48,7 @@ test('derives all package versions changed by a release commit', () => {
       { name: '@wangeditor-next/editor', version: '1.1.0' },
       { name: '@wangeditor-next/table-module', version: '1.0.0' },
     ])
+    assert.equal(result.stderr, '')
   } finally {
     fs.rmSync(rootDir, { recursive: true, force: true })
   }
