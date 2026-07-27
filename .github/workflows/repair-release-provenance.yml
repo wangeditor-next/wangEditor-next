@@ -14,7 +14,7 @@ on:
 
 permissions:
   actions: read
-  contents: write
+  contents: read
 
 concurrency:
   group: repair-release-provenance-${{ inputs.release_sha }}
@@ -24,6 +24,7 @@ jobs:
   repair:
     name: Repair release provenance
     if: github.ref == 'refs/heads/master'
+    environment: release-automation
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -78,7 +79,8 @@ jobs:
               [run.path, run.event, run.status, run.head_sha, run.head_branch].join("\\t")
             )
           ' "${release_run}")"
-          IFS=$'\t' read -r run_path run_event run_status run_sha run_branch <<< "${release_run_fields}"
+          IFS=$'\t' read -r run_path run_event run_status run_sha run_branch \
+            <<< "${release_run_fields}"
 
           if [ "${run_path}" != '.github/workflows/release.yml' ] || \
             [ "${run_status}" != 'completed' ] || [ "${run_sha}" != "${checked_out}" ]; then
@@ -91,8 +93,8 @@ jobs:
             exit 1
           fi
 
-          if [ "${run_branch}" != 'master' ] && [ "${run_branch}" != 'develop' ]; then
-            echo 'release_run_id must come from master or the protected develop branch.' >&2
+          if [ "${run_branch}" != 'master' ]; then
+            echo 'release_run_id must come from the protected master branch.' >&2
             exit 1
           fi
 
@@ -104,7 +106,17 @@ jobs:
           fi
 
           echo "sha=${checked_out}" >> "$GITHUB_OUTPUT"
-          echo "branch=${run_branch}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify release automation credential
+        env:
+          RELEASE_AUTOMATION_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${RELEASE_AUTOMATION_TOKEN}" ]; then
+            echo 'Configure RELEASE_AUTOMATION_TOKEN in release-automation.' >&2
+            exit 1
+          fi
 
       - name: Install pnpm
         uses: pnpm/action-setup@v5
@@ -146,7 +158,7 @@ jobs:
       - name: Restore package source tags
         working-directory: release-source
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
           PUBLISHED_PACKAGES: ${{ steps.packages.outputs.published_packages }}
         run: |
           gh auth setup-git
@@ -156,7 +168,7 @@ jobs:
         id: consolidated_release
         working-directory: release-source
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
           PUBLISHED_PACKAGES: ${{ steps.packages.outputs.published_packages }}
         run: node ../.github/scripts/create-consolidated-release.js
 
@@ -164,7 +176,7 @@ jobs:
         if: steps.consolidated_release.outputs.editor_published == 'true'
         working-directory: release-source
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_AUTOMATION_TOKEN }}
           RELEASE_TAG: ${{ steps.consolidated_release.outputs.tag }}
         run: |
           set -euo pipefail
@@ -204,12 +216,12 @@ jobs:
         if: >-
           steps.consolidated_release.outputs.editor_published == 'true' &&
           steps.docs_source.outputs.dispatch == 'true' &&
-          env.DOCS_REPO_DISPATCH_TOKEN != ''
+          env.DOCS_RELEASE_DISPATCH_TOKEN != ''
         env:
-          DOCS_REPO_DISPATCH_TOKEN: ${{ secrets.DOCS_REPO_DISPATCH_TOKEN }}
+          DOCS_RELEASE_DISPATCH_TOKEN: ${{ secrets.DOCS_RELEASE_DISPATCH_TOKEN }}
         uses: peter-evans/repository-dispatch@v4
         with:
-          token: ${{ env.DOCS_REPO_DISPATCH_TOKEN }}
+          token: ${{ env.DOCS_RELEASE_DISPATCH_TOKEN }}
           repository: wangeditor-next/docs
           event-type: editor-release-published
           client-payload: >-
@@ -220,10 +232,10 @@ jobs:
       - name: Warn when docs dispatch is skipped
         if: >-
           steps.consolidated_release.outputs.editor_published == 'true' &&
-          (steps.docs_source.outputs.dispatch != 'true' || env.DOCS_REPO_DISPATCH_TOKEN == '')
+          (steps.docs_source.outputs.dispatch != 'true' || env.DOCS_RELEASE_DISPATCH_TOKEN == '')
         env:
-          DOCS_REPO_DISPATCH_TOKEN: ${{ secrets.DOCS_REPO_DISPATCH_TOKEN }}
+          DOCS_RELEASE_DISPATCH_TOKEN: ${{ secrets.DOCS_RELEASE_DISPATCH_TOKEN }}
         run: |
           printf '::warning::%s%s\n' \
             'Skip docs dispatch because the version is not npm latest or ' \
-            'DOCS_REPO_DISPATCH_TOKEN is not set.'
+            'DOCS_RELEASE_DISPATCH_TOKEN is not set.'
