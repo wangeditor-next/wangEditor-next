@@ -6,6 +6,7 @@
 import { IModuleConf } from '@wangeditor-next/core'
 
 import listItemToHtmlConf from './elem-to-html'
+import { transformListHtml } from './html-transform'
 import {
   bulletedListMenuConf,
   numberedListLowerAlphaMenuConf,
@@ -19,6 +20,7 @@ const list: Partial<IModuleConf> = {
   renderElems: [renderListItemConf],
   editorPlugin: withList,
   menus: [bulletedListMenuConf, numberedListMenuConf, numberedListLowerAlphaMenuConf],
+  htmlTransform: transformListHtml,
   elemsToHtml: [listItemToHtmlConf],
   parseElemsHtml: [parseListHtmlConf, parseItemHtmlConf],
 }

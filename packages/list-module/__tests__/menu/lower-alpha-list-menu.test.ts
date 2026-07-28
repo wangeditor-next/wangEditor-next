@@ -87,6 +87,7 @@ describe('list LowerAlphaListMenu', () => {
       {
         type: 'list-item',
         ordered: true,
+        level: 0,
         orderType: 'a',
         children: [{ text: 'hello' }],
       },
@@ -108,6 +109,7 @@ describe('list LowerAlphaListMenu', () => {
       {
         type: 'list-item',
         ordered: true,
+        level: 0,
         orderType: 'a',
         children: [{ text: 'hello' }],
       },

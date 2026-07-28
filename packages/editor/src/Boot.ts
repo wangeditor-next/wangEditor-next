@@ -4,6 +4,7 @@
  */
 
 import type {
+  HtmlTransformFnType,
   IEditorConfig,
   IElemToHtmlConf,
   IModuleConf,
@@ -21,6 +22,7 @@ import {
   IDomEditor,
   // parseHtml
   registerElemToHtmlConf,
+  registerHtmlTransformHandler,
   registerMenu,
   registerParseElemHtmlConf,
   registerParseStyleHtmlHandler,
@@ -108,6 +110,11 @@ class Boot {
   // 注册 styleToHtml
   static registerStyleToHtml(fn: styleToHtmlFnType) {
     registerStyleToHtmlHandler(fn)
+  }
+
+  // 注册 document html transform
+  static registerHtmlTransform(fn: HtmlTransformFnType) {
+    registerHtmlTransformHandler(fn)
   }
 
   // 注册 preParseHtml

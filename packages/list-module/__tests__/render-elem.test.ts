@@ -89,7 +89,7 @@ describe('list module - render elem', () => {
 
     expect(style).toEqual({
       margin: '5px 0 5px 60px',
-      alignItems: 'flex-start',
+      alignItems: 'baseline',
       display: 'flex',
     }) // margin-left 60px
   })

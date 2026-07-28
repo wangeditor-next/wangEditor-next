@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Issue #912 - Outline numbering</title>
+  <link href="https://cdn.bootcdn.net/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet">
+  <link href="./css/editor.css" rel="stylesheet">
+  <link href="../dist/css/style.css" rel="stylesheet">
+  <style>
+    body {
+      color: #18212f;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+    }
+
+    main {
+      box-sizing: border-box;
+      margin: 0 auto;
+      max-width: 1120px;
+      padding: 32px 24px 48px;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 24px;
+    }
+
+    .editor-shell {
+      border: 1px solid #d9e0e8;
+    }
+
+    .editor-toolbar {
+      border-bottom: 1px solid #d9e0e8;
+    }
+
+    .editor-text-area {
+      min-height: 410px;
+    }
+
+    .output {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 24px;
+    }
+
+    .output section {
+      min-width: 0;
+    }
+
+    .output h2 {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0 0 8px;
+    }
+
+    pre {
+      background: #f6f8fa;
+      border: 1px solid #d9e0e8;
+      box-sizing: border-box;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      margin: 0;
+      max-height: 320px;
+      overflow: auto;
+      padding: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @media (max-width: 720px) {
+      main {
+        padding: 20px 12px 32px;
+      }
+
+      .output {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Issue #912: 大纲编号与标题语义</h1>
+    <div class="editor-shell">
+      <div id="editor-toolbar" class="editor-toolbar"></div>
+      <div id="editor-text-area" class="editor-text-area"></div>
+    </div>
+
+    <div class="output">
+      <section>
+        <h2>HTML</h2>
+        <pre id="html-output"></pre>
+      </section>
+      <section>
+        <h2>Slate JSON</h2>
+        <pre id="json-output"></pre>
+      </section>
+    </div>
+  </main>
+
+  <script src="../dist/index.js?v=issue-912-baseline-align"></script>
+  <script>
+    const { createEditor, createToolbar } = window.wangEditor
+
+    const content = [
+      {
+        type: 'list-item',
+        ordered: true,
+        level: 0,
+        headingType: 'header1',
+        listMode: 'outline',
+        children: [{ text: '项目概览' }],
+      },
+      {
+        type: 'list-item',
+        ordered: true,
+        level: 1,
+        headingType: 'header2',
+        listMode: 'outline',
+        children: [{ text: '范围' }],
+      },
+      {
+        type: 'list-item',
+        ordered: true,
+        level: 2,
+        headingType: 'header3',
+        listMode: 'outline',
+        children: [{ text: '功能详情' }],
+      },
+      {
+        type: 'list-item',
+        ordered: true,
+        level: 1,
+        headingType: 'header2',
+        listMode: 'outline',
+        children: [{ text: '交付清单' }],
+      },
+      {
+        type: 'list-item',
+        ordered: true,
+        level: 0,
+        headingType: 'header1',
+        listMode: 'outline',
+        children: [{ text: '附录' }],
+      },
+      {
+        type: 'paragraph',
+        children: [{ text: '普通有序列表保持独立编号' }],
+      },
+      {
+        type: 'list-item',
+        ordered: true,
+        level: 0,
+        children: [{ text: '第一项' }],
+      },
+      {
+        type: 'list-item',
+        ordered: true,
+        level: 1,
+        children: [{ text: '子项' }],
+      },
+      {
+        type: 'list-item',
+        ordered: true,
+        level: 0,
+        children: [{ text: '第二项' }],
+      },
+    ]
+
+    const htmlOutput = document.getElementById('html-output')
+    const jsonOutput = document.getElementById('json-output')
+
+    function updateOutputs(editor) {
+      htmlOutput.textContent = editor.getHtml()
+      jsonOutput.textContent = JSON.stringify(editor.children, null, 2)
+    }
+
+    const editor = createEditor({
+      selector: '#editor-text-area',
+      content,
+      config: {
+        onChange: updateOutputs,
+      },
+    })
+
+    createToolbar({
+      editor,
+      selector: '#editor-toolbar',
+    })
+
+    updateOutputs(editor)
+  </script>
+</body>
+</html>

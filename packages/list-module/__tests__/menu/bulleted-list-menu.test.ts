@@ -79,6 +79,7 @@ describe('list BulletedListMenu', () => {
       {
         type: 'list-item',
         ordered: false,
+        level: 0,
         children: [{ text: 'hello' }],
       },
     ])

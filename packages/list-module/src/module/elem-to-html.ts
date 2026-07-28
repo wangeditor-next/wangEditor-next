@@ -10,9 +10,11 @@ import { ELEM_TO_EDITOR } from '../utils/maps'
 import { getListItemColor } from '../utils/util'
 import { ListItemElement } from './custom-types'
 import {
+  getHeadingType,
   getNormalizedOrderedListStart,
   getNormalizedOrderedListType,
   hasSameListConfig,
+  isOutlineListNode,
 } from './helpers'
 import { genListColorClassName, resolveListColorAction } from './style-class'
 
@@ -43,6 +45,9 @@ function genContainerStartTag(elem: ListItemElement): string {
   if (orderStart !== 1) {
     attrs.push(`start="${orderStart}"`)
   }
+  if (getHeadingType(elem) != null) {
+    attrs.push('data-w-e-list-mode="standard"')
+  }
 
   if (attrs.length === 0) { return '<ol>' }
   return `<ol ${attrs.join(' ')}>`
@@ -59,7 +64,9 @@ function getAdjacentListItem(
   const targetIndex = direction === 'prev' ? index - 1 : index + 1
   const targetNode = editor.children[targetIndex] as any
 
-  if (!DomEditor.checkNodeType(targetNode, 'list-item')) { return null }
+  if (!DomEditor.checkNodeType(targetNode, 'list-item') || isOutlineListNode(targetNode)) {
+    return null
+  }
   return targetNode as ListItemElement
 }
 
@@ -71,7 +78,7 @@ function getPrevSameLevelListItem(
   for (let i = index - 1; i >= 0; i -= 1) {
     const node = editor.children[i] as any
 
-    if (!DomEditor.checkNodeType(node, 'list-item')) { continue }
+    if (!DomEditor.checkNodeType(node, 'list-item') || isOutlineListNode(node)) { continue }
     if ((node.level || 0) === level) {
       return node as ListItemElement
     }
@@ -92,6 +99,21 @@ function elemToHtml(
   let endContainerStr = ''
 
   const listItemElem = elem as ListItemElement
+  const headingType = getHeadingType(listItemElem)
+  const headingTag = headingType == null ? null : headingType.replace('header', 'h')
+
+  if (isOutlineListNode(listItemElem) && headingTag != null) {
+    return {
+      html: `<${headingTag}>${childrenHtml}</${headingTag}>`,
+      prefix: '',
+      suffix: '',
+    }
+  }
+
+  if (headingTag != null) {
+    childrenHtml = `<${headingTag}>${childrenHtml}</${headingTag}>`
+  }
+
   const { level = 0 } = listItemElem
   const containerTag = getContainerTag(listItemElem)
   const containerStartTag = genContainerStartTag(listItemElem)

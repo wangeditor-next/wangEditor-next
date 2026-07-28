@@ -85,6 +85,7 @@ describe('list NumberedListMenu', () => {
       {
         type: 'list-item',
         ordered: true,
+        level: 0,
         children: [{ text: 'hello' }],
       },
     ])
@@ -107,6 +108,7 @@ describe('list NumberedListMenu', () => {
       {
         type: 'list-item',
         ordered: true,
+        level: 0,
         children: [{ text: 'hello' }],
       },
     ])

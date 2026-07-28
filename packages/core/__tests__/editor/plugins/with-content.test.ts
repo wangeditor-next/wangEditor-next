@@ -8,7 +8,12 @@ import {
 } from 'slate'
 
 import { parseHtmlConf } from '../../../../basic-modules/src/modules/link/parse-elem-html'
-import { registerParseElemHtmlConf } from '../../../src'
+import type { HtmlTransformFnType } from '../../../src'
+import {
+  HTML_TRANSFORM_HANDLER_LIST,
+  registerHtmlTransformHandler,
+  registerParseElemHtmlConf,
+} from '../../../src'
 import { IDomEditor } from '../../../src/editor/interface'
 import { withContent } from '../../../src/editor/plugins/with-content'
 import { EDITOR_TO_SELECTION } from '../../../src/utils/weak-maps'
@@ -124,6 +129,35 @@ describe('editor content API', () => {
     const htmlWithInvalidKey = editor.getHtmlWithId?.('invalid key') || ''
 
     expect(htmlWithInvalidKey).toContain('data-w-e-id="w-e-element-paragraph-')
+  })
+
+  it('applies document html transforms to getHtml and getHtmlWithId', () => {
+    const transform: HtmlTransformFnType = (htmlList, _nodes, _editor, options) => {
+      const includesId = options.includeId ? 'true' : 'false'
+
+      return [`<section data-transform-includes-id="${includesId}">${htmlList.join('')}</section>`]
+    }
+    const editor = createEditor({
+      content: [{ type: 'paragraph', children: [{ text: 'hello' }] }],
+    })
+
+    registerHtmlTransformHandler(transform)
+
+    try {
+      expect(editor.getHtml()).toBe(
+        '<section data-transform-includes-id="false"><div>hello</div></section>'
+      )
+      expect(editor.getHtmlWithId?.('data-node-id')).toContain('data-transform-includes-id="true"')
+      expect(editor.getHtmlWithId?.('data-node-id')).toContain(
+        'data-node-id="w-e-element-paragraph-'
+      )
+    } finally {
+      const index = HTML_TRANSFORM_HANDLER_LIST.indexOf(transform)
+
+      if (index >= 0) {
+        HTML_TRANSFORM_HANDLER_LIST.splice(index, 1)
+      }
+    }
   })
 
   it('getText', () => {

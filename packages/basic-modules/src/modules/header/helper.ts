@@ -6,6 +6,12 @@
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
 import { Editor, Transforms } from 'slate'
 
+type HeadingType = 'header1' | 'header2' | 'header3' | 'header4' | 'header5' | 'header6'
+
+function isHeadingType(type: string): type is HeadingType {
+  return /^header[1-6]$/.test(type)
+}
+
 /**
  * 获取 node type（'header1' 'header2' 等），未匹配则返回 'paragraph'
  */
@@ -13,8 +19,9 @@ export function getHeaderType(editor: IDomEditor): string {
   const [match] = Editor.nodes(editor, {
     match: n => {
       const type = DomEditor.getNodeType(n)
+      const headingType = (n as any).headingType
 
-      return type.startsWith('header') // 匹配 node.type 是 header 开头的 node
+      return type.startsWith('header') || /^header[1-6]$/.test(headingType)
     },
     universal: true,
   })
@@ -25,7 +32,7 @@ export function getHeaderType(editor: IDomEditor): string {
   // 匹配到 header
   const [n] = match
 
-  return DomEditor.getNodeType(n)
+  return (n as any).headingType || DomEditor.getNodeType(n)
 }
 
 export function isMenuDisabled(editor: IDomEditor): boolean {
@@ -35,9 +42,10 @@ export function isMenuDisabled(editor: IDomEditor): boolean {
     match: n => {
       const type = DomEditor.getNodeType(n)
 
-      // 只可用于 p 和 header
+      // 只可用于 p、header 和有序列表中的标题
       if (type === 'paragraph') { return true }
       if (type.startsWith('header')) { return true }
+      if (type === 'list-item' && (n as any).ordered === true) { return true }
 
       return false
     },
@@ -59,8 +67,37 @@ export function isMenuDisabled(editor: IDomEditor): boolean {
 export function setHeaderType(editor: IDomEditor, type: string) {
   if (!type) { return }
 
-  // 执行命令
-  Transforms.setNodes(editor, {
-    type,
+  const entries = Array.from(
+    Editor.nodes(editor, {
+      match: node => {
+        const nodeType = DomEditor.getNodeType(node)
+
+        return nodeType === 'paragraph' || nodeType.startsWith('header') || nodeType === 'list-item'
+      },
+      mode: 'highest',
+    })
+  )
+
+  Editor.withoutNormalizing(editor, () => {
+    entries.forEach(([node, path]) => {
+      if (DomEditor.getNodeType(node) !== 'list-item') {
+        Transforms.setNodes(editor, { type }, { at: path })
+        return
+      }
+
+      const listNode = node as any
+      const heading = isHeadingType(type) ? type : undefined
+      const level = heading ? Number.parseInt(heading.slice('header'.length), 10) - 1 : listNode.level
+
+      Transforms.setNodes(
+        editor,
+        {
+          headingType: heading,
+          listMode: heading && listNode.ordered ? 'outline' : undefined,
+          level,
+        },
+        { at: path }
+      )
+    })
   })
 }

@@ -50,4 +50,41 @@ describe('header helper', () => {
 
     expect(headers.length).toBe(1)
   })
+
+  it('keeps the list-item shape when changing an outline heading level', () => {
+    editor = createEditor({
+      content: [
+        {
+          type: 'list-item',
+          ordered: true,
+          level: 0,
+          headingType: 'header1',
+          listMode: 'outline',
+          children: [{ text: 'Overview' }],
+        },
+      ],
+    })
+    editor.select({ path: [0, 0], offset: 0 })
+
+    expect(getHeaderType(editor)).toBe('header1')
+    expect(isMenuDisabled(editor)).toBeFalsy()
+
+    setHeaderType(editor, 'header3')
+    expect(editor.children[0]).toEqual({
+      type: 'list-item',
+      ordered: true,
+      level: 2,
+      headingType: 'header3',
+      listMode: 'outline',
+      children: [{ text: 'Overview' }],
+    })
+
+    setHeaderType(editor, 'paragraph')
+    expect(editor.children[0]).toEqual({
+      type: 'list-item',
+      ordered: true,
+      level: 2,
+      children: [{ text: 'Overview' }],
+    })
+  })
 })

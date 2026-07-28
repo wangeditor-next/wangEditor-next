@@ -277,7 +277,36 @@ test.describe('Cross Browser Smoke', () => {
     await getToolbarMenu(page, 'bulletedList').click()
 
     await expect(page.getByTestId('editor-html')).toContainText('<ul>')
-    await expect(page.getByTestId('editor-html')).toContainText('<li>list item</li>')
+    await expect(page.getByTestId('editor-html')).toContainText('<ul><li>list item</li></ul>')
+  })
+
+  test('regression #912: renders and exports semantic heading outlines', async ({ page }) => {
+    await setEditorHtml(
+      page,
+      [
+        '<ol data-w-e-list-mode="outline">',
+        '<li data-w-e-list-indent="0"><h1>Overview</h1>',
+        '<ol data-w-e-list-mode="outline">',
+        '<li data-w-e-list-indent="1"><h2>Scope</h2>',
+        '<ol data-w-e-list-mode="outline"><li data-w-e-list-indent="2"><h3>Details</h3></li></ol>',
+        '</li></ol></li></ol><p>Following paragraph</p>',
+      ].join('')
+    )
+
+    const markers = page.locator('[data-testid="editor-textarea"] .w-e-list-marker')
+
+    await expect(markers).toHaveText(['1.', '1.1', '1.1.1'])
+    await expect(page.locator('[data-testid="editor-textarea"] h2')).toHaveText('Scope')
+
+    const exportedHtml = await page.evaluate(() => {
+      return (window as any).wangEditorExampleBridge?.editor?.getHtml() || ''
+    })
+
+    expect(exportedHtml).toContain('<ol data-w-e-list-mode="outline">')
+    expect(exportedHtml).toContain(
+      '<li data-w-e-list-indent="2" data-w-e-outline-number="1.1.1"><h3>Details</h3>'
+    )
+    expect(exportedHtml).toContain('</ol><p>Following paragraph</p>')
   })
 
   test('inserts a table', async ({ page }) => {

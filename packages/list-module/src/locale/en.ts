@@ -8,5 +8,8 @@ export default {
     unOrderedList: 'Unordered list',
     orderedList: 'Ordered list',
     lowerAlphaList: 'Ordered list (a,b,c)',
+    numberingActions: 'Heading numbering actions',
+    continueNumbering: 'Continue heading numbering',
+    restartNumbering: 'Restart numbering',
   },
 }

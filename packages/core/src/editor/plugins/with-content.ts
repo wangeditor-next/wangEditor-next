@@ -14,6 +14,7 @@ import { htmlToContent } from '../../create/helper'
 import { PARSE_ELEM_HTML_CONF, TEXT_TAGS } from '../../parse-html/index'
 import parseElemHtml from '../../parse-html/parse-elem-html'
 import { genElemId } from '../../render/helper'
+import { transformHtml } from '../../to-html'
 import node2html from '../../to-html/node2html'
 import $, {
   DOMElement, isDOMElement, isDOMText,
@@ -272,7 +273,7 @@ export const withContent = <T extends Editor>(editor: T) => {
     const { children = [] } = e
     const { skipCacheTypes = ['list-item'] } = e.getConfig()
 
-    const html = children.map(child => {
+    const htmlList = children.map(child => {
       const nodeType = DomEditor.getNodeType(child)
 
       // 如果节点类型在跳过缓存列表中，不使用缓存
@@ -283,14 +284,16 @@ export const withContent = <T extends Editor>(editor: T) => {
       // 尝试从缓存中获取
       const cached = NODE_TO_HTML.get(child)
 
-      if (cached) { return cached }
+      if (cached) { return cached.toString() }
 
       // 生成新的HTML并缓存
       const htmlStr = node2html(child, e)
 
       NODE_TO_HTML.set(child, htmlStr)
       return htmlStr
-    }).join('')
+    })
+
+    const html = transformHtml(htmlList, children, e).join('')
 
     return html
   }
@@ -302,7 +305,9 @@ export const withContent = <T extends Editor>(editor: T) => {
   e.getHtmlWithId = (idKey = 'data-w-e-id'): string => {
     const { children = [] } = e
 
-    return children.map(child => node2html(child, e, { includeId: true, idKey })).join('')
+    const htmlList = children.map(child => node2html(child, e, { includeId: true, idKey }))
+
+    return transformHtml(htmlList, children, e, { includeId: true, idKey }).join('')
   }
 
   // 获取 text

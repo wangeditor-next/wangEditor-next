@@ -1,15 +1,55 @@
 /**
- * @description base menu
+ * @description list menu base class
  * @author wangfupeng
  */
 
-import { DomEditor, IButtonMenu, IDomEditor } from '@wangeditor-next/core'
-import {
-  Editor, Element, Node, Transforms,
-} from 'slate'
+import { IButtonMenu, IDomEditor } from '@wangeditor-next/core'
+import { Editor, Element, Node, Path, Transforms } from 'slate'
 
-import { ListItemElement, OrderedListType } from '../custom-types'
-import { getNormalizedOrderedListType } from '../helpers'
+import { HeadingType, ListItemElement, OrderedListType } from '../custom-types'
+import {
+  getHeadingType,
+  getListIndent,
+  getNormalizedOrderedListType,
+  isHeadingType,
+  isListNode,
+} from '../helpers'
+
+function getSelectedTopLevelBlocks(editor: IDomEditor): Array<[Element, Path]> {
+  if (editor.selection == null) {
+    return []
+  }
+
+  const entries = Array.from(
+    Editor.nodes(editor, {
+      at: editor.selection,
+      match: node => Element.isElement(node) && Editor.isBlock(editor, node),
+      mode: 'highest',
+    })
+  ) as Array<[Element, Path]>
+
+  return entries.filter(([, path]) => path.length === 1)
+}
+
+function isListableBlock(editor: IDomEditor, elem: Element): boolean {
+  if (Editor.isVoid(editor, elem)) {
+    return false
+  }
+
+  return !['pre', 'code', 'table', 'table-row', 'table-cell'].includes(elem.type)
+}
+
+function getHeadingLevel(headingType: HeadingType): number {
+  return Number.parseInt(headingType.slice('header'.length), 10) - 1
+}
+
+function getOriginalHeadingType(node: Element): HeadingType | null {
+  if (isListNode(node)) {
+    return getHeadingType(node)
+  }
+
+  return isHeadingType(node.type) ? node.type : null
+}
 
 abstract class BaseMenu implements IButtonMenu {
   readonly type = 'list-item'
@@ -24,10 +64,15 @@ abstract class BaseMenu implements IButtonMenu {
 
   readonly tag = 'button'
 
-  private getListNode(editor: IDomEditor): Node | null {
-    const { type } = this
+  private isTargetListNode(node: Node): boolean {
+    if (!isListNode(node) || Boolean(node.ordered) !== this.ordered) {
+      return false
+    }
+    if (!this.ordered) {
+      return true
+    }
 
-    return DomEditor.getSelectedNodeByType(editor, type)
+    return getNormalizedOrderedListType(node) === (this.orderType || '1')
   }
 
   getValue(_editor: IDomEditor): string | boolean {
@@ -35,62 +80,67 @@ abstract class BaseMenu implements IButtonMenu {
   }
 
   isActive(editor: IDomEditor): boolean {
-    const node = this.getListNode(editor)
+    const selectedBlocks = getSelectedTopLevelBlocks(editor)
 
-    if (node == null) { return false }
-    const listNode = node as ListItemElement
-    const { ordered = false } = listNode
-
-    if (ordered !== this.ordered) { return false }
-    if (!ordered) { return true }
-
-    const currentOrderType = getNormalizedOrderedListType(listNode)
-    const targetOrderType = this.orderType || '1'
-
-    return currentOrderType === targetOrderType
+    return selectedBlocks.length > 0 && selectedBlocks.every(([node]) => this.isTargetListNode(node))
   }
 
   isDisabled(editor: IDomEditor): boolean {
-    if (editor.selection == null) { return true }
+    const selectedBlocks = getSelectedTopLevelBlocks(editor)
 
-    const selectedElems = DomEditor.getSelectedElems(editor)
-    const notMatch = selectedElems.some((elem: Element) => {
-      if (Editor.isVoid(editor, elem) && Editor.isBlock(editor, elem)) { return true }
-
-      const { type } = elem as Element
-
-      if (['pre', 'code', 'table'].includes(type)) { return true }
-      return false
-    })
-
-    if (notMatch) { return true }
-
-    return false
+    return selectedBlocks.length === 0 || selectedBlocks.some(([node]) => !isListableBlock(editor, node))
   }
 
   exec(editor: IDomEditor, _value: string | boolean): void {
     const active = this.isActive(editor)
+    const selectedBlocks = getSelectedTopLevelBlocks(editor)
 
-    if (active) {
-      // 如果当前 active ，则转换为 p 标签
-      Transforms.setNodes(editor, {
-        type: 'paragraph',
-        // @ts-ignore
-        ordered: undefined,
-        level: undefined,
-        start: undefined,
-        orderType: undefined,
-      })
-    } else {
-      // 否则，转换为 list-item
-      Transforms.setNodes(editor, {
-        type: 'list-item',
-        ordered: this.ordered, // 有序/无序
-        indent: undefined,
-        start: undefined,
-        orderType: this.ordered ? this.orderType : undefined,
-      })
+    if (selectedBlocks.length === 0) {
+      return
     }
+
+    Editor.withoutNormalizing(editor, () => {
+      selectedBlocks.forEach(([node, path]) => {
+        if (active) {
+          const listNode = node as ListItemElement
+          const headingType = getHeadingType(listNode)
+
+          Transforms.setNodes(
+            editor,
+            {
+              type: headingType || 'paragraph',
+              ordered: undefined,
+              level: undefined,
+              start: undefined,
+              orderType: undefined,
+              headingType: undefined,
+              listMode: undefined,
+              listRestart: undefined,
+            } as any,
+            { at: path }
+          )
+          return
+        }
+
+        const headingType = getOriginalHeadingType(node)
+        const outline = this.ordered && this.orderType == null && headingType != null
+
+        Transforms.setNodes(
+          editor,
+          {
+            type: 'list-item',
+            ordered: this.ordered,
+            level: outline ? getHeadingLevel(headingType as HeadingType) : getListIndent(node),
+            start: undefined,
+            orderType: this.ordered ? this.orderType : undefined,
+            headingType: outline ? headingType : undefined,
+            listMode: outline ? 'outline' : undefined,
+            listRestart: undefined,
+          } as any,
+          { at: path }
+        )
+      })
+    })
   }
 }
 

@@ -982,7 +982,7 @@ test.describe('Basic Editor', () => {
     await getToolbarMenu(page, 'bulletedList').click()
 
     await expect(page.getByTestId('editor-html')).toContainText('<ul>')
-    await expect(page.getByTestId('editor-html')).toContainText('<li>list item</li>')
+    await expect(page.getByTestId('editor-html')).toContainText('<ul><li>list item</li></ul>')
   })
 
   test('creates a numbered list item', async ({ page }) => {
@@ -991,8 +991,104 @@ test.describe('Basic Editor', () => {
     await waitForMenuEnabled(page, 'numberedList')
     await getToolbarMenu(page, 'numberedList').click()
 
-    await expect(page.getByTestId('editor-html')).toContainText('<ol>')
-    await expect(page.getByTestId('editor-html')).toContainText('<li>numbered item</li>')
+    await expect(page.getByTestId('editor-html')).toContainText('<ol><li>numbered item</li></ol>')
+  })
+
+  test('regression #912: headings keep semantic outline numbering and marker actions', async ({
+    page,
+  }) => {
+    const pageErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.stack || err?.message || String(err))
+    })
+
+    const semanticOutlineHtml = [
+      '<ol data-w-e-list-mode="outline">',
+      '<li data-w-e-list-indent="0"><h1>Overview</h1>',
+      '<ol data-w-e-list-mode="outline">',
+      '<li data-w-e-list-indent="1"><h2>Scope</h2>',
+      '<ol data-w-e-list-mode="outline"><li data-w-e-list-indent="2"><h3>Details</h3></li></ol>',
+      '</li><li data-w-e-list-indent="1"><h2>Delivery</h2></li>',
+      '</ol></li><li data-w-e-list-indent="0"><h1>Appendix</h1></li>',
+      '</ol>',
+    ].join('')
+
+    await page.evaluate(html => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      if (!editor) {
+        throw new Error('editor missing')
+      }
+
+      editor.setHtml(html)
+      editor.focus()
+      editor.select({
+        anchor: { path: [2, 0], offset: 0 },
+        focus: { path: [2, 0], offset: 0 },
+      })
+    }, semanticOutlineHtml)
+
+    const markers = page.locator('[data-testid="editor-textarea"] .w-e-list-marker')
+
+    await expect(markers).toHaveText(['1.', '1.1', '1.1.1', '1.2', '2.'])
+    await expect(getToolbarMenu(page, 'numberedList')).toHaveClass(/active/)
+    await expect(getToolbarMenu(page, 'headerSelect')).toContainText('H3')
+
+    const markerAlignment = await page
+      .locator('[data-testid="editor-textarea"] .w-e-list-item')
+      .evaluateAll(items =>
+        items.slice(0, 5).map(item => {
+          const marker = item.querySelector('.w-e-list-marker')
+          const heading = item.querySelector('h1, h2, h3')
+
+          if (marker == null || heading == null) {
+            return false
+          }
+
+          const markerRect = marker.getBoundingClientRect()
+          const headingRect = heading.getBoundingClientRect()
+          const markerCenter = markerRect.top + markerRect.height / 2
+
+          return markerCenter >= headingRect.top && markerCenter <= headingRect.bottom
+        })
+      )
+
+    expect(markerAlignment).toEqual([true, true, true, true, true])
+
+    await markers.nth(4).click()
+
+    const actionPanel = page.locator('[data-testid="editor-textarea"] .w-e-list-outline-actions')
+
+    await expect(actionPanel).toBeVisible()
+    await expect(actionPanel.locator('button')).toHaveCount(2)
+    await actionPanel.locator('button').nth(1).click()
+
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const editor = (window as any).wangEditorExampleBridge?.editor
+
+          return editor?.children?.[4]?.listRestart
+        })
+      )
+      .toBe(1)
+    await expect(markers).toHaveText(['1.', '1.1', '1.1.1', '1.2', '1.'])
+
+    const exportedHtml = await page.evaluate(() => {
+      return (window as any).wangEditorExampleBridge?.editor?.getHtml() || ''
+    })
+
+    expect(exportedHtml).toContain('<ol data-w-e-list-mode="outline">')
+    expect(exportedHtml).toContain(
+      '<li data-w-e-list-indent="0" data-w-e-outline-number="1."><h1>Overview</h1>'
+    )
+    expect(exportedHtml).toContain(
+      '<li data-w-e-list-indent="2" data-w-e-outline-number="1.1.1"><h3>Details</h3>'
+    )
+    expect(exportedHtml).toContain('data-w-e-list-restart="1"')
+    expect(exportedHtml).not.toContain('>1.1 Scope<')
+    expect(pageErrors).toEqual([])
   })
 
   test('regression #543: nested list should stay inside parent li after round-trip', async ({ page }) => {

@@ -6,6 +6,7 @@
 import { Descendant, Element as SlateElement } from 'slate'
 
 import { IDomEditor } from '../editor/interface'
+import type { INodeToHtmlOptions } from './node2html'
 
 // ------------------------------------ style to html ------------------------------------
 
@@ -23,6 +24,39 @@ export const STYLE_TO_HTML_FN_LIST: styleToHtmlFnType[] = []
  */
 export function registerStyleToHtmlHandler(fn: styleToHtmlFnType) {
   STYLE_TO_HTML_FN_LIST.push(fn)
+}
+
+// ------------------------------------ document html transform ------------------------------------
+
+/**
+ * Transform the HTML fragments of the document's top-level nodes.
+ *
+ * Element serializers intentionally stay node-local. Modules that need
+ * neighboring blocks to produce valid HTML (for example semantic lists) use
+ * this hook after every node has been serialized.
+ */
+export type HtmlTransformFnType = (
+  htmlList: string[],
+  nodes: Descendant[],
+  editor: IDomEditor,
+  options: INodeToHtmlOptions
+) => string[]
+
+export const HTML_TRANSFORM_HANDLER_LIST: HtmlTransformFnType[] = []
+
+export function registerHtmlTransformHandler(fn: HtmlTransformFnType) {
+  HTML_TRANSFORM_HANDLER_LIST.push(fn)
+}
+
+export function transformHtml(
+  htmlList: string[],
+  nodes: Descendant[],
+  editor: IDomEditor,
+  options: INodeToHtmlOptions = {}
+): string[] {
+  return HTML_TRANSFORM_HANDLER_LIST.reduce((result, handler) => {
+    return handler(result, nodes, editor, options)
+  }, htmlList)
 }
 
 // ------------------------------------ elem node to html ------------------------------------

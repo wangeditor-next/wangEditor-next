@@ -77,7 +77,17 @@ packages/plugin-xxx/
 - `elem -> html -> elem`
 - `html -> elem -> html`
 
-### 4.4 菜单（如有）
+### 4.4 文档级 HTML 转换（如有）
+
+当合法 HTML 依赖相邻顶级块时（例如多个块需要组合成一个语义列表），模块可提供
+`htmlTransform`。它在所有节点完成单独序列化后，接收顶级 HTML 片段、Slate 节点、editor
+和导出选项，并返回最终片段列表。
+
+- 只处理模块自己声明的数据契约，保持未识别块的顺序和内容。
+- 同时覆盖 `getHtml()` 和 `getHtmlWithId()`，不得丢失传入的导出选项。
+- 新增的 `data-w-e-*` 属性必须由模块 README 说明，并为 render、parse、toHtml 和回环路径补测试。
+
+### 4.5 菜单（如有）
 
 - 菜单注册通过 `menus` 数组输出
 - 默认配置统一通过 `config` 暴露到 `editorConfig.MENU_CONF[key]`
