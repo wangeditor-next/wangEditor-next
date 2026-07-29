@@ -60,3 +60,13 @@ test('repair splits release run metadata with real tab characters', () => {
   assert.match(repairWorkflow, /\.join\("\\t"\)/)
   assert.doesNotMatch(repairWorkflow, /\.join\("\\\\t"\)/)
 })
+
+test('package source tags have an explicit automation identity', () => {
+  for (const workflow of [releaseWorkflow, repairWorkflow]) {
+    assert.match(workflow, /git config user\.name 'github-actions\[bot\]'/)
+    assert.match(
+      workflow,
+      /git config user\.email '41898282\+github-actions\[bot\]@users\.noreply\.github\.com'/
+    )
+  }
+})
