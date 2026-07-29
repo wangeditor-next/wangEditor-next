@@ -55,3 +55,8 @@ test('repair trusts master runs and uses the protected automation token', () => 
 
   assert.match('chore(release): publish a new release version (#949)', pattern)
 })
+
+test('repair splits release run metadata with real tab characters', () => {
+  assert.match(repairWorkflow, /\.join\("\\t"\)/)
+  assert.doesNotMatch(repairWorkflow, /\.join\("\\\\t"\)/)
+})

@@ -52,7 +52,11 @@ exit 1
   try {
     const result = spawnSync(
       process.execPath,
-      [scriptPath, '[{"name":"@wangeditor-next/editor","version":"6.0.2"}]', '--dry-run'],
+      [
+        scriptPath,
+        JSON.stringify([{ name: '@wangeditor-next/editor', version: editorVersion }]),
+        '--dry-run',
+      ],
       {
         cwd: rootDir,
         encoding: 'utf8',

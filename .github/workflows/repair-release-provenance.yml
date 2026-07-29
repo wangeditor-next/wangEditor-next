@@ -76,7 +76,7 @@ jobs:
           release_run_fields="$(node -e '
             const run = JSON.parse(process.argv[1])
             process.stdout.write(
-              [run.path, run.event, run.status, run.head_sha, run.head_branch].join("\\t")
+              [run.path, run.event, run.status, run.head_sha, run.head_branch].join("\t")
             )
           ' "${release_run}")"
           IFS=$'\t' read -r run_path run_event run_status run_sha run_branch \
