@@ -3,14 +3,14 @@
  * @author wangfupeng
  */
 
-import { Editor } from 'slate'
+import { Editor, IDomEditor, Point } from 'slate'
 
 import createEditor from '../../../../tests/utils/create-editor'
 import withDivider from '../../src/modules/divider/plugin'
 
 describe('divider plugin', () => {
-  let editor: any
-  let startLocation: any
+  let editor: IDomEditor
+  let startLocation: Point
 
   beforeEach(() => {
     editor = withDivider(createEditor())
