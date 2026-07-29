@@ -8,6 +8,7 @@ const Y = require('yjs')
 
 const host = process.env.HOST || 'localhost'
 const port = Number.parseInt(process.env.PORT || '1234', 10)
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(origin => origin.trim()).filter(Boolean)
 const webSocketServer = new WebSocketServer({ noServer: true })
 
 function getDocumentName(request) {
@@ -39,6 +40,14 @@ const server = http.createServer((_request, response) => {
 })
 
 server.on('upgrade', (request, socket, head) => {
+  const origin = request.headers.origin
+
+  if (allowedOrigins.length > 0 && (!origin || !allowedOrigins.includes(origin))) {
+    socket.write('HTTP/1.1 403 Forbidden\r\n\r\n')
+    socket.destroy()
+    return
+  }
+
   webSocketServer.handleUpgrade(request, socket, head, webSocket => {
     webSocketServer.emit('connection', webSocket, request)
   })
