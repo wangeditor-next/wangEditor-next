@@ -44,7 +44,7 @@
     "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
   },
   "peerDependencies": {
-    "@wangeditor-next/core": ">=1.9.8",
+    "@wangeditor-next/core": "workspace:^",
     "dom7": "^3.0.0 || ^4.0.0",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",

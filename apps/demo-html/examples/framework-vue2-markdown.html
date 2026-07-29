@@ -5,7 +5,6 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>wangEditor Vue2 markdown regression demo</title>
-  <link href="https://cdn.bootcdn.net/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet">
   <link href="./css/editor.css" rel="stylesheet">
   <link href="../dist/css/style.css" rel="stylesheet">
   <style>
@@ -36,13 +35,13 @@
 <body>
   <div id="app"></div>
 
-  <script src="https://unpkg.com/vue@2.7.16/dist/vue.js"></script>
+  <script src="../vue2-dist/vue.js"></script>
   <script src="../dist/index.js"></script>
   <script>
     window.editor = window.wangEditor
   </script>
   <script src="../plugin-markdown-dist/index.js"></script>
-  <script src="https://unpkg.com/@wangeditor-next/editor-for-vue2@1.0.2/dist/index.js"></script>
+  <script src="../editor-for-vue2-dist/index.js"></script>
   <script>
     const markdownModule = window.WangEditorMarkDownPlugin?.default || window.WangEditorMarkDownPlugin
 

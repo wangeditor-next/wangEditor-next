@@ -307,6 +307,36 @@ async function setSelectedTableWidthMode(page: Page, width: '100%' | 'auto') {
 test.describe('Framework parity regression', () => {
   test.describe.configure({ timeout: process.env.CI ? 240_000 : 90_000 })
 
+  test('vue2-wrapper: loads local runtime and wrapper artifacts', async ({ page }) => {
+    const pageErrors: string[] = []
+
+    page.on('pageerror', err => {
+      pageErrors.push(err?.stack || err?.message || String(err))
+    })
+
+    await openTarget(page, targets.find(target => target.name === 'vue2-wrapper')!)
+
+    const resources = await page.evaluate(() => {
+      return performance.getEntriesByType('resource').map(entry => entry.name)
+    })
+
+    expect(
+      await page.evaluate(() => {
+        const globalWindow = window as any
+
+        return Boolean(globalWindow.WangEditorForVue && globalWindow.vue2Editor)
+      })
+    ).toBe(true)
+    expect(resources).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/\/vue2-dist\/vue\.js/),
+        expect.stringMatching(/\/editor-for-vue2-dist\/index\.js/),
+      ])
+    )
+    expect(resources.some(url => /unpkg|bootcdn/.test(url))).toBe(false)
+    expect(pageErrors).toEqual([])
+  })
+
   test('react-wrapper: regression #907 Editor style should apply to the actual editor root', async ({ page }) => {
     const pageErrors: string[] = []
 

@@ -46,6 +46,29 @@ function collectTsconfigFiles(startDir) {
 
 function runTypecheck(tsconfigPath) {
   const relativePath = path.relative(rootDir, tsconfigPath).replace(/\\/g, '/')
+  const packageDir = path.dirname(tsconfigPath)
+  const packageJsonPath = path.join(packageDir, 'package.json')
+  const packageJson = fs.existsSync(packageJsonPath)
+    ? JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
+    : null
+
+  if (packageJson?.scripts?.typecheck) {
+    const packageRelativePath = path.relative(rootDir, packageDir).replace(/\\/g, '/')
+
+    process.stdout.write(`[typecheck] ${relativePath} (package script)\n`)
+
+    const res = spawnSync('pnpm', ['--dir', packageRelativePath, 'run', 'typecheck'], {
+      cwd: rootDir,
+      stdio: 'inherit',
+    })
+
+    if (res.status !== 0) {
+      process.exit(res.status ?? 1)
+    }
+
+    return
+  }
+
   const args = ['exec', 'tsc', '--noEmit', '--pretty', 'false', '--skipLibCheck']
   const buildInfoPath = path.join(
     typecheckCacheDir,

@@ -42,12 +42,12 @@
   },
   "devDependencies": {
     "@wangeditor-next-shared/rollup-config": "workspace:^",
-    "@wangeditor-next/editor": "^6.0.0",
+    "@wangeditor-next/editor": "workspace:^",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
   "peerDependencies": {
-    "@wangeditor-next/editor": ">=6.0.0",
+    "@wangeditor-next/editor": "workspace:^",
     "react": ">=17.0.2",
     "react-dom": ">=17.0.2"
   }

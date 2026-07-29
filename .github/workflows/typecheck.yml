@@ -69,7 +69,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # editor-for-react 依赖 @wangeditor-next/editor 的 dist 类型产物
+      # Framework adapters consume the editor's published type declarations.
       - name: Build editor package for type declarations
         run: pnpm turbo build --filter=@wangeditor-next/editor
 

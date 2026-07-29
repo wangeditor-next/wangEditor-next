@@ -7,6 +7,11 @@ const examplesDir = path.join(__dirname, 'examples')
 const editorDistDir = path.join(__dirname, '../../packages/editor/dist')
 const coreDistDir = path.join(__dirname, '../../packages/core/dist')
 const markdownDistDir = path.join(__dirname, '../../packages/plugin-markdown/dist')
+const vue2AdapterDistDir = path.join(__dirname, '../../packages/editor-for-vue2/dist')
+const vue2RuntimeDistDir = path.join(
+  __dirname,
+  '../../packages/editor-for-vue2/node_modules/vue/dist'
+)
 
 const contentTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -59,6 +64,16 @@ function resolvePath(urlPath) {
     return { filePath: path.join(markdownDistDir, urlPath.replace('/plugin-markdown-dist/', '')) }
   }
 
+  if (urlPath.startsWith('/editor-for-vue2-dist/')) {
+    return {
+      filePath: path.join(vue2AdapterDistDir, urlPath.replace('/editor-for-vue2-dist/', '')),
+    }
+  }
+
+  if (urlPath.startsWith('/vue2-dist/')) {
+    return { filePath: path.join(vue2RuntimeDistDir, urlPath.replace('/vue2-dist/', '')) }
+  }
+
   return { notFound: true }
 }
 
@@ -92,8 +107,16 @@ const server = http.createServer((req, res) => {
     baseDir = coreDistDir
   } else if (requestUrl.pathname.startsWith('/plugin-markdown-dist/')) {
     baseDir = markdownDistDir
+  } else if (requestUrl.pathname.startsWith('/editor-for-vue2-dist/')) {
+    baseDir = vue2AdapterDistDir
+  } else if (requestUrl.pathname.startsWith('/vue2-dist/')) {
+    baseDir = vue2RuntimeDistDir
   }
-  if (!isSafePath(baseDir, filePath) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+  if (
+    !isSafePath(baseDir, filePath) ||
+    !fs.existsSync(filePath) ||
+    fs.statSync(filePath).isDirectory()
+  ) {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' })
     res.end('Not Found')
     return
