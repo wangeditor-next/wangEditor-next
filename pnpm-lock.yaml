@@ -568,22 +568,22 @@ importers:
         specifier: ^5.0.0
         version: 5.2.0(@uppy/core@5.2.0)
       '@wangeditor-next/basic-modules':
-        specifier: 3.1.0
+        specifier: 3.2.0
         version: link:../basic-modules
       '@wangeditor-next/code-highlight':
         specifier: 3.0.2
         version: link:../code-highlight
       '@wangeditor-next/core':
-        specifier: 1.9.8
+        specifier: 1.10.0
         version: link:../core
       '@wangeditor-next/list-module':
-        specifier: 3.0.4
+        specifier: 3.1.0
         version: link:../list-module
       '@wangeditor-next/table-module':
         specifier: 3.0.10
         version: link:../table-module
       '@wangeditor-next/upload-image-module':
-        specifier: 4.0.0
+        specifier: 4.0.1
         version: link:../upload-image-module
       '@wangeditor-next/video-module':
         specifier: 4.0.0

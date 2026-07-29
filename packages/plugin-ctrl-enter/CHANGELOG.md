@@ -1,5 +1,15 @@
 # @wangeditor-next/plugin-ctrl-enter
 
+## 3.0.3
+
+### Patch Changes
+
+- 17638db: fix(release): allow compatible minor peer dependency versions
+
+  Internal peer dependencies now use bounded compatible ranges instead of exact release versions.
+  This prevents an editor or basic-modules minor release from unnecessarily forcing a major release of
+  these unaffected packages.
+
 ## 3.0.2
 
 ### Patch Changes
