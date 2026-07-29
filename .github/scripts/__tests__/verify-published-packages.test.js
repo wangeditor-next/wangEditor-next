@@ -160,7 +160,7 @@ exit 1
         env: {
           ...process.env,
           NPM_VERIFY_RETRY_DELAY_MS: '1',
-          NPM_VERIFY_TIMEOUT_MS: '40',
+          NPM_VERIFY_TIMEOUT_MS: '200',
           PATH: `${temporaryBin}:${process.env.PATH}`,
         },
       }
