@@ -1,5 +1,12 @@
 # @wangeditor-next/demo-react
 
+## 0.0.26
+
+### Patch Changes
+
+- Updated dependencies [17638db]
+  - @wangeditor-next/editor@6.1.0
+
 ## 0.0.25
 
 ### Patch Changes
