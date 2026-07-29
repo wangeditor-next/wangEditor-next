@@ -52,8 +52,9 @@ v6 将内置视频对齐方式改为明确的块级媒体布局：视频节点�
 `align: 'left' | 'center' | 'right'`，渲染和导出的 HTML 使用响应式 `<figure>` 容器。
 旧版 `text-align` 视频 HTML 仍可导入，并会自动转换为新的对齐模型。
 
-React 项目升级 editor 时，请同时升级到 `@wangeditor-next/editor-for-react@^3.0.0`。
-Vue 2 和 Vue 3 项目请使用各自适配器的最新版本。完整变更见
+React、Vue 2 和 Vue 3 项目升级 editor 时，请同时升级对应的官方适配器。所有官方
+`@wangeditor-next/*` 运行时包在每次 release 中使用相同版本号，由同一个 monorepo 和
+release 流程发布。完整变更见
 [v6.0.0 release notes](https://github.com/wangeditor-next/wangEditor-next/releases/tag/v6.0.0)。
 
 ## 使用示例
@@ -68,6 +69,7 @@ Vue 2 和 Vue 3 项目请使用各自适配器的最新版本。完整变更见
 仓库内 demo 的真实源码统一维护在 `apps/`：
 
 - `apps/demo-html`
+- `apps/demo-html/examples/framework-vue2.html`（Vue 2 适配器回归页）
 - `apps/demo-react`
 - `apps/demo-vue3`
 - `apps/demo-yjs-react`

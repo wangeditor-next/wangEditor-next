@@ -5,13 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite --force",
-    "dev:all": "pnpm exec concurrently \"pnpm --dir ../../packages/editor dev-watch\" \"pnpm run dev\"",
+    "dev:all": "pnpm exec concurrently \"pnpm --dir ../../packages/editor dev-watch\" \"pnpm --dir ../../packages/editor-for-vue dev-watch\" \"pnpm run dev\"",
     "build": "vite build",
     "smoke": "pnpm --dir ../.. exec turbo build --filter=@wangeditor-next/demo-vue3"
   },
   "dependencies": {
     "@wangeditor-next/editor": "workspace:*",
-    "@wangeditor-next/editor-for-vue": "latest",
+    "@wangeditor-next/editor-for-vue": "workspace:*",
     "vue": "^3.2.0"
   },
   "devDependencies": {

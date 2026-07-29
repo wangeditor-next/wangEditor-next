@@ -1,0 +1,62 @@
+{
+  "name": "@wangeditor-next/editor-for-vue2",
+  "version": "1.0.2",
+  "description": "wangEditor component for Vue 2",
+  "author": "cycleccc <ylf2991205548@qq.com>",
+  "homepage": "https://github.com/wangeditor-next/wangEditor-next#readme",
+  "license": "MIT",
+  "types": "dist/src/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "browser": {
+    "./dist/index.js": "./dist/index.js",
+    "./dist/index.esm.js": "./dist/index.esm.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "wangEditor",
+    "wangEditor-next",
+    "rich text editor",
+    "vue2"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wangeditor-next/wangEditor-next.git",
+    "directory": "packages/editor-for-vue2"
+  },
+  "bugs": {
+    "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
+  },
+  "scripts": {
+    "dev": "vite",
+    "dev-watch": "vite build --watch",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@wangeditor-next/editor": "workspace:^",
+    "vue": "^2.7.16"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "@vitejs/plugin-vue2": "^1.1.2",
+    "@wangeditor-next/editor": "workspace:^",
+    "typescript": "5.2.2",
+    "vite": "^2.9.16",
+    "vite-plugin-dts": "^0.7.0",
+    "vue": "^2.7.16",
+    "vue-template-compiler": "^2.7.16"
+  }
+}

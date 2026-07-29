@@ -12,6 +12,7 @@
         "$TURBO_DEFAULT$",
         "src/**",
         "rollup.config.js",
+        "vite.config.ts",
         "tsconfig.json",
         "package.json"
       ],
@@ -27,6 +28,7 @@
         "$TURBO_DEFAULT$",
         "src/**",
         "rollup.config.js",
+        "vite.config.ts",
         "tsconfig.json",
         "package.json"
       ],

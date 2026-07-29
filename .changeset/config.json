@@ -2,11 +2,39 @@
   "$schema": "https://unpkg.com/@changesets/config@3.0.3/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "fixed": [],
+  "fixed": [
+    [
+      "@wangeditor-next/basic-modules",
+      "@wangeditor-next/code-highlight",
+      "@wangeditor-next/core",
+      "@wangeditor-next/editor",
+      "@wangeditor-next/editor-for-react",
+      "@wangeditor-next/editor-for-vue",
+      "@wangeditor-next/editor-for-vue2",
+      "@wangeditor-next/list-module",
+      "@wangeditor-next/plugin-attachment",
+      "@wangeditor-next/plugin-ctrl-enter",
+      "@wangeditor-next/plugin-float-image",
+      "@wangeditor-next/plugin-formula",
+      "@wangeditor-next/plugin-link-card",
+      "@wangeditor-next/plugin-markdown",
+      "@wangeditor-next/plugin-mention",
+      "@wangeditor-next/table-module",
+      "@wangeditor-next/upload-image-module",
+      "@wangeditor-next/video-module",
+      "@wangeditor-next/yjs",
+      "@wangeditor-next/yjs-for-react",
+      "@wangeditor-next/yjs-for-vue"
+    ]
+  ],
   "linked": [],
   "access": "restricted",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
+  "privatePackages": {
+    "version": false,
+    "tag": false
+  },
   "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
     "onlyUpdatePeerDependentsWhenOutOfRange": true,
     "updateInternalDependents": "out-of-range"

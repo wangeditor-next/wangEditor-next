@@ -21,18 +21,32 @@ Release 与 `Repair Release Provenance` 都只能使用 GitHub Environment
 2. 提交代码合并 master，线上会自动发版到 `npm`。
 
 发布完成后，每个包都有一个不可变的源码 tag：
-`@wangeditor-next/<package>@<version>`。仅当
-`@wangeditor-next/editor` 发布时，才会创建对应的产品级 GitHub Release
-`v<version>`；Release 中会列出所有本次发布包的源码与 tarball 链接。
+`@wangeditor-next/<package>@<version>`。所有官方 framework adapter、core、editor、
+模块、插件和协同包都从同一个 monorepo、同一个 Changesets release PR 与同一个 workflow
+发布，并使用相同的产品版本号；`apps/*`、文档和内部构建工具不发布到 npm。
+
+`@wangeditor-next/editor` 会在每次产品 release 中发布，因此会创建对应的 GitHub Release
+`v<version>`；Release 中列出本次所有包的源码与 tarball 链接。
 
 ## 版本关联策略
 
-各 package 独立版本。功能包按自身公开行为选择 patch、minor 或 major；不要因为宿主包
-发布 minor 就把未改动的 peer package 升级为 major。
+所有 `packages/*` 下、名称为 `@wangeditor-next/*` 的公开运行时包属于同一个 Changesets
+`fixed` 组。这包含 `core`、`editor`、Vue 2/Vue 3/React 适配器、内置模块、可选插件和
+Yjs 包。一个用户可见的变更只需要在直接受影响的包写 changeset；Changesets 会把整个组
+提升到同一个产品版本，并在一次 release PR 中发布。
 
-内部 peer dependency 使用有上界的兼容范围，例如 `>=6.0.2 <7`，而不是精确版本号。
-Changesets 仅在新版本离开该范围时才升级依赖方。提交前执行 `pnpm changeset status`：预期
-之外的 major 必须先解释并消除，不能靠将 feature changeset 误标为 major 来通过发布。
+当前 `6.1.0` 已经发布，不能变更其 npm 包或 immutable source tag。它仅包含包同步，迁入后的
+首次共同发布使用 `6.1.1`：`editor`、`core` 和全部官方包都会是 `6.1.1`。之后每次发布都遵守相同规则。
+
+`pnpm check:release-group` 会校验新增公开包不会漏出该组。新增公开运行时包时必须同时：
+
+1. 放入 `.changeset/config.json` 的固定组。
+2. 添加 workspace 依赖、构建和框架集成测试。
+3. 确认其 package source tag 能由本仓库 release workflow 创建。
+
+历史版本不重写：`@wangeditor-next/editor-for-vue@5.1.14` 和
+`@wangeditor-next/editor-for-vue2@1.0.2` 继续由原独立仓库的历史 tag 说明来源。迁入后的
+新版本，其 npm metadata、source tag 和 GitHub Release 链接均指向本仓库。
 
 ## 发布失败后的补偿
 
