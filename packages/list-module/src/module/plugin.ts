@@ -1,122 +1,127 @@
 /**
- * @description editor 插件，重写 editor API
+ * @description list editor plugin
  * @author wangfupeng
  */
 
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
-import {
-  Editor, Range, Transforms,
-} from 'slate'
+import { Editor, Element, Node, Path, Range, Transforms } from 'slate'
 
 import { ListItemElement } from './custom-types'
-import { getBrotherListNodeByLevel } from './helpers'
+import {
+  getBrotherListNodeByLevel,
+  getHeadingType,
+  getListIndent,
+  isListNode,
+  isOutlineListNode,
+} from './helpers'
 
-/**
- * 获取选中的 top elems
- * @param editor editor
- */
-function getTopSelectedElemsBySelection(editor: IDomEditor) {
-  return Editor.nodes(editor, {
+function getTopSelectedElemsBySelection(editor: IDomEditor): Array<[Element, Path]> {
+  const entries = Array.from(
+    Editor.nodes(editor, {
+      at: editor.selection || undefined,
+      match: node => Element.isElement(node) && Editor.isBlock(editor, node),
+      mode: 'highest',
+    })
+  ) as Array<[Element, Path]>
+
+  return entries.filter(([, path]) => path.length === 1)
+}
+
+function getSelectedListEntry(editor: IDomEditor): [ListItemElement, Path] | null {
+  const [entry] = Editor.nodes(editor, {
     at: editor.selection || undefined,
-    match: n => DomEditor.findPath(editor, n).length === 1, // 只匹配顶级元素
+    match: isListNode,
+    universal: true,
   })
+
+  return entry == null ? null : (entry as [ListItemElement, Path])
+}
+
+function clearListItem(editor: IDomEditor, path: Path, node: ListItemElement, type?: string) {
+  Transforms.setNodes(
+    editor,
+    {
+      type: type || getHeadingType(node) || 'paragraph',
+      ordered: undefined,
+      level: undefined,
+      start: undefined,
+      orderType: undefined,
+      headingType: undefined,
+      listMode: undefined,
+      listRestart: undefined,
+    } as any,
+    { at: path }
+  )
 }
 
 function withList<T extends IDomEditor>(editor: T): T {
-  const {
-    deleteBackward, handleTab, normalizeNode, insertBreak,
-  } = editor
+  const { deleteBackward, handleTab, normalizeNode, insertBreak } = editor
   const newEditor = editor
 
-  // 重写 insertBreak - 空 list 点击回车时删除该空 list
   newEditor.insertBreak = () => {
-    const [nodeEntry] = Editor.nodes(editor, {
-      match: n => DomEditor.checkNodeType(n, 'list-item'),
-      universal: true,
-    })
+    const entry = getSelectedListEntry(newEditor)
 
-    if (!nodeEntry) { return insertBreak() }
-    const listElem = nodeEntry[0] as ListItemElement
+    if (entry == null) {
+      return insertBreak()
+    }
 
-    if (listElem.children[0].text === '') {
-      Transforms.setNodes(newEditor, {
-        type: 'paragraph',
-        // @ts-ignore
-        ordered: undefined,
-        level: undefined,
-        start: undefined,
-        orderType: undefined,
-      })
+    const [listItem, path] = entry
+
+    if (Node.string(listItem) === '') {
+      clearListItem(newEditor, path, listItem, 'paragraph')
       return
     }
+
     return insertBreak()
   }
 
-  // 重写 deleteBackward - 降低 level 或者转换为 p 元素
   newEditor.deleteBackward = unit => {
     const { selection } = newEditor
 
-    if (selection == null) {
+    if (selection == null || Range.isExpanded(selection)) {
       deleteBackward(unit)
       return
     }
 
-    if (Range.isExpanded(selection)) {
+    const entry = getSelectedListEntry(newEditor)
+
+    if (entry == null || selection.focus.offset !== 0) {
       deleteBackward(unit)
       return
     }
 
-    const listItemElem = DomEditor.getSelectedNodeByType(newEditor, 'list-item')
+    const [listItem, path] = entry
 
-    if (listItemElem == null) {
-      // 未匹配到 list-item
-      deleteBackward(unit)
+    if (isOutlineListNode(listItem)) {
+      clearListItem(newEditor, path, listItem)
       return
     }
 
-    if (selection.focus.offset === 0) {
-      // 选中了当前 list-item 文本的开头，此时按删除键，应该降低 level 或转换为 p 元素
-      const { level = 0 } = listItemElem as ListItemElement
+    const level = getListIndent(listItem)
 
-      if (level > 0) {
-        // 如果有兄弟节点，则对齐兄弟节点的列表配置
-        const brotherElem = getBrotherListNodeByLevel(
-          editor,
-          listItemElem as ListItemElement,
-          level - 1,
-        )
-
-        if (brotherElem) {
-          const nextOrdered = brotherElem.ordered
-
-          Transforms.setNodes(newEditor, {
-            level: level - 1,
-            ordered: nextOrdered,
-            start: nextOrdered ? brotherElem.start : undefined,
-            orderType: nextOrdered ? brotherElem.orderType : undefined,
-          })
-        } else {
-          Transforms.setNodes(newEditor, { level: level - 1 })
-        }
-      } else {
-        // 转换为 p 元素
-        Transforms.setNodes(newEditor, {
-          type: 'paragraph',
-          // @ts-ignore
-          ordered: undefined,
-          level: undefined,
-          start: undefined,
-          orderType: undefined,
-        })
-      }
+    if (level <= 0) {
+      clearListItem(newEditor, path, listItem)
       return
     }
 
-    // 其他情况
-    deleteBackward(unit)
+    const brother = getBrotherListNodeByLevel(editor, listItem, level - 1)
+
+    if (brother != null) {
+      Transforms.setNodes(
+        newEditor,
+        {
+          level: level - 1,
+          ordered: brother.ordered,
+          start: brother.ordered ? brother.start : undefined,
+          orderType: brother.ordered ? brother.orderType : undefined,
+        },
+        { at: path }
+      )
+    } else {
+      Transforms.setNodes(newEditor, { level: level - 1 }, { at: path })
+    }
   }
 
-  // 重写 tab - 当选中 list-item 文本开头时，增加 level
   newEditor.handleTab = () => {
     const { selection } = newEditor
 
@@ -125,58 +130,35 @@ function withList<T extends IDomEditor>(editor: T): T {
       return
     }
 
-    // 选区是合并的，判断单个 list-item 即可
     if (Range.isCollapsed(selection)) {
-      const listItemElem = DomEditor.getSelectedNodeByType(newEditor, 'list-item')
+      const entry = getSelectedListEntry(newEditor)
 
-      if (listItemElem == null) {
-        // 未匹配到 list-item
+      if (entry == null || isOutlineListNode(entry[0]) || selection.focus.offset !== 0) {
         handleTab()
         return
       }
 
-      if (selection.focus.offset === 0) {
-        // 选中了当前 list-item 文本的开头，此时按 tab 应该增加 level
-        const { level = 0 } = listItemElem as ListItemElement
+      const [listItem, path] = entry
 
-        Transforms.setNodes(newEditor, { level: level + 1 })
-        return
-      }
-    }
-
-    // 选区是展开的，要判断多个 list-item
-    if (Range.isExpanded(selection)) {
-      let listItemNum = 0 // 选中的 list-item 有几个
-      let hasOtherElem = false // 是否有其他元素
-
-      for (const entry of getTopSelectedElemsBySelection(newEditor)) {
-        const [elem] = entry
-        const type = DomEditor.getNodeType(elem)
-
-        if (type === 'list-item') { listItemNum += 1 } else { hasOtherElem = true }
-      }
-
-      if (hasOtherElem || listItemNum <= 1) {
-        // 选中了其他元素，或者只选中一个 list-item ，则执行默认行为
-        handleTab()
-        return
-      }
-
-      // 未选中其他元素，且选中多个 list-item ，则增加 level
-      for (const entry of getTopSelectedElemsBySelection(newEditor)) {
-        const [elem, path] = entry
-        const { level = 0 } = elem as ListItemElement
-
-        Transforms.setNodes(newEditor, { level: level + 1 }, { at: path })
-      }
+      Transforms.setNodes(newEditor, { level: getListIndent(listItem) + 1 }, { at: path })
       return
     }
 
-    // 其他情况
-    handleTab()
+    const selectedEntries = getTopSelectedElemsBySelection(newEditor)
+    const listEntries = selectedEntries.filter(([node]) => {
+      return isListNode(node) && !isOutlineListNode(node)
+    })
+
+    if (listEntries.length !== selectedEntries.length || listEntries.length <= 1) {
+      handleTab()
+      return
+    }
+
+    listEntries.forEach(([node, path]) => {
+      Transforms.setNodes(newEditor, { level: getListIndent(node) + 1 }, { at: path })
+    })
   }
 
-  // 兼容之前的 JSON 格式 `numbered-list` 和 `bulleted-list` （之前的 list 没有嵌套功能）
   newEditor.normalizeNode = ([node, path]) => {
     const type = DomEditor.getNodeType(node)
 
@@ -184,7 +166,6 @@ function withList<T extends IDomEditor>(editor: T): T {
       Transforms.unwrapNodes(newEditor, { at: path })
     }
 
-    // 执行默认行为
     return normalizeNode([node, path])
   }
 

@@ -25,6 +25,15 @@ Release 与 `Repair Release Provenance` 都只能使用 GitHub Environment
 `@wangeditor-next/editor` 发布时，才会创建对应的产品级 GitHub Release
 `v<version>`；Release 中会列出所有本次发布包的源码与 tarball 链接。
 
+## 版本关联策略
+
+各 package 独立版本。功能包按自身公开行为选择 patch、minor 或 major；不要因为宿主包
+发布 minor 就把未改动的 peer package 升级为 major。
+
+内部 peer dependency 使用有上界的兼容范围，例如 `>=6.0.2 <7`，而不是精确版本号。
+Changesets 仅在新版本离开该范围时才升级依赖方。提交前执行 `pnpm changeset status`：预期
+之外的 major 必须先解释并消除，不能靠将 feature changeset 误标为 major 来通过发布。
+
 ## 发布失败后的补偿
 
 如果 npm 已发布，但 source tag、GitHub Release、sourcemap 或文档触发步骤失败，

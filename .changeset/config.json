@@ -7,5 +7,9 @@
   "access": "restricted",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
+  "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
+    "onlyUpdatePeerDependentsWhenOutOfRange": true,
+    "updateInternalDependents": "out-of-range"
+  },
   "ignore": []
 }

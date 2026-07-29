@@ -9,7 +9,7 @@ import type { IDomEditor } from './editor/interface'
 import type { IRegisterMenuConf } from './menus/index'
 import type { IParseElemHtmlConf, IPreParseHtmlConf, ParseStyleHtmlFnType } from './parse-html/index'
 import type { IRenderElemConf, RenderStyleFnType } from './render/index'
-import type { IElemToHtmlConf, styleToHtmlFnType } from './to-html/index'
+import type { HtmlTransformFnType, IElemToHtmlConf, styleToHtmlFnType } from './to-html/index'
 import createUploaderRuntime from './upload/createUploader'
 import createUppyUploaderRuntime from './upload/createUppyUploader'
 import type { IUploadConfig } from './upload/interface'
@@ -29,6 +29,7 @@ export type {
   StyleClassTokenType,
   TextStyleMode,
 } from './config/interface'
+export { EditorEvents } from './config/interface'
 export * from './config/style-mode'
 
 // editor 接口和 command
@@ -109,6 +110,7 @@ export interface IModuleConf {
 
   // to html
   styleToHtml: styleToHtmlFnType
+  htmlTransform?: HtmlTransformFnType
   elemsToHtml: Array<IElemToHtmlConf>
 
   // parse html

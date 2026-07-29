@@ -14,6 +14,7 @@ function registerModule(module: Partial<IModuleConf>) {
     renderStyle,
     elemsToHtml,
     styleToHtml,
+    htmlTransform,
     preParseHtml,
     parseElemsHtml,
     parseStyleHtml,
@@ -34,6 +35,9 @@ function registerModule(module: Partial<IModuleConf>) {
   }
   if (styleToHtml) {
     Boot.registerStyleToHtml(styleToHtml)
+  }
+  if (htmlTransform) {
+    Boot.registerHtmlTransform(htmlTransform)
   }
   if (preParseHtml) {
     preParseHtml.forEach(conf => Boot.registerPreParseHtml(conf))

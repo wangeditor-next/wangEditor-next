@@ -13,6 +13,7 @@ import {
   Header3Element,
   Header4Element,
   Header5Element,
+  Header6Element,
 } from './custom-types'
 
 function genParser<T>(level: number) {
@@ -67,5 +68,5 @@ export const parseHeader5HtmlConf = {
 
 export const parseHeader6HtmlConf = {
   selector: 'h6:not([data-w-e-type])', // data-w-e-type 属性，留给自定义元素，保证扩展性
-  parseElemHtml: genParser<Header5Element>(6),
+  parseElemHtml: genParser<Header6Element>(6),
 }

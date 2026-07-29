@@ -1,184 +1,223 @@
 /**
- * @description parse elem html
- * @author wangfupeng
+ * @description parse list HTML
  */
 
-import { DomEditor, IDomEditor } from '@wangeditor-next/core'
+import { IDomEditor } from '@wangeditor-next/core'
 import { Dom7Array } from 'dom7'
 import { Descendant, Element as SlateElement, Text } from 'slate'
 
 import $, { DOMElement, getTagName } from '../utils/dom'
-import { ListItemElement, OrderedListType } from './custom-types'
+import { HeadingType, ListItemElement, OrderedListType } from './custom-types'
+import { isHeadingType, isListNode } from './helpers'
 
-/**
- * 获取 ordered
- * @param $elem list $elem
- */
 function getOrdered($elem: Dom7Array): boolean {
-  const $list = $elem.parent()
-  const listTagName = getTagName($list)
-
-  if (listTagName === 'ol') { return true }
-  return false
+  return getTagName($elem.parent()) === 'ol'
 }
 
 function getOrderedStart($elem: Dom7Array): number | undefined {
   const $list = $elem.parent()
 
-  if (getTagName($list) !== 'ol') { return undefined }
-  const startStr = ($list.attr('start') || '').trim()
+  if (getTagName($list) !== 'ol') {
+    return undefined
+  }
 
-  if (startStr === '') { return undefined }
-  const start = Number.parseInt(startStr, 10)
+  const value = ($list.attr('start') || '').trim()
+  const start = Number.parseInt(value, 10)
 
-  if (Number.isNaN(start)) { return undefined }
-  return start
+  return Number.isNaN(start) ? undefined : start
 }
 
 function getOrderedType($elem: Dom7Array): OrderedListType | undefined {
   const $list = $elem.parent()
 
-  if (getTagName($list) !== 'ol') { return undefined }
+  if (getTagName($list) !== 'ol') {
+    return undefined
+  }
+
   const orderType = ($list.attr('type') || '').trim()
 
-  if (orderType === '1'
-    || orderType === 'a'
-    || orderType === 'A'
-    || orderType === 'i'
-    || orderType === 'I') {
+  if (orderType === '1' || orderType === 'a' || orderType === 'A' || orderType === 'i' || orderType === 'I') {
     return orderType
   }
 
   return undefined
 }
 
-/**
- * 获取 level
- * @param $elem list $elem
- */
 function getLevel($elem: Dom7Array): number {
-  let listAncestorCount = 0
-  let $cur: Dom7Array = $elem.parent()
+  const indent = ($elem.attr('data-w-e-list-indent') || '').trim()
 
-  while ($cur.length > 0) {
-    const tagName = getTagName($cur)
+  if (/^\d+$/.test(indent)) {
+    return Number.parseInt(indent, 10)
+  }
+
+  let listAncestorCount = 0
+  let $current: Dom7Array = $elem.parent()
+
+  while ($current.length > 0) {
+    const tagName = getTagName($current)
 
     if (tagName === 'ul' || tagName === 'ol') {
       listAncestorCount += 1
     }
-    $cur = $cur.parent()
+    $current = $current.parent()
   }
 
   return Math.max(0, listAncestorCount - 1)
+}
+
+function getListMode($elem: Dom7Array, children: Descendant[]): 'standard' | 'outline' {
+  const declaredMode = $elem.parent().attr('data-w-e-list-mode')
+
+  if (declaredMode === 'outline' || declaredMode === 'standard') {
+    return declaredMode
+  }
+
+  return getOrdered($elem) && children.some(child => {
+    return SlateElement.isElement(child) && isHeadingType(child.type)
+  })
+    ? 'outline'
+    : 'standard'
+}
+
+function getRestart($elem: Dom7Array): number | undefined {
+  const value = ($elem.attr('data-w-e-list-restart') || '').trim()
+
+  if (!/^\d+$/.test(value)) {
+    return undefined
+  }
+
+  const restart = Number.parseInt(value, 10)
+
+  return restart > 0 ? restart : undefined
+}
+
+function isFirstListItem($elem: Dom7Array): boolean {
+  let previous = $elem[0]?.previousElementSibling
+
+  while (previous != null) {
+    if (previous.tagName.toLowerCase() === 'li') {
+      return false
+    }
+    previous = previous.previousElementSibling
+  }
+
+  return true
+}
+
+function getOutlineRestart($elem: Dom7Array): number | undefined {
+  const restart = getRestart($elem)
+
+  if (restart !== undefined) {
+    return restart
+  }
+  if ($elem.attr('data-w-e-outline-number') != null || !isFirstListItem($elem)) {
+    return undefined
+  }
+
+  return getOrderedStart($elem)
 }
 
 function isStructuralWhitespaceText(child: Descendant): boolean {
   return Text.isText(child) && child.text.trim() === ''
 }
 
-function appendTextLikeChildren(
-  target: Descendant[],
-  children: Descendant[],
-  editor: IDomEditor,
-) {
+function appendTextLikeChildren(target: Descendant[], children: Descendant[], editor: IDomEditor) {
   children.forEach(child => {
     if (isStructuralWhitespaceText(child)) {
       return
     }
-
-    if (Text.isText(child)) {
+    if (Text.isText(child) || editor.isInline(child)) {
       target.push(child)
       return
     }
-
-    if (editor.isInline(child)) {
-      target.push(child)
-      return
-    }
-
     if (SlateElement.isElement(child)) {
       appendTextLikeChildren(target, child.children, editor)
     }
   })
 }
 
+function getHeadingNode(children: Descendant[]): SlateElement | null {
+  for (const child of children) {
+    if (SlateElement.isElement(child) && isHeadingType(child.type)) {
+      return child
+    }
+  }
+
+  return null
+}
+
 function parseItemHtml(
   elem: DOMElement,
   children: Descendant[],
-  editor: IDomEditor,
+  editor: IDomEditor
 ): ListItemElement | ListItemElement[] {
   const $elem = $(elem)
-  const normalizedChildren: Descendant[] = []
+  const level = getLevel($elem)
+  const directChildren: Descendant[] = []
   const nestedListChildren: ListItemElement[] = []
 
   children.forEach(child => {
     if (isStructuralWhitespaceText(child)) {
       return
     }
-
-    if (Text.isText(child)) {
-      normalizedChildren.push(child)
+    if (isListNode(child) && child.level > level) {
+      nestedListChildren.push(child)
       return
     }
-
-    if (editor.isInline(child)) {
-      normalizedChildren.push(child)
-      return
-    }
-
-    if (DomEditor.checkNodeType(child, 'list-item')) {
-      nestedListChildren.push(child as ListItemElement)
-      return
-    }
-
-    if (SlateElement.isElement(child)) {
-      appendTextLikeChildren(normalizedChildren, child.children, editor)
-    }
+    directChildren.push(child)
   })
 
-  // 无 children ，则用纯文本
+  const headingNode = getHeadingNode(directChildren)
+  const headingType = headingNode != null && isHeadingType(headingNode.type)
+    ? (headingNode.type as HeadingType)
+    : undefined
+  const listMode = getListMode($elem, directChildren)
+  const normalizedChildren: Descendant[] = []
+
+  appendTextLikeChildren(normalizedChildren, directChildren, editor)
+
   if (normalizedChildren.length === 0) {
-    if (nestedListChildren.length > 0) {
-      normalizedChildren.push({ text: '' })
-    } else {
-      normalizedChildren.push({ text: $elem.text().replace(/\s+/gm, ' ') })
-    }
+    normalizedChildren.push(
+      nestedListChildren.length > 0 ? { text: '' } : { text: $elem.text().replace(/\s+/gm, ' ') }
+    )
   }
 
   const ordered = getOrdered($elem)
-  const level = getLevel($elem)
   const start = getOrderedStart($elem)
   const orderType = getOrderedType($elem)
-
-  const currentItem: ListItemElement = {
+  const outline = ordered && listMode === 'outline' && headingType !== undefined
+  const listRestart = outline ? getOutlineRestart($elem) : undefined
+  const item: ListItemElement = {
     type: 'list-item',
     ordered,
-    level,
-    ...(start !== undefined ? { start } : {}),
+    level: outline ? Number.parseInt(headingType.slice('header'.length), 10) - 1 : level,
+    ...(start !== undefined && !outline ? { start } : {}),
     ...(orderType !== undefined ? { orderType } : {}),
-    // @ts-ignore
+    ...(headingType !== undefined ? { headingType } : {}),
+    ...(outline ? { listMode: 'outline' as const } : {}),
+    ...(listRestart !== undefined ? { listRestart } : {}),
+    // @ts-ignore List items retain the established text/inline children shape.
     children: normalizedChildren,
   }
 
-  if (nestedListChildren.length === 0) { return currentItem }
-  return [currentItem, ...nestedListChildren]
+  return nestedListChildren.length === 0 ? item : [item, ...nestedListChildren]
 }
 
 export const parseItemHtmlConf = {
-  selector: 'li:not([data-w-e-type])', // data-w-e-type 属性，留给自定义元素，保证扩展性
+  selector: 'li:not([data-w-e-type])',
   parseElemHtml: parseItemHtml,
 }
 
 function parseListHtml(
   _elem: DOMElement,
   children: Descendant[],
-  _editor: IDomEditor,
+  _editor: IDomEditor
 ): ListItemElement[] {
-  // @ts-ignore flatten 因为可能有 ul/ol 嵌套，重要！！！
+  // @ts-ignore Nested lists return arrays which must be flattened.
   return children.flat(Infinity)
 }
 
 export const parseListHtmlConf = {
-  selector: 'ul:not([data-w-e-type]),ol:not([data-w-e-type])', // data-w-e-type 属性，留给自定义元素，保证扩展性
+  selector: 'ul:not([data-w-e-type]),ol:not([data-w-e-type])',
   parseElemHtml: parseListHtml,
 }
