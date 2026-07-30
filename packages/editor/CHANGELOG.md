@@ -1,5 +1,19 @@
 # Change Log
 
+## 6.1.1
+
+### Patch Changes
+
+- 05984bf: Unify official packages in one monorepo and release them at the same product version.
+  Vue 2 and Vue 3 adapters now use the shared release, provenance, and framework regression workflow.
+  - @wangeditor-next/basic-modules@6.1.1
+  - @wangeditor-next/code-highlight@6.1.1
+  - @wangeditor-next/core@6.1.1
+  - @wangeditor-next/list-module@6.1.1
+  - @wangeditor-next/table-module@6.1.1
+  - @wangeditor-next/upload-image-module@6.1.1
+  - @wangeditor-next/video-module@6.1.1
+
 ## 6.1.0
 
 ### Minor Changes
