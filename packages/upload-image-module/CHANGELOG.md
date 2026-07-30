@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.1.1
+
+### Patch Changes
+
+- @wangeditor-next/basic-modules@6.1.1
+- @wangeditor-next/core@6.1.1
+
 ## 4.0.1
 
 ### Patch Changes
