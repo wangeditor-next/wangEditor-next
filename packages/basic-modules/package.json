@@ -11,7 +11,7 @@
   "module": "dist/index.mjs",
   "exports": {
     ".": {
-      "types": "./dist/packages/basic-modules/src/index.d.ts",
+      "types": "./dist/basic-modules/src/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
