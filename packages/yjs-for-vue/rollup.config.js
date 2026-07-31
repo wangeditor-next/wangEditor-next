@@ -4,8 +4,6 @@ import pkg from './package.json' with { type: 'json' }
 
 const name = 'WangEditorYjsForVue'
 const globals = {
-  '@wangeditor-next/editor': 'wangEditor',
-  '@wangeditor-next/yjs': 'WangEditorYjsModule',
   slate: 'Slate',
   vue: 'Vue',
 }
