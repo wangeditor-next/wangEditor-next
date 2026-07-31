@@ -1,10 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": [
+    "babel.config.json",
     "package.json",
+    "packages/custom-types.d.ts",
     "pnpm-lock.yaml",
-    "tsconfig.json",
-    "shared/rollup-config/**"
+    "pnpm-workspace.yaml",
+    "shared/rollup-config/**",
+    "tsconfig.json"
   ],
   "tasks": {
     "dev": {
