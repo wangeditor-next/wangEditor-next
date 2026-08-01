@@ -6,10 +6,21 @@ import ReactDOM from 'react-dom'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 const RemoteCursorsOverlayPage = lazy(() => import('./pages/RemoteCursorOverlay'))
+const routerBaseName = (() => {
+  if (import.meta.env.BASE_URL === '/') {
+    return undefined
+  }
+
+  if (import.meta.env.BASE_URL === './') {
+    return window.location.pathname.replace(/\/$/, '') || undefined
+  }
+
+  return import.meta.env.BASE_URL.replace(/\/$/, '')
+})()
 
 ReactDOM.render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={routerBaseName}>
       <Routes>
         {/* <Route path="/" element={<SimplePage />} /> */}
         <Route

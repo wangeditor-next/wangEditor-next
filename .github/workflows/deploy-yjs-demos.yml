@@ -1,0 +1,127 @@
+name: Deploy Yjs Demos
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/deploy-yjs-demos.yml'
+      - 'apps/demo-yjs-react/**'
+      - 'apps/demo-yjs-vue3/**'
+      - 'packages/**'
+      - 'shared/rollup-config/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'turbo.json'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-yjs-demos
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DEMO_REPO_TOKEN: ${{ secrets.DEMO_REPO_TOKEN || secrets.DEMO_TEMPLATES_TOKEN }}
+      YJS_DEMO_WEBSOCKET_URL: ${{ vars.YJS_DEMO_WEBSOCKET_URL }}
+    permissions:
+      contents: read
+    steps:
+      - name: Check deployment configuration
+        id: config
+        run: |
+          if [ -z "$YJS_DEMO_WEBSOCKET_URL" ]; then
+            echo 'publish_enabled=false' >> "$GITHUB_OUTPUT"
+            echo 'YJS_DEMO_WEBSOCKET_URL is not configured; skipping publication.'
+            exit 0
+          fi
+
+          case "$YJS_DEMO_WEBSOCKET_URL" in
+            wss://*) ;;
+            *)
+              echo '::error::YJS_DEMO_WEBSOCKET_URL must use wss:// for the HTTPS demo site.'
+              exit 1
+              ;;
+          esac
+
+          if [ -z "$DEMO_REPO_TOKEN" ]; then
+            echo '::error::Missing DEMO_REPO_TOKEN or DEMO_TEMPLATES_TOKEN.'
+            exit 1
+          fi
+
+          echo 'publish_enabled=true' >> "$GITHUB_OUTPUT"
+
+      - name: Checkout source
+        if: steps.config.outputs.publish_enabled == 'true'
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        if: steps.config.outputs.publish_enabled == 'true'
+        uses: pnpm/action-setup@v5
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        if: steps.config.outputs.publish_enabled == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22.13.0
+          registry-url: https://registry.npmjs.com
+          cache: pnpm
+
+      - name: Install dependencies
+        if: steps.config.outputs.publish_enabled == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Build React Yjs demo
+        if: steps.config.outputs.publish_enabled == 'true'
+        env:
+          VITE_YJS_DEMO_BASE_PATH: ./
+          VITE_YJS_DEMO_MODE: 'true'
+          VITE_YJS_WEBSOCKET_URL: ${{ env.YJS_DEMO_WEBSOCKET_URL }}
+        run: pnpm exec turbo build --filter=@wangeditor-next/demo-yjs-react
+
+      - name: Build Vue Yjs demo
+        if: steps.config.outputs.publish_enabled == 'true'
+        env:
+          VITE_YJS_DEMO_BASE_PATH: ./
+          VITE_YJS_DEMO_MODE: 'true'
+          VITE_YJS_WEBSOCKET_URL: ${{ env.YJS_DEMO_WEBSOCKET_URL }}
+        run: pnpm exec turbo build --filter=@wangeditor-next/demo-yjs-vue3
+
+      - name: Checkout demo deployment repository
+        if: steps.config.outputs.publish_enabled == 'true'
+        uses: actions/checkout@v7
+        with:
+          repository: wangeditor-next/demo
+          ref: main
+          token: ${{ env.DEMO_REPO_TOKEN }}
+          path: demo-repo
+
+      - name: Sync Yjs demo files
+        if: steps.config.outputs.publish_enabled == 'true'
+        run: |
+          mkdir -p demo-repo/yjs/react demo-repo/yjs/vue3
+          rsync -a --delete apps/demo-yjs-react/dist/ demo-repo/yjs/react/
+          rsync -a --delete apps/demo-yjs-vue3/dist/ demo-repo/yjs/vue3/
+
+      - name: Commit and push
+        if: steps.config.outputs.publish_enabled == 'true'
+        working-directory: demo-repo
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          git add yjs/react yjs/vue3
+          if git diff --cached --quiet; then
+            echo 'No Yjs demo changes to publish.'
+            exit 0
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git commit -m "chore: sync Yjs demos from wangEditor-next@${SOURCE_SHA::7}"
+          git push origin HEAD:main

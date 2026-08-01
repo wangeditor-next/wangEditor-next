@@ -7,21 +7,17 @@ import React, { useEffect, useState } from 'react'
 import { WebsocketProvider } from 'y-websocket'
 import * as Y from 'yjs'
 
+import { YJS_WEBSOCKET_URL } from '../config'
 import { getCollaborationRoom } from '../utils'
 
 const yDoc = new Y.Doc()
-const wsProvider = new WebsocketProvider('ws://localhost:1234', getCollaborationRoom(), yDoc)
+const wsProvider = new WebsocketProvider(YJS_WEBSOCKET_URL, getCollaborationRoom(), yDoc)
 const sharedType = yDoc.get('content', Y.XmlText)
 
-console.log('🚀 ~ SimplePage ~ sharedType:', sharedType.toJSON())
 // @ts-ignore
 Boot.registerPlugin(withYjs(sharedType))
 // @ts-ignore
 Boot.registerPlugin(withYHistory())
-
-wsProvider.on('status', event => {
-  console.log(event.status)
-})
 
 export const SimplePage = () => {
   // editor 实例
@@ -35,14 +31,6 @@ export const SimplePage = () => {
   const editorConfig: Partial<IEditorConfig> = {
     placeholder: '请输入内容...',
   }
-
-  console.log(Boot.plugins)
-
-  //   useEffect(() => {
-  //     setTimeout(() => {
-  //       setHtml('<p>hello&nbsp;<strong>world</strong>.</p>\n<p><br></p>')
-  //     }, 1500)
-  //   }, [])
 
   useEffect(() => {
     if (!editor) {
@@ -91,8 +79,6 @@ export const SimplePage = () => {
           style={{ height: '500px', overflowY: 'hidden' }}
         />
       </div>
-      <div style={{ marginTop: '15px' }}>{html}</div>
-      <div style={{ marginTop: '15px' }}>{editor && JSON.stringify(editor.selection)}</div>
     </>
   )
 }

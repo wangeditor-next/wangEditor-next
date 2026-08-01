@@ -42,6 +42,7 @@ import {
 import { WebsocketProvider } from 'y-websocket'
 import * as Y from 'yjs'
 
+import { YJS_WEBSOCKET_URL } from '../config'
 import { getCollaborationRoom, randomCursorData } from '../utils'
 import RemoteCursorOverlay from './RemoteCursorOverlay.vue'
 
@@ -51,7 +52,7 @@ export default defineComponent({
   setup() {
     // -------------------- y.js --------------------
     const yDoc = new Y.Doc()
-    const wsProvider = new WebsocketProvider('ws://localhost:1234', getCollaborationRoom(), yDoc)
+    const wsProvider = new WebsocketProvider(YJS_WEBSOCKET_URL, getCollaborationRoom(), yDoc)
     const sharedType = yDoc.get('content', Y.XmlText)
 
     Boot.registerPlugin(withYjs(sharedType))
@@ -61,10 +62,6 @@ export default defineComponent({
       })
     )
     Boot.registerPlugin(withYHistory())
-    wsProvider.on('status', (event: any) => {
-      console.log(event.status)
-    })
-    console.log(Boot.plugins)
     // -------------------- y.js --------------------
 
     // -------------------------- Editor --------------------------

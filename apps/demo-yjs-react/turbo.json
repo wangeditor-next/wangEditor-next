@@ -1,0 +1,9 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "env": ["VITE_YJS_DEMO_BASE_PATH", "VITE_YJS_DEMO_MODE", "VITE_YJS_WEBSOCKET_URL"]
+    }
+  }
+}
