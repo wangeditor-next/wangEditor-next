@@ -33,6 +33,18 @@ pnpm demo:yjs:vue3
 - 导出时会自动移除 `dist` / `node_modules` / `.turbo`，并把 `workspace:*` 依赖替换为当前包版本
 - `demo-html` 的源码现已迁到 `apps/demo-html/examples/`，但它依赖本地 `/dist/*` 映射，暂时不纳入模板导出
 
+## Yjs 在线部署
+
+- Yjs React/Vue demo 仍以 `apps/demo-yjs-react`、`apps/demo-yjs-vue3` 为唯一源码，不导出为独立维护仓库
+- `.github/workflows/deploy-yjs-demos.yml` 从 monorepo 构建产物，并同步到
+  `wangeditor-next/demo` 的 `/yjs/react/` 和 `/yjs/vue3/` 路径
+- 发布前必须配置 repository variable `YJS_DEMO_WEBSOCKET_URL`，值为已部署协作服务的 `wss://`
+  地址；变量缺失时工作流会成功结束但不发布静态页面
+- 发布构建会为未指定 `?room=` 的浏览器会话生成隔离房间；协作时应在两个浏览器中使用同一个
+  `?room=<room-name>`
+- 协作服务不部署到 GitHub Pages，服务端应设置
+  `ALLOWED_ORIGINS=https://wangeditor-next.github.io`，详情见 `apps/demo-yjs-server/README.md`
+
 ## 模板同步 Workflow
 
 - workflow 文件位于 `.github/workflows/export-demo-templates.yml`

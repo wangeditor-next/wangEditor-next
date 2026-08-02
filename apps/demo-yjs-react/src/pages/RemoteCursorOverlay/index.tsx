@@ -8,13 +8,13 @@ import React, { useEffect, useState } from 'react'
 import { WebsocketProvider } from 'y-websocket'
 import * as Y from 'yjs'
 
+import { YJS_WEBSOCKET_URL } from '../../config'
 import { getCollaborationRoom, randomCursorData } from '../../utils'
 import { RemoteCursorOverlay } from './Overlay'
 
 const yDoc = new Y.Doc()
-const wsProvider = new WebsocketProvider('ws://localhost:1234', getCollaborationRoom(), yDoc)
+const wsProvider = new WebsocketProvider(YJS_WEBSOCKET_URL, getCollaborationRoom(), yDoc)
 const sharedType = yDoc.get('content', Y.XmlText)
-// console.log('🚀 ~ SimplePage ~ sharedType:', sharedType.toJSON())
 
 Boot.registerPlugin(withYjs(sharedType))
 Boot.registerPlugin(
@@ -23,10 +23,6 @@ Boot.registerPlugin(
   })
 )
 Boot.registerPlugin(withYHistory())
-
-wsProvider.on('status', event => {
-  console.log(event.status)
-})
 
 export const RemoteCursorsOverlayPage = () => {
   // editor 实例
@@ -41,22 +37,6 @@ export const RemoteCursorsOverlayPage = () => {
     placeholder: '请输入内容...',
   }
 
-  //   console.log('🚀 ~ SimplePage ~ wsProvider:', wsProvider.awareness)
-  //   useEffect(() => {
-  //     setTimeout(() => {
-  //       setHtml('<p>hello&nbsp;<strong>world</strong>.</p>\n<p><br></p>')
-  //     }, 1500)
-  //   }, [])
-  //   if (wsProvider.awareness.getLocalState()?.['selection']) {
-  //     console.log(
-  //       '🚀 ~ SimplePage ~ range',
-  //       relativeRangeToSlateRange(
-  //         sharedType,
-  //         editor,
-  //         wsProvider.awareness.getLocalState()?.['selection']
-  //       )
-  //     )
-  //   }
   useEffect(() => {
     if (!editor) {
       return
@@ -85,8 +65,6 @@ export const RemoteCursorsOverlayPage = () => {
       setEditor(null)
     }
   }, [editor])
-  //   console.log('🚀 ~ SimplePage ~ editor:', editor)
-
   return (
     <EditorContext.Provider value={editor}>
       <div style={{ border: '1px solid #ccc', zIndex: 100 }}>
@@ -103,12 +81,10 @@ export const RemoteCursorsOverlayPage = () => {
             onCreated={setEditor}
             onChange={innerEditor => setHtml(innerEditor.getHtml())}
             mode="default"
-            style={{ height: '500px', innerWidth: '100%', overflowY: 'hidden' }}
+            style={{ height: '500px', width: '100%', overflowY: 'hidden' }}
           />
         </RemoteCursorOverlay>
       </div>
-      <div style={{ marginTop: '15px' }}>{html}</div>
-      <div style={{ marginTop: '15px' }}>{editor && JSON.stringify(editor.selection)}</div>
     </EditorContext.Provider>
   )
 }
