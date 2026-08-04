@@ -6,7 +6,7 @@
     "dev": "node server.js"
   },
   "dependencies": {
-    "ws": "^8.18.0",
+    "ws": "^8.21.0",
     "y-websocket": "2.0.4",
     "yjs": "^13.6.19"
   }
