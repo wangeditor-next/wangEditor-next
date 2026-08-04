@@ -46,17 +46,6 @@ export default Vue.extend({
       default: '',
     },
   },
-  emits: [
-    'onCreated',
-    'input',
-    'onChange',
-    'onDestroyed',
-    'onMaxLength',
-    'onFocus',
-    'onBlur',
-    'customAlert',
-    'customPaste',
-  ],
   mounted() {
     this.create()
   },

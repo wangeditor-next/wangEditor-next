@@ -27,7 +27,7 @@ if (is) { $.fn.is = is }
 if (parents) { $.fn.parents = parents }
 if (find) { $.fn.find = find }
 
-export { Dom7Array } from 'dom7'
+export type { Dom7Array } from 'dom7'
 export default $
 export {
   DOMComment, DOMElement, DOMNode, DOMRange, DOMSelection, DOMStaticRange, DOMText,

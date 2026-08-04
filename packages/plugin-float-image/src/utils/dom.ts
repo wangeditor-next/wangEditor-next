@@ -43,7 +43,7 @@ import DOMRange = globalThis.Range
 import DOMSelection = globalThis.Selection
 import DOMStaticRange = globalThis.StaticRange
 
-export { Dom7Array } from 'dom7'
+export type { Dom7Array } from 'dom7'
 
 if (css) { $.fn.css = css }
 if (append) { $.fn.append = append }

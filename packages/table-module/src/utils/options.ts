@@ -10,12 +10,12 @@ export interface WithTableOptions {
     tr: ElementType
     table: ElementType
     tbody: ElementType
-    tfoot: ElementType
-    thead: ElementType
+    tfoot?: ElementType
+    thead?: ElementType
   }
 }
 
-export const DEFAULT_WITH_TABLE_OPTIONS = {
+export const DEFAULT_WITH_TABLE_OPTIONS: WithTableOptions = {
   blocks: {
     td: 'table-cell',
     th: 'table-cell',

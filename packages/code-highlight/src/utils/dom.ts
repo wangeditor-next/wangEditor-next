@@ -20,7 +20,7 @@ import DOMStaticRange = globalThis.StaticRange
 
 if (attr) { $.fn.attr = attr }
 
-export { Dom7Array } from 'dom7'
+export type { Dom7Array } from 'dom7'
 
 export default $
 export {
