@@ -35,6 +35,7 @@ function genCommonConf(format) {
       typescript({
         clean: true,
         tsconfig: './tsconfig.json',
+        include: ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'],
       }),
       nodeResolve({
         browser: true, // 重要

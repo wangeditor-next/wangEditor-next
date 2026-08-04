@@ -5,7 +5,7 @@
   "author": "cycleccc <ylf2991205548@qq.com>",
   "homepage": "https://github.com/wangeditor-next/wangEditor-next#readme",
   "license": "MIT",
-  "types": "dist/src/index.d.ts",
+  "types": "dist/index.d.ts",
   "main": "./dist/index.js",
   "module": "./dist/index.esm.js",
   "files": [
@@ -19,7 +19,7 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/src/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.esm.js",
       "require": "./dist/index.js"
     }
