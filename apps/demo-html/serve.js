@@ -7,6 +7,7 @@ const examplesDir = path.join(__dirname, 'examples')
 const editorDistDir = path.join(__dirname, '../../packages/editor/dist')
 const coreDistDir = path.join(__dirname, '../../packages/core/dist')
 const markdownDistDir = path.join(__dirname, '../../packages/plugin-markdown/dist')
+const ctrlEnterDistDir = path.join(__dirname, '../../packages/plugin-ctrl-enter/dist')
 const vue2AdapterDistDir = path.join(__dirname, '../../packages/editor-for-vue2/dist')
 const vue2RuntimeDistDir = path.join(
   __dirname,
@@ -64,6 +65,12 @@ function resolvePath(urlPath) {
     return { filePath: path.join(markdownDistDir, urlPath.replace('/plugin-markdown-dist/', '')) }
   }
 
+  if (urlPath.startsWith('/plugin-ctrl-enter-dist/')) {
+    return {
+      filePath: path.join(ctrlEnterDistDir, urlPath.replace('/plugin-ctrl-enter-dist/', '')),
+    }
+  }
+
   if (urlPath.startsWith('/editor-for-vue2-dist/')) {
     return {
       filePath: path.join(vue2AdapterDistDir, urlPath.replace('/editor-for-vue2-dist/', '')),
@@ -107,6 +114,8 @@ const server = http.createServer((req, res) => {
     baseDir = coreDistDir
   } else if (requestUrl.pathname.startsWith('/plugin-markdown-dist/')) {
     baseDir = markdownDistDir
+  } else if (requestUrl.pathname.startsWith('/plugin-ctrl-enter-dist/')) {
+    baseDir = ctrlEnterDistDir
   } else if (requestUrl.pathname.startsWith('/editor-for-vue2-dist/')) {
     baseDir = vue2AdapterDistDir
   } else if (requestUrl.pathname.startsWith('/vue2-dist/')) {

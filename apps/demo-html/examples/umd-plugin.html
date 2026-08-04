@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UMD plugin smoke</title>
+
+  <body>
+    <script src="../dist/index.js"></script>
+    <script src="../plugin-ctrl-enter-dist/index.js"></script>
+    <script>
+      const editor = window.wangEditor
+      const module = window.WangEditorCtrlEnterPlugin
+      const handlers = {}
+      const originalGetTextarea = editor.DomEditor.getTextarea
+      let insertBreakCalls = 0
+
+      editor.DomEditor.getTextarea = () => ({
+        $textArea: {
+          on(eventName, handler) {
+            handlers[eventName] = handler
+          },
+        },
+      })
+
+      const fakeEditor = {
+        insertBreak() {
+          insertBreakCalls += 1
+        },
+      }
+
+      editor.Boot.registerModule(module)
+      editor.Boot.plugins.at(-1)(fakeEditor)
+
+      setTimeout(() => {
+        const event = {
+          ctrlKey: true,
+          defaultPrevented: false,
+          key: 'Enter',
+          preventDefault() {
+            this.defaultPrevented = true
+          },
+        }
+
+        handlers.keydown?.(event)
+        editor.DomEditor.getTextarea = originalGetTextarea
+        window.umdPluginSmoke = {
+          bound: typeof handlers.keydown === 'function',
+          defaultPrevented: event.defaultPrevented,
+          insertBreakCalls,
+          loadedEditorGlobal: editor === window.wangEditor,
+          registered: editor.Boot.plugins.length > 0,
+        }
+      })
+    </script>
+  </body>
+</html>

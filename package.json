@@ -17,7 +17,7 @@
     "test-c:split": "node scripts/test-coverage-split.js",
     "dev": "cross-env FORCE_COLOR=1 turbo dev",
     "dev:sh": "sh scripts/build-base.sh dev",
-    "build": "pnpm check:release-group && cross-env FORCE_COLOR=1 turbo build && pnpm check:published-types && pnpm check:published-entrypoints",
+    "build": "pnpm check:release-group && pnpm check:umd-globals && cross-env FORCE_COLOR=1 turbo build && pnpm check:published-types && pnpm check:published-entrypoints",
     "typecheck": "node scripts/typecheck-all.js",
     "publish": "pnpm changeset publish",
     "prerelease": "pnpm build",
@@ -50,6 +50,7 @@
     "check:editor:pack-size": "node scripts/check-editor-pack-size.js",
     "check:compatibility": "node scripts/check-compatibility-inventory.js",
     "check:release-group": "node scripts/check-release-package-group.js",
+    "check:umd-globals": "cross-env NODE_ENV=production node scripts/check-umd-globals.mjs",
     "check:published-types": "node scripts/check-published-types.js",
     "check:published-entrypoints": "node scripts/check-published-entrypoints.js && tsc --noEmit -p tests/fixtures/published-package-consumer/tsconfig.json"
   },

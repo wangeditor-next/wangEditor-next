@@ -9,7 +9,7 @@ function createHtmlDemoCommand(buildCommand: string) {
 }
 
 let webServerCommand = createHtmlDemoCommand(
-  'pnpm turbo build --filter=@wangeditor-next/editor-for-vue2 --filter=@wangeditor-next/plugin-markdown'
+  'pnpm turbo build --filter=@wangeditor-next/editor-for-vue2 --filter=@wangeditor-next/plugin-ctrl-enter --filter=@wangeditor-next/plugin-markdown'
 )
 const reactDemoDevCommand =
   'pnpm --filter @wangeditor-next/demo-react exec vite --host 127.0.0.1 --port 3102 --strictPort'
@@ -26,11 +26,11 @@ if (process.env.PLAYWRIGHT_SKIP_BUILD) {
   // CI e2e sets PLAYWRIGHT_SKIP_BUILD=1 and prebuilds only part of packages.
   // Keep this lightweight but ensure plugin-markdown dist exists for markdown demos.
   webServerCommand = createHtmlDemoCommand(
-    'pnpm turbo build --filter=@wangeditor-next/editor-for-vue2 --filter=@wangeditor-next/plugin-markdown'
+    'pnpm turbo build --filter=@wangeditor-next/editor-for-vue2 --filter=@wangeditor-next/plugin-ctrl-enter --filter=@wangeditor-next/plugin-markdown'
   )
 } else if (process.env.CI) {
   webServerCommand = createHtmlDemoCommand(
-    'pnpm turbo build --force --filter=@wangeditor-next/editor-for-vue2 --filter=@wangeditor-next/plugin-markdown'
+    'pnpm turbo build --force --filter=@wangeditor-next/editor-for-vue2 --filter=@wangeditor-next/plugin-ctrl-enter --filter=@wangeditor-next/plugin-markdown'
   )
 }
 
