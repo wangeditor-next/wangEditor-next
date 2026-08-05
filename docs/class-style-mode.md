@@ -61,6 +61,11 @@ const editorConfig = {
   - class 模式通过 `w-e-video` flex 容器和对齐 class 输出布局，宽高通过 data 保留。
 - `image` / `plugin-float-image`
   - 宽高、对齐等输出优先走 `class/data`，避免内联样式。
+- `text-style` 的固定语义装饰
+  - 普通下划线仍输出 `<u>`。
+  - 波浪下划线、下方着重号及两条下划线的间距在 class 模式使用随包 CSS 提供的固定
+    class，不依赖 `styleClassTokens`，也不会回退为内联 style；默认 editor 与
+    basic-modules 的 CSS 包都包含这些规则。
 
 ## 回环保证（必须验证）
 

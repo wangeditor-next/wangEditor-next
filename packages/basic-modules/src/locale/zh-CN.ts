@@ -93,6 +93,8 @@ export default {
     sup: '上标',
     through: '删除线',
     underline: '下划线',
+    wavyUnderline: '波浪下划线',
+    emphasisDot: '下方着重号',
   },
   undo: {
     undo: '撤销',

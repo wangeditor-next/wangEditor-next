@@ -58,6 +58,75 @@ describe('parse style html', () => {
     expect(parseStyleHtml(element[0], node, editor)).toEqual({ ...node, underline: true })
   })
 
+  it('it should parse wavy underline without ordinary underline', () => {
+    const cases = [
+      '<span style="text-decoration-line: underline; text-decoration-style: wavy;"></span>',
+      '<span style="text-decoration: underline wavy;"></span>',
+    ]
+
+    cases.forEach(html => {
+      const element = $(html)
+      const node = { text: 'text' }
+
+      expect(parseStyleHtml(element[0], node, editor)).toEqual({
+        ...node,
+        wavyUnderline: true,
+      })
+    })
+  })
+
+  it('uses the final text-decoration declaration when styles overlap', () => {
+    const element = $(
+      '<span style="text-decoration: underline wavy; text-decoration-style: solid;"></span>'
+    )
+    const node = { text: 'text' }
+
+    expect(parseStyleHtml(element[0], node, editor)).toEqual({ ...node, underline: true })
+  })
+
+  it('it should parse lower dot emphasis only when it is under the text', () => {
+    const element = $(
+      '<span style="text-emphasis-style: filled dot; text-emphasis-position: under;"></span>'
+    )
+    const node = { text: 'text' }
+
+    expect(parseStyleHtml(element[0], node, editor)).toEqual({ ...node, emphasisDot: true })
+
+    const nonLowerDotCases = [
+      '<span style="text-emphasis-style: open dot; text-emphasis-position: under;"></span>',
+      '<span style="text-emphasis-style: filled dot; text-emphasis-position: over;"></span>',
+      '<span style="text-emphasis-style: filled dot;"></span>',
+    ]
+
+    nonLowerDotCases.forEach(html => {
+      const nonLowerDotNode = { text: 'text' }
+
+      expect(parseStyleHtml($(html)[0], nonLowerDotNode, editor)).toEqual({
+        ...nonLowerDotNode,
+        emphasisDot: false,
+      })
+    })
+
+    const colorShorthand = $(
+      '<span style="text-emphasis: dot red; text-emphasis-position: under;"></span>'
+    )
+
+    expect(parseStyleHtml(colorShorthand[0], { text: 'text' }, editor)).toEqual({
+      text: 'text',
+      emphasisDot: true,
+    })
+
+    const overriddenStyle = $(
+      '<span style="text-emphasis: filled dot; text-emphasis-style: open dot; ' +
+        'text-emphasis-position: under;"></span>'
+    )
+
+    expect(parseStyleHtml(overriddenStyle[0], { text: 'text' }, editor)).toEqual({
+      text: 'text',
+      emphasisDot: false,
+    })
+  })
+
   it('it should set through property for node if give s element', () => {
     const element = $('<s></s>')
     const node = { text: 'text' }
@@ -214,12 +283,180 @@ describe('parse style html', () => {
     expect(nestedEditor.children).toEqual([
       {
         type: 'paragraph',
+        children: [{ text: '2.' }, { text: '111 222', fontFamily: 'MS-Mincho' }],
+      },
+    ])
+    expect(nestedEditor.getHtml()).toBe(
+      '<p>2.<span style="font-family: MS-Mincho;">111 222</span></p>'
+    )
+  })
+
+  it('it should preserve all underline decorations through nested HTML round-trip', () => {
+    const html =
+      '<p><u><span style="text-decoration-line: underline; ' +
+      'text-decoration-style: wavy;"><span style="text-emphasis-style: filled dot; ' +
+      'text-emphasis-position: under;">text</span></span></u></p>'
+    const nestedEditor = createEditor({ html })
+
+    expect(nestedEditor.children).toEqual([
+      {
+        type: 'paragraph',
         children: [
-          { text: '2.' },
-          { text: '111 222', fontFamily: 'MS-Mincho' },
+          {
+            text: 'text',
+            underline: true,
+            wavyUnderline: true,
+            emphasisDot: true,
+          },
         ],
       },
     ])
-    expect(nestedEditor.getHtml()).toBe('<p>2.<span style="font-family: MS-Mincho;">111 222</span></p>')
+
+    const exportedHtml = nestedEditor.getHtml()
+
+    expect(exportedHtml).toContain('text-decoration-style: wavy')
+    expect(exportedHtml).toContain('text-emphasis-style: filled dot')
+    expect(exportedHtml).toContain('<u style="text-underline-offset: 0.15em;">')
+
+    nestedEditor.setHtml(exportedHtml)
+    expect(nestedEditor.children).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          {
+            text: 'text',
+            underline: true,
+            wavyUnderline: true,
+            emphasisDot: true,
+          },
+        ],
+      },
+    ])
+    expect(nestedEditor.getHtml()).toBe(exportedHtml)
   })
+
+  it('clears inherited lower dot emphasis when a child explicitly overrides it', () => {
+    const nestedEditor = createEditor({
+      html:
+        '<p><span style="text-emphasis-style: filled dot; text-emphasis-position: under;">' +
+        'A<span style="text-emphasis: none;">B</span>C' +
+        '<span style="text-emphasis-style: open dot;">D</span>' +
+        '<span style="text-emphasis-position: over;">E</span></span></p>',
+    })
+
+    expect(nestedEditor.children).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'A', emphasisDot: true },
+          { text: 'B' },
+          { text: 'C', emphasisDot: true },
+          { text: 'D' },
+          { text: 'E' },
+        ],
+      },
+    ])
+  })
+
+  it('clears inherited underline decorations when a child explicitly overrides them', () => {
+    const wavyEditor = createEditor({
+      html:
+        '<p><span style="text-decoration: underline wavy;">' +
+        'A<span style="text-decoration-style: solid;">B</span>C' +
+        '<span style="text-decoration: none;">D</span></span></p>',
+    })
+
+    expect(wavyEditor.children).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'A', wavyUnderline: true },
+          { text: 'B' },
+          { text: 'C', wavyUnderline: true },
+          { text: 'D' },
+        ],
+      },
+    ])
+
+    const underlineEditor = createEditor({
+      html: '<p><u>A<span style="text-decoration: none;">B</span>C</u></p>',
+    })
+
+    expect(underlineEditor.children).toEqual([
+      {
+        type: 'paragraph',
+        children: [
+          { text: 'A', underline: true },
+          { text: 'B' },
+          { text: 'C', underline: true },
+        ],
+      },
+    ])
+  })
+
+  it('keeps independent underline decorations in strict class text-style mode', () => {
+    const html =
+      '<p><span style="text-decoration: underline wavy; ' +
+      'text-emphasis: filled dot; text-emphasis-position: under;">text</span></p>'
+    const classModeEditor = createEditor({
+      html,
+      config: { textStyleMode: 'class', classStylePolicy: 'strict' },
+    })
+
+    expect(classModeEditor.children).toEqual([
+      {
+        type: 'paragraph',
+        children: [{ text: 'text', wavyUnderline: true, emphasisDot: true }],
+      },
+    ])
+
+    const exportedHtml = classModeEditor.getHtml()
+
+    expect(exportedHtml).toContain('w-e-text-style-wavy-underline')
+    expect(exportedHtml).toContain('w-e-text-style-emphasis-dot')
+    expect(exportedHtml).not.toContain('style=')
+
+    classModeEditor.setHtml(exportedHtml)
+    expect(classModeEditor.getHtml()).toBe(exportedHtml)
+  })
+
+  it('canonicalizes toHtml(parseHtml(html)) for all underline decorations', () => {
+    const html =
+      '<p><span style="text-emphasis-position: under; text-emphasis-style: filled dot;">' +
+      '<u><span style="text-decoration: underline wavy;">text</span></u></span></p>'
+    const nestedEditor = createEditor({ html })
+
+    expect(nestedEditor.getHtml()).toBe(
+      '<p><span style="text-emphasis-style: filled dot; text-emphasis-position: under left; line-height: 2;">' +
+        '<span style="text-decoration-line: underline; text-decoration-style: wavy; ' +
+        'text-underline-offset: 0.8em;"><u style="text-underline-offset: 0.15em;">' +
+        'text</u></span></span></p>'
+    )
+  })
+
+  it.each(['inline', 'class'] as const)(
+    'preserves Slate underline decorations through %s HTML round-trip',
+    textStyleMode => {
+      const roundTripEditor = createEditor({ config: { textStyleMode } })
+      const value = [
+        {
+          type: 'paragraph',
+          children: [
+            {
+              text: 'text',
+              underline: true,
+              wavyUnderline: true,
+              emphasisDot: true,
+            },
+          ],
+        },
+      ]
+
+      roundTripEditor.children = value
+      const html = roundTripEditor.getHtml()
+
+      roundTripEditor.setHtml(html)
+      expect(roundTripEditor.children).toEqual(value)
+    }
+  )
 })

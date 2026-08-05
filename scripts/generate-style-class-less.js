@@ -6,9 +6,18 @@ const fs = require('node:fs')
 const path = require('node:path')
 
 const rootDir = path.resolve(__dirname, '..')
-const colorConfigPath = path.join(rootDir, 'packages/basic-modules/src/modules/color/menu/config.ts')
-const fontConfigPath = path.join(rootDir, 'packages/basic-modules/src/modules/font-size-family/menu/config.ts')
-const lineHeightConfigPath = path.join(rootDir, 'packages/basic-modules/src/modules/line-height/menu/config.ts')
+const colorConfigPath = path.join(
+  rootDir,
+  'packages/basic-modules/src/modules/color/menu/config.ts'
+)
+const fontConfigPath = path.join(
+  rootDir,
+  'packages/basic-modules/src/modules/font-size-family/menu/config.ts'
+)
+const lineHeightConfigPath = path.join(
+  rootDir,
+  'packages/basic-modules/src/modules/line-height/menu/config.ts'
+)
 const basicOutputPath = path.join(rootDir, 'packages/basic-modules/src/assets/style-class.less')
 const listOutputPath = path.join(rootDir, 'packages/list-module/src/assets/style-class.less')
 
@@ -31,7 +40,9 @@ function extractArrayLiteral(content, marker) {
   for (let i = startIndex; i < content.length; i += 1) {
     const char = content[i]
 
-    if (char === '[') { depth += 1 }
+    if (char === '[') {
+      depth += 1
+    }
     if (char === ']') {
       depth -= 1
       if (depth === 0) {
@@ -56,8 +67,12 @@ function evalArrayLiteral(arrayLiteral) {
 function normalize(type, value) {
   const trimmed = String(value || '').trim()
 
-  if (!trimmed) { return '' }
-  if (type === 'fontFamily') { return trimmed.replace(/"/g, '').replace(/\s+/g, ' ').toLowerCase() }
+  if (!trimmed) {
+    return ''
+  }
+  if (type === 'fontFamily') {
+    return trimmed.replace(/"/g, '').replace(/\s+/g, ' ').toLowerCase()
+  }
   return trimmed.replace(/\s+/g, '').toLowerCase()
 }
 
@@ -88,7 +103,9 @@ function className(type, value, customPrefixMap = {}) {
 }
 
 function quoteFontFamily(value) {
-  if (/^[a-z0-9-]+$/i.test(value)) { return value }
+  if (/^[a-z0-9-]+$/i.test(value)) {
+    return value
+  }
   return `"${value.replace(/"/g, '\\"')}"`
 }
 
@@ -113,7 +130,7 @@ function appendRules(
   type,
   cssProp,
   formatter = value => value,
-  customPrefixMap = {},
+  customPrefixMap = {}
 ) {
   values.forEach(value => {
     lines.push(`.${className(type, value, customPrefixMap)} { ${cssProp}: ${formatter(value)}; }`)
@@ -149,6 +166,24 @@ function run() {
   appendRules(basicLines, textAlignList, 'textAlign', 'text-align')
   appendRules(basicLines, lineHeights, 'lineHeight', 'line-height')
   appendRules(basicLines, indentValues, 'indent', 'text-indent')
+
+  basicLines.push('.w-e-text-style-underline-offset { text-underline-offset: 0.15em; }')
+  basicLines.push('.w-e-text-style-wavy-underline {')
+  basicLines.push('  text-decoration-line: underline;')
+  basicLines.push('  text-decoration-style: wavy;')
+  basicLines.push('  text-underline-offset: 0.3em;')
+  basicLines.push('}')
+  basicLines.push('.w-e-text-style-wavy-underline-with-emphasis {')
+  basicLines.push('  text-underline-offset: 0.8em;')
+  basicLines.push('}')
+  basicLines.push('.w-e-text-style-emphasis-dot {')
+  basicLines.push('  text-emphasis-style: filled dot;')
+  basicLines.push('  text-emphasis-position: under left;')
+  basicLines.push('}')
+  basicLines.push('.w-e-text-style-emphasis-dot-with-wavy {')
+  basicLines.push('  line-height: 2;')
+  basicLines.push('}')
+  basicLines.push('')
 
   const listLines = [
     '/**',

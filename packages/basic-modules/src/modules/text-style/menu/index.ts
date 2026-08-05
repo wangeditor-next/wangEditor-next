@@ -6,11 +6,13 @@
 import BoldMenu from './BoldMenu'
 import ClearStyleMenu from './ClearStyleMenu'
 import CodeMenu from './CodeMenu'
+import EmphasisDotMenu from './EmphasisDotMenu'
 import ItalicMenu from './ItalicMenu'
 import SubMenu from './SubMenu'
 import SupMenu from './SupMenu'
 import ThroughMenu from './ThroughMenu'
 import UnderlineMenu from './UnderlineMenu'
+import WavyUnderlineMenu from './WavyUnderlineMenu'
 
 export const boldMenuConf = {
   key: 'bold',
@@ -44,6 +46,20 @@ export const underlineMenuConf = {
   key: 'underline',
   factory() {
     return new UnderlineMenu()
+  },
+}
+
+export const wavyUnderlineMenuConf = {
+  key: 'wavyUnderline',
+  factory() {
+    return new WavyUnderlineMenu()
+  },
+}
+
+export const emphasisDotMenuConf = {
+  key: 'emphasisDot',
+  factory() {
+    return new EmphasisDotMenu()
   },
 }
 

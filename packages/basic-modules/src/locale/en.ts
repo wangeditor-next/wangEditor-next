@@ -93,6 +93,8 @@ export default {
     sup: 'Sup',
     through: 'Through',
     underline: 'Underline',
+    wavyUnderline: 'Wavy underline',
+    emphasisDot: 'Lower dot emphasis',
   },
   undo: {
     undo: 'undo',
