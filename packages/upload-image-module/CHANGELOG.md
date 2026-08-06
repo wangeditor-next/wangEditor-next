@@ -1,5 +1,16 @@
 # Change Log
 
+## 6.2.0
+
+### Patch Changes
+
+- f035f0d: Use the documented public globals for internal UMD dependencies.
+- Updated dependencies [2090ba7]
+- Updated dependencies [133819f]
+- Updated dependencies [f035f0d]
+  - @wangeditor-next/basic-modules@6.2.0
+  - @wangeditor-next/core@6.2.0
+
 ## 6.1.1
 
 ### Patch Changes
