@@ -8,11 +8,13 @@ import { Editor, Element } from 'slate'
 import createEditor from '../../../../../tests/utils/create-editor'
 import BoldMenu from '../../../src/modules/text-style/menu/BoldMenu'
 import CodeMenu from '../../../src/modules/text-style/menu/CodeMenu'
+import EmphasisDotMenu from '../../../src/modules/text-style/menu/EmphasisDotMenu'
 import ItalicMenu from '../../../src/modules/text-style/menu/ItalicMenu'
 import SubMenu from '../../../src/modules/text-style/menu/SubMenu'
 import SupMenu from '../../../src/modules/text-style/menu/SupMenu'
 import ThroughMenu from '../../../src/modules/text-style/menu/ThroughMenu'
 import UnderlineMenu from '../../../src/modules/text-style/menu/UnderlineMenu'
+import WavyUnderlineMenu from '../../../src/modules/text-style/menu/WavyUnderlineMenu'
 
 const MENU_INFO_LIST = [
   { mark: 'bold', menu: new BoldMenu() },
@@ -22,6 +24,8 @@ const MENU_INFO_LIST = [
   { mark: 'sup', menu: new SupMenu() },
   { mark: 'through', menu: new ThroughMenu() },
   { mark: 'underline', menu: new UnderlineMenu() },
+  { mark: 'wavyUnderline', menu: new WavyUnderlineMenu() },
+  { mark: 'emphasisDot', menu: new EmphasisDotMenu() },
 ]
 
 describe('text style menus', () => {
@@ -96,6 +100,23 @@ describe('text style menus', () => {
       const marks2 = Editor.marks(editor) as any
 
       expect(marks2[mark]).toBeUndefined()
+    })
+  })
+
+  it('keeps underline decorations active together', () => {
+    editor.select(startLocation)
+    editor.clear()
+    editor.insertText('hello')
+    editor.select([])
+
+    editor.addMark('underline', true)
+    new WavyUnderlineMenu().exec(editor, false)
+    new EmphasisDotMenu().exec(editor, false)
+
+    expect(Editor.marks(editor)).toMatchObject({
+      underline: true,
+      wavyUnderline: true,
+      emphasisDot: true,
     })
   })
 })

@@ -4,7 +4,15 @@
  */
 
 import './assets/index.less'
-// import '@wangeditor-next/core/dist/css/style.css'
+// The default editor bundle registers these modules, so its CSS entry must include their styles too.
+// Do this explicitly: importing the JavaScript packages alone does not retain their extracted CSS.
+import '@wangeditor-next/core/dist/css/style.css'
+import '@wangeditor-next/basic-modules/dist/css/style.css'
+import '@wangeditor-next/code-highlight/dist/css/style.css'
+import '@wangeditor-next/list-module/dist/css/style.css'
+import '@wangeditor-next/table-module/dist/css/style.css'
+import '@wangeditor-next/upload-image-module/dist/css/style.css'
+import '@wangeditor-next/video-module/dist/css/style.css'
 // 兼容性（要放在最开始就执行）
 import './utils/browser-polyfill'
 import './utils/node-polyfill'

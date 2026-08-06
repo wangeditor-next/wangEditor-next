@@ -403,6 +403,66 @@ test.describe('Basic Editor', () => {
     await expect(page.locator('#w-e-textarea-1')).toContainText('一行标题')
   })
 
+  test('loads the bundled default editor styles', async ({ page }) => {
+    await expect(page.locator('[data-testid="editor-toolbar"] .w-e-toolbar')).toHaveCSS(
+      'display',
+      'flex'
+    )
+    await expect(page.locator('[data-testid="editor-textarea"] .w-e-text-container')).toHaveCSS(
+      'position',
+      'relative'
+    )
+  })
+
+  test('toggles underline decorations independently', async ({ page }) => {
+    await typeInEditor(page, 'format text')
+    await selectAll(page)
+
+    await waitForMenuEnabled(page, 'underline')
+    await getToolbarMenu(page, 'underline').click()
+
+    const moreStyles = await waitForMenuEnabled(page, 'group-more-style')
+    const toggleMoreStyle = async (menuKey: 'wavyUnderline' | 'emphasisDot') => {
+      await moreStyles.hover()
+      const panel = moreStyles.locator('..').locator('.w-e-bar-item-menus-container')
+
+      await panel.waitFor({ state: 'visible' })
+      await panel.locator(`[data-menu-key="${menuKey}"]`).click({ force: true })
+    }
+
+    await toggleMoreStyle('wavyUnderline')
+    await toggleMoreStyle('emphasisDot')
+
+    const allDecorationsHtml = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      return editor?.getHtml() || ''
+    })
+
+    expect(allDecorationsHtml).toContain('<u')
+    expect(allDecorationsHtml).toContain('text-decoration-style: wavy')
+    expect(allDecorationsHtml).toContain('text-emphasis-style: filled dot')
+
+    await toggleMoreStyle('wavyUnderline')
+    const withoutWavyHtml = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      return editor?.getHtml() || ''
+    })
+
+    expect(withoutWavyHtml).not.toContain('text-decoration-style: wavy')
+    expect(withoutWavyHtml).toContain('text-emphasis-style: filled dot')
+
+    await toggleMoreStyle('emphasisDot')
+    const withoutEmphasisHtml = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      return editor?.getHtml() || ''
+    })
+
+    expect(withoutEmphasisHtml).toBe('<p><u>format text</u></p>')
+  })
+
   test('updates html when typing', async ({ page }) => {
     await typeInEditor(page, 'e2e-text')
     await expect(page.getByTestId('editor-html')).toContainText('e2e-text')

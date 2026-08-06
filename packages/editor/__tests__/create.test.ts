@@ -121,6 +121,15 @@ describe('create editor and toolbar', () => {
     expect(toolbar.$box).not.toBeNull()
   })
 
+  test('default toolbar includes the additional underline decorations', () => {
+    const toolbar = customCreateToolbar()
+    const group = toolbar
+      .getConfig()
+      .toolbarKeys.find(item => typeof item === 'object' && item.key === 'group-more-style') as any
+
+    expect(group.menuKeys).toEqual(expect.arrayContaining(['wavyUnderline', 'emphasisDot']))
+  })
+
   test('create toolbar with simple mode', () => {
     const toolbar = customCreateToolbar({
       mode: 'simple',
