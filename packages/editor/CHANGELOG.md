@@ -1,5 +1,27 @@
 # Change Log
 
+## 6.2.0
+
+### Minor Changes
+
+- 2090ba7: Add independently toggleable wavy underline and lower dot emphasis marks that can coexist with underline.
+  Use static classes for these decorations in class text-style mode, and include the registered
+  built-in module styles in the default editor CSS bundle.
+
+### Patch Changes
+
+- Updated dependencies [2090ba7]
+- Updated dependencies [0f1fab8]
+- Updated dependencies [133819f]
+- Updated dependencies [f035f0d]
+  - @wangeditor-next/basic-modules@6.2.0
+  - @wangeditor-next/core@6.2.0
+  - @wangeditor-next/list-module@6.2.0
+  - @wangeditor-next/code-highlight@6.2.0
+  - @wangeditor-next/table-module@6.2.0
+  - @wangeditor-next/upload-image-module@6.2.0
+  - @wangeditor-next/video-module@6.2.0
+
 ## 6.1.1
 
 ### Patch Changes

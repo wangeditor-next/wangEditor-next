@@ -1,5 +1,20 @@
 # Change Log
 
+## 6.2.0
+
+### Minor Changes
+
+- 2090ba7: Add independently toggleable wavy underline and lower dot emphasis marks that can coexist with underline.
+  Use static classes for these decorations in class text-style mode, and include the registered
+  built-in module styles in the default editor CSS bundle.
+
+### Patch Changes
+
+- 133819f: Fix published package entrypoint metadata and validate generated artifact paths.
+- f035f0d: Use the documented public globals for internal UMD dependencies.
+- Updated dependencies [2090ba7]
+  - @wangeditor-next/core@6.2.0
+
 ## 6.1.1
 
 ### Patch Changes
