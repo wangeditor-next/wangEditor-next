@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>wangEditor custom styles</title>
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/normalize/8.0.1/normalize.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/@wangeditor-next/editor@latest/dist/css/style.css"
+      rel="stylesheet"
+    />
+    <link href="./css/layout.css" rel="stylesheet" />
+    <style>
+      .article-lead {
+        color: #344054;
+        font-size: 20px;
+        line-height: 1.75;
+      }
+      .article-callout {
+        background: #f2f4f7;
+        border-left: 4px solid #175cd3;
+        color: #101828;
+        margin: 16px 0;
+        padding: 10px 14px;
+      }
+      .article-muted {
+        color: #667085;
+        font-size: 14px;
+      }
+      .article-highlight {
+        background: #fef0c7;
+        color: #93370d;
+        padding: 1px 3px;
+      }
+      .demo-section {
+        margin-top: 20px;
+      }
+      .demo-section h2 {
+        font-size: 16px;
+        margin: 0 0 8px;
+      }
+      #editor-content-html {
+        box-sizing: border-box;
+        font-family: monospace;
+        height: 140px;
+        resize: vertical;
+        width: 100%;
+      }
+      #editor-content-view {
+        border-top: 1px solid #e4e7ec;
+        min-height: 100px;
+        padding: 8px 0;
+      }
+      #plugin-status {
+        background: #fef3f2;
+        border-left: 4px solid #d92d20;
+        color: #912018;
+        padding: 10px 14px;
+      }
+      @media (max-width: 720px) {
+        .page-container {
+          display: block;
+        }
+        .page-left,
+        .page-right {
+          box-sizing: border-box;
+          width: 100%;
+        }
+        .page-left {
+          padding-bottom: 12px;
+        }
+        #editor-text-area {
+          height: 360px !important;
+        }
+      }
+    </style>
+    <script src="./js/custom-elem.js"></script>
+  </head>
+
+  <body>
+    <demo-nav title="wangEditor custom styles"></demo-nav>
+    <div class="page-container">
+      <div class="page-left">
+        <demo-menu></demo-menu>
+      </div>
+      <div class="page-right">
+        <p id="plugin-status" hidden></p>
+        <div style="border: 1px solid #ccc">
+          <div id="editor-toolbar" style="border-bottom: 1px solid #ccc"></div>
+          <div id="editor-text-area" style="height: 420px"></div>
+        </div>
+
+        <section class="demo-section">
+          <h2 id="html-title">HTML</h2>
+          <textarea id="editor-content-html" readonly></textarea>
+        </section>
+
+        <section class="demo-section">
+          <h2 id="preview-title">Rendered content</h2>
+          <div id="editor-content-view"></div>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/@wangeditor-next/editor@latest/dist/index.js"></script>
+    <script
+      src="https://unpkg.com/@wangeditor-next/plugin-style-presets@latest/dist/index.js"
+    ></script>
+    <script>
+      const LANG = location.href.indexOf('lang=en') > 0 ? 'en' : 'zh-CN'
+      const E = window.wangEditor
+      const pluginExport = window.WangEditorStylePresetsPlugin
+      const stylePresetsModule = pluginExport?.default || pluginExport
+
+      E.i18nChangeLanguage(LANG)
+
+      const labels =
+        LANG === 'en'
+          ? {
+              callout: 'Callout',
+              highlight: 'Highlight',
+              lead: 'Lead paragraph',
+              missing: 'The style presets package is not published yet. Reload after its release.',
+              muted: 'Muted text',
+              preview: 'Rendered content',
+            }
+          : {
+              callout: '提示块',
+              highlight: '重点文字',
+              lead: '导语',
+              missing: '样式预设插件尚未发布，发布后刷新页面即可使用。',
+              muted: '辅助文字',
+              preview: '独立渲染效果',
+            }
+
+      document.getElementById('preview-title').textContent = labels.preview
+
+      if (!stylePresetsModule?.menus) {
+        const status = document.getElementById('plugin-status')
+
+        status.hidden = false
+        status.textContent = labels.missing
+      } else {
+        E.Boot.registerModule(stylePresetsModule)
+
+        const presets = [
+          { key: 'lead-paragraph', title: labels.lead, scope: 'block', className: 'article-lead' },
+          { key: 'callout', title: labels.callout, scope: 'block', className: 'article-callout' },
+          { key: 'muted-text', title: labels.muted, scope: 'text', className: 'article-muted' },
+          {
+            key: 'highlight',
+            title: labels.highlight,
+            scope: 'text',
+            className: 'article-highlight',
+          },
+        ]
+        const initialHtml = [
+          '<p class="article-lead">Semantic styles stay stable across themes.</p>',
+          '<p>Select text or place the caret in a block, then choose a preset.</p>',
+          '<p><span class="article-muted">Imported from a configured business class.</span></p>',
+        ].join('\n')
+        const htmlOutput = document.getElementById('editor-content-html')
+        const contentView = document.getElementById('editor-content-view')
+
+        const editor = E.createEditor({
+          selector: '#editor-text-area',
+          html: initialHtml,
+          config: {
+            MENU_CONF: {
+              stylePreset: { presets },
+            },
+            onChange(editor) {
+              const html = editor.getHtml()
+
+              htmlOutput.value = html
+              contentView.innerHTML = html
+            },
+          },
+        })
+
+        E.createToolbar({
+          editor,
+          selector: '#editor-toolbar',
+          config: {
+            insertKeys: {
+              index: 4,
+              keys: ['stylePreset'],
+            },
+          },
+        })
+
+        const html = editor.getHtml()
+
+        htmlOutput.value = html
+        contentView.innerHTML = html
+        window.editor = editor
+      }
+    </script>
+  </body>
+</html>
