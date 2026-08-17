@@ -170,7 +170,7 @@ jobs:
 
       - name: Create Release PR or publish version to npm
         id: changesets
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
           # Disable per-package releases; a single consolidated release is
           # created only for public editor releases below. Source provenance
