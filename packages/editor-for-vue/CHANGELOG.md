@@ -1,5 +1,12 @@
 # @wangeditor-next/editor-for-vue
 
+## 6.2.0
+
+### Patch Changes
+
+- Updated dependencies [2090ba7]
+  - @wangeditor-next/editor@6.2.0
+
 ## 6.1.1
 
 ### Patch Changes
