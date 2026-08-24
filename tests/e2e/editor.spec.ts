@@ -2481,6 +2481,94 @@ test('regression #929: block video keeps explicit media alignment under CSS rese
   expect(exportedHtml).toContain('justify-content: flex-start')
 })
 
+test('regression #988: editable content keeps its structural styles under host resets', async ({
+  page,
+}) => {
+  await page.goto('/examples/default-mode.html')
+  await page.getByTestId('btn-create').click()
+  await expect(getEditable(page)).toBeVisible()
+
+  await page.addStyleTag({
+    content: `
+      [data-testid="editor-textarea"] h1,
+      [data-testid="editor-textarea"] h2,
+      [data-testid="editor-textarea"] h3,
+      [data-testid="editor-textarea"] h4,
+      [data-testid="editor-textarea"] h5,
+      [data-testid="editor-textarea"] h6 {
+        margin: 0;
+        font-size: inherit;
+        font-weight: inherit;
+        line-height: 1;
+      }
+      [data-testid="editor-textarea"] ul,
+      [data-testid="editor-textarea"] ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      [data-testid="editor-textarea"] button {
+        border: 10px solid red;
+        font-size: 1px;
+        line-height: 1;
+      }
+      [data-testid="editor-textarea"] table {
+        border-collapse: separate;
+      }
+    `,
+  })
+  await page.evaluate(() => {
+    const editor = (window as any).wangEditorExampleBridge.editor
+
+    editor.setHtml(
+      [
+        '<h1>Heading</h1>',
+        '<ul><li>Bullet</li></ul>',
+        '<ol data-w-e-list-mode="outline"><li data-w-e-list-indent="0" data-w-e-outline-number="1."><h1>Chapter</h1></li></ol>',
+        '<table><tbody><tr><td>Cell</td></tr></tbody></table>',
+        '<p><br></p>',
+      ].join(''),
+    )
+  })
+
+  const styles = await page.evaluate(() => {
+    const root = document.querySelector('[data-testid="editor-textarea"] [data-slate-editor]')
+    const heading = root?.querySelector('h1')
+    const marker = root?.querySelector('.w-e-list-marker')
+    const outlineButton = root?.querySelector('button.w-e-list-marker')
+    const table = root?.querySelector('table')
+
+    if (!root || !heading || !marker || !outlineButton || !table) {
+      throw new Error('editor content styles regression fixture was not rendered')
+    }
+
+    const headingStyle = getComputedStyle(heading)
+    const markerStyle = getComputedStyle(marker)
+    const outlineButtonStyle = getComputedStyle(outlineButton)
+    const tableStyle = getComputedStyle(table)
+
+    return {
+      headingMarginTop: headingStyle.marginTop,
+      headingFontWeight: headingStyle.fontWeight,
+      headingLineHeight: headingStyle.lineHeight,
+      markerText: marker.textContent,
+      markerDisplay: markerStyle.display,
+      outlineButtonBorderWidth: outlineButtonStyle.borderWidth,
+      outlineButtonFontSize: outlineButtonStyle.fontSize,
+      tableBorderCollapse: tableStyle.borderCollapse,
+    }
+  })
+
+  expect(styles.headingMarginTop).toBe('20px')
+  expect(styles.headingFontWeight).toBe('700')
+  expect(styles.headingLineHeight).not.toBe('1px')
+  expect(styles.markerText).toBe('•')
+  expect(styles.markerDisplay).not.toBe('none')
+  expect(styles.outlineButtonBorderWidth).toBe('0px')
+  expect(styles.outlineButtonFontSize).not.toBe('1px')
+  expect(styles.tableBorderCollapse).toBe('collapse')
+})
+
 test.describe('Multi Editors', () => {
   test('edits each editor independently', async ({ page }) => {
     await page.goto('/examples/multi-editors.html')
