@@ -4,7 +4,7 @@
  */
 
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
-import { Editor, Range, Transforms } from 'slate'
+import { Editor, Node, Range, Transforms } from 'slate'
 
 import { replaceSymbols } from '../../utils/util'
 import { LinkElement } from './custom-types'
@@ -195,10 +195,26 @@ export async function updateLink(editor: IDomEditor, text: string, url: string) 
 
   if (!parsedUrl) { return }
 
-  // 修改链接
-  const props: Partial<LinkElement> = { url: replaceSymbols(parsedUrl) }
+  const linkElem = DomEditor.getSelectedNodeByType(editor, 'link') as LinkElement | null
 
-  Transforms.setNodes(editor, props, {
-    match: n => DomEditor.checkNodeType(n, 'link'),
+  if (linkElem == null) { return }
+
+  const linkPath = DomEditor.findPath(editor, linkElem)
+  const parsedUrlWithSymbols = replaceSymbols(parsedUrl)
+
+  if (!text || text === Node.string(linkElem)) {
+    Transforms.setNodes(editor, { url: parsedUrlWithSymbols }, { at: linkPath })
+    return
+  }
+
+  const updatedLink: LinkElement = {
+    ...linkElem,
+    url: parsedUrlWithSymbols,
+    children: [{ text }],
+  }
+
+  Editor.withoutNormalizing(editor, () => {
+    Transforms.removeNodes(editor, { at: linkPath })
+    Transforms.insertNodes(editor, updatedLink, { at: linkPath })
   })
 }

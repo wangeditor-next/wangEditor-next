@@ -72,21 +72,32 @@ describe('edit link menu', () => {
 
   it('get modal content elem', () => {
     const spy = vi.spyOn(editor, 'hidePanelOrModal')
-    const elem = menu.getModalContentElem(editor)
 
     editor.select(startLocation)
-    editor.insertText('test')
+    editor.insertNode(linkNode)
+    editor.select({
+      path: [0, 1, 0],
+      offset: 1,
+    })
+
+    const elem = menu.getModalContentElem(editor)
+
     document.body.appendChild(elem)
 
+    const textInputId = document.getElementById((menu as any).textInputId) as HTMLInputElement
     const urlInputId = document.getElementById((menu as any).urlInputId) as HTMLInputElement
     const button = document.getElementById((menu as any).buttonId) as HTMLButtonElement
 
+    expect(textInputId.value).toBe('xxx')
+    expect(urlInputId.value).toBe(linkNode.url)
+
+    textInputId.value = 'updated link'
     urlInputId.value = 'https://wangeditor-next.github.io/demo/'
-    editor.select(startLocation)
     button.click()
 
     expect(elem.tagName).toBe('DIV')
     expect(spy).toHaveBeenCalled()
+    expect(Editor.string(editor.getElemsByTypePrefix('link')[0])).toBe('updated link')
   })
 
   it('focus input asynchronously', async () => {

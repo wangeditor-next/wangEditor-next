@@ -6,6 +6,7 @@
 import {
   DomEditor,
   IButtonMenu, IDomEditor,
+  SlateEditor,
   SlateNode,
   SlateTransforms,
   t,
@@ -59,13 +60,15 @@ class ConvertToLinkCard implements IButtonMenu {
 
     if (typeof getLinkCardInfo !== 'function') { return }
 
-    const { url } = linkElem
+    const { url, target } = linkElem
     const text = SlateNode.string(linkElem)
+    const linkPathRef = SlateEditor.pathRef(editor, DomEditor.findPath(editor, linkElem))
 
     try {
       const { title, iconImgSrc } = await getLinkCardInfo(text, url) // 异步生成 link-card 信息
+      const linkPath = linkPathRef.current
 
-      const linkPath = DomEditor.findPath(editor, linkElem)
+      if (linkPath == null) { return }
 
       SlateTransforms.removeNodes(editor, { at: linkPath })
       SlateTransforms.splitNodes(editor, { always: true })
@@ -74,6 +77,7 @@ class ConvertToLinkCard implements IButtonMenu {
         type: 'link-card',
         link: url,
         title,
+        ...(target ? { target } : {}),
         iconImgSrc,
         children: [{ text: '' }],
       }
@@ -81,6 +85,8 @@ class ConvertToLinkCard implements IButtonMenu {
       SlateTransforms.insertNodes(editor, linkCard)
     } catch (err) {
       console.error('Convert to link-cart error', err)
+    } finally {
+      linkPathRef.unref()
     }
   }
 }
