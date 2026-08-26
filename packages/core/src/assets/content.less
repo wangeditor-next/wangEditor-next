@@ -1,0 +1,97 @@
+@import "../../../vars.less";
+
+// Keep the editable content predictable when the host application ships a reset
+// stylesheet (for example, Tailwind Preflight). This is intentionally scoped to
+// the editor root so the surrounding page keeps its own design system.
+.w-e-text-container [data-slate-editor] {
+  color: @textarea-color;
+  line-height: 1.5;
+
+  p {
+    margin: 15px 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 20px 0;
+    line-height: 1.5;
+  }
+
+  h1 {
+    font-size: 2em;
+    font-weight: bold;
+  }
+
+  h2 {
+    font-size: 1.5em;
+    font-weight: bold;
+  }
+
+  h3 {
+    font-size: 1.17em;
+    font-weight: bold;
+  }
+
+  h4 {
+    font-size: 1em;
+    font-weight: bold;
+  }
+
+  h5 {
+    font-size: 0.83em;
+    font-weight: bold;
+  }
+
+  h6 {
+    font-size: 0.67em;
+    font-weight: bold;
+  }
+
+  ul,
+  ol,
+  menu {
+    margin: 15px 0;
+    padding: 0 0 0 40px;
+    list-style: revert;
+  }
+
+  li {
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+  }
+
+  blockquote {
+    margin: 10px 0;
+    line-height: 1.5;
+  }
+
+  pre {
+    font-family: monospace;
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+
+  code {
+    font-family: monospace;
+  }
+
+  button {
+    font: inherit;
+    line-height: inherit;
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  img,
+  video,
+  iframe {
+    max-width: 100%;
+  }
+}
