@@ -3,7 +3,7 @@
  * @author wangfupeng
  */
 
-import { Editor, Transforms } from 'slate'
+import { Editor, Node, Transforms } from 'slate'
 
 import createEditor from '../../../../tests/utils/create-editor'
 import { insertLink, isMenuDisabled, updateLink } from '../../src/modules/link/helper'
@@ -289,7 +289,7 @@ describe('link module helper', () => {
 
     expect(links).toHaveLength(1)
     expect(links[0].url).toBe(newUrl)
-    expect(Editor.string(links[0])).toBe('updated link')
+    expect(Node.string(links[0])).toBe('updated link')
   })
 
   it('update link should normalize whitespace in url', async () => {

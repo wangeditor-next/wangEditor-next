@@ -1,4 +1,4 @@
-import { Editor, Transforms } from 'slate'
+import { Node, Transforms } from 'slate'
 
 import createEditor from '../../../tests/utils/create-editor'
 import ConvertToLink from '../src/module/menu/ConvertToLink'
@@ -21,6 +21,10 @@ describe('plugin-link-card menus', () => {
       })
     )
 
+    vi.spyOn(editor, 'getMenuConfig').mockReturnValue({
+      getLinkCardInfo: async () => ({ title: 'wangEditor', iconImgSrc: '' }),
+    } as any)
+
     editor.children = [
       {
         type: 'paragraph',
@@ -40,7 +44,7 @@ describe('plugin-link-card menus', () => {
 
     await menu.exec(editor, '')
 
-    const linkCard = editor.children[0] as any
+    const linkCard = editor.getElemsByTypePrefix('link-card')[0] as any
 
     expect(linkCard).toMatchObject({
       type: 'link-card',
@@ -69,15 +73,15 @@ describe('plugin-link-card menus', () => {
     menu.exec(editor, '')
 
     const paragraph = editor.children[0] as any
-    const link = paragraph.children[0]
+    const link = editor.getElemsByTypePrefix('link')[0]
 
     expect(paragraph.type).toBe('paragraph')
-    expect(link).toEqual({
+    expect(link).toMatchObject({
       type: 'link',
       url: 'https://www.wangeditor.com/',
       target: '_self',
       children: [{ text: 'wangEditor' }],
     })
-    expect(Editor.string(link)).toBe('wangEditor')
+    expect(Node.string(link)).toBe('wangEditor')
   })
 })

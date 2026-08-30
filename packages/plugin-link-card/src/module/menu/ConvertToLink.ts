@@ -8,7 +8,6 @@ import {
   IButtonMenu,
   IDomEditor,
   SlateEditor,
-  SlateNode,
   SlateTransforms,
   t,
 } from '@wangeditor-next/editor'
@@ -54,7 +53,18 @@ class ConvertToLink implements IButtonMenu {
       return
     }
 
-    const linkCardPath = DomEditor.findPath(editor, linkCardElem)
+    const [linkCardEntry] = SlateEditor.nodes(editor, {
+      at: editor.selection!,
+      match: node => DomEditor.checkNodeType(node, 'link-card'),
+      mode: 'lowest',
+      universal: true,
+    })
+
+    if (linkCardEntry == null) {
+      return
+    }
+
+    const linkCardPath = linkCardEntry[1]
     const { link: url, title, target } = linkCardElem
     const linkElem: LinkElement = {
       type: 'link',
@@ -69,10 +79,21 @@ class ConvertToLink implements IButtonMenu {
       SlateTransforms.insertNodes(editor, paragraph, { at: linkCardPath })
     })
 
-    SlateTransforms.select(editor, {
-      anchor: { path: [...linkCardPath, 0, 0], offset: 0 },
-      focus: { path: [...linkCardPath, 0, 0], offset: SlateNode.string(linkElem).length },
+    const [linkEntry] = SlateEditor.nodes(editor, {
+      at: [],
+      match: node => node === linkElem,
+      mode: 'all',
+      universal: true,
     })
+
+    if (linkEntry != null) {
+      const linkPath = linkEntry[1]
+
+      SlateTransforms.select(editor, {
+        anchor: SlateEditor.start(editor, linkPath),
+        focus: SlateEditor.end(editor, linkPath),
+      })
+    }
   }
 }
 

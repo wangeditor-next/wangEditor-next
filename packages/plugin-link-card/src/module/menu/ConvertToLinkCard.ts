@@ -62,7 +62,18 @@ class ConvertToLinkCard implements IButtonMenu {
 
     const { url, target } = linkElem
     const text = SlateNode.string(linkElem)
-    const linkPathRef = SlateEditor.pathRef(editor, DomEditor.findPath(editor, linkElem))
+    const [linkEntry] = SlateEditor.nodes(editor, {
+      at: editor.selection!,
+      match: node => DomEditor.checkNodeType(node, 'link'),
+      mode: 'lowest',
+      universal: true,
+    })
+
+    if (linkEntry == null) {
+      return
+    }
+
+    const linkPathRef = SlateEditor.pathRef(editor, linkEntry[1])
 
     try {
       const { title, iconImgSrc } = await getLinkCardInfo(text, url) // 异步生成 link-card 信息
