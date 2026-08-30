@@ -65,6 +65,7 @@ const missing = publicRuntimePackages.filter(name => !fixedSet.has(name))
 const unexpected = fixedPackages.filter(name => !expectedSet.has(name))
 
 const packageGroupCounts = new Map()
+
 for (const packageName of fixedPackages) {
   packageGroupCounts.set(packageName, (packageGroupCounts.get(packageName) || 0) + 1)
 }
