@@ -53,8 +53,8 @@ const fixedSet = new Set(fixedPackages)
 const expectedSet = new Set(publicRuntimePackages)
 const errors = []
 
-if (fixedGroups.length !== 1) {
-  errors.push('Changesets must define exactly one fixed group for public runtime packages')
+if (fixedGroups.length === 0) {
+  errors.push('Changesets must define at least one fixed group for public runtime packages')
 }
 
 if (fixedSet.size !== fixedPackages.length) {
@@ -64,12 +64,25 @@ if (fixedSet.size !== fixedPackages.length) {
 const missing = publicRuntimePackages.filter(name => !fixedSet.has(name))
 const unexpected = fixedPackages.filter(name => !expectedSet.has(name))
 
+const packageGroupCounts = new Map()
+for (const packageName of fixedPackages) {
+  packageGroupCounts.set(packageName, (packageGroupCounts.get(packageName) || 0) + 1)
+}
+
+const duplicateGroups = [...packageGroupCounts]
+  .filter(([, count]) => count > 1)
+  .map(([name]) => name)
+
 if (missing.length > 0) {
   errors.push(`Public runtime packages missing from the fixed group: ${missing.join(', ')}`)
 }
 
 if (unexpected.length > 0) {
   errors.push(`Non-runtime packages in the fixed group: ${unexpected.join(', ')}`)
+}
+
+if (duplicateGroups.length > 0) {
+  errors.push(`Public runtime packages must belong to only one fixed group: ${duplicateGroups.join(', ')}`)
 }
 
 for (const { packageName, dependencyType, name, range } of internalDependencyRanges) {

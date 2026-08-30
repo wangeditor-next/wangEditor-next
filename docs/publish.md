@@ -30,17 +30,17 @@ Release 与 `Repair Release Provenance` 都只能使用 GitHub Environment
 
 ## 版本关联策略
 
-所有 `packages/*` 下、名称为 `@wangeditor-next/*` 的公开运行时包属于同一个 Changesets
-`fixed` 组。这包含 `core`、`editor`、Vue 2/Vue 3/React 适配器、内置模块、可选插件和
-Yjs 包。一个用户可见的变更只需要在直接受影响的包写 changeset；Changesets 会把整个组
-提升到同一个产品版本，并在一次 release PR 中发布。
+所有 `packages/*` 下、名称为 `@wangeditor-next/*` 的公开运行时包都属于 Changesets 的
+`fixed` 组。`core`、`editor`、Vue 2/Vue 3/React 适配器、内置模块和 Yjs 包属于主同步组；
+`plugin-link-card` 单独成组，使它的功能变更不会抬高其他包的版本。一个用户可见的变更只
+需要在直接受影响的包写 changeset；Changesets 会在一次 release PR 中按组提升版本并发布。
 
 当前 `6.1.0` 已经发布，不能变更其 npm 包或 immutable source tag。它仅包含包同步，迁入后的
-首次共同发布使用 `6.1.1`：`editor`、`core` 和全部官方包都会是 `6.1.1`。之后每次发布都遵守相同规则。
+首次共同发布使用 `6.1.1`：`editor`、`core` 和主同步组中的官方包都会是 `6.1.1`。之后每次发布都遵守按组同步的规则。
 
 `pnpm check:release-group` 会校验新增公开包不会漏出该组。新增公开运行时包时必须同时：
 
-1. 放入 `.changeset/config.json` 的固定组。
+1. 放入 `.changeset/config.json` 的合适固定组；若不应与主产品同步升级，则单独成组。
 2. 添加 workspace 依赖、构建和框架集成测试。
 3. 确认其 package source tag 能由本仓库 release workflow 创建。
 
