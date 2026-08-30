@@ -9,8 +9,9 @@ import { LinkCardElement } from './custom-types'
 
 // 生成 html 的函数
 function linkCardToHtml(elem: SlateElement, _childrenHtml: string): string {
-  const { title = '', link = '', iconImgSrc = '' } = elem as LinkCardElement
-  const html = `<div data-w-e-type="link-card" data-w-e-is-void data-title="${title}" data-link="${link}" data-iconImgSrc="${iconImgSrc}">
+  const { title = '', link = '', target, iconImgSrc = '' } = elem as LinkCardElement
+  const targetAttr = target ? ` data-target="${target}"` : ''
+  const html = `<div data-w-e-type="link-card" data-w-e-is-void data-title="${title}" data-link="${link}"${targetAttr} data-iconImgSrc="${iconImgSrc}">
     <div class="info-container">
       <div class="title-container"><p>${title}</p></div>
       <div class="link-container"><span>${link}</span></div>

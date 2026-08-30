@@ -4,7 +4,7 @@
  */
 
 import { waitFor } from '@testing-library/dom'
-import { Editor } from 'slate'
+import { Editor, Node } from 'slate'
 
 import createEditor from '../../../../../tests/utils/create-editor'
 import EditLink from '../../../src/modules/link/menu/EditLink'
@@ -70,23 +70,37 @@ describe('edit link menu', () => {
     expect(node.url).toBe(linkNode.url)
   })
 
-  it('get modal content elem', () => {
+  it('get modal content elem', async () => {
     const spy = vi.spyOn(editor, 'hidePanelOrModal')
-    const elem = menu.getModalContentElem(editor)
 
     editor.select(startLocation)
-    editor.insertText('test')
+    editor.insertNode(linkNode)
+    editor.select({
+      path: [0, 1, 0],
+      offset: 1,
+    })
+    vi.spyOn(editor, 'restoreSelection').mockImplementation(() => {})
+
+    const elem = menu.getModalContentElem(editor)
+
     document.body.appendChild(elem)
 
+    const textInputId = document.getElementById((menu as any).textInputId) as HTMLInputElement
     const urlInputId = document.getElementById((menu as any).urlInputId) as HTMLInputElement
     const button = document.getElementById((menu as any).buttonId) as HTMLButtonElement
 
+    expect(textInputId.value).toBe('xxx')
+    expect(urlInputId.value).toBe(linkNode.url)
+
+    textInputId.value = 'updated link'
     urlInputId.value = 'https://wangeditor-next.github.io/demo/'
-    editor.select(startLocation)
     button.click()
 
     expect(elem.tagName).toBe('DIV')
     expect(spy).toHaveBeenCalled()
+    await waitFor(() => {
+      expect(Node.string(editor.getElemsByTypePrefix('link')[0])).toBe('updated link')
+    })
   })
 
   it('focus input asynchronously', async () => {
@@ -97,7 +111,7 @@ describe('edit link menu', () => {
     const elem = menu.getModalContentElem(editor)
 
     document.body.appendChild(elem)
-    const inputSrc = elem.querySelector(`#${(menu as any).urlInputId}`) as HTMLInputElement
+    const inputSrc = elem.querySelector(`#${(menu as any).textInputId}`) as HTMLInputElement
 
     vi.spyOn(inputSrc, 'focus')
 

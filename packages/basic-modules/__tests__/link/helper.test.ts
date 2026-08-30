@@ -3,7 +3,7 @@
  * @author wangfupeng
  */
 
-import { Editor, Transforms } from 'slate'
+import { Editor, Node, Transforms } from 'slate'
 
 import createEditor from '../../../../tests/utils/create-editor'
 import { insertLink, isMenuDisabled, updateLink } from '../../src/modules/link/helper'
@@ -269,6 +269,27 @@ describe('link module helper', () => {
     const linkElem = links[0]
 
     expect(linkElem.url).toBe(newUrl)
+  })
+
+  it('updates link text and url together', async () => {
+    editor.select(startLocation)
+
+    const url = 'https://wangeditor-next.github.io/docs/'
+    const newUrl = 'https://wangeditor-next.github.io/docs/index.html'
+
+    await insertLink(editor, 'hello', url)
+    editor.select({
+      path: [0, 1, 0],
+      offset: 3,
+    })
+
+    await updateLink(editor, 'updated link', newUrl)
+
+    const links = editor.getElemsByTypePrefix('link')
+
+    expect(links).toHaveLength(1)
+    expect(links[0].url).toBe(newUrl)
+    expect(Node.string(links[0])).toBe('updated link')
   })
 
   it('update link should normalize whitespace in url', async () => {

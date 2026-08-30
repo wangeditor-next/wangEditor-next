@@ -42,6 +42,10 @@ const editorConfig: Partial<IEditorConfig> = {
         'convertToLinkCard' // 增加 '转为链接卡片'菜单
       ],
     },
+    // 选中链接卡片时，要弹出的菜单
+    'link-card': {
+      menuKeys: ['convertToLink'],
+    },
   },
 
   MENU_CONF: {
@@ -75,6 +79,8 @@ const editorConfig: Partial<IEditorConfig> = {
 ### 显示 HTML
 
 一个 link-card 节点产出的 HTML 格式如下
+
+如果原链接设置了 `target`，会额外输出并在“转为链接”时恢复 `data-target` 属性。
 
 ```html
 <div data-w-e-type="link-card" data-w-e-is-void data-title="百度新闻" data-link="http://news.baidu.com/"
