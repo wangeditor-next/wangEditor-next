@@ -25,6 +25,11 @@ Release 与 `Repair Release Provenance` 都只能使用 GitHub Environment
 模块、插件和协同包都从同一个 monorepo、同一个 Changesets release PR 与同一个 workflow
 发布，并使用相同的产品版本号；`apps/*`、文档和内部构建工具不发布到 npm。
 
+这里的统一版本号是已验证的 wangEditor 产品组合和兼容性标识，不是每个 npm 包的独立功能
+清单。用户可以将任意官方包升级到同一产品版本，无需再维护包之间的版本矩阵。单个包仅有
+同步版本变更时，其 CHANGELOG 中的 `Updated dependencies` 条目表示产品同步，不表示该包
+新增了同等级别的功能。
+
 `@wangeditor-next/editor` 会在每次产品 release 中发布，因此会创建对应的 GitHub Release
 `v<version>`；Release 中列出本次所有包的源码与 tarball 链接。
 
@@ -35,6 +40,14 @@ Release 与 `Repair Release Provenance` 都只能使用 GitHub Environment
 Yjs 包。一个用户可见的变更只需要在直接受影响的包写 changeset；Changesets 会把整个组
 提升到同一个产品版本，并在一次 release PR 中发布。
 
+产品版本由本次 release 中直接变更的最高 SemVer 级别决定：直接变更中的 `minor` 会使整套
+官方包进入下一个产品 minor，直接变更均为 `patch` 时才进入下一个产品 patch。这是固定组
+的预期行为，不要通过手改 package.json、移除单个包或拆分 fixed 组来压低一次 release 的
+版本号。需要延后某项功能时，应在合并 release PR 前保留其 changeset，等待下一次产品发布。
+
+发布说明以直接变更为准：产品级 GitHub Release 和 PR 描述只列出用户可见的 changeset
+内容；包级 CHANGELOG 保留 Changesets 自动生成的同步记录，方便追溯来源但不作为功能目录。
+
 当前 `6.1.0` 已经发布，不能变更其 npm 包或 immutable source tag。它仅包含包同步，迁入后的
 首次共同发布使用 `6.1.1`：`editor`、`core` 和全部官方包都会是 `6.1.1`。之后每次发布都遵守相同规则。
 
@@ -43,6 +56,10 @@ Yjs 包。一个用户可见的变更只需要在直接受影响的包写 change
 1. 放入 `.changeset/config.json` 的固定组。
 2. 添加 workspace 依赖、构建和框架集成测试。
 3. 确认其 package source tag 能由本仓库 release workflow 创建。
+
+修改版本关联策略属于仓库级发布架构变更，必须单独提出并验证发布矩阵、peer dependency
+兼容范围、源码 tag、GitHub Release 与 Repair Release Provenance；不能作为单个功能或插件
+PR 的附带修改。
 
 历史版本不重写：`@wangeditor-next/editor-for-vue@5.1.14` 和
 `@wangeditor-next/editor-for-vue2@1.0.2` 继续由原独立仓库的历史 tag 说明来源。迁入后的
