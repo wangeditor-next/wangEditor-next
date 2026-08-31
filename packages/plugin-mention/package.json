@@ -1,6 +1,6 @@
 {
   "name": "@wangeditor-next/plugin-mention",
-  "version": "6.2.0",
+  "version": "6.3.0",
   "description": "wangEditor mention plugin",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",

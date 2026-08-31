@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.3.0
+
+### Patch Changes
+
+- 8f210be: Scope built-in editable-content styles under the editor root so headings, lists, controls, code,
+  tables, and media remain stable when host reset styles such as Tailwind Preflight are present.
+
 ## 6.2.0
 
 ### Minor Changes

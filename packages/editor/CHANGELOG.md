@@ -1,5 +1,20 @@
 # Change Log
 
+## 6.3.0
+
+### Patch Changes
+
+- 8f210be: Scope built-in editable-content styles under the editor root so headings, lists, controls, code,
+  tables, and media remain stable when host reset styles such as Tailwind Preflight are present.
+- Updated dependencies [8f210be]
+  - @wangeditor-next/core@6.3.0
+  - @wangeditor-next/basic-modules@6.3.0
+  - @wangeditor-next/code-highlight@6.3.0
+  - @wangeditor-next/list-module@6.3.0
+  - @wangeditor-next/table-module@6.3.0
+  - @wangeditor-next/upload-image-module@6.3.0
+  - @wangeditor-next/video-module@6.3.0
+
 ## 6.2.0
 
 ### Minor Changes

@@ -1,5 +1,16 @@
 # @wangeditor-next/plugin-link-card
 
+## 6.3.0
+
+### Minor Changes
+
+- 3a5f23f: Add link-card to link conversion and preserve link targets during card conversion.
+
+### Patch Changes
+
+- Updated dependencies [8f210be]
+  - @wangeditor-next/editor@6.3.0
+
 ## 6.2.0
 
 ### Patch Changes
