@@ -5,13 +5,10 @@
 
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
 import {
-  BaseText,
-  Descendant,
   Editor,
   Element as SlateElement,
   Location,
   Node,
-  NodeEntry,
   Path,
   Point,
   Text,
@@ -171,18 +168,29 @@ function withTable<T extends IDomEditor>(editor: T): T {
   } = editor
   const newEditor = editor
 
-  // 重写 insertBreak - cell 内换行，只换行文本，不拆分 node
+  // 重写 insertBreak - block cell content delegates to the normal block break behavior
   newEditor.insertBreak = () => {
-    const selectedNode = DomEditor.getSelectedNodeByType(newEditor, 'table')
+    const cellEntry = Editor.above(newEditor, {
+      match: n => DomEditor.checkNodeType(n, 'table-cell'),
+    })
 
-    if (selectedNode != null) {
-      // 选中了 table ，则在 cell 内插入标准换行
-      newEditor.insertText(CELL_BREAK)
+    if (cellEntry == null) {
+      insertBreak()
       return
     }
 
-    // 未选中 table ，默认的换行
-    insertBreak()
+    const blockEntry = Editor.above(newEditor, {
+      match: n => SlateElement.isElement(n) && !DomEditor.checkNodeType(n, 'table-cell'),
+    })
+
+    if (blockEntry != null) {
+      // Keep custom block plugins in control of splitting.
+      insertBreak()
+      return
+    }
+
+    // Keep the legacy fallback for malformed cells that have no block wrapper.
+    newEditor.insertText(CELL_BREAK)
   }
 
   // 重写 delete - cell 内删除，只删除文字，不删除 node
@@ -224,22 +232,30 @@ function withTable<T extends IDomEditor>(editor: T): T {
     const selectedNode = DomEditor.getSelectedNodeByType(newEditor, 'table')
 
     if (selectedNode) {
-      const above = Editor.above(editor) as NodeEntry<SlateElement>
+      const currentCell = Editor.above(editor, {
+        match: n => DomEditor.checkNodeType(n, 'table-cell'),
+      })
+      const tableEntry = Editor.above(editor, {
+        match: n => DomEditor.checkNodeType(n, 'table'),
+      })
 
-      // 常规情况下选中文字外层 table-cell 进行跳转
-      if (DomEditor.checkNodeType(above[0], 'table-cell')) {
-        Transforms.select(editor, above[1])
+      if (currentCell && tableEntry) {
+        const [, currentCellPath] = currentCell
+        const [, tablePath] = tableEntry
+        const cells = Array.from(Editor.nodes(editor, {
+          at: tablePath,
+          match: n => DomEditor.checkNodeType(n, 'table-cell') && !(n as any).hidden,
+        }))
+        const index = cells.findIndex(([, path]) => Path.equals(path, currentCellPath))
+        const next = index >= 0 ? cells[index + 1] : undefined
+
+        if (next) {
+          Transforms.select(editor, Editor.start(editor, next[1]))
+          return
+        }
       }
 
-      let next = Editor.next(editor)
-
-      if (next) {
-        if (next[0] && (next[0] as BaseText).text) {
-          // 多个单元格同时选中按 tab 导致错位修复
-          next = (Editor.above(editor, { at: next[1] }) as NodeEntry<Descendant>) ?? next
-        }
-        Transforms.select(editor, next[1])
-      } else {
+      {
         const topLevelNodes = newEditor.children || []
         const topLevelNodesLength = topLevelNodes.length
         // 在最后一个单元格按tab时table末尾如果没有p则插入p后光标切到p上
@@ -293,6 +309,35 @@ function withTable<T extends IDomEditor>(editor: T): T {
   // 重新 normalize
   newEditor.normalizeNode = ([node, path]) => {
     const type = DomEditor.getNodeType(node)
+
+    if (type === 'table-cell') {
+      const cellNode = node as SlateElement
+      const firstChild = cellNode.children?.[0]
+
+      if (cellNode.children == null || cellNode.children.length === 0) {
+        Transforms.insertNodes(newEditor, DomEditor.genEmptyParagraph(), { at: path.concat(0) })
+        return
+      }
+
+      if (firstChild && (Text.isText(firstChild) || newEditor.isInline(firstChild))) {
+        // Convert legacy direct text/inline children in one operation. Using
+        // wrapNodes here can repeatedly re-enter normalization for merged cells.
+        const paragraph = {
+          ...DomEditor.genEmptyParagraph(),
+          children: cellNode.children.slice(),
+        }
+
+        Editor.withoutNormalizing(newEditor, () => {
+          while (Node.has(newEditor, path.concat(0))) {
+            Transforms.removeNodes(newEditor, { at: path.concat(0) })
+          }
+          Transforms.insertNodes(newEditor, paragraph, { at: path.concat(0) })
+        })
+        return
+      }
+
+      return normalizeNode([node, path])
+    }
 
     if (type !== 'table') {
       // 未命中 table ，执行默认的 normalizeNode

@@ -54,15 +54,15 @@ function genContainerStartTag(elem: ListItemElement): string {
 }
 
 function getAdjacentListItem(
-  editor: IDomEditor,
+  siblings: any[],
   index: number,
   direction: 'prev' | 'next',
 ): ListItemElement | null {
   if (direction === 'prev' && index === 0) { return null }
-  if (direction === 'next' && index === editor.children.length - 1) { return null }
+  if (direction === 'next' && index === siblings.length - 1) { return null }
 
   const targetIndex = direction === 'prev' ? index - 1 : index + 1
-  const targetNode = editor.children[targetIndex] as any
+  const targetNode = siblings[targetIndex] as any
 
   if (!DomEditor.checkNodeType(targetNode, 'list-item') || isOutlineListNode(targetNode)) {
     return null
@@ -71,12 +71,12 @@ function getAdjacentListItem(
 }
 
 function getPrevSameLevelListItem(
-  editor: IDomEditor,
+  siblings: any[],
   index: number,
   level: number,
 ): ListItemElement | null {
   for (let i = index - 1; i >= 0; i -= 1) {
-    const node = editor.children[i] as any
+    const node = siblings[i] as any
 
     if (!DomEditor.checkNodeType(node, 'list-item') || isOutlineListNode(node)) { continue }
     if ((node.level || 0) === level) {
@@ -124,14 +124,36 @@ function elemToHtml(
   const passedEditorWithChildren = editor && Array.isArray((editor as any).children)
     ? editor
     : null
-  const editorContainsElem = (candidate: IDomEditor | null | undefined) => (
-    !!candidate && candidate.children.indexOf(elem as any) >= 0
-  )
+  const getElementContext = (candidate: IDomEditor | null | undefined) => {
+    if (!candidate) { return null }
+
+    const find = (children: any[]): { siblings: any[]; index: number } | null => {
+      for (let index = 0; index < children.length; index += 1) {
+        const child = children[index]
+
+        if (child === elem) {
+          return { siblings: children, index }
+        }
+        if (Element.isElement(child)) {
+          const result = find(child.children)
+
+          if (result) { return result }
+        }
+      }
+      return null
+    }
+
+    return find((candidate as any).children || [])
+  }
+
   let finalEditor = passedEditorWithChildren || bindEditorWithChildren
 
-  if (editorContainsElem(passedEditorWithChildren)) {
+  const passedContext = getElementContext(passedEditorWithChildren)
+  const bindContext = getElementContext(bindEditorWithChildren)
+
+  if (passedContext) {
     finalEditor = passedEditorWithChildren
-  } else if (editorContainsElem(bindEditorWithChildren)) {
+  } else if (bindContext) {
     finalEditor = bindEditorWithChildren
   }
   const styleEditor = editor || bindEditor
@@ -149,9 +171,9 @@ function elemToHtml(
     STACK_EDITOR = finalEditor
   }
 
-  const index = finalEditor.children.indexOf(elem as any)
+  const context = getElementContext(finalEditor)
 
-  if (index < 0) {
+  if (!context) {
     return {
       html: `<li>${childrenHtml}</li>`,
       prefix: '',
@@ -159,8 +181,9 @@ function elemToHtml(
     }
   }
 
-  const prevItem = getAdjacentListItem(finalEditor, index, 'prev')
-  const nextItem = getAdjacentListItem(finalEditor, index, 'next')
+  const { siblings, index } = context
+  const prevItem = getAdjacentListItem(siblings, index, 'prev')
+  const nextItem = getAdjacentListItem(siblings, index, 'next')
   const hasNestedNext = !!nextItem && (nextItem.level || 0) > level
 
   if (!prevItem) {
@@ -199,7 +222,7 @@ function elemToHtml(
       }
 
       // Split target-level list container when config changed.
-      const brother = getPrevSameLevelListItem(finalEditor, index, level)
+      const brother = getPrevSameLevelListItem(siblings, index, level)
 
       if (brother && !hasSameListConfig(brother, listItemElem)) {
         const closeTag = CONTAINER_TAG_STACK.pop() || getFallbackContainerTag(brother)

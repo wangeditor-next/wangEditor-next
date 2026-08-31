@@ -20,11 +20,11 @@ function getTopSelectedElemsBySelection(editor: IDomEditor): Array<[Element, Pat
     Editor.nodes(editor, {
       at: editor.selection || undefined,
       match: node => Element.isElement(node) && Editor.isBlock(editor, node),
-      mode: 'highest',
+      mode: 'lowest',
     })
   ) as Array<[Element, Path]>
 
-  return entries.filter(([, path]) => path.length === 1)
+  return entries.filter(([node]) => !['table', 'table-row', 'table-cell'].includes(node.type))
 }
 
 function getSelectedListEntry(editor: IDomEditor): [ListItemElement, Path] | null {

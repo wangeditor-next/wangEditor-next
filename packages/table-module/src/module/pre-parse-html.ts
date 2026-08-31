@@ -179,57 +179,8 @@ function tryApplyAutoFittedColumnWidths($table: ReturnType<typeof $>) {
   applyMeasuredColumnWidths($table[0] as HTMLTableElement, columnWidths)
 }
 
-function normalizeCellParagraphs(cellHtml: string): string {
-  const container = document.createElement('div')
-
-  container.innerHTML = cellHtml
-
-  const normalizedNodes: Node[] = []
-  let hasMeaningfulContent = false
-
-  Array.from(container.childNodes).forEach(node => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      if ((node.textContent || '').trim()) {
-        normalizedNodes.push(node.cloneNode(true))
-        hasMeaningfulContent = true
-      }
-      return
-    }
-
-    if (!(node instanceof HTMLElement) || node.tagName.toLowerCase() !== 'p') {
-      normalizedNodes.push(node.cloneNode(true))
-      hasMeaningfulContent = true
-      return
-    }
-
-    const paragraphHtml = node.innerHTML
-    const trimmedHtml = paragraphHtml.trim()
-
-    if (!trimmedHtml || trimmedHtml === '&nbsp;') {
-      return
-    }
-
-    if (hasMeaningfulContent) {
-      normalizedNodes.push(document.createElement('br'))
-    }
-
-    const paragraphContainer = document.createElement('div')
-
-    paragraphContainer.innerHTML = paragraphHtml
-
-    Array.from(paragraphContainer.childNodes).forEach(childNode => {
-      normalizedNodes.push(childNode.cloneNode(true))
-    })
-    hasMeaningfulContent = true
-  })
-
-  container.replaceChildren(...normalizedNodes)
-
-  return container.innerHTML
-}
-
 /**
- * pre-prase table ，去掉 <tbody> 和处理单元格中的 <p> 标签
+ * pre-prase table and remove the tbody wrapper while preserving cell blocks.
  * @param table table elem
  */
 function preParse(tableElem: DOMElement): DOMElement {
@@ -262,14 +213,12 @@ function preParse(tableElem: DOMElement): DOMElement {
     // 设置 width 属性为 auto
     $cell.attr('width', 'auto')
 
-    // 直接处理单元格中的所有 <p> 标签
+    // Keep block paragraphs/lists intact so the Slate parser can preserve them.
     let cellHtml = $cell.html() || ''
 
     // 先清理Word特殊标签
     cellHtml = cellHtml.replace(/<o:p[^>]*>[\s\S]*?<\/o:p>/gi, '') // 删除 <o:p> 标签
     cellHtml = cellHtml.replace(/<\/o:p>/gi, '') // 删除可能的自闭合标签
-
-    cellHtml = normalizeCellParagraphs(cellHtml)
 
     $cell.html(cellHtml)
   }

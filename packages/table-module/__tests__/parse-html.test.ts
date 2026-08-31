@@ -70,7 +70,7 @@ describe('table - pre parse html', () => {
     )
   })
 
-  it('should preserve line breaks when flattening paragraphs inside cells', () => {
+  it('should preserve paragraph blocks inside cells', () => {
     const $table = $(
       [
         '<table><tbody><tr><td>',
@@ -85,9 +85,8 @@ describe('table - pre parse html', () => {
     expect(res.outerHTML).toBe(
       [
         '<table><tr><td width="auto">',
-        '<span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 1</span>',
-        '<br>',
-        '<span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 2</span>',
+        '<p><span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 1</span></p>',
+        '<p><span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 2</span></p>',
         '</td></tr></table>',
       ].join('')
     )

@@ -293,11 +293,11 @@ describe('Table Module Delete Row Menu', () => {
     const [insertedCell, originalCell] = remainingRow.children
 
     expect(table.children).toHaveLength(1)
-    expect(insertedCell.children[0].text).toBe('A')
+    expect(slate.Node.string(insertedCell.children[0])).toBe('A')
     expect(insertedCell.rowSpan).toBe(1)
     expect(insertedCell.isHeader).toBe(true)
     expect(insertedCell.backgroundColor).toBe('#eee')
-    expect(originalCell.children[0].text).toBe('C')
+    expect(slate.Node.string(originalCell.children[0])).toBe('C')
   })
 
   test('exec falls back to appending a carried cell when inserting at the calculated path fails', () => {

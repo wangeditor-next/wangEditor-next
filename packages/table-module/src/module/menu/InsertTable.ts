@@ -29,7 +29,7 @@ function genTableNode(editor: IDomEditor, rowNum: number, colNum: number): Table
     for (let j = 0; j < colNum; j += 1) {
       const cellNode: TableCellElement = {
         type: 'table-cell',
-        children: [{ text: '' }],
+        children: [{ type: 'paragraph', children: [{ text: '' }] }],
       }
 
       if (i === 0) {

@@ -110,7 +110,7 @@ describe('table merge and split menus', () => {
 
     expect(baseCell.rowSpan).toBe(2)
     expect(baseCell.colSpan).toBe(2)
-    expect(baseCell.children.map(child => child.text).join('')).toBe('ABCD')
+    expect(Node.string(baseCell)).toBe('ABCD')
     expect(table.children[0].children).toHaveLength(1)
     expect(Editor.hasPath(editor, [0, 0, 1])).toBe(false)
     expect(unselectSpy).toHaveBeenCalledWith(editor)

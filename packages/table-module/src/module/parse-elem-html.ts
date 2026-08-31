@@ -93,6 +93,7 @@ function parseCellHtml(
 
   children = children.filter(child => {
     if (DomEditor.getNodeType(child) === 'paragraph') { return true }
+    if (DomEditor.getNodeType(child) === 'list-item') { return true }
     if (Text.isText(child)) { return true }
     if (editor.isInline(child)) { return true }
     return false

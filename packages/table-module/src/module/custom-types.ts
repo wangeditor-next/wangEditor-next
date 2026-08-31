@@ -3,7 +3,7 @@
  * @author wangfupeng
  */
 
-import { Text } from 'slate'
+import { Descendant } from 'slate'
 
 // 【注意】需要把自定义的 Element 引入到最外层的 custom-types.d.ts
 export type TableCellProperty = {
@@ -22,7 +22,8 @@ export type TableCellElement = {
   colSpan?: number
   rowSpan?: number
   width?: string // 只作用于第一行（尚未考虑单元格合并！）
-  children: Text[]
+  /** Cell content is a sequence of block descendants. Legacy Text[] cells are normalized on load. */
+  children: Descendant[]
 
   /** 用于设置单元格的 display 属性 */
   hidden?: boolean
