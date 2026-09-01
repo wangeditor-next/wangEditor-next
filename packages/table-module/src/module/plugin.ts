@@ -310,35 +310,6 @@ function withTable<T extends IDomEditor>(editor: T): T {
   newEditor.normalizeNode = ([node, path]) => {
     const type = DomEditor.getNodeType(node)
 
-    if (type === 'table-cell') {
-      const cellNode = node as SlateElement
-      const firstChild = cellNode.children?.[0]
-
-      if (cellNode.children == null || cellNode.children.length === 0) {
-        Transforms.insertNodes(newEditor, DomEditor.genEmptyParagraph(), { at: path.concat(0) })
-        return
-      }
-
-      if (firstChild && (Text.isText(firstChild) || newEditor.isInline(firstChild))) {
-        // Convert legacy direct text/inline children in one operation. Using
-        // wrapNodes here can repeatedly re-enter normalization for merged cells.
-        const paragraph = {
-          ...DomEditor.genEmptyParagraph(),
-          children: cellNode.children.slice(),
-        }
-
-        Editor.withoutNormalizing(newEditor, () => {
-          while (Node.has(newEditor, path.concat(0))) {
-            Transforms.removeNodes(newEditor, { at: path.concat(0) })
-          }
-          Transforms.insertNodes(newEditor, paragraph, { at: path.concat(0) })
-        })
-        return
-      }
-
-      return normalizeNode([node, path])
-    }
-
     if (type !== 'table') {
       // 未命中 table ，执行默认的 normalizeNode
       return normalizeNode([node, path])

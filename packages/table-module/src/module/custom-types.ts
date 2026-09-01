@@ -22,7 +22,7 @@ export type TableCellElement = {
   colSpan?: number
   rowSpan?: number
   width?: string // 只作用于第一行（尚未考虑单元格合并！）
-  /** Cell content is a sequence of block descendants. Legacy Text[] cells are normalized on load. */
+  /** Cell content can contain block descendants. Legacy Text[] cells remain supported. */
   children: Descendant[]
 
   /** 用于设置单元格的 display 属性 */
