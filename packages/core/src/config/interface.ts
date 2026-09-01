@@ -183,6 +183,8 @@ interface ICodeBlockConfig {
 export interface IMenuConfig {
   bold: ISingleMenuConfig;
   underline: ISingleMenuConfig;
+  wavyUnderline: ISingleMenuConfig;
+  emphasisDot: ISingleMenuConfig;
   italic: ISingleMenuConfig;
   through: ISingleMenuConfig;
   code: ISingleMenuConfig;

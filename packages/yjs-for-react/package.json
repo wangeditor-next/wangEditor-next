@@ -1,6 +1,6 @@
 {
   "name": "@wangeditor-next/yjs-for-react",
-  "version": "6.1.1",
+  "version": "6.3.0",
   "description": "React specific components/utils for wangeditor-next-yjs.",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",

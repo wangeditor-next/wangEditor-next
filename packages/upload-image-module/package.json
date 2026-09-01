@@ -1,6 +1,6 @@
 {
   "name": "@wangeditor-next/upload-image-module",
-  "version": "6.1.1",
+  "version": "6.3.0",
   "description": "wangEditor upload-image module",
   "author": "cycleccc <2991205548@qq.com>",
   "type": "module",

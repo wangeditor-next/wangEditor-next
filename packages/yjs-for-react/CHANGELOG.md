@@ -1,5 +1,24 @@
 # @wangeditor-next/yjs-for-react
 
+## 6.3.0
+
+### Patch Changes
+
+- Updated dependencies [8f210be]
+  - @wangeditor-next/editor@6.3.0
+  - @wangeditor-next/yjs@6.3.0
+
+## 6.2.0
+
+### Patch Changes
+
+- 133819f: Fix published package entrypoint metadata and validate generated artifact paths.
+- Updated dependencies [2090ba7]
+- Updated dependencies [133819f]
+- Updated dependencies [f035f0d]
+  - @wangeditor-next/editor@6.2.0
+  - @wangeditor-next/yjs@6.2.0
+
 ## 6.1.1
 
 ### Patch Changes

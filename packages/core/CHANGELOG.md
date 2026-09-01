@@ -1,5 +1,20 @@
 # Change Log
 
+## 6.3.0
+
+### Patch Changes
+
+- 8f210be: Scope built-in editable-content styles under the editor root so headings, lists, controls, code,
+  tables, and media remain stable when host reset styles such as Tailwind Preflight are present.
+
+## 6.2.0
+
+### Minor Changes
+
+- 2090ba7: Add independently toggleable wavy underline and lower dot emphasis marks that can coexist with underline.
+  Use static classes for these decorations in class text-style mode, and include the registered
+  built-in module styles in the default editor CSS bundle.
+
 ## 6.1.1
 
 ## 1.10.0

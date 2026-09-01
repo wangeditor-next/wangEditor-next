@@ -12,6 +12,7 @@ export type LinkCardElement = {
   type: 'link-card'
   title: string
   link: string
+  target?: string
   iconImgSrc?: string
   children: EmptyText[] // void 元素必须有一个空 text
 }

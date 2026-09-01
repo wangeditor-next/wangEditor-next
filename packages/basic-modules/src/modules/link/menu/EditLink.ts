@@ -39,6 +39,8 @@ class EditLinkMenu implements IModalMenu {
 
   private $content: Dom7Array | null = null
 
+  private textInputId = genDomID()
+
   private urlInputId = genDomID()
 
   private buttonId = genDomID()
@@ -89,9 +91,11 @@ class EditLinkMenu implements IModalMenu {
   }
 
   getModalContentElem(editor: IDomEditor): DOMElement {
-    const { urlInputId, buttonId } = this
+    const { textInputId, urlInputId, buttonId } = this
 
     // 获取 input button elem
+    const [textContainerElem, inputTextElem] = genModalInputElems(t('link.text'), textInputId)
+    const $inputText = $(inputTextElem)
     const [urlContainerElem, inputUrlElem] = genModalInputElems(t('link.url'), urlInputId)
     const $inputUrl = $(inputUrlElem)
     const [buttonContainerElem] = genModalButtonElems(buttonId, t('common.ok'))
@@ -105,8 +109,7 @@ class EditLinkMenu implements IModalMenu {
         e.preventDefault()
         editor.restoreSelection() // 还原选区
 
-        const n = DomEditor.getSelectedNodeByType(editor, 'link')
-        const text = n ? Node.string(n) : ''
+        const text = $content.find(`#${textInputId}`).val()
         const url = $content.find(`#${urlInputId}`).val()
 
         updateLink(editor, text, url) // 修改链接
@@ -122,18 +125,22 @@ class EditLinkMenu implements IModalMenu {
 
     $content.empty() // 先清空内容
 
-    // append input and button
+    // append inputs and button
+    $content.append(textContainerElem)
     $content.append(urlContainerElem)
     $content.append(buttonContainerElem)
 
     // 设置 input val
+    const linkElem = this.getSelectedLinkElem(editor)
+    const text = linkElem ? Node.string(linkElem) : ''
     const url = this.getValue(editor)
 
+    $inputText.val(text)
     $inputUrl.val(url)
 
     // focus 一个 input（异步，此时 DOM 尚未渲染）
     setTimeout(() => {
-      $inputUrl.focus()
+      $inputText.focus()
     })
 
     return $content[0]

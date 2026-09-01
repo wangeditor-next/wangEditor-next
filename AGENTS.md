@@ -185,6 +185,14 @@ type(scope): 简要标题
 ## 发布流程
 
 - 正式发布：新增 Changeset，合并到 `master` 后由 CI 自动发布 npm
+- 所有公开运行时包处于同一个 Changesets `fixed` 产品组，版本号表示已验证的 wangEditor
+  产品组合，而非每个包的独立功能清单。
+- Changeset 只标记直接受影响的包；本次直接变更的最高 SemVer 级别决定整套官方包的产品
+  版本。不要手改 package.json、删除其他包的版本变更或拆分 fixed 组来压低 release 版本。
+- Release PR 与产品级 Release Notes 必须区分直接用户可见变更和 `Updated dependencies` 同步
+  条目。需要延后功能时，在合并 release PR 前保留对应 changeset，不要改动版本策略。
+- 修改 fixed 组、发布范围、package source tag 或 Release/Repair workflow 是仓库级架构变更；
+  必须独立 PR，验证发布矩阵与历史恢复流程，并更新 `docs/publish.md`。
 - 预发布：
   - `pnpm changeset pre enter beta`
   - `pnpm changeset`

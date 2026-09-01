@@ -15,12 +15,14 @@ function parseHtml(
 ): SlateElement {
   const link = elem.getAttribute('data-link') || ''
   const title = elem.getAttribute('data-title') || ''
+  const target = elem.getAttribute('data-target') || undefined
   const iconImgSrc = elem.getAttribute('data-iconImgSrc') || ''
 
   return {
     type: 'link-card',
     link,
     title,
+    ...(target ? { target } : {}),
     iconImgSrc,
     children: [{ text: '' }], // void node 必须有一个空白 text
   } as LinkCardElement

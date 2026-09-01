@@ -43,6 +43,10 @@ const editorConfig: Partial<IEditorConfig> = {
         'convertToLinkCard' // add 'Convert to link-card' menu
       ],
     },
+    // hover menus when a link card is selected
+    'link-card': {
+      menuKeys: ['convertToLink'],
+    },
   },
 
   MENU_CONF: {
@@ -75,6 +79,8 @@ Then create editor and toolbar, you will use `editorConfig`.
 ### Render HTML
 
 You will get a link-card's HTML format like this
+
+When the source link has a `target`, `data-target` is also output and restored by Convert to Link.
 
 ```html
 <div data-w-e-type="link-card" data-w-e-is-void data-title="Baidu News" data-link="http://news.baidu.com/"

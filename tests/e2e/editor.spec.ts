@@ -403,6 +403,66 @@ test.describe('Basic Editor', () => {
     await expect(page.locator('#w-e-textarea-1')).toContainText('一行标题')
   })
 
+  test('loads the bundled default editor styles', async ({ page }) => {
+    await expect(page.locator('[data-testid="editor-toolbar"] .w-e-toolbar')).toHaveCSS(
+      'display',
+      'flex'
+    )
+    await expect(page.locator('[data-testid="editor-textarea"] .w-e-text-container')).toHaveCSS(
+      'position',
+      'relative'
+    )
+  })
+
+  test('toggles underline decorations independently', async ({ page }) => {
+    await typeInEditor(page, 'format text')
+    await selectAll(page)
+
+    await waitForMenuEnabled(page, 'underline')
+    await getToolbarMenu(page, 'underline').click()
+
+    const moreStyles = await waitForMenuEnabled(page, 'group-more-style')
+    const toggleMoreStyle = async (menuKey: 'wavyUnderline' | 'emphasisDot') => {
+      await moreStyles.hover()
+      const panel = moreStyles.locator('..').locator('.w-e-bar-item-menus-container')
+
+      await panel.waitFor({ state: 'visible' })
+      await panel.locator(`[data-menu-key="${menuKey}"]`).click({ force: true })
+    }
+
+    await toggleMoreStyle('wavyUnderline')
+    await toggleMoreStyle('emphasisDot')
+
+    const allDecorationsHtml = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      return editor?.getHtml() || ''
+    })
+
+    expect(allDecorationsHtml).toContain('<u')
+    expect(allDecorationsHtml).toContain('text-decoration-style: wavy')
+    expect(allDecorationsHtml).toContain('text-emphasis-style: filled dot')
+
+    await toggleMoreStyle('wavyUnderline')
+    const withoutWavyHtml = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      return editor?.getHtml() || ''
+    })
+
+    expect(withoutWavyHtml).not.toContain('text-decoration-style: wavy')
+    expect(withoutWavyHtml).toContain('text-emphasis-style: filled dot')
+
+    await toggleMoreStyle('emphasisDot')
+    const withoutEmphasisHtml = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge?.editor
+
+      return editor?.getHtml() || ''
+    })
+
+    expect(withoutEmphasisHtml).toBe('<p><u>format text</u></p>')
+  })
+
   test('updates html when typing', async ({ page }) => {
     await typeInEditor(page, 'e2e-text')
     await expect(page.getByTestId('editor-html')).toContainText('e2e-text')
@@ -2419,6 +2479,94 @@ test('regression #929: block video keeps explicit media alignment under CSS rese
   expect(exportedHtml).toContain('<figure data-w-e-type="video"')
   expect(exportedHtml).toContain('data-w-e-align="left"')
   expect(exportedHtml).toContain('justify-content: flex-start')
+})
+
+test('regression #988: editable content keeps its structural styles under host resets', async ({
+  page,
+}) => {
+  await page.goto('/examples/default-mode.html')
+  await page.getByTestId('btn-create').click()
+  await expect(getEditable(page)).toBeVisible()
+
+  await page.addStyleTag({
+    content: `
+      [data-testid="editor-textarea"] h1,
+      [data-testid="editor-textarea"] h2,
+      [data-testid="editor-textarea"] h3,
+      [data-testid="editor-textarea"] h4,
+      [data-testid="editor-textarea"] h5,
+      [data-testid="editor-textarea"] h6 {
+        margin: 0;
+        font-size: inherit;
+        font-weight: inherit;
+        line-height: 1;
+      }
+      [data-testid="editor-textarea"] ul,
+      [data-testid="editor-textarea"] ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      [data-testid="editor-textarea"] button {
+        border: 10px solid red;
+        font-size: 1px;
+        line-height: 1;
+      }
+      [data-testid="editor-textarea"] table {
+        border-collapse: separate;
+      }
+    `,
+  })
+  await page.evaluate(() => {
+    const editor = (window as any).wangEditorExampleBridge.editor
+
+    editor.setHtml(
+      [
+        '<h1>Heading</h1>',
+        '<ul><li>Bullet</li></ul>',
+        '<ol data-w-e-list-mode="outline"><li data-w-e-list-indent="0" data-w-e-outline-number="1."><h1>Chapter</h1></li></ol>',
+        '<table><tbody><tr><td>Cell</td></tr></tbody></table>',
+        '<p><br></p>',
+      ].join(''),
+    )
+  })
+
+  const styles = await page.evaluate(() => {
+    const root = document.querySelector('[data-testid="editor-textarea"] [data-slate-editor]')
+    const heading = root?.querySelector('h1')
+    const marker = root?.querySelector('.w-e-list-marker')
+    const outlineButton = root?.querySelector('button.w-e-list-marker')
+    const table = root?.querySelector('table')
+
+    if (!root || !heading || !marker || !outlineButton || !table) {
+      throw new Error('editor content styles regression fixture was not rendered')
+    }
+
+    const headingStyle = getComputedStyle(heading)
+    const markerStyle = getComputedStyle(marker)
+    const outlineButtonStyle = getComputedStyle(outlineButton)
+    const tableStyle = getComputedStyle(table)
+
+    return {
+      headingMarginTop: headingStyle.marginTop,
+      headingFontWeight: headingStyle.fontWeight,
+      headingLineHeight: headingStyle.lineHeight,
+      markerText: marker.textContent,
+      markerDisplay: markerStyle.display,
+      outlineButtonBorderWidth: outlineButtonStyle.borderWidth,
+      outlineButtonFontSize: outlineButtonStyle.fontSize,
+      tableBorderCollapse: tableStyle.borderCollapse,
+    }
+  })
+
+  expect(styles.headingMarginTop).toBe('20px')
+  expect(styles.headingFontWeight).toBe('700')
+  expect(styles.headingLineHeight).not.toBe('1px')
+  expect(styles.markerText).toBe('•')
+  expect(styles.markerDisplay).not.toBe('none')
+  expect(styles.outlineButtonBorderWidth).toBe('0px')
+  expect(styles.outlineButtonFontSize).not.toBe('1px')
+  expect(styles.tableBorderCollapse).toBe('collapse')
 })
 
 test.describe('Multi Editors', () => {

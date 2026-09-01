@@ -1,5 +1,20 @@
 # @wangeditor-next/editor-for-vue2
 
+## 6.3.0
+
+### Patch Changes
+
+- Updated dependencies [8f210be]
+  - @wangeditor-next/editor@6.3.0
+
+## 6.2.0
+
+### Patch Changes
+
+- 8be3ed0: Remove the unused Vue 2 template compiler build dependency.
+- Updated dependencies [2090ba7]
+  - @wangeditor-next/editor@6.2.0
+
 ## 6.1.1
 
 ### Patch Changes

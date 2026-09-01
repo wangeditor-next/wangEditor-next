@@ -28,7 +28,7 @@ export function genDefaultToolbarKeys() {
       key: 'group-more-style', // 以 group 开头
       title: t('editor.more'),
       iconSvg: MORE_SVG,
-      menuKeys: ['through', 'code', 'sup', 'sub', 'clearStyle'],
+      menuKeys: ['through', 'wavyUnderline', 'emphasisDot', 'code', 'sup', 'sub', 'clearStyle'],
     },
     'color',
     'bgColor',

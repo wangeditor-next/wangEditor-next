@@ -1,5 +1,21 @@
 # Change Log
 
+## 6.3.0
+
+### Patch Changes
+
+- Updated dependencies [8f210be]
+  - @wangeditor-next/core@6.3.0
+
+## 6.2.0
+
+### Patch Changes
+
+- 0f1fab8: Fix external HTML list pastes truncating the list and all following content.
+- f035f0d: Use the documented public globals for internal UMD dependencies.
+- Updated dependencies [2090ba7]
+  - @wangeditor-next/core@6.2.0
+
 ## 6.1.1
 
 ### Patch Changes

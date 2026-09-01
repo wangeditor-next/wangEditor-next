@@ -20,6 +20,14 @@ describe('text style - parse style html', () => {
       { html: '<i>hello</i>', key: 'italic' },
       { html: '<em>hello</em>', key: 'italic' },
       { html: '<u>hello</u>', key: 'underline' },
+      {
+        html: '<span style="text-decoration-line: underline; text-decoration-style: wavy;">hello</span>',
+        key: 'wavyUnderline',
+      },
+      {
+        html: '<span style="text-emphasis-style: filled dot; text-emphasis-position: under;">hello</span>',
+        key: 'emphasisDot',
+      },
       { html: '<s>hello</s>', key: 'through' },
       { html: '<strike>hello</strike>', key: 'through' },
       { html: '<sub>hello</sub>', key: 'sub' },

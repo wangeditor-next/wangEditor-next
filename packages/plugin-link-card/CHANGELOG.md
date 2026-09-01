@@ -1,5 +1,24 @@
 # @wangeditor-next/plugin-link-card
 
+## 6.3.0
+
+### Minor Changes
+
+- 3a5f23f: Add link-card to link conversion and preserve link targets during card conversion.
+
+### Patch Changes
+
+- Updated dependencies [8f210be]
+  - @wangeditor-next/editor@6.3.0
+
+## 6.2.0
+
+### Patch Changes
+
+- f035f0d: Use the documented public globals for internal UMD dependencies.
+- Updated dependencies [2090ba7]
+  - @wangeditor-next/editor@6.2.0
+
 ## 6.1.1
 
 ### Patch Changes

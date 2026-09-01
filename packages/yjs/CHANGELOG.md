@@ -1,5 +1,21 @@
 # @wangeditor-next/yjs
 
+## 6.3.0
+
+### Patch Changes
+
+- Updated dependencies [8f210be]
+  - @wangeditor-next/core@6.3.0
+
+## 6.2.0
+
+### Patch Changes
+
+- 133819f: Fix published package entrypoint metadata and validate generated artifact paths.
+- f035f0d: Use the documented public globals for internal UMD dependencies.
+- Updated dependencies [2090ba7]
+  - @wangeditor-next/core@6.2.0
+
 ## 6.1.1
 
 ### Patch Changes
