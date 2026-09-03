@@ -1283,7 +1283,13 @@ test.describe('Basic Editor', () => {
         throw new Error('table node not found')
       }
 
-      return tableNode.children[0].children.map((cell: any) => cell?.children?.[0]?.text ?? '')
+      const getNodeText = (node: any): string => {
+        if (typeof node?.text === 'string') { return node.text }
+        if (!Array.isArray(node?.children)) { return '' }
+        return node.children.map(getNodeText).join('')
+      }
+
+      return tableNode.children[0].children.map(getNodeText)
     })
 
     expect(firstRowTexts).toEqual(['A', '', 'B'])
