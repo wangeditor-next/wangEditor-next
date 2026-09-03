@@ -5,8 +5,8 @@ import { Editor, Path, Transforms } from 'slate'
 
 import { SPLIT_CELL_SVG } from '../../constants/svg'
 import { CellElement, isOfType } from '../../utils'
-import { TableCellElement, TableElement } from '../custom-types'
-import { isTableWithHeader } from '../helpers'
+import { TableElement } from '../custom-types'
+import { createEmptyTableCell, isTableWithHeader } from '../helpers'
 // import { DEFAULT_WITH_TABLE_OPTIONS } from "../../utils/options";
 
 class SplitCell implements IButtonMenu {
@@ -92,10 +92,7 @@ class SplitCell implements IButtonMenu {
       // 2. 处理同行的其他列（colSpan > 1的情况）
       // 在当前单元格后面插入 colSpan-1 个新单元格
       for (let c = 1; c < colSpan; c += 1) {
-        const newCell: TableCellElement = {
-          type: 'table-cell',
-          children: [{ text: '' }],
-        }
+        const newCell = createEmptyTableCell()
 
         // 如果在第一行且表格有表头，设置isHeader
         const currentRowIndex = selectedCellPath[selectedCellPath.length - 2]
@@ -143,10 +140,7 @@ class SplitCell implements IButtonMenu {
 
           // 在目标行中插入colSpan个新单元格
           for (let c = 0; c < colSpan; c += 1) {
-            const newCell: TableCellElement = {
-              type: 'table-cell',
-              children: [{ text: '' }],
-            }
+            const newCell = createEmptyTableCell()
 
             // 计算插入位置
             const originalColumnIndex = selectedCellPath[selectedCellPath.length - 1]

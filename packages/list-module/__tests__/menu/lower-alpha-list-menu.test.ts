@@ -66,8 +66,8 @@ describe('list LowerAlphaListMenu', () => {
     editor.select({ path: [1, 0], offset: 0 }) // 选中 li
     expect(menu.isDisabled(editor)).toBeFalsy()
 
-    editor.select({ path: [2, 0, 0, 0], offset: 0 }) // 选中 table 单元格
-    expect(menu.isDisabled(editor)).toBeTruthy()
+    editor.select({ path: [2, 0, 0, 0, 0], offset: 0 }) // 选中 table 单元格内段落
+    expect(menu.isDisabled(editor)).toBeFalsy()
 
     editor.select({ path: [3, 0, 0], offset: 0 }) // 选中 code
     expect(menu.isDisabled(editor)).toBeTruthy()

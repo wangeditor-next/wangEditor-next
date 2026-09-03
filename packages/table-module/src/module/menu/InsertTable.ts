@@ -13,6 +13,7 @@ import {
 import { TABLE_SVG } from '../../constants/svg'
 import $, { Dom7Array, DOMElement } from '../../utils/dom'
 import { TableCellElement, TableElement, TableRowElement } from '../custom-types'
+import { createEmptyTableCell } from '../helpers'
 
 function genTableNode(editor: IDomEditor, rowNum: number, colNum: number): TableElement {
   // 拼接 rows
@@ -27,10 +28,7 @@ function genTableNode(editor: IDomEditor, rowNum: number, colNum: number): Table
     const cells: TableCellElement[] = []
 
     for (let j = 0; j < colNum; j += 1) {
-      const cellNode: TableCellElement = {
-        type: 'table-cell',
-        children: [{ type: 'paragraph', children: [{ text: '' }] }],
-      }
+      const cellNode: TableCellElement = createEmptyTableCell()
 
       if (i === 0) {
         cellNode.isHeader = tableHeader?.selected ?? true // 第一行默认是 th

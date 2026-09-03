@@ -247,7 +247,12 @@ describe('Table Module Insert Row Menu', () => {
       expect.objectContaining({
         type: 'table-row',
         height: 35,
-        children: expect.any(Array),
+        children: expect.arrayContaining([
+          expect.objectContaining({
+            type: 'table-cell',
+            children: [{ type: 'paragraph', children: [{ text: '' }] }],
+          }),
+        ]),
       }),
       expect.any(Object),
     )
@@ -309,7 +314,12 @@ describe('Table Module Insert Row Menu', () => {
       expect.objectContaining({
         type: 'table-row',
         height: 30,
-        children: expect.any(Array),
+        children: [
+          expect.objectContaining({
+            type: 'table-cell',
+            children: [{ type: 'paragraph', children: [{ text: '' }] }],
+          }),
+        ],
       }),
       expect.any(Object),
     )
@@ -378,7 +388,12 @@ describe('Table Module Insert Row Menu', () => {
       expect.objectContaining({
         type: 'table-row',
         height: 40,
-        children: [{ type: 'table-cell', children: [{ text: '' }] }],
+        children: [
+          {
+            type: 'table-cell',
+            children: [{ type: 'paragraph', children: [{ text: '' }] }],
+          },
+        ],
       }),
       { at: [0, 1] },
     )

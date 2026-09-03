@@ -4,7 +4,7 @@
  */
 
 import { DomEditor, getTextStyleMode, IDomEditor } from '@wangeditor-next/core'
-import { Element } from 'slate'
+import { Element, Node, Path } from 'slate'
 
 import { ELEM_TO_EDITOR } from '../utils/maps'
 import { getListItemColor } from '../utils/util'
@@ -21,6 +21,23 @@ import { genListColorClassName, resolveListColorAction } from './style-class'
 // ol ul stack for streaming list-item serialization
 const CONTAINER_TAG_STACK: Array<string> = []
 let STACK_EDITOR: IDomEditor | null = null
+let FALLBACK_CONTEXTS: WeakMap<Element, { siblings: any[]; index: number }> | null = null
+
+function buildElementContexts(editor: IDomEditor) {
+  const contexts = new WeakMap<Element, { siblings: any[]; index: number }>()
+
+  const visit = (children: any[]) => {
+    children.forEach((child, index) => {
+      if (!Element.isElement(child)) { return }
+
+      contexts.set(child, { siblings: children, index })
+      visit(child.children)
+    })
+  }
+
+  visit(editor.children)
+  return contexts
+}
 
 function getContainerTag(elem: ListItemElement): 'ol' | 'ul' {
   return elem.ordered ? 'ol' : 'ul'
@@ -124,26 +141,25 @@ function elemToHtml(
   const passedEditorWithChildren = editor && Array.isArray((editor as any).children)
     ? editor
     : null
-  const getElementContext = (candidate: IDomEditor | null | undefined) => {
+  const getElementContext = (
+    candidate: IDomEditor | null | undefined,
+    allowFallback = false,
+  ) => {
     if (!candidate) { return null }
 
-    const find = (children: any[]): { siblings: any[]; index: number } | null => {
-      for (let index = 0; index < children.length; index += 1) {
-        const child = children[index]
+    try {
+      const path = DomEditor.findPath(candidate, elem)
+      const parent = path.length === 1 ? candidate : Node.get(candidate, Path.parent(path))
+      const siblings = Array.isArray((parent as any).children) ? (parent as any).children : []
+      const index = path[path.length - 1]
 
-        if (child === elem) {
-          return { siblings: children, index }
-        }
-        if (Element.isElement(child)) {
-          const result = find(child.children)
+      return siblings[index] === elem ? { siblings, index } : null
+    } catch {
+      if (!allowFallback) { return null }
 
-          if (result) { return result }
-        }
-      }
-      return null
+      FALLBACK_CONTEXTS ||= buildElementContexts(candidate)
+      return FALLBACK_CONTEXTS.get(elem) || null
     }
-
-    return find((candidate as any).children || [])
   }
 
   let finalEditor = passedEditorWithChildren || bindEditorWithChildren
@@ -169,9 +185,10 @@ function elemToHtml(
   if (STACK_EDITOR !== finalEditor) {
     CONTAINER_TAG_STACK.length = 0
     STACK_EDITOR = finalEditor
+    FALLBACK_CONTEXTS = null
   }
 
-  const context = getElementContext(finalEditor)
+  const context = getElementContext(finalEditor, true)
 
   if (!context) {
     return {
@@ -269,6 +286,7 @@ function elemToHtml(
       }
     }
     STACK_EDITOR = null
+    FALLBACK_CONTEXTS = null
   }
 
   return {

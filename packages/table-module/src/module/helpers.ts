@@ -4,9 +4,85 @@
  */
 
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
-import { Element as SlateElement, Transforms } from 'slate'
+import {
+  Descendant, Element as SlateElement, Text, Transforms,
+} from 'slate'
 
 import { TableCellElement, TableElement } from './custom-types'
+
+export function createEmptyTableCell(
+  properties: Omit<Partial<TableCellElement>, 'type' | 'children'> = {},
+): TableCellElement {
+  return {
+    type: 'table-cell',
+    ...properties,
+    children: [{ type: 'paragraph', children: [{ text: '' }] }],
+  }
+}
+
+export function cloneTableCellChildren(children: Descendant[]): Descendant[] {
+  return children.map(child => {
+    if (Text.isText(child)) {
+      return { ...child }
+    }
+
+    return {
+      ...child,
+      children: cloneTableCellChildren(child.children),
+    }
+  })
+}
+
+export function normalizeTableCellChildren(children: Descendant[]): Descendant[] {
+  const normalized: Descendant[] = []
+  let textRun: Descendant[] = []
+
+  const flushTextRun = () => {
+    if (textRun.length === 0) { return }
+
+    normalized.push({ type: 'paragraph', children: textRun })
+    textRun = []
+  }
+
+  children.forEach(child => {
+    if (Text.isText(child)) {
+      textRun.push({ ...child })
+      return
+    }
+
+    flushTextRun()
+    normalized.push(child)
+  })
+  flushTextRun()
+
+  return normalized.length > 0 ? normalized : createEmptyTableCell().children
+}
+
+export function normalizeTableContent(content: Descendant[]): Descendant[] {
+  return content.map(node => {
+    if (Text.isText(node)) {
+      return node
+    }
+
+    if (node.type === 'table-cell') {
+      return {
+        ...node,
+        children: normalizeTableCellChildren(node.children),
+      }
+    }
+
+    const children = normalizeTableContent(node.children)
+
+    if (children.every((child, index) => child === node.children[index])) {
+      return node
+    }
+
+    return {
+      ...node,
+      children,
+    }
+  })
+}
 
 /**
  * Update a rendered table by its own path instead of relying on the current selection.

@@ -288,7 +288,7 @@ describe('Table Module Insert Col Menu', () => {
 
     expect(insertNodesFn).toBeCalledWith(
       editor,
-      { type: 'table-cell', children: [{ text: '' }] },
+      { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: '' }] }] },
       { at: [0, 0, 0] },
     )
   })
@@ -373,6 +373,7 @@ describe('Table Module Insert Col Menu', () => {
     expect(table.children[0].children).toHaveLength(3)
     expect(table.children[0].children[0].isHeader).toBe(true)
     expect(table.children[1].children).toHaveLength(3)
+    expect(table.children[0].children[0].children[0].type).toBe('paragraph')
   })
 
   test('exec should insert column after current column when insertPosition is after', () => {
@@ -457,8 +458,10 @@ describe('Table Module Insert Col Menu', () => {
     expect(table.columnWidths).toEqual([60, 60, 80])
     expect(table.children[0].children).toHaveLength(3)
     expect(table.children[0].children[1].isHeader).toBe(true)
-    expect(table.children[0].children.map((cell: any) => cell.children[0]?.text ?? '')).toEqual(['h1', '', 'h2'])
-    expect(table.children[1].children.map((cell: any) => cell.children[0]?.text ?? '')).toEqual(['a1', '', 'a2'])
+    expect(table.children[0].children.map((cell: any) => slate.Node.string(cell))).toEqual(['h1', '', 'h2'])
+    expect(table.children[1].children.map((cell: any) => slate.Node.string(cell))).toEqual(['a1', '', 'a2'])
+    expect(table.children[0].children[1].children[0].type).toBe('paragraph')
+    expect(table.children[1].children[1].children[0].type).toBe('paragraph')
   })
 
   test('isDisabled should fail closed when matrix inspection throws', () => {

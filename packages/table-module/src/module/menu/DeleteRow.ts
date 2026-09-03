@@ -9,6 +9,7 @@ import { Editor, Path, Range, Transforms } from 'slate'
 import { DEL_ROW_SVG } from '../../constants/svg'
 import { filledMatrix } from '../../utils'
 import { TableCellElement } from '../custom-types'
+import { cloneTableCellChildren } from '../helpers'
 
 class DeleteRow implements IButtonMenu {
   readonly title = t('tableModule.deleteRow')
@@ -140,7 +141,7 @@ class DeleteRow implements IButtonMenu {
                 rowSpan: rowSpan - 1, // 新单元格的rowSpan = 原rowSpan - 1
                 colSpan, // 保持原来的colSpan
                 hidden: false,
-                children: typedOriginalCell.children.map(child => ({ ...child })), // 深拷贝继承原单元格的内容
+                children: cloneTableCellChildren(typedOriginalCell.children),
               }
 
               // 继承原单元格的其他属性

@@ -13,6 +13,7 @@ import {
 import { ADD_ROW_SVG } from '../../constants/svg'
 import { filledMatrix } from '../../utils'
 import { TableCellElement, TableRowElement } from '../custom-types'
+import { createEmptyTableCell } from '../helpers'
 
 class InsertRow implements IButtonMenu {
   readonly title = t('tableModule.insertRow')
@@ -125,10 +126,7 @@ class InsertRow implements IButtonMenu {
           continue
         }
 
-        const cell: TableCellElement = {
-          type: 'table-cell',
-          children: [{ text: '' }],
-        }
+        const cell = createEmptyTableCell()
 
         newRow.children.push(cell)
       }

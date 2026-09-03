@@ -3,8 +3,9 @@
  * @author wangfupeng
  */
 
-import { DomEditor, IDomEditor } from '@wangeditor-next/core'
+import { DomEditor, htmlToContent, IDomEditor } from '@wangeditor-next/core'
 import {
+  Descendant,
   Editor,
   Element as SlateElement,
   Location,
@@ -15,11 +16,60 @@ import {
   Transforms,
 } from 'slate'
 
+import { normalizeTableContent } from './helpers'
 import { TableCursor } from './table-cursor'
 import { EDITOR_TO_SELECTION } from './weak-maps'
 import { withSelection } from './with-selection'
 
 const CELL_BREAK = '\n'
+
+function hasSupportedInlineChildren(editor: IDomEditor, node: SlateElement): boolean {
+  return node.children.every(child => {
+    if (Text.isText(child)) { return true }
+
+    return SlateElement.isElement(child)
+      && editor.isInline(child)
+      && hasSupportedInlineChildren(editor, child)
+  })
+}
+
+function isSupportedCellFragment(editor: IDomEditor, fragment: Descendant[]): boolean {
+  return fragment.length > 0 && fragment.every(node => {
+    if (Text.isText(node)) { return true }
+    return SlateElement.isElement(node)
+      && ['paragraph', 'list-item'].includes(node.type)
+      && hasSupportedInlineChildren(editor, node)
+  })
+}
+
+function parseSupportedCellBlockHtml(editor: IDomEditor, html: string): Descendant[] | null {
+  if (!html || !/<(p|ol|ul|li)\b/i.test(html)) { return null }
+
+  const container = document.createElement('div')
+
+  container.innerHTML = html
+  if (container.querySelector('table, pre, img, video, audio, iframe')) { return null }
+
+  const fragment = htmlToContent(editor, html)
+
+  return isSupportedCellFragment(editor, fragment) ? fragment : null
+}
+
+function parseSupportedSlateFragment(
+  editor: IDomEditor,
+  encodedFragment: string,
+): Descendant[] | null {
+  if (!encodedFragment) { return null }
+
+  try {
+    const decoded = decodeURIComponent(window.atob(encodedFragment))
+    const fragment = JSON.parse(decoded) as Descendant[]
+
+    return isSupportedCellFragment(editor, fragment) ? fragment : null
+  } catch {
+    return null
+  }
+}
 
 // table cell 内部的删除处理
 function deleteHandler(newEditor: IDomEditor): boolean {
@@ -165,8 +215,15 @@ function withTable<T extends IDomEditor>(editor: T): T {
     handleTab,
     selectAll,
     deleteFragment,
+    transformInitialContent,
   } = editor
   const newEditor = editor
+
+  newEditor.transformInitialContent = content => {
+    const transformed = transformInitialContent ? transformInitialContent(content) : content
+
+    return normalizeTableContent(transformed)
+  }
 
   // 重写 insertBreak - block cell content delegates to the normal block break behavior
   newEditor.insertBreak = () => {
@@ -253,6 +310,13 @@ function withTable<T extends IDomEditor>(editor: T): T {
           Transforms.select(editor, Editor.start(editor, next[1]))
           return
         }
+
+        const nextTopLevelPath = Path.next(tablePath)
+
+        if (Node.has(editor, nextTopLevelPath)) {
+          Transforms.select(editor, Editor.start(editor, nextTopLevelPath))
+          return
+        }
       }
 
       {
@@ -334,11 +398,21 @@ function withTable<T extends IDomEditor>(editor: T): T {
       return
     }
 
+    const fragment = data.getData('application/x-slate-fragment')
+    const html = data.getData('text/html')
+    const structuredFragment = parseSupportedSlateFragment(newEditor, fragment)
+      || parseSupportedCellBlockHtml(newEditor, html)
+
+    if (structuredFragment) {
+      Transforms.insertFragment(newEditor, structuredFragment)
+      return
+    }
+
     // 获取文本，并插入到 cell
     const text = data.getData('text/plain')
 
     // 单图或图文 插入
-    if (text === '\n' || /<img[^>]+>/.test(data.getData('text/html'))) {
+    if (text === '\n' || /<img[^>]+>/.test(html)) {
       insertData(data)
       return
     }

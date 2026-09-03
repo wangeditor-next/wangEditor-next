@@ -122,8 +122,8 @@ describe('TableModule module', () => {
 
       newEditor.insertData({
         getData: (type: string) => {
-          if (type === 'text/plain') { return '\n' }
-          if (type === 'text/html') { return '<img src="x.png">' }
+          if (type === 'text/plain') { return 'caption' }
+          if (type === 'text/html') { return '<p>caption<img src="x.png"></p>' }
           return ''
         },
       } as unknown as DataTransfer)
@@ -329,6 +329,38 @@ describe('TableModule module', () => {
 
       expect(wrappedEditor.children[1]).toMatchObject({
         type: 'paragraph',
+      })
+    })
+
+    test('use withTable plugin when handleTab should leave a table with following content', () => {
+      const editor = createEditor({
+        content: [
+          {
+            type: 'table',
+            width: 'auto',
+            children: [
+              {
+                type: 'table-row',
+                children: [
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'A' }] }] },
+                ],
+              },
+            ],
+            columnWidths: [100],
+          },
+          { type: 'paragraph', children: [{ text: 'after' }] },
+        ],
+      })
+
+      editor.selection = {
+        anchor: { path: [0, 0, 0, 0, 0], offset: 1 },
+        focus: { path: [0, 0, 0, 0, 0], offset: 1 },
+      }
+      editor.handleTab()
+
+      expect(editor.selection).toEqual({
+        anchor: { path: [1, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 0 },
       })
     })
 
