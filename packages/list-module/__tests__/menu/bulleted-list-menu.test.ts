@@ -58,8 +58,8 @@ describe('list BulletedListMenu', () => {
     editor.select({ path: [1, 0], offset: 0 }) // 选中 li
     expect(menu.isDisabled(editor)).toBeFalsy()
 
-    editor.select({ path: [2, 0, 0, 0], offset: 0 }) // 选中 table 单元格
-    expect(menu.isDisabled(editor)).toBeTruthy()
+    editor.select({ path: [2, 0, 0, 0, 0], offset: 0 }) // 选中 table 单元格内段落
+    expect(menu.isDisabled(editor)).toBeFalsy()
 
     editor.select({ path: [3, 0, 0], offset: 0 }) // 选中 code
     expect(menu.isDisabled(editor)).toBeTruthy()
@@ -86,5 +86,38 @@ describe('list BulletedListMenu', () => {
 
     menu.exec(editor, '') // li 转 p
     expect(editor.children).toEqual([pElem])
+  })
+
+  it('exec should convert a paragraph inside a table cell', () => {
+    const editor = createEditor({
+      content: [
+        {
+          type: 'table',
+          width: 'auto',
+          columnWidths: [100],
+          children: [
+            {
+              type: 'table-row',
+              children: [
+                {
+                  type: 'table-cell',
+                  children: [{ type: 'paragraph', children: [{ text: 'cell text' }] }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+
+    editor.select({ path: [0, 0, 0, 0, 0], offset: 0 })
+    menu.exec(editor, '')
+
+    expect((editor.children[0] as any).children[0].children[0].children[0]).toEqual({
+      type: 'list-item',
+      ordered: false,
+      level: 0,
+      children: [{ text: 'cell text' }],
+    })
   })
 })

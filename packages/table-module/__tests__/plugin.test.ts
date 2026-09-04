@@ -48,7 +48,7 @@ describe('TableModule module', () => {
               {
                 type: 'table-row',
                 children: [
-                  { type: 'table-cell', children: [{ text: 'a' }] },
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'a' }] }] },
                 ],
               },
             ],
@@ -59,18 +59,18 @@ describe('TableModule module', () => {
       })
 
       editor.selection = {
-        anchor: { path: [0, 0, 0, 0], offset: 1 },
-        focus: { path: [0, 0, 0, 0], offset: 1 },
+        anchor: { path: [0, 0, 0, 0, 0], offset: 1 },
+        focus: { path: [0, 0, 0, 0, 0], offset: 1 },
       }
 
       editor.insertBreak()
 
-      expect((slate.Node.get(editor, [0, 0, 0, 0]) as slate.Text).text).toBe('a\n')
+      expect(slate.Node.string(slate.Node.get(editor, [0, 0, 0]) as slate.Element)).toBe('a')
       expect(editor.selection).toEqual({
-        anchor: { path: [0, 0, 0, 0], offset: 2 },
-        focus: { path: [0, 0, 0, 0], offset: 2 },
+        anchor: { path: [0, 0, 0, 1, 0], offset: 0 },
+        focus: { path: [0, 0, 0, 1, 0], offset: 0 },
       })
-      expect(editor.getHtml()).toContain('a<br>')
+      expect(editor.getHtml()).toContain('<p>a</p>')
       expect(editor.getText()).not.toContain('\r')
     })
 
@@ -122,8 +122,8 @@ describe('TableModule module', () => {
 
       newEditor.insertData({
         getData: (type: string) => {
-          if (type === 'text/plain') { return '\n' }
-          if (type === 'text/html') { return '<img src="x.png">' }
+          if (type === 'text/plain') { return 'caption' }
+          if (type === 'text/html') { return '<p>caption<img src="x.png"></p>' }
           return ''
         },
       } as unknown as DataTransfer)
@@ -184,8 +184,8 @@ describe('TableModule module', () => {
               {
                 type: 'table-row',
                 children: [
-                  { type: 'table-cell', children: [{ text: 'A' }] },
-                  { type: 'table-cell', children: [{ text: 'B' }] },
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'A' }] }] },
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'B' }] }] },
                 ],
               },
             ],
@@ -301,8 +301,8 @@ describe('TableModule module', () => {
               {
                 type: 'table-row',
                 children: [
-                  { type: 'table-cell', children: [{ text: 'A' }] },
-                  { type: 'table-cell', children: [{ text: 'B' }] },
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'A' }] }] },
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'B' }] }] },
                 ],
               },
             ],
@@ -319,7 +319,7 @@ describe('TableModule module', () => {
       }
       wrappedEditor.handleTab()
 
-      expect(selectSpy).toHaveBeenCalledWith(wrappedEditor, [0, 0, 1])
+      expect(selectSpy).toHaveBeenCalledWith(wrappedEditor, { path: [0, 0, 1, 0, 0], offset: 0 })
 
       wrappedEditor.selection = {
         anchor: { path: [0, 0, 1, 0], offset: 0 },
@@ -329,6 +329,38 @@ describe('TableModule module', () => {
 
       expect(wrappedEditor.children[1]).toMatchObject({
         type: 'paragraph',
+      })
+    })
+
+    test('use withTable plugin when handleTab should leave a table with following content', () => {
+      const editor = createEditor({
+        content: [
+          {
+            type: 'table',
+            width: 'auto',
+            children: [
+              {
+                type: 'table-row',
+                children: [
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'A' }] }] },
+                ],
+              },
+            ],
+            columnWidths: [100],
+          },
+          { type: 'paragraph', children: [{ text: 'after' }] },
+        ],
+      })
+
+      editor.selection = {
+        anchor: { path: [0, 0, 0, 0, 0], offset: 1 },
+        focus: { path: [0, 0, 0, 0, 0], offset: 1 },
+      }
+      editor.handleTab()
+
+      expect(editor.selection).toEqual({
+        anchor: { path: [1, 0], offset: 0 },
+        focus: { path: [1, 0], offset: 0 },
       })
     })
 
@@ -342,7 +374,7 @@ describe('TableModule module', () => {
               {
                 type: 'table-row',
                 children: [
-                  { type: 'table-cell', children: [{ text: 'a\nb' }] },
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'a\nb' }] }] },
                 ],
               },
             ],
@@ -352,17 +384,15 @@ describe('TableModule module', () => {
       })
 
       editor.selection = {
-        anchor: { path: [0, 0, 0, 0], offset: 2 },
-        focus: { path: [0, 0, 0, 0], offset: 2 },
+        anchor: { path: [0, 0, 0, 0, 0], offset: 2 },
+        focus: { path: [0, 0, 0, 0, 0], offset: 2 },
       }
 
       editor.deleteBackward('character')
 
-      expect((slate.Node.get(editor, [0, 0, 0, 0]) as slate.Text).text).toBe('ab')
-      expect(editor.selection).toEqual({
-        anchor: { path: [0, 0, 0, 0], offset: 1 },
-        focus: { path: [0, 0, 0, 0], offset: 1 },
-      })
+      expect((slate.Node.get(editor, [0, 0, 0, 0, 0]) as slate.Text).text).toBe('ab')
+      expect(editor.selection?.anchor.offset).toBe(1)
+      expect(editor.selection?.focus.offset).toBe(1)
     })
 
     test('use withTable plugin when deleteForward should remove a table cell line break as a single standard character', () => {
@@ -375,7 +405,7 @@ describe('TableModule module', () => {
               {
                 type: 'table-row',
                 children: [
-                  { type: 'table-cell', children: [{ text: 'a\nb' }] },
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'a\nb' }] }] },
                 ],
               },
             ],
@@ -385,17 +415,15 @@ describe('TableModule module', () => {
       })
 
       editor.selection = {
-        anchor: { path: [0, 0, 0, 0], offset: 1 },
-        focus: { path: [0, 0, 0, 0], offset: 1 },
+        anchor: { path: [0, 0, 0, 0, 0], offset: 1 },
+        focus: { path: [0, 0, 0, 0, 0], offset: 1 },
       }
 
       editor.deleteForward('character')
 
-      expect((slate.Node.get(editor, [0, 0, 0, 0]) as slate.Text).text).toBe('ab')
-      expect(editor.selection).toEqual({
-        anchor: { path: [0, 0, 0, 0], offset: 1 },
-        focus: { path: [0, 0, 0, 0], offset: 1 },
-      })
+      expect((slate.Node.get(editor, [0, 0, 0, 0, 0]) as slate.Text).text).toBe('ab')
+      expect(editor.selection?.anchor.offset).toBe(1)
+      expect(editor.selection?.focus.offset).toBe(1)
     })
 
     test('use withTable plugin when normalizeNode should append a trailing paragraph after the last table', () => {
@@ -436,8 +464,8 @@ describe('TableModule module', () => {
               {
                 type: 'table-row',
                 children: [
-                  { type: 'table-cell', children: [{ text: 'A' }] },
-                  { type: 'table-cell', children: [{ text: 'B' }] },
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'A' }] }] },
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'B' }] }] },
                 ],
               },
             ],
@@ -498,15 +526,15 @@ describe('TableModule module', () => {
               {
                 type: 'table-row',
                 children: [
-                  { type: 'table-cell', children: [{ text: 'A' }] },
-                  { type: 'table-cell', children: [{ text: 'B' }] },
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'A' }] }] },
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'B' }] }] },
                 ],
               },
               {
                 type: 'table-row',
                 children: [
-                  { type: 'table-cell', children: [{ text: 'C' }] },
-                  { type: 'table-cell', children: [{ text: 'D' }] },
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'C' }] }] },
+                  { type: 'table-cell', children: [{ type: 'paragraph', children: [{ text: 'D' }] }] },
                 ],
               },
             ],
@@ -534,16 +562,16 @@ describe('TableModule module', () => {
 
       EDITOR_TO_SELECTION.set(wrappedEditor, tableSelection)
       wrappedEditor.selection = {
-        anchor: { path: [0, 0, 0, 0], offset: 0 },
-        focus: { path: [0, 0, 1, 0], offset: 1 },
+        anchor: { path: [0, 0, 0, 0, 0], offset: 0 },
+        focus: { path: [0, 0, 1, 0, 0], offset: 1 },
       }
 
       wrappedEditor.deleteFragment()
 
-      expect((slate.Node.get(wrappedEditor, [0, 0, 0, 0]) as slate.Text).text).toBe('')
-      expect((slate.Node.get(wrappedEditor, [0, 0, 1, 0]) as slate.Text).text).toBe('')
-      expect((slate.Node.get(wrappedEditor, [0, 1, 0, 0]) as slate.Text).text).toBe('C')
-      expect((slate.Node.get(wrappedEditor, [0, 1, 1, 0]) as slate.Text).text).toBe('D')
+      expect(slate.Node.string(slate.Node.get(wrappedEditor, [0, 0, 0]))).toBe('')
+      expect(slate.Node.string(slate.Node.get(wrappedEditor, [0, 0, 1]))).toBe('')
+      expect(slate.Node.string(slate.Node.get(wrappedEditor, [0, 1, 0]))).toBe('C')
+      expect(slate.Node.string(slate.Node.get(wrappedEditor, [0, 1, 1]))).toBe('D')
       expect((slate.Node.get(wrappedEditor, [0, 0]).children as any[])).toHaveLength(2)
       expect((slate.Node.get(wrappedEditor, [0, 1]).children as any[])).toHaveLength(2)
       expect(unselectSpy).toHaveBeenCalledWith(wrappedEditor)

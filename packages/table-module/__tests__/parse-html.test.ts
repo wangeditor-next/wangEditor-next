@@ -27,6 +27,10 @@ const TABLE_CELL_BASE_PROPS = {
   hidden: false,
 }
 
+const paragraphChildren = (children: Array<Record<string, unknown>>) => [
+  { type: 'paragraph', children },
+]
+
 describe('table - pre parse html', () => {
   it('pre parse', () => {
     const $table = $('<table><tbody><tr><td>hello</td></tr></tbody></table>')
@@ -70,7 +74,7 @@ describe('table - pre parse html', () => {
     )
   })
 
-  it('should preserve line breaks when flattening paragraphs inside cells', () => {
+  it('should preserve paragraph blocks inside cells', () => {
     const $table = $(
       [
         '<table><tbody><tr><td>',
@@ -85,9 +89,8 @@ describe('table - pre parse html', () => {
     expect(res.outerHTML).toBe(
       [
         '<table><tr><td width="auto">',
-        '<span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 1</span>',
-        '<br>',
-        '<span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 2</span>',
+        '<p><span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 1</span></p>',
+        '<p><span style="color: rgb(255, 0, 0); background-color: rgb(255, 255, 0);">line 2</span></p>',
         '</td></tr></table>',
       ].join('')
     )
@@ -218,21 +221,21 @@ describe('table - parse html', () => {
       colSpan: 1,
       rowSpan: 1,
       width: 'auto',
-      children: [{ text: 'hello world' }],
+      children: paragraphChildren([{ text: 'hello world' }]),
       hidden: false,
     })
 
     const $cell2 = $('<th style="display:none"></th>')
-    const children = [{ text: 'hello ' }, { text: 'world', bold: true }]
+    const inlineChildren = [{ text: 'hello ' }, { text: 'world', bold: true }]
 
     expect($cell2[0].matches(parseCellHtmlConf.selector)).toBeTruthy()
-    expect(parseCellHtmlConf.parseElemHtml($cell2[0], children, editor)).toEqual({
+    expect(parseCellHtmlConf.parseElemHtml($cell2[0], inlineChildren, editor)).toEqual({
       type: 'table-cell',
       isHeader: true,
       colSpan: 1,
       rowSpan: 1,
       width: 'auto',
-      children,
+      children: paragraphChildren(inlineChildren),
       hidden: true,
     })
   })
@@ -246,7 +249,7 @@ describe('table - parse html', () => {
       colSpan: 1,
       rowSpan: 1,
       width: 'auto',
-      children: [{ text: 'visible from excel' }],
+      children: paragraphChildren([{ text: 'visible from excel' }]),
       hidden: false,
     })
   })
@@ -263,9 +266,14 @@ describe('table - parse html', () => {
       borderStyle: 'solid',
       children: [
         {
-          text: 'line 1',
-          color: 'rgb(255, 0, 0)',
-          bgColor: 'rgb(255, 255, 0)',
+          type: 'paragraph',
+          children: [
+            {
+              text: 'line 1',
+              color: 'rgb(255, 0, 0)',
+              bgColor: 'rgb(255, 255, 0)',
+            },
+          ],
         },
         {
           type: 'paragraph',
@@ -274,9 +282,14 @@ describe('table - parse html', () => {
           children: [{ text: '' }],
         },
         {
-          text: 'line 2',
-          color: 'rgb(255, 0, 0)',
-          bgColor: 'rgb(255, 255, 0)',
+          type: 'paragraph',
+          children: [
+            {
+              text: 'line 2',
+              color: 'rgb(255, 0, 0)',
+              bgColor: 'rgb(255, 255, 0)',
+            },
+          ],
         },
       ],
     })
@@ -326,27 +339,27 @@ describe('table - parse html', () => {
           type: 'table-row',
           height: 13,
           children: [
-            { ...TABLE_CELL_BASE_PROPS, width: '64', children: [{ text: '1' }] },
-            { ...TABLE_CELL_BASE_PROPS, width: '64', children: [{ text: '2' }] },
-            { ...TABLE_CELL_BASE_PROPS, width: '64', children: [{ text: '3' }] },
+            { ...TABLE_CELL_BASE_PROPS, width: '64', children: paragraphChildren([{ text: '1' }]) },
+            { ...TABLE_CELL_BASE_PROPS, width: '64', children: paragraphChildren([{ text: '2' }]) },
+            { ...TABLE_CELL_BASE_PROPS, width: '64', children: paragraphChildren([{ text: '3' }]) },
           ],
         },
         {
           type: 'table-row',
           height: 13,
           children: [
-            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '4' }] },
-            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '5' }] },
-            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '6' }] },
+            { ...TABLE_CELL_BASE_PROPS, children: paragraphChildren([{ text: '4' }]) },
+            { ...TABLE_CELL_BASE_PROPS, children: paragraphChildren([{ text: '5' }]) },
+            { ...TABLE_CELL_BASE_PROPS, children: paragraphChildren([{ text: '6' }]) },
           ],
         },
         {
           type: 'table-row',
           height: 13,
           children: [
-            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '7' }] },
-            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '8' }] },
-            { ...TABLE_CELL_BASE_PROPS, children: [{ text: '9' }] },
+            { ...TABLE_CELL_BASE_PROPS, children: paragraphChildren([{ text: '7' }]) },
+            { ...TABLE_CELL_BASE_PROPS, children: paragraphChildren([{ text: '8' }]) },
+            { ...TABLE_CELL_BASE_PROPS, children: paragraphChildren([{ text: '9' }]) },
           ],
         },
       ],
@@ -450,7 +463,9 @@ describe('table - parse html', () => {
       children: [
         {
           type: 'table-row',
-          children: [{ ...TABLE_CELL_BASE_PROPS, children: [{ text: '1' }] }],
+          children: [
+            { ...TABLE_CELL_BASE_PROPS, children: paragraphChildren([{ text: '1' }]) },
+          ],
         },
       ],
     })
@@ -459,7 +474,7 @@ describe('table - parse html', () => {
 
   it('table cell (TD) without border style should use default border (1px)', () => {
     const $cell = $('<td>Cell A</td>')
-    const children = [{ text: 'Cell A' }]
+    const children = paragraphChildren([{ text: 'Cell A' }])
 
     expect(parseElemHtmlFromCore($($cell[0]), editor)).toEqual([
       {
@@ -474,7 +489,7 @@ describe('table - parse html', () => {
 
   it('table cell with full border shorthand property (4px)', () => {
     const $cell = $('<td style="border: 4px solid red;">Cell B</td>')
-    const children = [{ text: 'Cell B' }]
+    const children = paragraphChildren([{ text: 'Cell B' }])
 
     expect(parseElemHtmlFromCore($($cell[0]), editor)).toEqual([
       {
@@ -491,7 +506,7 @@ describe('table - parse html', () => {
     const $cell = $(
       '<td style="border-width: 1.5em; border-style: dotted; border-color: orange;">Cell C</td>'
     )
-    const children = [{ text: 'Cell C' }]
+    const children = paragraphChildren([{ text: 'Cell C' }])
 
     expect(parseElemHtmlFromCore($($cell[0]), editor)).toEqual([
       {
@@ -508,7 +523,7 @@ describe('table - parse html', () => {
     const $cell = $(
       '<td style="border-width: thin; border-style: dotted; border-color: blue;">Cell D</td>'
     )
-    const children = [{ text: 'Cell D' }]
+    const children = paragraphChildren([{ text: 'Cell D' }])
 
     expect(parseElemHtmlFromCore($($cell[0]), editor)).toEqual([
       {
@@ -525,7 +540,7 @@ describe('table - parse html', () => {
     const $cell = $(
       '<td style="border-width: 2px 1em; border-style: dotted solid dashed; border-color: #ff0000 #00ff00 #0000ff rgb(250,0,255)">Cell E</td>'
     )
-    const children = [{ text: 'Cell E' }]
+    const children = paragraphChildren([{ text: 'Cell E' }])
 
     expect(parseElemHtmlFromCore($($cell[0]), editor)).toEqual([
       {
@@ -540,7 +555,7 @@ describe('table - parse html', () => {
 
   it('table cell with border-width using "pt" unit should convert to "px"', () => {
     const $cell = $('<td style="border-width: 1pt; border-style: solid;">Cell G</td>')
-    const children = [{ text: 'Cell G' }]
+    const children = paragraphChildren([{ text: 'Cell G' }])
 
     const expectedPx = `${((1 * 4) / 3).toFixed(2)}px`
 
@@ -560,7 +575,7 @@ describe('table - parse html', () => {
     const $cell = $(
       `<td style="border-width: ${multiPtWidth}; border-style: dashed; border-color: red;">Cell H</td>`
     )
-    const children = [{ text: 'Cell H' }]
+    const children = paragraphChildren([{ text: 'Cell H' }])
 
     const expected1pt = ((1 * 4) / 3).toFixed(2)
     const expected05pt = ((0.5 * 4) / 3).toFixed(2)
@@ -579,7 +594,7 @@ describe('table - parse html', () => {
 
   it('Cell with border-width containing pt should convert width correctly', () => {
     const $cell = $('<td style="border-width: 2.25pt;">Cell I</td>')
-    const children = [{ text: 'Cell I' }]
+    const children = paragraphChildren([{ text: 'Cell I' }])
 
     const expectedPx = `${((2.25 * 4) / 3).toFixed(2)}px`
 
@@ -598,7 +613,7 @@ describe('table - parse html', () => {
     const $cell = $(
       '<td style="border: 1px solid red; border-width: 5px; border-style: dashed; border-color: blue;">Cell I</td>'
     )
-    const children = [{ text: 'Cell I' }]
+    const children = paragraphChildren([{ text: 'Cell I' }])
 
     expect(parseElemHtmlFromCore($($cell[0]), editor)).toEqual([
       {
@@ -615,7 +630,7 @@ describe('table - parse html', () => {
     const $cell = $(
       '<td style="border: 1px dashed red; border-width: 5px; border-color: blue;">Cell I</td>'
     )
-    const children = [{ text: 'Cell I' }]
+    const children = paragraphChildren([{ text: 'Cell I' }])
 
     expect(parseElemHtmlFromCore($($cell[0]), editor)).toEqual([
       {
@@ -979,7 +994,7 @@ describe('table - parse html', () => {
     const $cell = $(
       '<td bgcolor="#fff" border="2" bordercolor="#000" align="center" valign="middle" class="w-e-table-border-style-dashed" data-w-e-border-line="dashed">Cell Z</td>'
     )
-    const children = [{ text: 'Cell Z' }]
+    const children = paragraphChildren([{ text: 'Cell Z' }])
 
     expect(parseElemHtmlFromCore($($cell[0]), editor)).toEqual([
       {
@@ -997,7 +1012,7 @@ describe('table - parse html', () => {
 
   it('table cell style - data vertical align should parse', () => {
     const $cell = $('<td data-w-e-vertical-align="bottom">Cell Z</td>')
-    const children = [{ text: 'Cell Z' }]
+    const children = paragraphChildren([{ text: 'Cell Z' }])
 
     expect(parseElemHtmlFromCore($($cell[0]), editor)).toEqual([
       {

@@ -13,7 +13,7 @@ import {
 import { ADD_COL_SVG } from '../../constants/svg'
 import { filledMatrix } from '../../utils'
 import { TableCellElement, TableElement } from '../custom-types'
-import { isTableWithHeader } from '../helpers'
+import { createEmptyTableCell, isTableWithHeader } from '../helpers'
 
 class InsertCol implements IButtonMenu {
   readonly title = t('tableModule.insertCol')
@@ -220,10 +220,7 @@ class InsertCol implements IButtonMenu {
           continue
         }
 
-        const newCell: TableCellElement = {
-          type: 'table-cell',
-          children: [{ text: '' }],
-        }
+        const newCell = createEmptyTableCell()
 
         // 如果是第一行且表格有标题，设置为标题单元格
         if (x === 0 && isTableWithHeader(tableNode)) {

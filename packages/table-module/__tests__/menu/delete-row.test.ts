@@ -293,11 +293,11 @@ describe('Table Module Delete Row Menu', () => {
     const [insertedCell, originalCell] = remainingRow.children
 
     expect(table.children).toHaveLength(1)
-    expect(insertedCell.children[0].text).toBe('A')
+    expect(slate.Node.string(insertedCell.children[0])).toBe('A')
     expect(insertedCell.rowSpan).toBe(1)
     expect(insertedCell.isHeader).toBe(true)
     expect(insertedCell.backgroundColor).toBe('#eee')
-    expect(originalCell.children[0].text).toBe('C')
+    expect(slate.Node.string(originalCell.children[0])).toBe('C')
   })
 
   test('exec falls back to appending a carried cell when inserting at the calculated path fails', () => {
@@ -307,6 +307,10 @@ describe('Table Module Delete Row Menu', () => {
     const targetRowPath = [0, 0]
     const originalCellPath = [0, 0, 0]
     const newCellText = 'Merged A'
+    const originalChildren = [
+      { type: 'paragraph', children: [{ text: newCellText }] },
+      { type: 'list-item', ordered: false, children: [{ text: 'List item' }] },
+    ]
     const insertNodesSpy = vi.spyOn(slate.Transforms, 'insertNodes')
       .mockImplementationOnce(() => {
         throw new Error('insert at column failed')
@@ -328,7 +332,7 @@ describe('Table Module Delete Row Menu', () => {
           [{
             type: 'table-cell',
             rowSpan: 2,
-            children: [{ text: newCellText }],
+            children: originalChildren,
           }, originalCellPath],
           {
             rtl: 1, ltr: 1, ttb: 1, btt: 2,
@@ -356,7 +360,7 @@ describe('Table Module Delete Row Menu', () => {
       1,
       editor,
       expect.objectContaining({
-        children: [{ text: newCellText }],
+        children: originalChildren,
         rowSpan: 1,
         hidden: false,
       }),
@@ -366,12 +370,17 @@ describe('Table Module Delete Row Menu', () => {
       2,
       editor,
       expect.objectContaining({
-        children: [{ text: newCellText }],
+        children: originalChildren,
         rowSpan: 1,
         hidden: false,
       }),
       { at: [...targetRowPath, 1] },
     )
+    const insertedChildren = (insertNodesSpy.mock.calls[0][1] as any).children
+
+    expect(insertedChildren).not.toBe(originalChildren)
+    expect(insertedChildren[0]).not.toBe(originalChildren[0])
+    expect(insertedChildren[0].children).not.toBe(originalChildren[0].children)
   })
 
 })

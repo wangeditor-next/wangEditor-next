@@ -4,7 +4,7 @@
  */
 
 import { DomEditor, getTextStyleMode, IDomEditor } from '@wangeditor-next/core'
-import { Element } from 'slate'
+import { Element, Node, Path } from 'slate'
 
 import { ELEM_TO_EDITOR } from '../utils/maps'
 import { getListItemColor } from '../utils/util'
@@ -21,6 +21,23 @@ import { genListColorClassName, resolveListColorAction } from './style-class'
 // ol ul stack for streaming list-item serialization
 const CONTAINER_TAG_STACK: Array<string> = []
 let STACK_EDITOR: IDomEditor | null = null
+let FALLBACK_CONTEXTS: WeakMap<Element, { siblings: any[]; index: number }> | null = null
+
+function buildElementContexts(editor: IDomEditor) {
+  const contexts = new WeakMap<Element, { siblings: any[]; index: number }>()
+
+  const visit = (children: any[]) => {
+    children.forEach((child, index) => {
+      if (!Element.isElement(child)) { return }
+
+      contexts.set(child, { siblings: children, index })
+      visit(child.children)
+    })
+  }
+
+  visit(editor.children)
+  return contexts
+}
 
 function getContainerTag(elem: ListItemElement): 'ol' | 'ul' {
   return elem.ordered ? 'ol' : 'ul'
@@ -54,15 +71,15 @@ function genContainerStartTag(elem: ListItemElement): string {
 }
 
 function getAdjacentListItem(
-  editor: IDomEditor,
+  siblings: any[],
   index: number,
   direction: 'prev' | 'next',
 ): ListItemElement | null {
   if (direction === 'prev' && index === 0) { return null }
-  if (direction === 'next' && index === editor.children.length - 1) { return null }
+  if (direction === 'next' && index === siblings.length - 1) { return null }
 
   const targetIndex = direction === 'prev' ? index - 1 : index + 1
-  const targetNode = editor.children[targetIndex] as any
+  const targetNode = siblings[targetIndex] as any
 
   if (!DomEditor.checkNodeType(targetNode, 'list-item') || isOutlineListNode(targetNode)) {
     return null
@@ -71,12 +88,12 @@ function getAdjacentListItem(
 }
 
 function getPrevSameLevelListItem(
-  editor: IDomEditor,
+  siblings: any[],
   index: number,
   level: number,
 ): ListItemElement | null {
   for (let i = index - 1; i >= 0; i -= 1) {
-    const node = editor.children[i] as any
+    const node = siblings[i] as any
 
     if (!DomEditor.checkNodeType(node, 'list-item') || isOutlineListNode(node)) { continue }
     if ((node.level || 0) === level) {
@@ -124,14 +141,35 @@ function elemToHtml(
   const passedEditorWithChildren = editor && Array.isArray((editor as any).children)
     ? editor
     : null
-  const editorContainsElem = (candidate: IDomEditor | null | undefined) => (
-    !!candidate && candidate.children.indexOf(elem as any) >= 0
-  )
+  const getElementContext = (
+    candidate: IDomEditor | null | undefined,
+    allowFallback = false,
+  ) => {
+    if (!candidate) { return null }
+
+    try {
+      const path = DomEditor.findPath(candidate, elem)
+      const parent = path.length === 1 ? candidate : Node.get(candidate, Path.parent(path))
+      const siblings = Array.isArray((parent as any).children) ? (parent as any).children : []
+      const index = path[path.length - 1]
+
+      return siblings[index] === elem ? { siblings, index } : null
+    } catch {
+      if (!allowFallback) { return null }
+
+      FALLBACK_CONTEXTS ||= buildElementContexts(candidate)
+      return FALLBACK_CONTEXTS.get(elem) || null
+    }
+  }
+
   let finalEditor = passedEditorWithChildren || bindEditorWithChildren
 
-  if (editorContainsElem(passedEditorWithChildren)) {
+  const passedContext = getElementContext(passedEditorWithChildren)
+  const bindContext = getElementContext(bindEditorWithChildren)
+
+  if (passedContext) {
     finalEditor = passedEditorWithChildren
-  } else if (editorContainsElem(bindEditorWithChildren)) {
+  } else if (bindContext) {
     finalEditor = bindEditorWithChildren
   }
   const styleEditor = editor || bindEditor
@@ -147,11 +185,12 @@ function elemToHtml(
   if (STACK_EDITOR !== finalEditor) {
     CONTAINER_TAG_STACK.length = 0
     STACK_EDITOR = finalEditor
+    FALLBACK_CONTEXTS = null
   }
 
-  const index = finalEditor.children.indexOf(elem as any)
+  const context = getElementContext(finalEditor, true)
 
-  if (index < 0) {
+  if (!context) {
     return {
       html: `<li>${childrenHtml}</li>`,
       prefix: '',
@@ -159,8 +198,9 @@ function elemToHtml(
     }
   }
 
-  const prevItem = getAdjacentListItem(finalEditor, index, 'prev')
-  const nextItem = getAdjacentListItem(finalEditor, index, 'next')
+  const { siblings, index } = context
+  const prevItem = getAdjacentListItem(siblings, index, 'prev')
+  const nextItem = getAdjacentListItem(siblings, index, 'next')
   const hasNestedNext = !!nextItem && (nextItem.level || 0) > level
 
   if (!prevItem) {
@@ -199,7 +239,7 @@ function elemToHtml(
       }
 
       // Split target-level list container when config changed.
-      const brother = getPrevSameLevelListItem(finalEditor, index, level)
+      const brother = getPrevSameLevelListItem(siblings, index, level)
 
       if (brother && !hasSameListConfig(brother, listItemElem)) {
         const closeTag = CONTAINER_TAG_STACK.pop() || getFallbackContainerTag(brother)
@@ -246,6 +286,7 @@ function elemToHtml(
       }
     }
     STACK_EDITOR = null
+    FALLBACK_CONTEXTS = null
   }
 
   return {

@@ -3,26 +3,73 @@
  * @author wangfupeng
  */
 
-import { DomEditor, IDomEditor } from '@wangeditor-next/core'
+import { DomEditor, htmlToContent, IDomEditor } from '@wangeditor-next/core'
 import {
-  BaseText,
   Descendant,
   Editor,
   Element as SlateElement,
   Location,
   Node,
-  NodeEntry,
   Path,
   Point,
   Text,
   Transforms,
 } from 'slate'
 
+import { normalizeTableContent } from './helpers'
 import { TableCursor } from './table-cursor'
 import { EDITOR_TO_SELECTION } from './weak-maps'
 import { withSelection } from './with-selection'
 
 const CELL_BREAK = '\n'
+
+function hasSupportedInlineChildren(editor: IDomEditor, node: SlateElement): boolean {
+  return node.children.every(child => {
+    if (Text.isText(child)) { return true }
+
+    return SlateElement.isElement(child)
+      && editor.isInline(child)
+      && hasSupportedInlineChildren(editor, child)
+  })
+}
+
+function isSupportedCellFragment(editor: IDomEditor, fragment: Descendant[]): boolean {
+  return fragment.length > 0 && fragment.every(node => {
+    if (Text.isText(node)) { return true }
+    return SlateElement.isElement(node)
+      && ['paragraph', 'list-item'].includes(node.type)
+      && hasSupportedInlineChildren(editor, node)
+  })
+}
+
+function parseSupportedCellBlockHtml(editor: IDomEditor, html: string): Descendant[] | null {
+  if (!html || !/<(p|ol|ul|li)\b/i.test(html)) { return null }
+
+  const container = document.createElement('div')
+
+  container.innerHTML = html
+  if (container.querySelector('table, pre, img, video, audio, iframe')) { return null }
+
+  const fragment = htmlToContent(editor, html)
+
+  return isSupportedCellFragment(editor, fragment) ? fragment : null
+}
+
+function parseSupportedSlateFragment(
+  editor: IDomEditor,
+  encodedFragment: string,
+): Descendant[] | null {
+  if (!encodedFragment) { return null }
+
+  try {
+    const decoded = decodeURIComponent(window.atob(encodedFragment))
+    const fragment = JSON.parse(decoded) as Descendant[]
+
+    return isSupportedCellFragment(editor, fragment) ? fragment : null
+  } catch {
+    return null
+  }
+}
 
 // table cell 内部的删除处理
 function deleteHandler(newEditor: IDomEditor): boolean {
@@ -168,21 +215,39 @@ function withTable<T extends IDomEditor>(editor: T): T {
     handleTab,
     selectAll,
     deleteFragment,
+    transformInitialContent,
   } = editor
   const newEditor = editor
 
-  // 重写 insertBreak - cell 内换行，只换行文本，不拆分 node
-  newEditor.insertBreak = () => {
-    const selectedNode = DomEditor.getSelectedNodeByType(newEditor, 'table')
+  newEditor.transformInitialContent = content => {
+    const transformed = transformInitialContent ? transformInitialContent(content) : content
 
-    if (selectedNode != null) {
-      // 选中了 table ，则在 cell 内插入标准换行
-      newEditor.insertText(CELL_BREAK)
+    return normalizeTableContent(transformed)
+  }
+
+  // 重写 insertBreak - block cell content delegates to the normal block break behavior
+  newEditor.insertBreak = () => {
+    const cellEntry = Editor.above(newEditor, {
+      match: n => DomEditor.checkNodeType(n, 'table-cell'),
+    })
+
+    if (cellEntry == null) {
+      insertBreak()
       return
     }
 
-    // 未选中 table ，默认的换行
-    insertBreak()
+    const blockEntry = Editor.above(newEditor, {
+      match: n => SlateElement.isElement(n) && !DomEditor.checkNodeType(n, 'table-cell'),
+    })
+
+    if (blockEntry != null) {
+      // Keep custom block plugins in control of splitting.
+      insertBreak()
+      return
+    }
+
+    // Keep the legacy fallback for malformed cells that have no block wrapper.
+    newEditor.insertText(CELL_BREAK)
   }
 
   // 重写 delete - cell 内删除，只删除文字，不删除 node
@@ -224,22 +289,37 @@ function withTable<T extends IDomEditor>(editor: T): T {
     const selectedNode = DomEditor.getSelectedNodeByType(newEditor, 'table')
 
     if (selectedNode) {
-      const above = Editor.above(editor) as NodeEntry<SlateElement>
+      const currentCell = Editor.above(editor, {
+        match: n => DomEditor.checkNodeType(n, 'table-cell'),
+      })
+      const tableEntry = Editor.above(editor, {
+        match: n => DomEditor.checkNodeType(n, 'table'),
+      })
 
-      // 常规情况下选中文字外层 table-cell 进行跳转
-      if (DomEditor.checkNodeType(above[0], 'table-cell')) {
-        Transforms.select(editor, above[1])
+      if (currentCell && tableEntry) {
+        const [, currentCellPath] = currentCell
+        const [, tablePath] = tableEntry
+        const cells = Array.from(Editor.nodes(editor, {
+          at: tablePath,
+          match: n => DomEditor.checkNodeType(n, 'table-cell') && !(n as any).hidden,
+        }))
+        const index = cells.findIndex(([, path]) => Path.equals(path, currentCellPath))
+        const next = index >= 0 ? cells[index + 1] : undefined
+
+        if (next) {
+          Transforms.select(editor, Editor.start(editor, next[1]))
+          return
+        }
+
+        const nextTopLevelPath = Path.next(tablePath)
+
+        if (Node.has(editor, nextTopLevelPath)) {
+          Transforms.select(editor, Editor.start(editor, nextTopLevelPath))
+          return
+        }
       }
 
-      let next = Editor.next(editor)
-
-      if (next) {
-        if (next[0] && (next[0] as BaseText).text) {
-          // 多个单元格同时选中按 tab 导致错位修复
-          next = (Editor.above(editor, { at: next[1] }) as NodeEntry<Descendant>) ?? next
-        }
-        Transforms.select(editor, next[1])
-      } else {
+      {
         const topLevelNodes = newEditor.children || []
         const topLevelNodesLength = topLevelNodes.length
         // 在最后一个单元格按tab时table末尾如果没有p则插入p后光标切到p上
@@ -318,11 +398,21 @@ function withTable<T extends IDomEditor>(editor: T): T {
       return
     }
 
+    const fragment = data.getData('application/x-slate-fragment')
+    const html = data.getData('text/html')
+    const structuredFragment = parseSupportedSlateFragment(newEditor, fragment)
+      || parseSupportedCellBlockHtml(newEditor, html)
+
+    if (structuredFragment) {
+      Transforms.insertFragment(newEditor, structuredFragment)
+      return
+    }
+
     // 获取文本，并插入到 cell
     const text = data.getData('text/plain')
 
     // 单图或图文 插入
-    if (text === '\n' || /<img[^>]+>/.test(data.getData('text/html'))) {
+    if (text === '\n' || /<img[^>]+>/.test(html)) {
       insertData(data)
       return
     }

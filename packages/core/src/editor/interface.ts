@@ -5,7 +5,7 @@
 
 import ee from 'event-emitter'
 import {
-  Ancestor, Editor, Element, Location, Node, NodeEntry,
+  Ancestor, Descendant, Editor, Element, Location, Node, NodeEntry,
 } from 'slate'
 
 import {
@@ -53,6 +53,8 @@ export interface IDomEditor extends Editor {
   getParentNode: (node: Node) => Ancestor | null
   isEmpty: () => boolean
   clear: () => void
+  /** Transform loaded content before Core binds node paths and renders the editor. */
+  transformInitialContent?: (content: Descendant[]) => Descendant[]
   dangerouslyInsertHtml: (html: string, isRecursive?: boolean) => void
   setHtml: (html: string) => void
 

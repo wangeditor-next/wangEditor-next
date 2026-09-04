@@ -1362,8 +1362,8 @@ test.describe('Framework parity regression', () => {
         }
 
         editor.select({
-          anchor: { path: [tableIndex, 0, 0, 0], offset: 0 },
-          focus: { path: [tableIndex, 0, 0, 0], offset: 1 },
+          anchor: { path: [tableIndex, 0, 0, 0, 0], offset: 0 },
+          focus: { path: [tableIndex, 0, 0, 0, 0], offset: 1 },
         })
       }, { html: firstHtml })
 
@@ -1612,6 +1612,164 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
+    test(`${target.name}: rich table cells should support blocks, paste, Enter, and final Tab`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+
+      const initialState = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        editor.setHtml(`
+          <table>
+            <tbody><tr>
+              <td><p>first</p><ul><li>existing list</li></ul></td>
+              <td><p>last</p></td>
+            </tr></tbody>
+          </table>
+          <p>after</p>
+        `)
+
+        const tableIndex = editor.children.findIndex((node: any) => node?.type === 'table')
+        const firstCell = editor.children[tableIndex].children[0].children[0]
+
+        return {
+          tableIndex,
+          blockTypes: firstCell.children.map((node: any) => node.type),
+        }
+      })
+
+      expect(initialState.blockTypes).toEqual(['paragraph', 'list-item'])
+      const firstRenderedCell = getEditable(page).locator('table td').first()
+
+      await expect(firstRenderedCell).toContainText('first')
+      await expect(firstRenderedCell).toContainText('existing list')
+      await expect(firstRenderedCell.locator('p')).toHaveCount(1)
+
+      await firstRenderedCell.locator('[data-slate-string="true"]').first().click()
+      await page.keyboard.press('Enter')
+
+      const afterEnterTypes = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+        const tableIndex = editor.children.findIndex((node: any) => node?.type === 'table')
+
+        return editor.children[tableIndex].children[0].children[0].children
+          .map((node: any) => node.type)
+      })
+
+      expect(afterEnterTypes).toEqual(['paragraph', 'paragraph', 'list-item'])
+
+      const bulletedListMenu = getToolbarMenu(page, 'bulletedList').first()
+      const hasBulletedListMenu = (await bulletedListMenu.count()) > 0
+
+      if (hasBulletedListMenu) {
+        await expect(bulletedListMenu).not.toHaveClass(/disabled/)
+        await bulletedListMenu.click()
+
+        const afterListTypes = await page.evaluate(() => {
+          const globalWindow = window as any
+          const editor =
+            globalWindow.wangEditorExampleBridge?.editor ||
+            globalWindow.vue2Editor ||
+            globalWindow.vue3Editor ||
+            globalWindow.reactEditor
+          const tableIndex = editor.children.findIndex((node: any) => node?.type === 'table')
+
+          return editor.children[tableIndex].children[0].children[0].children.map(
+            (node: any) => node.type
+          )
+        })
+
+        expect(afterListTypes).toEqual(['paragraph', 'list-item', 'list-item'])
+      }
+
+      const pasteState = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        editor.setHtml(`
+          <table><tbody><tr>
+            <td><p>seed</p></td>
+            <td><p>last</p></td>
+          </tr></tbody></table>
+          <p>after</p>
+        `)
+        const currentTableIndex = editor.children.findIndex((node: any) => node?.type === 'table')
+
+        editor.select({
+          anchor: { path: [currentTableIndex, 0, 0, 0, 0], offset: 4 },
+          focus: { path: [currentTableIndex, 0, 0, 0, 0], offset: 4 },
+        })
+
+        const transfer = new DataTransfer()
+
+        transfer.setData('text/html', '<p>pasted paragraph</p><ol><li>pasted list</li></ol>')
+        transfer.setData('text/plain', 'pasted paragraph\npasted list')
+        editor.insertData(transfer)
+
+        const cell = editor.children[currentTableIndex].children[0].children[0]
+
+        return {
+          tableIndex: currentTableIndex,
+          blockTypes: cell.children.map((node: any) => node.type),
+          html: editor.getHtml(),
+        }
+      })
+
+      expect(pasteState.blockTypes).toEqual(['paragraph', 'list-item'])
+      expect(pasteState.html).toContain('<ol><li>pasted list</li></ol>')
+
+      await page.evaluate(({ tableIndex }) => {
+        const globalWindow = window as any
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
+
+        editor.select({
+          anchor: { path: [tableIndex, 0, 1, 0, 0], offset: 4 },
+          focus: { path: [tableIndex, 0, 1, 0, 0], offset: 4 },
+        })
+        editor.handleTab()
+      }, pasteState)
+
+      const selectionAfterTab = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor = globalWindow.wangEditorExampleBridge?.editor
+          || globalWindow.vue2Editor
+          || globalWindow.vue3Editor
+          || globalWindow.reactEditor
+
+        return editor.selection
+      })
+
+      expect(selectionAfterTab).toEqual({
+        anchor: { path: [pasteState.tableIndex + 1, 0], offset: 0 },
+        focus: { path: [pasteState.tableIndex + 1, 0], offset: 0 },
+      })
+      expect(pageErrors).toEqual([])
+    })
+
     test(`${target.name}: table multi-cell bold should affect only selected cells`, async ({ page }) => {
       const pageErrors: string[] = []
 
@@ -1649,8 +1807,8 @@ test.describe('Framework parity regression', () => {
         }
 
         editor.select({
-          anchor: { path: [tableIndex, 0, 0, 0], offset: 0 },
-          focus: { path: [tableIndex, 0, 1, 0], offset: 1 },
+          anchor: { path: [tableIndex, 0, 0, 0, 0], offset: 0 },
+          focus: { path: [tableIndex, 0, 1, 0, 0], offset: 1 },
         })
       })
 
@@ -1701,7 +1859,8 @@ test.describe('Framework parity regression', () => {
         }
 
         const getCellTextNode = (row: number, col: number) => {
-          return editor.children?.[tableIndex]?.children?.[row]?.children?.[col]?.children?.[0] || {}
+          return editor.children?.[tableIndex]?.children?.[row]?.children?.[col]
+            ?.children?.[0]?.children?.[0] || {}
         }
 
         return {

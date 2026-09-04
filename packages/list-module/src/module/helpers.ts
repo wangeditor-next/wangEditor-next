@@ -104,14 +104,17 @@ export function getOrderedItemNumber(editor: IDomEditor, elem: ListItemElement):
 
   const level = getListIndent(elem)
   let number = getNormalizedOrderedListStart(elem)
-  const index = DomEditor.findPath(editor, elem)[0]
+  const path = DomEditor.findPath(editor, elem)
+  const parent = path.length > 1 ? Node.get(editor, path.slice(0, -1)) : editor
+  const siblings = Array.isArray((parent as any).children) ? (parent as any).children : []
+  const index = path[path.length - 1]
 
   if (index <= 0) {
     return number
   }
 
   for (let previousIndex = index - 1; previousIndex >= 0; previousIndex -= 1) {
-    const previous = editor.children[previousIndex]
+    const previous = siblings[previousIndex]
 
     if (!isListNode(previous)) {
       break

@@ -8,6 +8,7 @@ import { Descendant, Text } from 'slate'
 
 import $, { DOMElement, getStyleValue, getTagName } from '../utils/dom'
 import { TableCellElement, TableElement, TableRowElement } from './custom-types'
+import { normalizeTableCellChildren } from './helpers'
 
 const DEFAULT_PERCENT_TABLE_WIDTH = 600
 
@@ -93,6 +94,7 @@ function parseCellHtml(
 
   children = children.filter(child => {
     if (DomEditor.getNodeType(child) === 'paragraph') { return true }
+    if (DomEditor.getNodeType(child) === 'list-item') { return true }
     if (Text.isText(child)) { return true }
     if (editor.isInline(child)) { return true }
     return false
@@ -102,6 +104,8 @@ function parseCellHtml(
   if (children.length === 0) {
     children = [{ text: $elem.text().replace(/\s+/gm, ' ') }]
   }
+
+  children = normalizeTableCellChildren(children)
 
   const colSpan = parseInt($elem.attr('colSpan') || '1', 10)
   const rowSpan = parseInt($elem.attr('rowSpan') || '1', 10)

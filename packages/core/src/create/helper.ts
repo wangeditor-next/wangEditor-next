@@ -109,13 +109,20 @@ export function htmlToContent(editor: IDomEditor, html: string = ''): Descendant
  */
 export function initializeContent(editor: IDomEditor, options: { html?: string, content?: Descendant[] }) {
   const { html, content } = options
+  let initialContent: Descendant[] | undefined
   // 初始化内容（要在 config 和 plugins 后面）
 
   if (html != null) {
     // 传入 html ，转换为 JSON content
-    editor.children = htmlToContent(editor, html)
+    initialContent = htmlToContent(editor, html)
   } else if (content && content.length) {
-    editor.children = content // 传入 JSON content
+    initialContent = content // 传入 JSON content
+  }
+
+  if (initialContent) {
+    editor.children = editor.transformInitialContent
+      ? editor.transformInitialContent(initialContent)
+      : initialContent
   }
 
   if (editor.children.length === 0) {

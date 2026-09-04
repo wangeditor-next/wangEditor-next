@@ -110,7 +110,7 @@ describe('table merge and split menus', () => {
 
     expect(baseCell.rowSpan).toBe(2)
     expect(baseCell.colSpan).toBe(2)
-    expect(baseCell.children.map(child => child.text).join('')).toBe('ABCD')
+    expect(Node.string(baseCell)).toBe('ABCD')
     expect(table.children[0].children).toHaveLength(1)
     expect(Editor.hasPath(editor, [0, 0, 1])).toBe(false)
     expect(unselectSpy).toHaveBeenCalledWith(editor)
@@ -181,6 +181,8 @@ describe('table merge and split menus', () => {
     expect(firstRow.children[0].colSpan).toBe(1)
     expect(firstRow.children[1].isHeader).toBe(true)
     expect(secondRow.children.every(cell => !cell.isHeader)).toBe(true)
+    expect(firstRow.children[1].children[0]).toMatchObject({ type: 'paragraph' })
+    expect(secondRow.children.every(cell => (cell.children[0] as any).type === 'paragraph')).toBe(true)
   })
 
   test('SplitCell is disabled for normal cells and no-ops without a table selection', () => {
