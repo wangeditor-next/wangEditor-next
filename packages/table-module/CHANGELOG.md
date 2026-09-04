@@ -1,5 +1,16 @@
 # Change Log
 
+## 6.4.0
+
+### Minor Changes
+
+- a733b35: Allow table cells to contain block descendants such as paragraphs and lists while preserving legacy text-only cells through normalization and HTML round trips. Core now exposes HTML-to-content conversion and a composable initial-content transform hook for modules that need boundary migrations.
+
+### Patch Changes
+
+- Updated dependencies [a733b35]
+  - @wangeditor-next/core@6.4.0
+
 ## 6.3.0
 
 ### Patch Changes
