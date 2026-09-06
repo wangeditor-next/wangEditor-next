@@ -75,7 +75,10 @@ describe('code-block menu', () => {
     Transforms.setNodes(editor, { type: 'header1' } as Partial<Element>)
     expect(menu.isDisabled(editor)).toBeTruthy() // 非 p pre ，则禁用
 
-    editor.insertNode({ type: 'pre', children: [{ type: 'code', children: [{ text: 'var' }], language: 'javascript' }] })
+    editor.insertNode({
+      type: 'pre',
+      children: [{ type: 'code', children: [{ text: 'var' }], language: 'javascript' }],
+    })
     expect(menu.isDisabled(editor)).toBeFalsy()
     // Transforms.removeNodes(editor, { mode: 'highest' }) // 移除 pre/code
   })
@@ -109,5 +112,40 @@ describe('code-block menu', () => {
     const codeLis = editor1.getElemsByTypePrefix('code')
 
     expect(codeLis.length).toBe(0)
+  })
+
+  it('exec - converts a block inside a table cell without moving it outside the table', () => {
+    const editor1 = createEditor({
+      html: '<table><tbody><tr><td><p>cell code</p></td></tr></tbody></table>',
+    })
+    const cell = () => (editor1.children[0] as any).children[0].children[0]
+
+    editor1.select({
+      path: [0, 0, 0, 0, 0],
+      offset: 4,
+    })
+
+    menu.exec(editor1, 'javascript')
+
+    expect(cell().children.map((node: any) => node.type)).toEqual(['pre', 'paragraph'])
+    expect(editor1.children.map((node: any) => node.type)).toContain('table')
+    expect(editor1.getHtml()).toContain(
+      '<pre><code class="language-javascript">cell code</code></pre>'
+    )
+
+    const editor2 = createEditor({ html: editor1.getHtml() })
+    const reparsedCell = () => (editor2.children[0] as any).children[0].children[0]
+
+    editor2.select({
+      path: [0, 0, 0, 0, 0, 0],
+      offset: 4,
+    })
+    menu.exec(editor2, '')
+
+    expect(reparsedCell().children.map((node: any) => node.type)).toEqual([
+      'paragraph',
+      'paragraph',
+    ])
+    expect(editor2.getHtml()).toContain('<p>cell code</p>')
   })
 })

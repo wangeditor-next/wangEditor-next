@@ -31,12 +31,15 @@ const targets: Target[] = [
 
 const WRAPPER_READY_TIMEOUT = process.env.CI ? 180_000 : 60_000
 
-const getEditable = (page: Page) => page.locator('[data-testid="editor-textarea"] [contenteditable="true"]')
+const getEditable = (page: Page) =>
+  page.locator('[data-testid="editor-textarea"] [contenteditable="true"]')
 
-const getToolbarMenu = (page: Page, menuKey: string) => page.locator(`[data-testid="editor-toolbar"] [data-menu-key="${menuKey}"]`)
+const getToolbarMenu = (page: Page, menuKey: string) =>
+  page.locator(`[data-testid="editor-toolbar"] [data-menu-key="${menuKey}"]`)
 
 async function openTarget(page: Page, target: Target) {
-  const isExternalWrapper = !target.needCreate && /^http:\/\/127\.0\.0\.1:31\d{2}\//.test(target.url)
+  const isExternalWrapper =
+    !target.needCreate && /^http:\/\/127\.0\.0\.1:31\d{2}\//.test(target.url)
 
   await page.goto(target.url, {
     // Vite wrapper demos may spend noticeable time on first module transform in CI.
@@ -65,12 +68,18 @@ async function clearEditor(page: Page) {
 async function ensureMenuEnabled(page: Page, menuKey: string) {
   const menu = getToolbarMenu(page, menuKey).first()
   const tryEnable = async (attempt: number): Promise<void> => {
-    if (attempt >= 10) { return }
+    if (attempt >= 10) {
+      return
+    }
     const className = await menu.getAttribute('class')
 
-    if (!className?.includes('disabled')) { return }
+    if (!className?.includes('disabled')) {
+      return
+    }
 
-    const textNode = page.locator('[data-testid="editor-textarea"] [data-slate-node="text"]:visible').first()
+    const textNode = page
+      .locator('[data-testid="editor-textarea"] [data-slate-node="text"]:visible')
+      .first()
     const textNodeCount = await textNode.count()
 
     if (textNodeCount > 0) {
@@ -106,18 +115,20 @@ async function create2x2Table(page: Page) {
 }
 
 async function create2x2TableByApi(page: Page) {
-  await page.evaluate(({ widthMode }) => {
-    const globalWindow = window as any
-    const editor = globalWindow.wangEditorExampleBridge?.editor
-      || globalWindow.vue2Editor
-      || globalWindow.vue3Editor
-      || globalWindow.reactEditor
+  await page.evaluate(
+    ({ widthMode }) => {
+      const globalWindow = window as any
+      const editor =
+        globalWindow.wangEditorExampleBridge?.editor ||
+        globalWindow.vue2Editor ||
+        globalWindow.vue3Editor ||
+        globalWindow.reactEditor
 
-    if (!editor) {
-      throw new Error('editor not ready')
-    }
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
 
-    editor.setHtml(`
+      editor.setHtml(`
       <table style="width: ${widthMode}; table-layout: fixed;">
         <colgroup>
           <col width="120">
@@ -129,16 +140,22 @@ async function create2x2TableByApi(page: Page) {
         </tbody>
       </table>
     `)
-  }, { widthMode: 'auto' })
+    },
+    { widthMode: 'auto' }
+  )
   await page.waitForTimeout(220)
 }
 
 async function getLastTableWidths(page: Page): Promise<number[]> {
   return page.evaluate(() => {
-    const tables = Array.from(document.querySelectorAll('[data-testid="editor-textarea"] table.table'))
+    const tables = Array.from(
+      document.querySelectorAll('[data-testid="editor-textarea"] table.table')
+    )
     const lastTable = tables[tables.length - 1]
 
-    if (!lastTable) { return [] }
+    if (!lastTable) {
+      return []
+    }
     return Array.from(lastTable.querySelectorAll('col')).map(col => {
       return Number(col.getAttribute('width') || 0)
     })
@@ -150,7 +167,9 @@ async function dragLastTableFirstBorder(page: Page, deltaX: number): Promise<boo
   const table = page.locator('[data-testid="editor-textarea"] table.table').last()
   const tableRect = await table.boundingBox()
 
-  if (!tableRect || widths.length === 0) { return false }
+  if (!tableRect || widths.length === 0) {
+    return false
+  }
 
   await page.mouse.move(tableRect.x + widths[0], tableRect.y + 20)
   await page.waitForTimeout(140)
@@ -163,13 +182,18 @@ async function dragLastTableFirstBorder(page: Page, deltaX: number): Promise<boo
     .locator('.resizer-line-hotzone')
   const hotzoneRect = await hotzone.boundingBox()
 
-  if (!hotzoneRect) { return false }
+  if (!hotzoneRect) {
+    return false
+  }
 
-  await page.mouse.move(hotzoneRect.x + hotzoneRect.width / 2, hotzoneRect.y + hotzoneRect.height / 2)
+  await page.mouse.move(
+    hotzoneRect.x + hotzoneRect.width / 2,
+    hotzoneRect.y + hotzoneRect.height / 2
+  )
   await page.mouse.down()
   await page.mouse.move(
     hotzoneRect.x + hotzoneRect.width / 2 + deltaX,
-    hotzoneRect.y + hotzoneRect.height / 2,
+    hotzoneRect.y + hotzoneRect.height / 2
   )
   await page.mouse.up()
   await page.waitForTimeout(240)
@@ -178,93 +202,115 @@ async function dragLastTableFirstBorder(page: Page, deltaX: number): Promise<boo
 }
 
 async function dispatchSyntheticFirstColumnResize(page: Page, deltaX: number): Promise<boolean> {
-  return page.evaluate(({ delta }) => {
-    const globalWindow = window as any
-    const editor = globalWindow.wangEditorExampleBridge?.editor
-      || globalWindow.vue2Editor
-      || globalWindow.vue3Editor
-      || globalWindow.reactEditor
-    const table = document.querySelector('[data-testid="editor-textarea"] table.table') as HTMLElement | null
-    const hotzone = document.querySelector(
-      '[data-testid="editor-textarea"] .column-resizer .column-resizer-item:first-child .resizer-line-hotzone',
-    ) as HTMLElement | null
+  return page.evaluate(
+    ({ delta }) => {
+      const globalWindow = window as any
+      const editor =
+        globalWindow.wangEditorExampleBridge?.editor ||
+        globalWindow.vue2Editor ||
+        globalWindow.vue3Editor ||
+        globalWindow.reactEditor
+      const table = document.querySelector(
+        '[data-testid="editor-textarea"] table.table'
+      ) as HTMLElement | null
+      const hotzone = document.querySelector(
+        '[data-testid="editor-textarea"] .column-resizer .column-resizer-item:first-child .resizer-line-hotzone'
+      ) as HTMLElement | null
 
-    if (!editor || !table || !hotzone) { return false }
+      if (!editor || !table || !hotzone) {
+        return false
+      }
 
-    const tableNode = (editor.children || []).find((node: any) => node?.type === 'table')
+      const tableNode = (editor.children || []).find((node: any) => node?.type === 'table')
 
-    if (!tableNode) { return false }
+      if (!tableNode) {
+        return false
+      }
 
-    const firstCol = table.querySelector('col')
-    const firstWidth = Number(firstCol?.getAttribute('width') || 0)
-    const tableRect = table.getBoundingClientRect()
-    const startX = Math.round(tableRect.left + Math.max(firstWidth, 80))
-    const startY = Math.round(tableRect.top + 10)
+      const firstCol = table.querySelector('col')
+      const firstWidth = Number(firstCol?.getAttribute('width') || 0)
+      const tableRect = table.getBoundingClientRect()
+      const startX = Math.round(tableRect.left + Math.max(firstWidth, 80))
+      const startY = Math.round(tableRect.top + 10)
 
-    tableNode.resizingIndex = 0
-    tableNode.isHoverCellBorder = true
-    tableNode.scrollWidth = Math.max(Math.round(tableRect.width), 1)
+      tableNode.resizingIndex = 0
+      tableNode.isHoverCellBorder = true
+      tableNode.scrollWidth = Math.max(Math.round(tableRect.width), 1)
 
-    hotzone.dispatchEvent(new MouseEvent('mousedown', {
-      bubbles: true,
-      clientX: startX,
-      clientY: startY,
-    }))
-    window.dispatchEvent(new MouseEvent('mousemove', {
-      bubbles: true,
-      clientX: startX + delta,
-      clientY: startY,
-    }))
-    window.dispatchEvent(new MouseEvent('mouseup', {
-      bubbles: true,
-      clientX: startX + delta,
-      clientY: startY,
-    }))
+      hotzone.dispatchEvent(
+        new MouseEvent('mousedown', {
+          bubbles: true,
+          clientX: startX,
+          clientY: startY,
+        })
+      )
+      window.dispatchEvent(
+        new MouseEvent('mousemove', {
+          bubbles: true,
+          clientX: startX + delta,
+          clientY: startY,
+        })
+      )
+      window.dispatchEvent(
+        new MouseEvent('mouseup', {
+          bubbles: true,
+          clientX: startX + delta,
+          clientY: startY,
+        })
+      )
 
-    return true
-  }, { delta: deltaX })
+      return true
+    },
+    { delta: deltaX }
+  )
 }
 
 async function setTextareaWidthAndMeasureLastTable(
   page: Page,
-  widthPx: number,
+  widthPx: number
 ): Promise<{ containerWidth: number; tableWidth: number; tableStyleWidth: string }> {
-  return page.evaluate(({ width }) => {
-    const textarea = document.querySelector('[data-testid="editor-textarea"]') as HTMLElement | null
+  return page.evaluate(
+    ({ width }) => {
+      const textarea = document.querySelector(
+        '[data-testid="editor-textarea"]'
+      ) as HTMLElement | null
 
-    if (!textarea) {
-      throw new Error('editor textarea not found')
-    }
+      if (!textarea) {
+        throw new Error('editor textarea not found')
+      }
 
-    textarea.style.width = `${width}px`
-    textarea.style.maxWidth = `${width}px`
-    textarea.style.transition = 'none'
+      textarea.style.width = `${width}px`
+      textarea.style.maxWidth = `${width}px`
+      textarea.style.transition = 'none'
 
-    const tables = Array.from(textarea.querySelectorAll('table.table')) as HTMLElement[]
-    const table = tables[tables.length - 1] || null
+      const tables = Array.from(textarea.querySelectorAll('table.table')) as HTMLElement[]
+      const table = tables[tables.length - 1] || null
 
-    if (!table) {
-      throw new Error('table not found')
-    }
+      if (!table) {
+        throw new Error('table not found')
+      }
 
-    const containerRect = textarea.getBoundingClientRect()
-    const tableRect = table.getBoundingClientRect()
+      const containerRect = textarea.getBoundingClientRect()
+      const tableRect = table.getBoundingClientRect()
 
-    return {
-      containerWidth: containerRect.width,
-      tableWidth: tableRect.width,
-      tableStyleWidth: table.style.width || '',
-    }
-  }, { width: widthPx })
+      return {
+        containerWidth: containerRect.width,
+        tableWidth: tableRect.width,
+        tableStyleWidth: table.style.width || '',
+      }
+    },
+    { width: widthPx }
+  )
 }
 
 async function getFirstTableWidthMode(page: Page): Promise<string> {
   return page.evaluate(() => {
     const globalWindow = window as any
-    const editor = globalWindow.wangEditorExampleBridge?.editor
-      || globalWindow.vue2Editor
-      || globalWindow.vue3Editor
-      || globalWindow.reactEditor
+    const editor =
+      globalWindow.wangEditorExampleBridge?.editor ||
+      globalWindow.vue2Editor ||
+      globalWindow.vue3Editor ||
+      globalWindow.reactEditor
 
     if (!editor) {
       throw new Error('editor not ready')
@@ -277,18 +323,20 @@ async function getFirstTableWidthMode(page: Page): Promise<string> {
 }
 
 async function setSelectedTableWidthMode(page: Page, width: '100%' | 'auto') {
-  await page.evaluate(({ nextWidth }) => {
-    const globalWindow = window as any
-    const editor = globalWindow.wangEditorExampleBridge?.editor
-      || globalWindow.vue2Editor
-      || globalWindow.vue3Editor
-      || globalWindow.reactEditor
+  await page.evaluate(
+    ({ nextWidth }) => {
+      const globalWindow = window as any
+      const editor =
+        globalWindow.wangEditorExampleBridge?.editor ||
+        globalWindow.vue2Editor ||
+        globalWindow.vue3Editor ||
+        globalWindow.reactEditor
 
-    if (!editor) {
-      throw new Error('editor not ready')
-    }
+      if (!editor) {
+        throw new Error('editor not ready')
+      }
 
-    editor.setHtml(`
+      editor.setHtml(`
       <table style="width: ${nextWidth}; table-layout: fixed;">
         <colgroup>
           <col width="120">
@@ -300,7 +348,9 @@ async function setSelectedTableWidthMode(page: Page, width: '100%' | 'auto') {
         </tbody>
       </table>
     `)
-  }, { nextWidth: width })
+    },
+    { nextWidth: width }
+  )
   await page.waitForTimeout(220)
 }
 
@@ -337,7 +387,9 @@ test.describe('Framework parity regression', () => {
     expect(pageErrors).toEqual([])
   })
 
-  test('react-wrapper: regression #907 Editor style should apply to the actual editor root', async ({ page }) => {
+  test('react-wrapper: regression #907 Editor style should apply to the actual editor root', async ({
+    page,
+  }) => {
     const pageErrors: string[] = []
 
     page.on('pageerror', err => {
@@ -347,7 +399,9 @@ test.describe('Framework parity regression', () => {
     await openTarget(page, targets.find(target => target.name === 'react-wrapper')!)
 
     const snapshot = await page.evaluate(() => {
-      const host = document.querySelector('[data-testid="editor-textarea"] [data-w-e-textarea="true"]')
+      const host = document.querySelector(
+        '[data-testid="editor-textarea"] [data-w-e-textarea="true"]'
+      )
       const textContainer = host?.querySelector('.w-e-text-container')
       const scroll = host?.querySelector('.w-e-scroll')
 
@@ -381,10 +435,12 @@ test.describe('Framework parity regression', () => {
     expect(pageErrors).toEqual([])
   })
 
-  test('vue3-wrapper: regression #919 production build should keep image hoverbar and paste order', async ({ page }) => {
+  test('vue3-wrapper: regression #919 production build should keep image hoverbar and paste order', async ({
+    page,
+  }) => {
     test.skip(
       process.env.PLAYWRIGHT_WRAPPER_PREVIEW !== '1',
-      'regression #919 requires wrapper production preview',
+      'regression #919 requires wrapper production preview'
     )
 
     const pageErrors: string[] = []
@@ -405,7 +461,7 @@ test.describe('Framework parity regression', () => {
 
       editor.clear()
       editor.dangerouslyInsertHtml(
-        '<p><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="tiny" /></p>',
+        '<p><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="tiny" /></p>'
       )
     })
     await page.locator('[data-testid="editor-textarea"] img').first().click({ force: true })
@@ -416,29 +472,30 @@ test.describe('Framework parity regression', () => {
         const style = window.getComputedStyle(el)
         const rect = el.getBoundingClientRect()
 
-        return style.display !== 'none'
-          && style.visibility !== 'hidden'
-          && rect.width > 0
-          && rect.height > 0
+        return (
+          style.display !== 'none' &&
+          style.visibility !== 'hidden' &&
+          rect.width > 0 &&
+          rect.height > 0
+        )
       })
 
       return {
         selectedImage: !!document.querySelector('.w-e-selected-image-container'),
         hoverbarVisible: !!visibleHoverbar,
         menuKeys: visibleHoverbar
-          ? Array.from(visibleHoverbar.querySelectorAll('[data-menu-key]')).map(el => el.getAttribute('data-menu-key'))
+          ? Array.from(visibleHoverbar.querySelectorAll('[data-menu-key]')).map(el =>
+              el.getAttribute('data-menu-key')
+            )
           : [],
       }
     })
 
     expect(imageState.selectedImage).toBe(true)
     expect(imageState.hoverbarVisible).toBe(true)
-    expect(imageState.menuKeys).toEqual(expect.arrayContaining([
-      'imageWidth30',
-      'editorImageSizeMenu',
-      'editImage',
-      'deleteImage',
-    ]))
+    expect(imageState.menuKeys).toEqual(
+      expect.arrayContaining(['imageWidth30', 'editorImageSizeMenu', 'editImage', 'deleteImage'])
+    )
 
     await openTarget(page, targets.find(target => target.name === 'vue3-wrapper')!)
 
@@ -451,38 +508,37 @@ test.describe('Framework parity regression', () => {
         </div>
       </body></html>`
 
-    const pasteState = await page.evaluate(({ html }) => {
-      const globalWindow = window as any
-      const editor = globalWindow.vue3Editor
+    const pasteState = await page.evaluate(
+      ({ html }) => {
+        const globalWindow = window as any
+        const editor = globalWindow.vue3Editor
 
-      if (!editor) {
-        throw new Error('vue3 editor not ready')
-      }
+        if (!editor) {
+          throw new Error('vue3 editor not ready')
+        }
 
-      editor.clear()
-      editor.focus()
+        editor.clear()
+        editor.focus()
 
-      const transfer = new DataTransfer()
+        const transfer = new DataTransfer()
 
-      transfer.setData('text/html', html)
-      transfer.setData('text/plain', '测试标题\n第一段内容\n第二段内容')
-      editor.insertData(transfer)
+        transfer.setData('text/html', html)
+        transfer.setData('text/plain', '测试标题\n第一段内容\n第二段内容')
+        editor.insertData(transfer)
 
-      return {
-        text: editor.getText(),
-        children: editor.children.map((node: any) => {
-          return Array.isArray(node.children)
-            ? node.children.map((child: any) => child.text || '').join('')
-            : ''
-        }),
-      }
-    }, { html: wordLikeHtml })
+        return {
+          text: editor.getText(),
+          children: editor.children.map((node: any) => {
+            return Array.isArray(node.children)
+              ? node.children.map((child: any) => child.text || '').join('')
+              : ''
+          }),
+        }
+      },
+      { html: wordLikeHtml }
+    )
 
-    expect(pasteState.children).toEqual([
-      '测试标题',
-      '第一段内容',
-      '第二段内容',
-    ])
+    expect(pasteState.children).toEqual(['测试标题', '第一段内容', '第二段内容'])
     expect(pasteState.text).toBe('测试标题\n第一段内容\n第二段内容')
     expect(pageErrors).toEqual([])
   })
@@ -501,7 +557,9 @@ test.describe('Framework parity regression', () => {
       await page.keyboard.press('Control+A')
 
       await page.evaluate(() => {
-        const el = document.querySelector('[data-testid="editor-textarea"] [contenteditable="true"]')
+        const el = document.querySelector(
+          '[data-testid="editor-textarea"] [contenteditable="true"]'
+        )
 
         if (!el) {
           throw new Error('editable not found')
@@ -510,17 +568,21 @@ test.describe('Framework parity regression', () => {
         const fire = (event: Event) => el.dispatchEvent(event)
 
         fire(new CompositionEvent('compositionstart', { data: '' }))
-        fire(new InputEvent('beforeinput', {
-          inputType: 'insertCompositionText',
-          data: 'ni',
-          bubbles: true,
-          cancelable: true,
-        }))
-        fire(new InputEvent('input', {
-          inputType: 'insertCompositionText',
-          data: 'ni',
-          bubbles: true,
-        }))
+        fire(
+          new InputEvent('beforeinput', {
+            inputType: 'insertCompositionText',
+            data: 'ni',
+            bubbles: true,
+            cancelable: true,
+          })
+        )
+        fire(
+          new InputEvent('input', {
+            inputType: 'insertCompositionText',
+            data: 'ni',
+            bubbles: true,
+          })
+        )
         fire(new CompositionEvent('compositionupdate', { data: 'ni' }))
         fire(new CompositionEvent('compositionend', { data: '你' }))
       })
@@ -530,7 +592,9 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
-    test(`${target.name}: regression #564 malformed span+p html should not throw`, async ({ page }) => {
+    test(`${target.name}: regression #564 malformed span+p html should not throw`, async ({
+      page,
+    }) => {
       const pageErrors: string[] = []
 
       page.on('pageerror', err => {
@@ -539,36 +603,41 @@ test.describe('Framework parity regression', () => {
 
       await openTarget(page, target)
 
-      const malformedHtml = '<p><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;">这是一</span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;"><p><br></p></span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;">这是二</span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;"><p><br></p></span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;">这是三</span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;"><p><br></p></span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;"><p><br></p></span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;">这是四</span></p>'
+      const malformedHtml =
+        '<p><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;">这是一</span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;"><p><br></p></span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;">这是二</span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;"><p><br></p></span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;">这是三</span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;"><p><br></p></span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;"><p><br></p></span><span style="color: rgb(0, 0, 0); font-size: medium; font-family: -webkit-standard;">这是四</span></p>'
 
-      const snapshot = await page.evaluate(({ html }) => {
-        const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+      const snapshot = await page.evaluate(
+        ({ html }) => {
+          const globalWindow = window as any
+          const editor =
+            globalWindow.wangEditorExampleBridge?.editor ||
+            globalWindow.vue2Editor ||
+            globalWindow.vue3Editor ||
+            globalWindow.reactEditor
 
-        if (!editor) {
-          throw new Error('editor not ready')
-        }
+          if (!editor) {
+            throw new Error('editor not ready')
+          }
 
-        editor.setHtml(html)
-        const output = editor.getHtml()
-        const hasInlineNestedParagraph = /<span[^>]*>\s*<p/i.test(output)
-        const root = document.querySelector('[data-testid="editor-textarea"]')
-        const nestedParagraphInSpanCount = root?.querySelectorAll('span p').length ?? 0
+          editor.setHtml(html)
+          const output = editor.getHtml()
+          const hasInlineNestedParagraph = /<span[^>]*>\s*<p/i.test(output)
+          const root = document.querySelector('[data-testid="editor-textarea"]')
+          const nestedParagraphInSpanCount = root?.querySelectorAll('span p').length ?? 0
 
-        editor.focus()
-        editor.insertText('1')
-        editor.deleteBackward('character')
+          editor.focus()
+          editor.insertText('1')
+          editor.deleteBackward('character')
 
-        return {
-          output,
-          outputAfterEdit: editor.getHtml(),
-          hasInlineNestedParagraph,
-          nestedParagraphInSpanCount,
-        }
-      }, { html: malformedHtml })
+          return {
+            output,
+            outputAfterEdit: editor.getHtml(),
+            hasInlineNestedParagraph,
+            nestedParagraphInSpanCount,
+          }
+        },
+        { html: malformedHtml }
+      )
 
       expect(snapshot.hasInlineNestedParagraph).toBe(false)
       expect(snapshot.nestedParagraphInSpanCount).toBe(0)
@@ -576,7 +645,9 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
-    test(`${target.name}: regression #339 setHtml should keep emsp in styled span`, async ({ page }) => {
+    test(`${target.name}: regression #339 setHtml should keep emsp in styled span`, async ({
+      page,
+    }) => {
       const pageErrors: string[] = []
 
       page.on('pageerror', err => {
@@ -587,10 +658,11 @@ test.describe('Framework parity regression', () => {
 
       const snapshot = await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
@@ -616,7 +688,9 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
-    test(`${target.name}: regression #441 ordered list selection text should match visual range`, async ({ page }) => {
+    test(`${target.name}: regression #441 ordered list selection text should match visual range`, async ({
+      page,
+    }) => {
       const pageErrors: string[] = []
 
       page.on('pageerror', err => {
@@ -628,7 +702,7 @@ test.describe('Framework parity regression', () => {
 
       const listMenuSupport = await page.evaluate(() => {
         const menuKeys = Array.from(
-          document.querySelectorAll('[data-testid="editor-toolbar"] [data-menu-key]'),
+          document.querySelectorAll('[data-testid="editor-toolbar"] [data-menu-key]')
         ).map(el => el.getAttribute('data-menu-key') || '')
 
         return {
@@ -647,7 +721,7 @@ test.describe('Framework parity regression', () => {
 
       test.skip(
         !orderedListMenuKey,
-        `${target.name} demo toolbar does not expose ordered-list menu`,
+        `${target.name} demo toolbar does not expose ordered-list menu`
       )
 
       const orderedListMenu = await ensureMenuEnabled(page, orderedListMenuKey)
@@ -658,18 +732,21 @@ test.describe('Framework parity regression', () => {
       await page.keyboard.type('child-item')
       await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
         }
 
-        const secondListItemIndex = (editor.children || []).findIndex((node: any, index: number) => {
-          return index > 0 && node?.type === 'list-item'
-        })
+        const secondListItemIndex = (editor.children || []).findIndex(
+          (node: any, index: number) => {
+            return index > 0 && node?.type === 'list-item'
+          }
+        )
 
         if (secondListItemIndex < 0) {
           throw new Error('second list item not found')
@@ -684,22 +761,34 @@ test.describe('Framework parity regression', () => {
       await page.waitForTimeout(200)
 
       const didSelectPrefix = await page.evaluate(() => {
-        const textArea = document.querySelector('[data-testid="editor-textarea"]') as HTMLElement | null
-        const textNodes = Array.from(textArea?.querySelectorAll('[data-slate-string]') || []) as HTMLElement[]
+        const textArea = document.querySelector(
+          '[data-testid="editor-textarea"]'
+        ) as HTMLElement | null
+        const textNodes = Array.from(
+          textArea?.querySelectorAll('[data-slate-string]') || []
+        ) as HTMLElement[]
         const parentText = textNodes.find(el => (el.textContent || '').trim() === 'parent-item')
 
-        if (!parentText) { return false }
+        if (!parentText) {
+          return false
+        }
 
         const row = parentText.closest('div[style*="display: flex"]') as HTMLElement | null
 
-        if (!row) { return false }
+        if (!row) {
+          return false
+        }
         const prefixNode = row.querySelector('[data-w-e-reserve]') as HTMLElement | null
 
-        if (!prefixNode || !prefixNode.firstChild) { return false }
+        if (!prefixNode || !prefixNode.firstChild) {
+          return false
+        }
 
         const selection = window.getSelection()
 
-        if (!selection) { return false }
+        if (!selection) {
+          return false
+        }
 
         const range = document.createRange()
 
@@ -717,10 +806,11 @@ test.describe('Framework parity regression', () => {
 
       const snapshot = await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
@@ -743,17 +833,18 @@ test.describe('Framework parity regression', () => {
         }
       })
 
-      expect(snapshot.levels.some(item => item.level === 1 && item.text.includes('child-item'))).toBe(true)
       expect(
-        snapshot.editorSelectionText.length,
-        JSON.stringify(snapshot),
-      ).toBeGreaterThan(0)
+        snapshot.levels.some(item => item.level === 1 && item.text.includes('child-item'))
+      ).toBe(true)
+      expect(snapshot.editorSelectionText.length, JSON.stringify(snapshot)).toBeGreaterThan(0)
       expect(snapshot.domSelectionText).toBe('1.')
       expect(snapshot.editorSelectionText.replace(/\s+/g, '')).toBe('parent-item')
       expect(pageErrors).toEqual([])
     })
 
-    test(`${target.name}: regression #610 image insertion should keep active font marks`, async ({ page }) => {
+    test(`${target.name}: regression #610 image insertion should keep active font marks`, async ({
+      page,
+    }) => {
       const pageErrors: string[] = []
 
       page.on('pageerror', err => {
@@ -765,7 +856,7 @@ test.describe('Framework parity regression', () => {
 
       const imageMenuSupport = await page.evaluate(() => {
         const menuKeys = Array.from(
-          document.querySelectorAll('[data-testid="editor-toolbar"] [data-menu-key]'),
+          document.querySelectorAll('[data-testid="editor-toolbar"] [data-menu-key]')
         ).map(el => el.getAttribute('data-menu-key') || '')
 
         return {
@@ -776,15 +867,16 @@ test.describe('Framework parity regression', () => {
 
       test.skip(
         !imageMenuSupport.hasGroupImage && !imageMenuSupport.hasInsertImage,
-        `${target.name} demo toolbar does not expose image insertion menus`,
+        `${target.name} demo toolbar does not expose image insertion menus`
       )
 
       await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
@@ -814,7 +906,10 @@ test.describe('Framework parity regression', () => {
       const modal = page.locator('.w-e-modal:visible').last()
 
       await expect(modal).toBeVisible()
-      await modal.locator('input[type="text"]').first().fill('https://example.com/regression-610.png')
+      await modal
+        .locator('input[type="text"]')
+        .first()
+        .fill('https://example.com/regression-610.png')
       await modal.locator('.button-container button').first().click()
       await page.waitForTimeout(220)
 
@@ -824,10 +919,11 @@ test.describe('Framework parity regression', () => {
 
       const markState = await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
@@ -841,7 +937,9 @@ test.describe('Framework parity regression', () => {
             if (Array.isArray(node?.children)) {
               const found = findTextNode(node.children, targetText)
 
-              if (found) { return found }
+              if (found) {
+                return found
+              }
             }
           }
           return null
@@ -864,7 +962,9 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
-    test(`${target.name}: regression #704 list item should allow inserting image and video`, async ({ page }) => {
+    test(`${target.name}: regression #704 list item should allow inserting image and video`, async ({
+      page,
+    }) => {
       const pageErrors: string[] = []
 
       page.on('pageerror', err => {
@@ -876,7 +976,7 @@ test.describe('Framework parity regression', () => {
 
       const menuSupport = await page.evaluate(() => {
         const menuKeys = Array.from(
-          document.querySelectorAll('[data-testid="editor-toolbar"] [data-menu-key]'),
+          document.querySelectorAll('[data-testid="editor-toolbar"] [data-menu-key]')
         ).map(el => el.getAttribute('data-menu-key') || '')
 
         return {
@@ -889,18 +989,19 @@ test.describe('Framework parity regression', () => {
       })
 
       test.skip(
-        !menuSupport.hasBulletedList
-          || (!menuSupport.hasGroupImage && !menuSupport.hasInsertImage)
-          || (!menuSupport.hasGroupVideo && !menuSupport.hasInsertVideo),
-        `${target.name} demo toolbar does not expose required list/image/video menus`,
+        !menuSupport.hasBulletedList ||
+          (!menuSupport.hasGroupImage && !menuSupport.hasInsertImage) ||
+          (!menuSupport.hasGroupVideo && !menuSupport.hasInsertVideo),
+        `${target.name} demo toolbar does not expose required list/image/video menus`
       )
 
       await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
@@ -914,7 +1015,7 @@ test.describe('Framework parity regression', () => {
           throw new Error('list-item node not found')
         }
 
-        const listTextNode = listIndex >= 0 ? (editor.children[listIndex]?.children?.[0] || {}) : {}
+        const listTextNode = listIndex >= 0 ? editor.children[listIndex]?.children?.[0] || {} : {}
         const textLength = String(listTextNode.text || '').length
         const offset = Math.min(Math.max(textLength, 1), 4)
 
@@ -941,16 +1042,20 @@ test.describe('Framework parity regression', () => {
       const imageModal = page.locator('.w-e-modal:visible').last()
 
       await expect(imageModal).toBeVisible()
-      await imageModal.locator('input[type="text"]').first().fill('https://example.com/regression-704.png')
+      await imageModal
+        .locator('input[type="text"]')
+        .first()
+        .fill('https://example.com/regression-704.png')
       await imageModal.locator('.button-container button').first().click()
       await page.waitForTimeout(200)
 
       await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
@@ -962,7 +1067,7 @@ test.describe('Framework parity regression', () => {
           throw new Error('list-item node not found after image insertion')
         }
 
-        const listTextNode = listIndex >= 0 ? (editor.children[listIndex]?.children?.[0] || {}) : {}
+        const listTextNode = listIndex >= 0 ? editor.children[listIndex]?.children?.[0] || {} : {}
         const textLength = String(listTextNode.text || '').length
         const offset = Math.min(Math.max(textLength, 1), 4)
 
@@ -989,22 +1094,28 @@ test.describe('Framework parity regression', () => {
       const videoModal = page.locator('.w-e-modal:visible').last()
 
       await expect(videoModal).toBeVisible()
-      await videoModal.locator('input[type="text"]').first().fill('https://example.com/regression-704.mp4')
+      await videoModal
+        .locator('input[type="text"]')
+        .first()
+        .fill('https://example.com/regression-704.mp4')
       await videoModal.locator('.button-container button').first().click()
       await page.waitForTimeout(260)
 
       const snapshot = await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
         }
 
-        const listItemCount = (editor.children || []).filter((node: any) => node?.type === 'list-item').length
+        const listItemCount = (editor.children || []).filter(
+          (node: any) => node?.type === 'list-item'
+        ).length
 
         return {
           imageCount: (editor.getElemsByTypePrefix?.('image') || []).length,
@@ -1054,7 +1165,9 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
-    test(`${target.name}: regression #848 tableFullWidth should stay responsive after container resize`, async ({ page }) => {
+    test(`${target.name}: regression #848 tableFullWidth should stay responsive after container resize`, async ({
+      page,
+    }) => {
       const pageErrors: string[] = []
 
       page.on('pageerror', err => {
@@ -1082,10 +1195,11 @@ test.describe('Framework parity regression', () => {
 
       const widthMode = await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
@@ -1122,7 +1236,9 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
-    test(`${target.name}: regression #893 tableFullWidth should toggle back and allow effective resize`, async ({ page }) => {
+    test(`${target.name}: regression #893 tableFullWidth should toggle back and allow effective resize`, async ({
+      page,
+    }) => {
       const pageErrors: string[] = []
 
       page.on('pageerror', err => {
@@ -1165,7 +1281,9 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
-    test(`${target.name}: regression #923 table without height should allow column resize`, async ({ page }) => {
+    test(`${target.name}: regression #923 table without height should allow column resize`, async ({
+      page,
+    }) => {
       const pageErrors: string[] = []
 
       page.on('pageerror', err => {
@@ -1177,7 +1295,9 @@ test.describe('Framework parity regression', () => {
       await create2x2TableByApi(page)
 
       await page.evaluate(() => {
-        const table = document.querySelector('[data-testid="editor-textarea"] table.table') as HTMLTableElement | null
+        const table = document.querySelector(
+          '[data-testid="editor-textarea"] table.table'
+        ) as HTMLTableElement | null
 
         if (!table) {
           throw new Error('table not ready')
@@ -1187,10 +1307,11 @@ test.describe('Framework parity regression', () => {
         table.style.height = ''
 
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
         const tableNode = (editor?.children || []).find((node: any) => node?.type === 'table')
 
         if (!tableNode) {
@@ -1221,7 +1342,9 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
-    test(`${target.name}: regression #505 fast drag should keep effective resize`, async ({ page }) => {
+    test(`${target.name}: regression #505 fast drag should keep effective resize`, async ({
+      page,
+    }) => {
       const pageErrors: string[] = []
 
       page.on('pageerror', err => {
@@ -1255,36 +1378,46 @@ test.describe('Framework parity regression', () => {
 
       const fastDragApplied = await page.evaluate(() => {
         const hotzoneEl = document.querySelector(
-          '[data-testid="editor-textarea"] .column-resizer .column-resizer-item:first-child .resizer-line-hotzone',
+          '[data-testid="editor-textarea"] .column-resizer .column-resizer-item:first-child .resizer-line-hotzone'
         ) as HTMLElement | null
 
-        if (!hotzoneEl) { return false }
+        if (!hotzoneEl) {
+          return false
+        }
 
         const rect = hotzoneEl.getBoundingClientRect()
         const x = Math.round(rect.left + rect.width / 2)
         const y = Math.round(rect.top + rect.height / 2)
 
-        hotzoneEl.dispatchEvent(new MouseEvent('mousedown', {
-          bubbles: true,
-          clientX: x,
-          clientY: y,
-        }))
+        hotzoneEl.dispatchEvent(
+          new MouseEvent('mousedown', {
+            bubbles: true,
+            clientX: x,
+            clientY: y,
+          })
+        )
         // Trigger a no-op movement first so the next movement is throttled trailing.
-        window.dispatchEvent(new MouseEvent('mousemove', {
-          bubbles: true,
-          clientX: x,
-          clientY: y,
-        }))
-        window.dispatchEvent(new MouseEvent('mousemove', {
-          bubbles: true,
-          clientX: x + 120,
-          clientY: y,
-        }))
-        window.dispatchEvent(new MouseEvent('mouseup', {
-          bubbles: true,
-          clientX: x + 120,
-          clientY: y,
-        }))
+        window.dispatchEvent(
+          new MouseEvent('mousemove', {
+            bubbles: true,
+            clientX: x,
+            clientY: y,
+          })
+        )
+        window.dispatchEvent(
+          new MouseEvent('mousemove', {
+            bubbles: true,
+            clientX: x + 120,
+            clientY: y,
+          })
+        )
+        window.dispatchEvent(
+          new MouseEvent('mouseup', {
+            bubbles: true,
+            clientX: x + 120,
+            clientY: y,
+          })
+        )
 
         return true
       })
@@ -1300,7 +1433,9 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
-    test(`${target.name}: setHtml in-table focus should keep single table and stable output`, async ({ page }) => {
+    test(`${target.name}: setHtml in-table focus should keep single table and stable output`, async ({
+      page,
+    }) => {
       const pageErrors: string[] = []
 
       page.on('pageerror', err => {
@@ -1332,70 +1467,83 @@ test.describe('Framework parity regression', () => {
         <p><br></p>
       `
 
-      await page.evaluate(({ html }) => {
-        const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+      await page.evaluate(
+        ({ html }) => {
+          const globalWindow = window as any
+          const editor =
+            globalWindow.wangEditorExampleBridge?.editor ||
+            globalWindow.vue2Editor ||
+            globalWindow.vue3Editor ||
+            globalWindow.reactEditor
 
-        if (!editor) {
-          throw new Error('editor not ready')
-        }
+          if (!editor) {
+            throw new Error('editor not ready')
+          }
 
-        const normalizeHtml = (value: string) => value.replace(/\s+/g, ' ').trim()
+          const normalizeHtml = (value: string) => value.replace(/\s+/g, ' ').trim()
 
-        editor.setHtml(html)
-        const afterFirstSet = normalizeHtml(editor.getHtml())
+          editor.setHtml(html)
+          const afterFirstSet = normalizeHtml(editor.getHtml())
 
-        editor.setHtml(html)
-        const afterSecondSet = normalizeHtml(editor.getHtml())
+          editor.setHtml(html)
+          const afterSecondSet = normalizeHtml(editor.getHtml())
 
-        globalWindow.setHtmlStableFlag = afterFirstSet === afterSecondSet
-        globalWindow.setHtmlTableCountAfterFirst = (afterFirstSet.match(/<table/gi) || []).length
-        globalWindow.setHtmlTableCountAfterSecond = (afterSecondSet.match(/<table/gi) || []).length
+          globalWindow.setHtmlStableFlag = afterFirstSet === afterSecondSet
+          globalWindow.setHtmlTableCountAfterFirst = (afterFirstSet.match(/<table/gi) || []).length
+          globalWindow.setHtmlTableCountAfterSecond = (
+            afterSecondSet.match(/<table/gi) || []
+          ).length
 
-        const tableIndex = editor.children.findIndex((node: any) => node?.type === 'table')
+          const tableIndex = editor.children.findIndex((node: any) => node?.type === 'table')
 
-        if (tableIndex < 0) {
-          throw new Error('table node not found')
-        }
+          if (tableIndex < 0) {
+            throw new Error('table node not found')
+          }
 
-        editor.select({
-          anchor: { path: [tableIndex, 0, 0, 0, 0], offset: 0 },
-          focus: { path: [tableIndex, 0, 0, 0, 0], offset: 1 },
-        })
-      }, { html: firstHtml })
+          editor.select({
+            anchor: { path: [tableIndex, 0, 0, 0, 0], offset: 0 },
+            focus: { path: [tableIndex, 0, 0, 0, 0], offset: 1 },
+          })
+        },
+        { html: firstHtml }
+      )
 
       await page.waitForTimeout(120)
 
-      await page.evaluate(({ html }) => {
-        const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+      await page.evaluate(
+        ({ html }) => {
+          const globalWindow = window as any
+          const editor =
+            globalWindow.wangEditorExampleBridge?.editor ||
+            globalWindow.vue2Editor ||
+            globalWindow.vue3Editor ||
+            globalWindow.reactEditor
 
-        if (!editor) {
-          throw new Error('editor not ready')
-        }
+          if (!editor) {
+            throw new Error('editor not ready')
+          }
 
-        editor.setHtml(html)
-      }, { html: secondHtml })
+          editor.setHtml(html)
+        },
+        { html: secondHtml }
+      )
 
       await page.waitForTimeout(160)
 
       const snapshot = await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
         const root = document.querySelector('[data-testid="editor-textarea"]') as HTMLElement | null
         const tableElements = Array.from(root?.querySelectorAll('table') || [])
         const nestedTableElements = Array.from(root?.querySelectorAll('table table') || [])
         const firstCell = tableElements[0]?.querySelector('tr td, tr th') as HTMLElement | null
-        const modelTableCount = (editor?.children || []).filter((node: any) => node?.type === 'table').length
+        const modelTableCount = (editor?.children || []).filter(
+          (node: any) => node?.type === 'table'
+        ).length
         const currentHtml = editor?.getHtml?.() || ''
 
         return {
@@ -1423,7 +1571,9 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
-    test(`${target.name}: regression #608 mixed bold span should keep non-bold subrange`, async ({ page }) => {
+    test(`${target.name}: regression #608 mixed bold span should keep non-bold subrange`, async ({
+      page,
+    }) => {
       const pageErrors: string[] = []
 
       page.on('pageerror', err => {
@@ -1434,16 +1584,19 @@ test.describe('Framework parity regression', () => {
 
       await page.evaluate(async () => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
         }
 
-        editor.setHtml('<p><span style="font-weight: 700;">前缀<span style="font-weight: 400;">中间</span>后缀</span></p><p><br></p>')
+        editor.setHtml(
+          '<p><span style="font-weight: 700;">前缀<span style="font-weight: 400;">中间</span>后缀</span></p><p><br></p>'
+        )
 
         await new Promise<void>(resolve => {
           setTimeout(() => resolve(), 80)
@@ -1451,17 +1604,20 @@ test.describe('Framework parity regression', () => {
       })
       const snapshot = await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
         }
 
         const richParagraph = (editor.children || []).find((node: any) => {
-          if (!node || node.type !== 'paragraph') { return false }
+          if (!node || node.type !== 'paragraph') {
+            return false
+          }
           const text = (node.children || [])
             .map((child: any) => String(child?.text || ''))
             .join('')
@@ -1493,7 +1649,9 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
-    test(`${target.name}: regression #621 heading default font-size should clear pasted inline size`, async ({ page }) => {
+    test(`${target.name}: regression #621 heading default font-size should clear pasted inline size`, async ({
+      page,
+    }) => {
       const pageErrors: string[] = []
 
       page.on('pageerror', err => {
@@ -1504,10 +1662,11 @@ test.describe('Framework parity regression', () => {
 
       await page.evaluate(async () => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
@@ -1530,14 +1689,20 @@ test.describe('Framework parity regression', () => {
         const headingTextNode = editor.children?.[headingIndex]?.children?.[0] || {}
         const text = String(headingTextNode.text || '')
         const endOffset = Math.max(text.length, 1)
-        const editable = document.querySelector('[data-testid="editor-textarea"] [contenteditable="true"]')
-        const headingLeaf = editable?.querySelector('h2 [data-slate-string="true"]') as HTMLElement | null
+        const editable = document.querySelector(
+          '[data-testid="editor-textarea"] [contenteditable="true"]'
+        )
+        const headingLeaf = editable?.querySelector(
+          'h2 [data-slate-string="true"]'
+        ) as HTMLElement | null
 
         if (!headingLeaf) {
           throw new Error('heading leaf dom not found')
         }
 
-        globalWindow.issue621BeforeSize = Number.parseFloat(window.getComputedStyle(headingLeaf).fontSize || '0')
+        globalWindow.issue621BeforeSize = Number.parseFloat(
+          window.getComputedStyle(headingLeaf).fontSize || '0'
+        )
         globalWindow.issue621BeforeModelFontSize = String(headingTextNode.fontSize || '')
 
         editor.select({
@@ -1556,10 +1721,11 @@ test.describe('Framework parity regression', () => {
       } else {
         await page.evaluate(() => {
           const globalWindow = window as any
-          const editor = globalWindow.wangEditorExampleBridge?.editor
-            || globalWindow.vue2Editor
-            || globalWindow.vue3Editor
-            || globalWindow.reactEditor
+          const editor =
+            globalWindow.wangEditorExampleBridge?.editor ||
+            globalWindow.vue2Editor ||
+            globalWindow.vue3Editor ||
+            globalWindow.reactEditor
 
           if (!editor) {
             throw new Error('editor not ready')
@@ -1574,26 +1740,34 @@ test.describe('Framework parity regression', () => {
 
       const snapshot = await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
         }
 
         const headingIndex = editor.children.findIndex((node: any) => node?.type === 'header2')
-        const headingTextNode = headingIndex >= 0 ? (editor.children?.[headingIndex]?.children?.[0] || {}) : {}
-        const editable = document.querySelector('[data-testid="editor-textarea"] [contenteditable="true"]')
+        const headingTextNode =
+          headingIndex >= 0 ? editor.children?.[headingIndex]?.children?.[0] || {} : {}
+        const editable = document.querySelector(
+          '[data-testid="editor-textarea"] [contenteditable="true"]'
+        )
         const heading = editable?.querySelector('h2') as HTMLElement | null
-        const headingLeaf = editable?.querySelector('h2 [data-slate-string="true"]') as HTMLElement | null
+        const headingLeaf = editable?.querySelector(
+          'h2 [data-slate-string="true"]'
+        ) as HTMLElement | null
         const html = editor.getHtml?.() || ''
 
         return {
           beforeSize: Number(globalWindow.issue621BeforeSize || 0),
           beforeModelFontSize: String(globalWindow.issue621BeforeModelFontSize || ''),
-          afterSize: Number.parseFloat(headingLeaf ? window.getComputedStyle(headingLeaf).fontSize || '0' : '0'),
+          afterSize: Number.parseFloat(
+            headingLeaf ? window.getComputedStyle(headingLeaf).fontSize || '0' : '0'
+          ),
           leafStyle: headingLeaf?.getAttribute('style') || '',
           modelFontSize: String(headingTextNode.fontSize || ''),
           html,
@@ -1612,7 +1786,9 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
-    test(`${target.name}: rich table cells should support blocks, paste, Enter, and final Tab`, async ({ page }) => {
+    test(`${target.name}: rich table cells should support blocks, paste, Enter, and final Tab`, async ({
+      page,
+    }) => {
       const pageErrors: string[] = []
 
       page.on('pageerror', err => {
@@ -1623,10 +1799,11 @@ test.describe('Framework parity regression', () => {
 
       const initialState = await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
@@ -1663,14 +1840,16 @@ test.describe('Framework parity regression', () => {
 
       const afterEnterTypes = await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
         const tableIndex = editor.children.findIndex((node: any) => node?.type === 'table')
 
-        return editor.children[tableIndex].children[0].children[0].children
-          .map((node: any) => node.type)
+        return editor.children[tableIndex].children[0].children[0].children.map(
+          (node: any) => node.type
+        )
       })
 
       expect(afterEnterTypes).toEqual(['paragraph', 'paragraph', 'list-item'])
@@ -1701,10 +1880,11 @@ test.describe('Framework parity regression', () => {
 
       const pasteState = await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         editor.setHtml(`
           <table><tbody><tr>
@@ -1755,10 +1935,11 @@ test.describe('Framework parity regression', () => {
 
       const selectionAfterTab = await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         return editor.selection
       })
@@ -1770,7 +1951,72 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
-    test(`${target.name}: table multi-cell bold should affect only selected cells`, async ({ page }) => {
+    test(`${target.name}: table cells should preserve video and code blocks`, async ({ page }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+
+      const state = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        editor.setHtml(
+          '<table><tbody><tr><td><p>media</p><figure data-w-e-type="video" data-w-e-is-void><video controls="true" width="320" height="180"><source src="https://example.com/table-cell.mp4" type="video/mp4"/></video></figure><pre><code>const insideCell = true</code></pre></td></tr></tbody></table><p>after</p>'
+        )
+
+        const tableIndex = editor.children.findIndex((node: any) => node?.type === 'table')
+
+        editor.select({
+          anchor: { path: [tableIndex, 0, 0, 0, 0], offset: 0 },
+          focus: { path: [tableIndex, 0, 0, 0, 0], offset: 0 },
+        })
+
+        const cell = editor.children[tableIndex].children[0].children[0]
+        const html = editor.getHtml()
+
+        editor.setHtml(html)
+        editor.select({
+          anchor: { path: [tableIndex, 0, 0, 0, 0], offset: 0 },
+          focus: { path: [tableIndex, 0, 0, 0, 0], offset: 0 },
+        })
+
+        return {
+          blockTypes: cell.children.map((node: any) => node.type),
+          html,
+          reparsedTypes: editor.children[tableIndex].children[0].children[0].children.map(
+            (node: any) => node.type
+          ),
+        }
+      })
+
+      expect(state.blockTypes).toEqual(['paragraph', 'video', 'pre'])
+      expect(state.reparsedTypes).toEqual(['paragraph', 'video', 'pre'])
+      expect(state.html).toContain('data-w-e-type="video"')
+      expect(state.html).toContain('<pre><code>const insideCell = true</code></pre>')
+      await expect(
+        page.locator('[data-testid="editor-textarea"] table figure.w-e-video')
+      ).toHaveCount(1)
+      await expect(page.locator('[data-testid="editor-textarea"] table pre code')).toHaveText(
+        'const insideCell = true'
+      )
+      expect(pageErrors).toEqual([])
+    })
+
+    test(`${target.name}: table multi-cell bold should affect only selected cells`, async ({
+      page,
+    }) => {
       const pageErrors: string[] = []
 
       page.on('pageerror', err => {
@@ -1781,10 +2027,11 @@ test.describe('Framework parity regression', () => {
 
       await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
@@ -1816,10 +2063,11 @@ test.describe('Framework parity regression', () => {
 
       const selectionState = await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
@@ -1843,10 +2091,11 @@ test.describe('Framework parity regression', () => {
 
       const markState = await page.evaluate(() => {
         const globalWindow = window as any
-        const editor = globalWindow.wangEditorExampleBridge?.editor
-          || globalWindow.vue2Editor
-          || globalWindow.vue3Editor
-          || globalWindow.reactEditor
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
 
         if (!editor) {
           throw new Error('editor not ready')
@@ -1859,8 +2108,10 @@ test.describe('Framework parity regression', () => {
         }
 
         const getCellTextNode = (row: number, col: number) => {
-          return editor.children?.[tableIndex]?.children?.[row]?.children?.[col]
-            ?.children?.[0]?.children?.[0] || {}
+          return (
+            editor.children?.[tableIndex]?.children?.[row]?.children?.[col]?.children?.[0]
+              ?.children?.[0] || {}
+          )
         }
 
         return {
@@ -1879,7 +2130,9 @@ test.describe('Framework parity regression', () => {
     })
   }
 
-  test('vue2-wrapper-markdown: regression #675 should skip markdown trigger during composition', async ({ page }) => {
+  test('vue2-wrapper-markdown: regression #675 should skip markdown trigger during composition', async ({
+    page,
+  }) => {
     const pageErrors: string[] = []
 
     page.on('pageerror', err => {
@@ -1941,7 +2194,9 @@ test.describe('Framework parity regression', () => {
     expect(pageErrors).toEqual([])
   })
 
-  test('vue3-wrapper: regression #388 enter-at-bottom should keep scroll pinned', async ({ page }) => {
+  test('vue3-wrapper: regression #388 enter-at-bottom should keep scroll pinned', async ({
+    page,
+  }) => {
     const pageErrors: string[] = []
 
     page.on('pageerror', err => {
@@ -2020,9 +2275,10 @@ test.describe('Framework parity regression', () => {
           caretTop = rangeRect.top
           caretBottom = rangeRect.bottom
         } else if (selection.anchorNode) {
-          const anchorElem = selection.anchorNode.nodeType === Node.TEXT_NODE
-            ? selection.anchorNode.parentElement
-            : selection.anchorNode as Element
+          const anchorElem =
+            selection.anchorNode.nodeType === Node.TEXT_NODE
+              ? selection.anchorNode.parentElement
+              : (selection.anchorNode as Element)
           const anchorRect = anchorElem?.getBoundingClientRect()
 
           if (anchorRect) {

@@ -3,17 +3,17 @@
  * @author wangfupeng
  */
 
-import {
-  DomEditor, IButtonMenu, IDomEditor, t,
-} from '@wangeditor-next/core'
-import {
-  Editor, Element, Node, Transforms,
-} from 'slate'
+import { DomEditor, IButtonMenu, IDomEditor, t } from '@wangeditor-next/core'
+import { Editor, Element, Node, Path, Transforms } from 'slate'
 
 import { CODE_BLOCK_SVG } from '../../../constants/icon-svg'
 import { CodeElement } from '../custom-types'
 
-interface CodeSelectLangItem { text: string; value: string; selected?: boolean }
+interface CodeSelectLangItem {
+  text: string
+  value: string
+  selected?: boolean
+}
 
 class CodeBlockMenu implements IButtonMenu {
   readonly title = t('codeBlock.title')
@@ -25,13 +25,41 @@ class CodeBlockMenu implements IButtonMenu {
   private getSelectCodeElem(editor: IDomEditor): CodeElement | null {
     const codeNode = DomEditor.getSelectedNodeByType(editor, 'code')
 
-    if (codeNode == null) { return null }
+    if (codeNode == null) {
+      return null
+    }
     const preNode = DomEditor.getParentNode(editor, codeNode)
 
-    if (preNode == null) { return null }
-    if (DomEditor.getNodeType(preNode) !== 'pre') { return null }
+    if (preNode == null) {
+      return null
+    }
+    if (DomEditor.getNodeType(preNode) !== 'pre') {
+      return null
+    }
 
     return codeNode as CodeElement
+  }
+
+  private getSelectedTableCellBlock(editor: IDomEditor): [Element, Path] | null {
+    if (DomEditor.getSelectedNodeByType(editor, 'table-cell') == null) {
+      return null
+    }
+
+    const entry = Editor.above(editor, {
+      match: node => {
+        if (!Element.isElement(node)) {
+          return false
+        }
+
+        return node.type === 'paragraph' || node.type === 'pre'
+      },
+    })
+
+    if (entry == null) {
+      return null
+    }
+
+    return entry as [Element, Path]
   }
 
   /**
@@ -59,13 +87,17 @@ class CodeBlockMenu implements IButtonMenu {
   isDisabled(editor: IDomEditor): boolean {
     const { selection } = editor
 
-    if (selection == null) { return true }
+    if (selection == null) {
+      return true
+    }
 
     const selectedElems = DomEditor.getSelectedElems(editor)
 
     const hasVoid = selectedElems.some(elem => editor.isVoid(elem))
 
-    if (hasVoid) { return true }
+    if (hasVoid) {
+      return true
+    }
 
     const isMatch = selectedElems.some(elem => {
       const type = DomEditor.getNodeType(elem)
@@ -76,7 +108,9 @@ class CodeBlockMenu implements IButtonMenu {
       return false
     })
 
-    if (isMatch) { return false } // 匹配到，则 enable
+    if (isMatch) {
+      return false
+    } // 匹配到，则 enable
     return true // 否则 disable
   }
 
@@ -95,10 +129,25 @@ class CodeBlockMenu implements IButtonMenu {
   private changeToPlainText(editor: IDomEditor) {
     const elem = this.getSelectCodeElem(editor)
 
-    if (elem == null) { return }
+    if (elem == null) {
+      return
+    }
 
     // 获取 code 文本
     const str = Node.string(elem)
+
+    const tableCellBlock = this.getSelectedTableCellBlock(editor)
+
+    if (tableCellBlock) {
+      const [, path] = tableCellBlock
+      const pList = str.split('\n').map(s => {
+        return { type: 'paragraph', children: [{ text: s }] }
+      })
+
+      Transforms.removeNodes(editor, { at: path })
+      Transforms.insertNodes(editor, pList, { at: path })
+      return
+    }
 
     // 删除当前最高层级的节点，即 pre 节点
     Transforms.removeNodes(editor, { mode: 'highest' })
@@ -112,6 +161,26 @@ class CodeBlockMenu implements IButtonMenu {
   }
 
   private changeToCodeBlock(editor: IDomEditor, language: string) {
+    const tableCellBlock = this.getSelectedTableCellBlock(editor)
+
+    if (tableCellBlock) {
+      const [block, path] = tableCellBlock
+      const newPreNode = {
+        type: 'pre',
+        children: [
+          {
+            type: 'code',
+            language,
+            children: [{ text: Node.string(block) }],
+          },
+        ],
+      }
+
+      Transforms.removeNodes(editor, { at: path })
+      Transforms.insertNodes(editor, newPreNode, { at: path })
+      return
+    }
+
     // 汇总选中的最高层级节点的字符串
     const strArr: string[] = []
     const nodeEntries = Editor.nodes(editor, {
@@ -122,7 +191,9 @@ class CodeBlockMenu implements IButtonMenu {
     for (const nodeEntry of nodeEntries) {
       const [n] = nodeEntry
 
-      if (n) { strArr.push(Node.string(n)) }
+      if (n) {
+        strArr.push(Node.string(n))
+      }
     }
 
     // 删除选中的最高层级的节点
