@@ -1,5 +1,13 @@
 # Change Log
 
+## 6.4.0
+
+### Patch Changes
+
+- 85dbfdd: Allow table cells to preserve and accept video and code-block content while rejecting unsupported custom blocks and nested tables.
+- Updated dependencies [a733b35]
+  - @wangeditor-next/core@6.4.0
+
 ## 6.3.0
 
 ### Patch Changes

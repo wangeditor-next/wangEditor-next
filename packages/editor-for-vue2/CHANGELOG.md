@@ -1,5 +1,11 @@
 # @wangeditor-next/editor-for-vue2
 
+## 6.4.0
+
+### Patch Changes
+
+- @wangeditor-next/editor@6.4.0
+
 ## 6.3.0
 
 ### Patch Changes
