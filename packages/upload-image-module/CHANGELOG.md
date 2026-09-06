@@ -1,5 +1,14 @@
 # Change Log
 
+## 6.4.0
+
+### Patch Changes
+
+- Updated dependencies [a733b35]
+- Updated dependencies [85dbfdd]
+  - @wangeditor-next/core@6.4.0
+  - @wangeditor-next/basic-modules@6.4.0
+
 ## 6.3.0
 
 ### Patch Changes
