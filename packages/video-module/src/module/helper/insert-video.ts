@@ -20,9 +20,11 @@ export default async function (
   src: string,
   poster = '',
   width = '',
-  height = '',
+  height = ''
 ) {
-  if (!src) { return }
+  if (!src) {
+    return
+  }
 
   // 还原选区
   editor.restoreSelection()
@@ -61,12 +63,22 @@ export default async function (
     },
   }
 
+  const isInsideTableCell = DomEditor.getSelectedNodeByType(editor, 'table-cell') != null
+
   // 插入视频
   // 不使用此方式会比正常的选区选取先执行
   Promise.resolve().then(() => {
-    if (DomEditor.isSelectedEmptyParagraph(editor)) {
+    // A table cell owns its block children. Removing the empty paragraph or
+    // inserting with `mode: highest` would move the video outside the cell.
+    if (!isInsideTableCell && DomEditor.isSelectedEmptyParagraph(editor)) {
       Transforms.removeNodes(editor, { mode: 'highest' })
     }
+
+    if (isInsideTableCell) {
+      Transforms.insertNodes(editor, video)
+      return
+    }
+
     Transforms.insertNodes(editor, video, { mode: 'highest' })
   })
 

@@ -11,6 +11,18 @@ const RICH_CELL_HTML = [
   '<p><br></p>',
 ].join('')
 
+const MEDIA_CELL_HTML = [
+  '<table><tbody><tr><td>',
+  '<p>正文</p>',
+  '<figure data-w-e-type="video" data-w-e-is-void>',
+  '<video poster="poster.png" controls="true" width="640" height="360">',
+  '<source src="https://example.com/demo.mp4" type="video/mp4"/>',
+  '</video></figure>',
+  '<pre><code>const answer = 42</code></pre>',
+  '</td></tr></tbody></table>',
+  '<p><br></p>',
+].join('')
+
 function getFirstCell(editor: ReturnType<typeof createEditor>) {
   return (editor.children[0] as any).children[0].children[0]
 }
@@ -23,12 +35,7 @@ describe('table rich cell content', () => {
   it('preserves paragraph and list blocks from HTML to Slate to HTML', () => {
     const editor = createEditor({ html: RICH_CELL_HTML })
 
-    expect(getCellBlockTypes(editor)).toEqual([
-      'paragraph',
-      'paragraph',
-      'list-item',
-      'list-item',
-    ])
+    expect(getCellBlockTypes(editor)).toEqual(['paragraph', 'paragraph', 'list-item', 'list-item'])
     expect(Node.string(getFirstCell(editor))).toContain('第一段')
 
     const output = editor.getHtml()
@@ -89,6 +96,44 @@ describe('table rich cell content', () => {
     ])
   })
 
+  it('preserves video and code blocks through table-cell HTML round-trip', () => {
+    const editor = createEditor({ html: MEDIA_CELL_HTML })
+    const cell = getFirstCell(editor)
+
+    expect(cell.children.map((child: any) => child.type)).toEqual(['paragraph', 'video', 'pre'])
+    expect(editor.getHtml()).toContain('data-w-e-type="video"')
+    expect(editor.getHtml()).toContain('<pre><code>const answer = 42</code></pre>')
+
+    editor.setHtml(editor.getHtml())
+
+    expect(getCellBlockTypes(editor)).toEqual(['paragraph', 'video', 'pre'])
+    expect(editor.getHtml()).toContain('https://example.com/demo.mp4')
+  })
+
+  it('allows inserting a video node as a block inside a table cell', () => {
+    const editor = createEditor({
+      html: '<table><tbody><tr><td><p>A</p></td></tr></tbody></table>',
+    })
+    const video = {
+      type: 'video',
+      src: 'https://example.com/insert.mp4',
+      poster: '',
+      width: 'auto',
+      height: 'auto',
+      align: 'center',
+      children: [{ text: '' }],
+    }
+
+    editor.selection = {
+      anchor: { path: [0, 0, 0, 0, 0], offset: 1 },
+      focus: { path: [0, 0, 0, 0, 0], offset: 1 },
+    }
+    editor.insertNode(video as any)
+
+    expect(getCellBlockTypes(editor)).toContain('video')
+    expect(editor.getHtml()).toContain('https://example.com/insert.mp4')
+  })
+
   it('canonicalizes legacy text-only cells before paths are created', () => {
     const legacyContent: any[] = [
       {
@@ -115,7 +160,9 @@ describe('table rich cell content', () => {
   })
 
   it('preserves pasted paragraph and list blocks inside a cell', () => {
-    const editor = createEditor({ html: '<table><tbody><tr><td><p>A</p></td></tr></tbody></table>' })
+    const editor = createEditor({
+      html: '<table><tbody><tr><td><p>A</p></td></tr></tbody></table>',
+    })
 
     editor.selection = {
       anchor: { path: [0, 0, 0, 0, 0], offset: 1 },
@@ -123,8 +170,12 @@ describe('table rich cell content', () => {
     }
     editor.insertData({
       getData(type: string) {
-        if (type === 'text/html') {return '<p>第二段</p><ul><li>粘贴列表</li></ul>'}
-        if (type === 'text/plain') {return '第二段\n粘贴列表'}
+        if (type === 'text/html') {
+          return '<p>第二段</p><ul><li>粘贴列表</li></ul>'
+        }
+        if (type === 'text/plain') {
+          return '第二段\n粘贴列表'
+        }
         return ''
       },
     } as DataTransfer)
@@ -139,20 +190,54 @@ describe('table rich cell content', () => {
     expect(editor.getHtml()).toContain('<ul><li>粘贴列表</li></ul>')
   })
 
-  it('rejects unsupported nested nodes from internal Slate fragments', () => {
+  it('preserves supported media blocks from internal Slate fragments', () => {
+    const editor = createEditor({
+      html: '<table><tbody><tr><td><p>A</p></td></tr></tbody></table>',
+    })
+    const supportedFragment = [
+      {
+        type: 'video',
+        src: 'https://example.com/pasted.mp4',
+        children: [{ text: '' }],
+      },
+      {
+        type: 'pre',
+        children: [{ type: 'code', language: '', children: [{ text: 'pasted code' }] }],
+      },
+    ]
+    const encodedFragment = window.btoa(encodeURIComponent(JSON.stringify(supportedFragment)))
+
+    editor.selection = {
+      anchor: { path: [0, 0, 0, 0, 0], offset: 1 },
+      focus: { path: [0, 0, 0, 0, 0], offset: 1 },
+    }
+    editor.insertData({
+      getData(type: string) {
+        if (type === 'application/x-slate-fragment') {
+          return encodedFragment
+        }
+        if (type === 'text/plain') {
+          return 'fallback'
+        }
+        return ''
+      },
+    } as DataTransfer)
+
+    const cell = getFirstCell(editor)
+
+    expect(cell.children.map((child: any) => child.type)).toEqual(['paragraph', 'video', 'pre'])
+    expect(Node.string(cell)).toContain('pasted code')
+    expect(editor.getHtml()).toContain('https://example.com/pasted.mp4')
+  })
+
+  it('rejects unsupported custom blocks from internal Slate fragments', () => {
     const editor = createEditor({
       html: '<table><tbody><tr><td><p>A</p></td></tr></tbody></table>',
     })
     const unsupportedFragment = [
       {
-        type: 'paragraph',
-        children: [
-          {
-            type: 'video',
-            src: 'https://example.com/video.mp4',
-            children: [{ text: '' }],
-          },
-        ],
+        type: 'custom-block',
+        children: [{ text: 'unsupported' }],
       },
     ]
     const encodedFragment = window.btoa(encodeURIComponent(JSON.stringify(unsupportedFragment)))
@@ -163,17 +248,16 @@ describe('table rich cell content', () => {
     }
     editor.insertData({
       getData(type: string) {
-        if (type === 'application/x-slate-fragment') {return encodedFragment}
-        if (type === 'text/plain') {return 'fallback'}
+        if (type === 'application/x-slate-fragment') {
+          return encodedFragment
+        }
+        if (type === 'text/plain') {
+          return 'fallback'
+        }
         return ''
       },
     } as DataTransfer)
 
-    const cell = getFirstCell(editor)
-
-    expect(Node.string(cell)).toBe('Afallback')
-    expect(cell.children).toEqual([
-      { type: 'paragraph', children: [{ text: 'Afallback' }] },
-    ])
+    expect(Node.string(getFirstCell(editor))).toBe('Afallback')
   })
 })

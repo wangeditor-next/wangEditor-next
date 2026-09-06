@@ -8,7 +8,7 @@ import { Descendant, Text } from 'slate'
 
 import $, { DOMElement, getStyleValue, getTagName } from '../utils/dom'
 import { TableCellElement, TableElement, TableRowElement } from './custom-types'
-import { normalizeTableCellChildren } from './helpers'
+import { isSupportedTableCellBlock, normalizeTableCellChildren } from './helpers'
 
 const DEFAULT_PERCENT_TABLE_WIDTH = 600
 
@@ -25,7 +25,7 @@ function parsePixelSize(value: string | null | undefined, fallback = 0): number 
 function parseCssPixelSize(
   value: string | null | undefined,
   fallback = 0,
-  percentageBase = 0,
+  percentageBase = 0
 ): number {
   const rawValue = (value || '').trim().toLowerCase()
   const parsedValue = parseFloat(rawValue)
@@ -48,9 +48,11 @@ function parseCssPixelSize(
 
 function getColgroupWidths(
   colgroupElements: HTMLCollection | null,
-  percentageBase: number,
+  percentageBase: number
 ): number[] {
-  if (!colgroupElements || colgroupElements.length === 0) { return [] }
+  if (!colgroupElements || colgroupElements.length === 0) {
+    return []
+  }
 
   const columnWidths: number[] = []
 
@@ -59,10 +61,12 @@ function getColgroupWidths(
     const width = parseCssPixelSize(
       col.getAttribute('width') || getStyleValue($(col), 'width'),
       90,
-      percentageBase,
+      percentageBase
     )
 
-    if (Number.isNaN(width)) { return }
+    if (Number.isNaN(width)) {
+      return
+    }
 
     for (let i = 0; i < span; i += 1) {
       columnWidths.push(width)
@@ -87,17 +91,19 @@ function getTableWidthPixelBase($table: ReturnType<typeof $>): number {
 function parseCellHtml(
   elem: DOMElement,
   children: Descendant[],
-  editor: IDomEditor,
+  editor: IDomEditor
 ): TableCellElement {
   const $elem = $(elem)
   const cellText = $elem.text().replace(/\s+/gm, ' ').trim()
 
   children = children.filter(child => {
-    if (DomEditor.getNodeType(child) === 'paragraph') { return true }
-    if (DomEditor.getNodeType(child) === 'list-item') { return true }
-    if (Text.isText(child)) { return true }
-    if (editor.isInline(child)) { return true }
-    return false
+    if (Text.isText(child)) {
+      return true
+    }
+    if (editor.isInline(child)) {
+      return true
+    }
+    return isSupportedTableCellBlock(editor, child)
   })
 
   // 无 children ，则用纯文本
@@ -132,7 +138,7 @@ export const parseCellHtmlConf = {
 function parseRowHtml(
   elem: DOMElement,
   children: Descendant[],
-  _editor: IDomEditor,
+  _editor: IDomEditor
 ): TableRowElement {
   const $elem = $(elem)
   const tableCellChildren: TableCellElement[] = []
@@ -154,9 +160,8 @@ function parseRowHtml(
   }
 
   // 解析行高度（style / class-mode data attr / legacy attr）
-  const rowHeightRaw = getStyleValue($elem, 'height')
-    || $elem.attr('data-w-e-row-height')
-    || $elem.attr('height')
+  const rowHeightRaw =
+    getStyleValue($elem, 'height') || $elem.attr('data-w-e-row-height') || $elem.attr('height')
   const height = parsePixelSize(rowHeightRaw) || undefined
 
   return {
@@ -174,7 +179,7 @@ export const parseRowHtmlConf = {
 function parseTableHtml(
   elem: DOMElement,
   children: Descendant[],
-  _editor: IDomEditor,
+  _editor: IDomEditor
 ): TableElement {
   const $elem = $(elem)
   const caption = ($elem.find('caption').text() || '').replace(/\s+/gm, ' ').trim() || undefined
@@ -184,18 +189,22 @@ function parseTableHtml(
 
   const styleWidth = getStyleValue($elem, 'width')
   const widthAttr = $elem.attr('width') || ''
-  const isClassModeTable = $elem.hasClass('w-e-table-layout-fixed') || !!$elem.attr('data-w-e-table-height')
+  const isClassModeTable =
+    $elem.hasClass('w-e-table-layout-fixed') || !!$elem.attr('data-w-e-table-height')
 
-  if (styleWidth === '100%') { tableWidth = '100%' }
-  if ($elem.attr('width') === '100%') { tableWidth = '100%' } // 兼容 v4 格式
+  if (styleWidth === '100%') {
+    tableWidth = '100%'
+  }
+  if ($elem.attr('width') === '100%') {
+    tableWidth = '100%'
+  } // 兼容 v4 格式
   if (isClassModeTable && widthAttr && widthAttr !== 'auto' && widthAttr !== '100%') {
     tableWidth = widthAttr
   }
 
   // 计算高度
-  const tableHeightRaw = getStyleValue($elem, 'height')
-    || $elem.attr('data-w-e-table-height')
-    || $elem.attr('height')
+  const tableHeightRaw =
+    getStyleValue($elem, 'height') || $elem.attr('data-w-e-table-height') || $elem.attr('height')
   const height = parsePixelSize(tableHeightRaw)
 
   const tableELement: TableElement = {

@@ -16,39 +16,38 @@ import {
   Transforms,
 } from 'slate'
 
-import { normalizeTableContent } from './helpers'
+import { isSupportedTableCellBlock, normalizeTableContent } from './helpers'
 import { TableCursor } from './table-cursor'
 import { EDITOR_TO_SELECTION } from './weak-maps'
 import { withSelection } from './with-selection'
 
 const CELL_BREAK = '\n'
 
-function hasSupportedInlineChildren(editor: IDomEditor, node: SlateElement): boolean {
-  return node.children.every(child => {
-    if (Text.isText(child)) { return true }
-
-    return SlateElement.isElement(child)
-      && editor.isInline(child)
-      && hasSupportedInlineChildren(editor, child)
-  })
-}
-
 function isSupportedCellFragment(editor: IDomEditor, fragment: Descendant[]): boolean {
-  return fragment.length > 0 && fragment.every(node => {
-    if (Text.isText(node)) { return true }
-    return SlateElement.isElement(node)
-      && ['paragraph', 'list-item'].includes(node.type)
-      && hasSupportedInlineChildren(editor, node)
-  })
+  return (
+    fragment.length > 0 &&
+    fragment.every(node => {
+      if (Text.isText(node)) {
+        return true
+      }
+      return isSupportedTableCellBlock(editor, node)
+    })
+  )
 }
 
 function parseSupportedCellBlockHtml(editor: IDomEditor, html: string): Descendant[] | null {
-  if (!html || !/<(p|ol|ul|li)\b/i.test(html)) { return null }
+  if (!html || !/<(p|ol|ul|li|pre|figure)\b/i.test(html)) {
+    return null
+  }
 
   const container = document.createElement('div')
 
   container.innerHTML = html
-  if (container.querySelector('table, pre, img, video, audio, iframe')) { return null }
+  // Keep the established image paste path, which handles uploads and
+  // browser-specific image payloads outside the block-fragment parser.
+  if (container.querySelector('table, img')) {
+    return null
+  }
 
   const fragment = htmlToContent(editor, html)
 
@@ -57,9 +56,11 @@ function parseSupportedCellBlockHtml(editor: IDomEditor, html: string): Descenda
 
 function parseSupportedSlateFragment(
   editor: IDomEditor,
-  encodedFragment: string,
+  encodedFragment: string
 ): Descendant[] | null {
-  if (!encodedFragment) { return null }
+  if (!encodedFragment) {
+    return null
+  }
 
   try {
     const decoded = decodeURIComponent(window.atob(encodedFragment))
@@ -75,7 +76,9 @@ function parseSupportedSlateFragment(
 function deleteHandler(newEditor: IDomEditor): boolean {
   const { selection } = newEditor
 
-  if (selection == null) { return false }
+  if (selection == null) {
+    return false
+  }
 
   const [cellNodeEntry] = Editor.nodes(newEditor, {
     match: n => DomEditor.checkNodeType(n, 'table-cell'),
@@ -98,10 +101,16 @@ function deleteHandler(newEditor: IDomEditor): boolean {
  * @param newEditor
  * @returns 是否在内部处理了删除
  */
-function deleteCellBreak(newEditor: IDomEditor, unit: Parameters<IDomEditor['deleteBackward']>[0], direction: 'forward' | 'backward'): boolean {
+function deleteCellBreak(
+  newEditor: IDomEditor,
+  unit: Parameters<IDomEditor['deleteBackward']>[0],
+  direction: 'forward' | 'backward'
+): boolean {
   const { selection } = newEditor
 
-  if (selection == null || unit === 'line') { return false }
+  if (selection == null || unit === 'line') {
+    return false
+  }
 
   // 判断目标位置是否在同一个 cell 内，不在同一个 cell 内不处理
   const [cellNodeEntry] = Editor.nodes(newEditor, {
@@ -119,26 +128,32 @@ function deleteCellBreak(newEditor: IDomEditor, unit: Parameters<IDomEditor['del
     targetPoint = Editor.after(newEditor, selection)
   }
 
-  if (targetPoint == null) { return false }
+  if (targetPoint == null) {
+    return false
+  }
   const aboveCell = Editor.above(newEditor, {
     at: targetPoint,
     match: n => DomEditor.checkNodeType(n, 'table-cell'),
   })
 
-  if (aboveCell == null || cellNodeEntry == null || !Path.equals(aboveCell[1], cellNodeEntry[1])) { return false }
+  if (aboveCell == null || cellNodeEntry == null || !Path.equals(aboveCell[1], cellNodeEntry[1])) {
+    return false
+  }
   const targetNode = Editor.node(newEditor, targetPoint)
 
-  if (!Text.isText(targetNode[0]) || targetNode[0].text.length < CELL_BREAK.length) { return false }
+  if (!Text.isText(targetNode[0]) || targetNode[0].text.length < CELL_BREAK.length) {
+    return false
+  }
 
   // 处理光标在换行符首/尾的情况,|表示光标  |\n   \n|
-  const startOffset = direction === 'backward'
-    ? targetPoint.offset - CELL_BREAK.length
-    : targetPoint.offset
-  const endOffset = direction === 'backward'
-    ? targetPoint.offset
-    : targetPoint.offset + CELL_BREAK.length
+  const startOffset =
+    direction === 'backward' ? targetPoint.offset - CELL_BREAK.length : targetPoint.offset
+  const endOffset =
+    direction === 'backward' ? targetPoint.offset : targetPoint.offset + CELL_BREAK.length
 
-  if (startOffset < 0) { return false }
+  if (startOffset < 0) {
+    return false
+  }
 
   const nodeText = Node.string(targetNode[0])
   const isBreak = nodeText.slice(startOffset, endOffset) === CELL_BREAK
@@ -189,7 +204,12 @@ function isProtectedNode(editor: IDomEditor): boolean {
   // 检查是否是受保护的节点类型
   const protectedTypes = [
     'paragraph',
-    'header1', 'header2', 'header3', 'header4', 'header5', 'header6',
+    'header1',
+    'header2',
+    'header3',
+    'header4',
+    'header5',
+    'header6',
     'blockquote',
     'list-item',
     'todo',
@@ -254,9 +274,13 @@ function withTable<T extends IDomEditor>(editor: T): T {
   newEditor.deleteBackward = unit => {
     const res = deleteHandler(newEditor)
 
-    if (res) { return } // 命中 table cell ，自己处理删除
+    if (res) {
+      return
+    } // 命中 table cell ，自己处理删除
 
-    if (deleteCellBreak(newEditor, unit, 'backward')) { return } // 命中了 cell 内删除换行符，自行处理删除
+    if (deleteCellBreak(newEditor, unit, 'backward')) {
+      return
+    } // 命中了 cell 内删除换行符，自行处理删除
 
     // 防止从 table 后面的 p 删除时，删除最后一个 cell - issues/4221
     const { selection } = newEditor
@@ -299,10 +323,12 @@ function withTable<T extends IDomEditor>(editor: T): T {
       if (currentCell && tableEntry) {
         const [, currentCellPath] = currentCell
         const [, tablePath] = tableEntry
-        const cells = Array.from(Editor.nodes(editor, {
-          at: tablePath,
-          match: n => DomEditor.checkNodeType(n, 'table-cell') && !(n as any).hidden,
-        }))
+        const cells = Array.from(
+          Editor.nodes(editor, {
+            at: tablePath,
+            match: n => DomEditor.checkNodeType(n, 'table-cell') && !(n as any).hidden,
+          })
+        )
         const index = cells.findIndex(([, path]) => Path.equals(path, currentCellPath))
         const next = index >= 0 ? cells[index + 1] : undefined
 
@@ -341,9 +367,13 @@ function withTable<T extends IDomEditor>(editor: T): T {
   newEditor.deleteForward = unit => {
     const res = deleteHandler(newEditor)
 
-    if (res) { return }
+    if (res) {
+      return
+    }
 
-    if (deleteCellBreak(newEditor, unit, 'forward')) { return }
+    if (deleteCellBreak(newEditor, unit, 'forward')) {
+      return
+    }
 
     // 防止从 table 前面的 p 删除时，删除第一个 cell
     const { selection } = newEditor
@@ -375,6 +405,11 @@ function withTable<T extends IDomEditor>(editor: T): T {
     const type = DomEditor.getNodeType(node)
 
     if (type !== 'table') {
+      if (type === 'table-cell' && SlateElement.isElement(node) && node.children.length === 0) {
+        Transforms.insertNodes(newEditor, DomEditor.genEmptyParagraph(), { at: path.concat(0) })
+        return
+      }
+
       // 未命中 table ，执行默认的 normalizeNode
       return normalizeNode([node, path])
     }
@@ -400,8 +435,9 @@ function withTable<T extends IDomEditor>(editor: T): T {
 
     const fragment = data.getData('application/x-slate-fragment')
     const html = data.getData('text/html')
-    const structuredFragment = parseSupportedSlateFragment(newEditor, fragment)
-      || parseSupportedCellBlockHtml(newEditor, html)
+    const structuredFragment =
+      parseSupportedSlateFragment(newEditor, fragment) ||
+      parseSupportedCellBlockHtml(newEditor, html)
 
     if (structuredFragment) {
       Transforms.insertFragment(newEditor, structuredFragment)
@@ -431,7 +467,7 @@ function withTable<T extends IDomEditor>(editor: T): T {
 
     const cell = DomEditor.getSelectedNodeByType(newEditor, 'table-cell')
 
-    if (cell == null) {
+    if (cell == null || !SlateElement.isElement(cell)) {
       selectAll()
       return
     }
@@ -445,9 +481,13 @@ function withTable<T extends IDomEditor>(editor: T): T {
     }
 
     const text = Node.string(cell)
-    const textLength = text.length
+    const hasOnlyEmptyParagraph =
+      cell.children.length === 1 &&
+      SlateElement.isElement(cell.children[0]) &&
+      cell.children[0].type === 'paragraph' &&
+      text.length === 0
 
-    if (textLength === 0) {
+    if (hasOnlyEmptyParagraph) {
       selectAll()
       return
     }
@@ -484,7 +524,9 @@ function withTable<T extends IDomEditor>(editor: T): T {
 
       selectedCellPaths.forEach(cellPath => {
         // 在复杂操作后 path 可能失效，跳过即可
-        if (!Node.has(newEditor, cellPath)) { return }
+        if (!Node.has(newEditor, cellPath)) {
+          return
+        }
 
         const start = Editor.start(newEditor, cellPath)
         const end = Editor.end(newEditor, cellPath)

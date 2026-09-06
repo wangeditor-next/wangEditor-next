@@ -1,3 +1,4 @@
+import { DomEditor } from '@wangeditor-next/core'
 import * as uploadCore from '@wangeditor-next/core/upload'
 import nock from 'nock'
 import * as slate from 'slate'
@@ -68,8 +69,31 @@ describe('Video module helper', () => {
           type: 'video',
           align: 'center',
         }),
-        { mode: 'highest' },
+        { mode: 'highest' }
       )
+    })
+
+    test('it should insert a video inside a table cell', async () => {
+      const editor = createEditor({
+        html: '<table><tbody><tr><td><p>before</p></td></tr></tbody></table>',
+      })
+
+      editor.selection = {
+        anchor: { path: [0, 0, 0, 0, 0], offset: 6 },
+        focus: { path: [0, 0, 0, 0, 0], offset: 6 },
+      }
+
+      expect(DomEditor.getSelectedNodeByType(editor, 'table-cell')).not.toBeNull()
+
+      // The preceding helper test spies on Slate insertion without restoring it.
+      vi.restoreAllMocks()
+      await insertVideo(editor, 'https://example.com/table.mp4')
+      await flushPromises()
+
+      const cell = (editor.children[0] as any).children[0].children[0]
+
+      expect(cell.children.map((node: any) => node.type)).toEqual(['paragraph', 'video'])
+      expect(editor.getHtml()).toContain('https://example.com/table.mp4')
     })
 
     test('it should invoke onInsertedVideo callback if pass the option when create editor', async () => {
@@ -147,22 +171,27 @@ describe('Video module helper', () => {
         config: expect.objectContaining({ uploadAdapter }),
         editor,
       })
-      expect(addFiles).toHaveBeenCalledWith([expect.objectContaining({
-        name: 'adapter.mp4',
-        data: file,
-      })])
+      expect(addFiles).toHaveBeenCalledWith([
+        expect.objectContaining({
+          name: 'adapter.mp4',
+          data: file,
+        }),
+      ])
       expect(upload).toHaveBeenCalledTimes(1)
     })
 
     test('it should invoke onSuccess callback if give the option when create editor', async () => {
       const fn = vi.fn()
 
-      vi.spyOn(uploadCore, 'createUploader').mockImplementation((options: any) => ({
-        addFiles: vi.fn(),
-        upload: vi.fn(async () => {
-          options.onSuccess({ name: 'foo.jpg' }, { errno: 0, data: { url: 'test.mp4' } })
-        }),
-      }) as any)
+      vi.spyOn(uploadCore, 'createUploader').mockImplementation(
+        (options: any) =>
+          ({
+            addFiles: vi.fn(),
+            upload: vi.fn(async () => {
+              options.onSuccess({ name: 'foo.jpg' }, { errno: 0, data: { url: 'test.mp4' } })
+            }),
+          }) as any
+      )
 
       const editor = createEditor({
         config: {
@@ -183,12 +212,15 @@ describe('Video module helper', () => {
     test('it should invoke onProgress callback and show progress bar if uploading', async () => {
       const mockOnProgress = vi.fn()
 
-      vi.spyOn(uploadCore, 'createUploader').mockImplementation((options: any) => ({
-        addFiles: vi.fn(),
-        upload: vi.fn(async () => {
-          options.onProgress(66)
-        }),
-      }) as any)
+      vi.spyOn(uploadCore, 'createUploader').mockImplementation(
+        (options: any) =>
+          ({
+            addFiles: vi.fn(),
+            upload: vi.fn(async () => {
+              options.onProgress(66)
+            }),
+          }) as any
+      )
 
       const editor = createEditor({
         config: {
@@ -243,12 +275,15 @@ describe('Video module helper', () => {
     test('it should invoke onFail callback if upload result with error', async () => {
       const fn = vi.fn()
 
-      vi.spyOn(uploadCore, 'createUploader').mockImplementation((options: any) => ({
-        addFiles: vi.fn(),
-        upload: vi.fn(async () => {
-          options.onSuccess({ name: 'foo.jpg' }, { errno: 1, message: 'failed' })
-        }),
-      }) as any)
+      vi.spyOn(uploadCore, 'createUploader').mockImplementation(
+        (options: any) =>
+          ({
+            addFiles: vi.fn(),
+            upload: vi.fn(async () => {
+              options.onSuccess({ name: 'foo.jpg' }, { errno: 1, message: 'failed' })
+            }),
+          }) as any
+      )
 
       const editor = createEditor({
         config: {
@@ -269,12 +304,15 @@ describe('Video module helper', () => {
     test('it should invoke customInsert callback if upload successfully', async () => {
       const fn = vi.fn()
 
-      vi.spyOn(uploadCore, 'createUploader').mockImplementation((options: any) => ({
-        addFiles: vi.fn(),
-        upload: vi.fn(async () => {
-          options.onSuccess({ name: 'foo.jpg' }, { errno: 0, data: { url: 'test.mp4' } })
-        }),
-      }) as any)
+      vi.spyOn(uploadCore, 'createUploader').mockImplementation(
+        (options: any) =>
+          ({
+            addFiles: vi.fn(),
+            upload: vi.fn(async () => {
+              options.onSuccess({ name: 'foo.jpg' }, { errno: 0, data: { url: 'test.mp4' } })
+            }),
+          }) as any
+      )
 
       const editor = createEditor({
         config: {

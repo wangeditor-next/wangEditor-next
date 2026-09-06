@@ -4,14 +4,12 @@
  */
 
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
-import {
-  Descendant, Element as SlateElement, Text, Transforms,
-} from 'slate'
+import { Descendant, Element as SlateElement, Text, Transforms } from 'slate'
 
 import { TableCellElement, TableElement } from './custom-types'
 
 export function createEmptyTableCell(
-  properties: Omit<Partial<TableCellElement>, 'type' | 'children'> = {},
+  properties: Omit<Partial<TableCellElement>, 'type' | 'children'> = {}
 ): TableCellElement {
   return {
     type: 'table-cell',
@@ -38,7 +36,9 @@ export function normalizeTableCellChildren(children: Descendant[]): Descendant[]
   let textRun: Descendant[] = []
 
   const flushTextRun = () => {
-    if (textRun.length === 0) { return }
+    if (textRun.length === 0) {
+      return
+    }
 
     normalized.push({ type: 'paragraph', children: textRun })
     textRun = []
@@ -56,6 +56,50 @@ export function normalizeTableCellChildren(children: Descendant[]): Descendant[]
   flushTextRun()
 
   return normalized.length > 0 ? normalized : createEmptyTableCell().children
+}
+
+function hasSupportedInlineChildren(editor: IDomEditor, node: SlateElement): boolean {
+  return node.children.every(child => {
+    if (Text.isText(child)) {
+      return true
+    }
+
+    return (
+      SlateElement.isElement(child) &&
+      editor.isInline(child) &&
+      hasSupportedInlineChildren(editor, child)
+    )
+  })
+}
+
+/**
+ * Return whether a block node is safe to keep directly under a table cell.
+ * The list is intentionally explicit so arbitrary custom blocks cannot bypass
+ * table selection and keyboard invariants by being pasted into a cell.
+ */
+export function isSupportedTableCellBlock(editor: IDomEditor, node: Descendant): boolean {
+  if (!SlateElement.isElement(node)) {
+    return false
+  }
+
+  if (node.type === 'paragraph' || node.type === 'list-item') {
+    return hasSupportedInlineChildren(editor, node)
+  }
+
+  if (node.type === 'pre') {
+    return (
+      node.children.length === 1 &&
+      SlateElement.isElement(node.children[0]) &&
+      node.children[0].type === 'code' &&
+      node.children[0].children.every(Text.isText)
+    )
+  }
+
+  if (node.type === 'video') {
+    return editor.isVoid(node) && node.children.every(Text.isText)
+  }
+
+  return false
 }
 
 export function normalizeTableContent(content: Descendant[]): Descendant[] {
@@ -90,7 +134,7 @@ export function normalizeTableContent(content: Descendant[]): Descendant[] {
 export function setTableNodeProps(
   editor: IDomEditor,
   tableNode: SlateElement,
-  props: Partial<TableElement>,
+  props: Partial<TableElement>
 ) {
   try {
     const tablePath = DomEditor.findPath(editor, tableNode)
@@ -108,7 +152,9 @@ export function setTableNodeProps(
 export function getFirstRowCells(tableNode: TableElement): TableCellElement[] {
   const rows = tableNode.children || [] // 所有行
 
-  if (rows.length === 0) { return [] }
+  if (rows.length === 0) {
+    return []
+  }
   const firstRow = rows[0] || {} // 第一行
   const cells = firstRow.children || [] // 第一行所有 cell
 
@@ -133,10 +179,14 @@ export function isTableWithHeader(tableNode: TableElement): boolean {
 export function isCellInFirstRow(editor: IDomEditor, cellNode: TableCellElement): boolean {
   const rowNode = DomEditor.getParentNode(editor, cellNode)
 
-  if (rowNode == null) { return false }
+  if (rowNode == null) {
+    return false
+  }
   const tableNode = DomEditor.getParentNode(editor, rowNode)
 
-  if (tableNode == null) { return false }
+  if (tableNode == null) {
+    return false
+  }
 
   const firstRowCells = getFirstRowCells(tableNode as TableElement)
 
