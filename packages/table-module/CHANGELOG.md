@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.4.1
+
+### Patch Changes
+
+- e3b81e6: Allow backspace to remove an empty paragraph immediately before a block void node in a table cell.
+  - @wangeditor-next/core@6.4.1
+
 ## 6.4.0
 
 ### Minor Changes
