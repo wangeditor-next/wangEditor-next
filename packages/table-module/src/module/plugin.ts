@@ -73,6 +73,51 @@ function parseSupportedSlateFragment(
 }
 
 // table cell 内部的删除处理
+function deleteEmptyParagraphBeforeVoid(newEditor: IDomEditor): boolean {
+  const { selection } = newEditor
+
+  if (selection == null || !Point.equals(selection.anchor, selection.focus)) {
+    return false
+  }
+
+  const [cellEntry] = Editor.nodes(newEditor, {
+    at: selection,
+    match: n => DomEditor.checkNodeType(n, 'table-cell'),
+  })
+
+  if (cellEntry == null) {
+    return false
+  }
+
+  const [cellNode, cellPath] = cellEntry
+  const cellStart = Editor.start(newEditor, cellPath)
+
+  if (!Point.equals(selection.anchor, cellStart) || !SlateElement.isElement(cellNode)) {
+    return false
+  }
+
+  const [firstChild, nextChild] = cellNode.children
+
+  if (
+    !SlateElement.isElement(firstChild) ||
+    firstChild.type !== 'paragraph' ||
+    Node.string(firstChild) !== '' ||
+    !SlateElement.isElement(nextChild) ||
+    newEditor.isInline(nextChild) ||
+    !newEditor.isVoid(nextChild)
+  ) {
+    return false
+  }
+
+  const nextChildPath = cellPath.concat(1)
+
+  // Keep selection on the following void block while the leading paragraph is removed.
+  Transforms.select(newEditor, Editor.start(newEditor, nextChildPath))
+  Transforms.removeNodes(newEditor, { at: cellPath.concat(0) })
+  Transforms.select(newEditor, Editor.start(newEditor, cellPath.concat(0)))
+  return true
+}
+
 function deleteHandler(newEditor: IDomEditor): boolean {
   const { selection } = newEditor
 
@@ -272,6 +317,10 @@ function withTable<T extends IDomEditor>(editor: T): T {
 
   // 重写 delete - cell 内删除，只删除文字，不删除 node
   newEditor.deleteBackward = unit => {
+    if (deleteEmptyParagraphBeforeVoid(newEditor)) {
+      return
+    }
+
     const res = deleteHandler(newEditor)
 
     if (res) {

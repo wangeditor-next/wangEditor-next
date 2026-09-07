@@ -291,6 +291,55 @@ describe('TableModule module', () => {
       expect(originalForward).not.toHaveBeenCalled()
     })
 
+    test('use withTable plugin when deleteBackward should remove an empty paragraph before a void block', () => {
+      const editor = createEditor({
+        content: [
+          {
+            type: 'table',
+            width: 'auto',
+            children: [
+              {
+                type: 'table-row',
+                children: [
+                  {
+                    type: 'table-cell',
+                    children: [
+                      { type: 'paragraph', children: [{ text: '' }] },
+                      {
+                        type: 'video',
+                        src: 'https://example.com/table.mp4',
+                        poster: '',
+                        width: '320',
+                        height: '180',
+                        children: [{ text: '' }],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+            columnWidths: [100],
+          },
+          { type: 'paragraph', children: [{ text: '' }] },
+        ],
+      })
+
+      editor.selection = {
+        anchor: { path: [0, 0, 0, 0, 0], offset: 0 },
+        focus: { path: [0, 0, 0, 0, 0], offset: 0 },
+      }
+
+      editor.deleteBackward('character')
+
+      const cell = slate.Node.get(editor, [0, 0, 0]) as slate.Element
+
+      expect(cell.children.map((node: any) => node.type)).toEqual(['video'])
+      expect(editor.selection).toEqual({
+        anchor: { path: [0, 0, 0, 0, 0], offset: 0 },
+        focus: { path: [0, 0, 0, 0, 0], offset: 0 },
+      })
+    })
+
     test('use withTable plugin when handleTab should move to next cell or append a paragraph after the table', () => {
       const editor = createEditor({
         content: [

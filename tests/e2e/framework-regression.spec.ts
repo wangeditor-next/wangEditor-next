@@ -2014,6 +2014,68 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
+    test(`${target.name}: backspace should remove an empty paragraph before table video`, async ({
+      page,
+    }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+
+      await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        editor.setHtml(
+          '<table><tbody><tr><td><p><br></p><figure data-w-e-type="video" data-w-e-is-void><video controls="true" width="320" height="180"><source src="https://example.com/table-cell.mp4" type="video/mp4"/></video></figure></td></tr></tbody></table><p>after</p>'
+        )
+      })
+
+      const video = page.locator('[data-testid="editor-textarea"] table figure').first()
+
+      await video.click({ force: true })
+      await page.keyboard.press('ArrowLeft')
+      await page.keyboard.press('Backspace')
+      await page.waitForTimeout(120)
+
+      const state = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
+        const table = editor?.children?.find((node: any) => node?.type === 'table')
+        const cell = table?.children?.[0]?.children?.[0]
+
+        return {
+          cellTypes: cell?.children?.map((node: any) => node?.type) || [],
+          html: editor?.getHtml?.() || '',
+          selection: editor?.selection || null,
+        }
+      })
+
+      expect(state.cellTypes).toEqual(['video'])
+      expect(state.html).toContain('data-w-e-type="video"')
+      expect(state.html).not.toContain('<p><br></p>')
+      expect(state.selection).toEqual({
+        anchor: { path: [0, 0, 0, 0, 0], offset: 0 },
+        focus: { path: [0, 0, 0, 0, 0], offset: 0 },
+      })
+      expect(pageErrors).toEqual([])
+    })
+
     test(`${target.name}: table multi-cell bold should affect only selected cells`, async ({
       page,
     }) => {
