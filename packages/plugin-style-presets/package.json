@@ -1,0 +1,48 @@
+{
+  "name": "@wangeditor-next/plugin-style-presets",
+  "version": "3.0.0",
+  "description": "Semantic style presets for wangEditor",
+  "author": "cycleccc <2991205548@qq.com>",
+  "type": "module",
+  "homepage": "https://github.com/wangeditor-next/wangEditor-next#readme",
+  "license": "MIT",
+  "types": "dist/plugin-style-presets/src/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/plugin-style-presets/src/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "directories": {
+    "lib": "dist"
+  },
+  "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wangeditor-next/wangEditor-next.git"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "dev": "cross-env NODE_ENV=development rollup -c rollup.config.js",
+    "dev-watch": "cross-env NODE_ENV=development rollup -c rollup.config.js -w",
+    "build": "cross-env NODE_ENV=production rollup -c rollup.config.js",
+    "dev-size-stats": "cross-env NODE_ENV=development:size_stats rollup -c rollup.config.js",
+    "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
+  },
+  "bugs": {
+    "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
+  },
+  "peerDependencies": {
+    "@wangeditor-next/editor": ">=6.0.0",
+    "snabbdom": "^3.6.0"
+  },
+  "devDependencies": {
+    "@wangeditor-next-shared/rollup-config": "workspace:^"
+  }
+}
