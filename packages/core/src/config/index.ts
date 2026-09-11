@@ -36,6 +36,7 @@ export function genEditorConfig(userConfig: Partial<IEditorConfig> = {}): IEdito
     autoFocus: true,
     decorate: () => [],
     maxLength: 0, // 默认不限制
+    imageResize: {},
     MENU_CONF: newMenuConf,
     hoverbarKeys: {
       // 'link': { menuKeys: ['editLink', 'unLink', 'viewLink'] },

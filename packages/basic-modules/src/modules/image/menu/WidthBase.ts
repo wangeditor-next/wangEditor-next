@@ -4,9 +4,9 @@
  */
 
 import { DomEditor, IButtonMenu, IDomEditor } from '@wangeditor-next/core'
-import { Node, Transforms } from 'slate'
+import { Node } from 'slate'
 
-import { ImageElement } from '../custom-types'
+import { getImageResizePreset, updateImageSize } from '../resize'
 
 abstract class ImageWidthBaseClass implements IButtonMenu {
   abstract readonly title: string // 菜单标题
@@ -14,6 +14,10 @@ abstract class ImageWidthBaseClass implements IButtonMenu {
   readonly tag = 'button'
 
   abstract readonly value: string // css width 的值
+
+  getTitle(editor: IDomEditor): string {
+    return getImageResizePreset(editor, this.value).label
+  }
 
   getValue(_editor: IDomEditor): string | boolean {
     // 无需获取 val
@@ -48,23 +52,14 @@ abstract class ImageWidthBaseClass implements IButtonMenu {
 
     if (imageNode == null) { return }
 
+    const preset = getImageResizePreset(editor, this.value)
+
+    if (!updateImageSize(editor, imageNode, preset.value, '', 'preset')) { return }
+
     // 隐藏 hoverbar
     const hoverbar = DomEditor.getHoverbar(editor)
 
     if (hoverbar) { hoverbar.hideAndClean() }
-
-    const { style = {} } = imageNode as ImageElement
-    const props: Partial<ImageElement> = {
-      style: {
-        ...style,
-        width: this.value, // 修改 width
-        height: '', // 清空 height
-      },
-    }
-
-    Transforms.setNodes(editor, props, {
-      match: n => DomEditor.checkNodeType(n, 'image'),
-    })
   }
 }
 
