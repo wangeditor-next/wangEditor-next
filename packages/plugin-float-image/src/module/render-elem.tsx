@@ -67,6 +67,7 @@ function renderResizeContainer(
   let originalX = 0
   let originalWith = 0
   let originalHeight = 0
+  let maxWidth = 0
   let revers = false // 是否反转。如向右拖拽 right-top 需增加宽度（非反转），但向右拖拽 left-top 则需要减少宽度（反转）
   let $container: Dom7Array | null = null
 
@@ -101,13 +102,40 @@ function renderResizeContainer(
     if ($container == null) { return }
     const newWidth = $container.width().toFixed(2)
     const newHeight = $container.height().toFixed(2)
+    const resizeUnit = editor.getConfig().imageResize?.resizeUnit
+    const resizedWidth = resizeUnit === '%' && maxWidth > 0
+      ? `${((Number(newWidth) / maxWidth) * 100).toFixed(2)}%`
+      : `${newWidth}px`
+    const resizedHeight = resizeUnit === '%' ? '' : `${newHeight}px`
+    const checkImageSize = editor.getConfig().imageResize?.checkImageSize
+    const checkResult = checkImageSize?.({
+      width: resizedWidth,
+      height: resizedHeight,
+      rawWidth: resizedWidth,
+      rawHeight: resizedHeight,
+      source: 'drag',
+    })
+
+    if (typeof checkResult === 'string') {
+      editor.alert(checkResult, 'error')
+      $container.css('width', `${originalWith}px`)
+      $container.css('height', `${originalHeight}px`)
+      $body.off('mouseup', onMouseup)
+      return
+    }
+    if (checkImageSize && checkResult !== true) {
+      $container.css('width', `${originalWith}px`)
+      $container.css('height', `${originalHeight}px`)
+      $body.off('mouseup', onMouseup)
+      return
+    }
 
     // 修改 node
     const props: Partial<ImageElement> = {
       style: {
         ...(elemNode as ImageElement).style,
-        width: `${newWidth}px`,
-        height: `${newHeight}px`,
+        width: resizedWidth,
+        height: resizedHeight,
       },
     }
 
@@ -120,11 +148,12 @@ function renderResizeContainer(
   /**
    * 初始化。监听事件，记录原始数据
    */
-  function init(clientX: number) {
+  function init(clientX: number, parentNodeWidth: number) {
     $container = getContainerElem()
 
     // 记录当前 x 坐标值
     originalX = clientX
+    maxWidth = parentNodeWidth
 
     // 记录 img 原始宽高
     const $img = $container.find('img')
@@ -171,7 +200,16 @@ function renderResizeContainer(
           if ($target.hasClass('left-top') || $target.hasClass('left-bottom')) {
             revers = true // 反转。向右拖拽，减少宽度
           }
-          init(e.clientX) // 初始化
+
+          const parentNode = DomEditor.getParentNode(editor, elemNode)
+
+          if (parentNode == null) { return }
+          const parentNodeDom = DomEditor.toDOMNode(editor, parentNode)
+          const rect = parentNodeDom.getBoundingClientRect
+            ? parentNodeDom.getBoundingClientRect()
+            : { width: 0 }
+
+          init(e.clientX, rect.width) // 初始化
         },
       }}
     >

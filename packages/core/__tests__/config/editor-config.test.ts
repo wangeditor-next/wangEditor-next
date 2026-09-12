@@ -188,6 +188,27 @@ describe('editor config', () => {
     expect(classModeEditor.getConfig().classStylePolicy).toBe('strict')
   })
 
+  it('imageResize config defaults to legacy behavior and accepts a custom policy', () => {
+    const editor = createCoreEditor()
+
+    expect(editor.getConfig().imageResize).toEqual({})
+
+    const checkImageSize = vi.fn(() => true)
+    const configuredEditor = createCoreEditor({
+      config: {
+        imageResize: {
+          resizeUnit: 'px',
+          checkImageSize,
+        },
+      },
+    })
+
+    expect(configuredEditor.getConfig().imageResize).toEqual({
+      resizeUnit: 'px',
+      checkImageSize,
+    })
+  })
+
   it('class style extension config should be retained', () => {
     const onClassStyleUnsupported = vi.fn()
     const editor = createCoreEditor({

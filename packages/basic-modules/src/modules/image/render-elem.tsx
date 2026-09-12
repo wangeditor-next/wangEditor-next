@@ -5,12 +5,13 @@
 
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
 import throttle from 'lodash.throttle'
-import { Element as SlateElement, Transforms } from 'slate'
+import { Element as SlateElement } from 'slate'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { jsx, VNode } from 'snabbdom'
 
 import $, { Dom7Array } from '../../utils/dom'
 import { ImageElement } from './custom-types'
+import { updateImageSize } from './resize'
 
 interface IImageSize {
   width?: string
@@ -108,16 +109,16 @@ function renderResizeContainer(
     const newWidth = $container.width().toFixed(2)
     const newHeight = $container.height().toFixed(2)
 
-    // 修改 node
-    const props: Partial<ImageElement> = {
-      style: {
-        ...(elemNode as ImageElement).style,
-        width: `${newWidth}px`,
-        height: `${newHeight}px`,
-      },
-    }
+    const resizeUnit = editor.getConfig().imageResize?.resizeUnit
+    const resizedWidth = resizeUnit === '%' && maxWidth > 0
+      ? `${((Number(newWidth) / maxWidth) * 100).toFixed(2)}%`
+      : `${newWidth}px`
+    const resizedHeight = resizeUnit === '%' ? '' : `${newHeight}px`
 
-    Transforms.setNodes(editor, props, { at: DomEditor.findPath(editor, elemNode) })
+    if (!updateImageSize(editor, elemNode, resizedWidth, resizedHeight, 'drag')) {
+      $container.css('width', `${originalWith}px`)
+      $container.css('height', `${originalHeight}px`)
+    }
 
     // 取消监听 mouseup
     $body.off('mouseup', onMouseup)
