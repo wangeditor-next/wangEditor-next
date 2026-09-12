@@ -4,12 +4,14 @@
  */
 
 import {
-  DomEditor,
   genModalButtonElems,
   genModalTextareaElems,
   IDomEditor,
   IModalMenu,
+  SlateEditor,
+  SlateElement,
   SlateNode,
+  SlatePath,
   SlateRange,
   SlateTransforms,
   t,
@@ -45,10 +47,24 @@ class EditFormulaMenu implements IModalMenu {
   private readonly buttonId = genDomID()
 
   private getSelectedElem(editor: IDomEditor): FormulaElement | null {
-    const node = DomEditor.getSelectedNodeByType(editor, 'formula')
+    const entry = this.getSelectedFormulaEntry(editor)
 
-    if (node == null) { return null }
-    return node as FormulaElement
+    if (entry == null) { return null }
+    return entry[0]
+  }
+
+  private getSelectedFormulaEntry(editor: IDomEditor): [FormulaElement, SlatePath] | null {
+    const { selection } = editor
+
+    if (selection == null) { return null }
+
+    const entry = SlateEditor.above(editor, {
+      at: selection,
+      match: node => SlateElement.isElement(node) && node.type === 'formula',
+    })
+
+    if (entry == null) { return null }
+    return entry as [FormulaElement, SlatePath]
   }
 
   /**
@@ -150,11 +166,11 @@ class EditFormulaMenu implements IModalMenu {
 
     if (this.isDisabled(editor)) { return }
 
-    const selectedElem = this.getSelectedElem(editor)
+    const selectedEntry = this.getSelectedFormulaEntry(editor)
 
-    if (selectedElem == null) { return }
+    if (selectedEntry == null) { return }
 
-    const path = DomEditor.findPath(editor, selectedElem)
+    const [, path] = selectedEntry
     const props: Partial<FormulaElement> = { value }
 
     SlateTransforms.setNodes(editor, props, { at: path })
