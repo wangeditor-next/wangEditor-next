@@ -2014,6 +2014,57 @@ test.describe('Framework parity regression', () => {
       expect(pageErrors).toEqual([])
     })
 
+    test(`${target.name}: linked images in table cells should render as anchors`, async ({
+      page,
+    }) => {
+      const pageErrors: string[] = []
+
+      page.on('pageerror', err => {
+        pageErrors.push(err?.stack || err?.message || String(err))
+      })
+
+      await openTarget(page, target)
+
+      const state = await page.evaluate(() => {
+        const globalWindow = window as any
+        const editor =
+          globalWindow.wangEditorExampleBridge?.editor ||
+          globalWindow.vue2Editor ||
+          globalWindow.vue3Editor ||
+          globalWindow.reactEditor
+
+        if (!editor) {
+          throw new Error('editor not ready')
+        }
+
+        editor.setHtml(
+          '<table><tbody><tr><td><img src="https://example.com/table-cell.png" alt="table image" data-href="https://example.com/image-target" /></td></tr></tbody></table><p>after</p>'
+        )
+
+        const image = editor.getElemsByTypePrefix?.('image')?.[0]
+        const html = editor.getHtml()
+
+        editor.setHtml(html)
+
+        return {
+          imageHref: image?.href || '',
+          html,
+          reparsedImageHref: editor.getElemsByTypePrefix?.('image')?.[0]?.href || '',
+        }
+      })
+
+      const linkedImage = page.locator(
+        '[data-testid="editor-textarea"] table td a[href="https://example.com/image-target"] img'
+      )
+
+      await expect(linkedImage).toHaveCount(1)
+      await expect(linkedImage.locator('..')).toHaveAttribute('target', '_blank')
+      expect(state.imageHref).toBe('https://example.com/image-target')
+      expect(state.reparsedImageHref).toBe('https://example.com/image-target')
+      expect(state.html).toContain('<a href="https://example.com/image-target" target="_blank">')
+      expect(pageErrors).toEqual([])
+    })
+
     test(`${target.name}: backspace should remove an empty paragraph before table video`, async ({
       page,
     }) => {
