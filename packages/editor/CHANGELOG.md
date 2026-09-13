@@ -1,5 +1,20 @@
 # Change Log
 
+## 6.4.2
+
+### Patch Changes
+
+- 12f4986: Add a unified `imageResize` configuration for image resize units and validation across editor resize actions.
+- Updated dependencies [838813c]
+- Updated dependencies [12f4986]
+  - @wangeditor-next/basic-modules@6.4.2
+  - @wangeditor-next/core@6.4.2
+  - @wangeditor-next/code-highlight@6.4.2
+  - @wangeditor-next/list-module@6.4.2
+  - @wangeditor-next/table-module@6.4.2
+  - @wangeditor-next/upload-image-module@6.4.2
+  - @wangeditor-next/video-module@6.4.2
+
 ## 6.4.1
 
 ### Patch Changes

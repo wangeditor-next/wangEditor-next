@@ -1,5 +1,13 @@
 # @wangeditor-next/plugin-formula
 
+## 6.4.2
+
+### Patch Changes
+
+- cd0137a: fix(plugin-formula): preserve formula editing after focus is restored
+- Updated dependencies [12f4986]
+  - @wangeditor-next/editor@6.4.2
+
 ## 6.4.1
 
 ### Patch Changes
