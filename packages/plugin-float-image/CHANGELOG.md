@@ -1,5 +1,13 @@
 # @wangeditor-next/plugin-float-image
 
+## 6.4.2
+
+### Patch Changes
+
+- 12f4986: Add a unified `imageResize` configuration for image resize units and validation across editor resize actions.
+- Updated dependencies [12f4986]
+  - @wangeditor-next/editor@6.4.2
+
 ## 6.4.1
 
 ### Patch Changes
