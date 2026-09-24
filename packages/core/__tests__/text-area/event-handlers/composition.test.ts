@@ -38,6 +38,7 @@ vi.mock('../../../src/text-area/syncSelection', () => ({
 
 afterEach(() => {
   vi.restoreAllMocks()
+  vi.clearAllMocks()
 })
 
 const createSelection = (expanded: boolean) => ({

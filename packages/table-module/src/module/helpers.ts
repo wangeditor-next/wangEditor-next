@@ -139,7 +139,7 @@ export function setTableNodeProps(
   try {
     const tablePath = DomEditor.findPath(editor, tableNode)
 
-    Transforms.setNodes(editor, props as TableElement, { at: tablePath })
+    Transforms.setNodes(editor, props, { at: tablePath })
   } catch {
     // The rendered table may have been removed before an async callback runs.
   }
