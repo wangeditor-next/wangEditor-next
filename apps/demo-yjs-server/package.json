@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "ws": "^8.21.0",
-    "y-websocket": "2.0.4",
+    "y-websocket": "3.0.0",
     "yjs": "^13.6.33"
   }
 }
