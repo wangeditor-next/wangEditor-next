@@ -3,7 +3,7 @@
 const http = require('node:http')
 
 const { WebSocketServer } = require('ws')
-const { getYDoc, setupWSConnection } = require('y-websocket/bin/utils')
+const { getYDoc, setupWSConnection } = require('@y/websocket-server/utils')
 const Y = require('yjs')
 
 const LOOPBACK_HOSTNAMES = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])

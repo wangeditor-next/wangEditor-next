@@ -74,8 +74,8 @@
     "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
   },
   "dependencies": {
-    "@uppy/core": "^5.0.0",
-    "@uppy/xhr-upload": "^5.0.0",
+    "@uppy/core": "^6.0.1",
+    "@uppy/xhr-upload": "^6.0.0",
     "@wangeditor-next/basic-modules": "workspace:^",
     "@wangeditor-next/code-highlight": "workspace:^",
     "@wangeditor-next/core": "workspace:^",
@@ -92,12 +92,12 @@
     "lodash.throttle": "^4.1.1",
     "lodash.toarray": "^4.4.0",
     "nanoid": "^5.0.0",
-    "slate": "^0.124.0",
-    "snabbdom": "^3.6.0"
+    "slate": "^0.126.2",
+    "snabbdom": "^3.6.4"
   },
   "devDependencies": {
     "@wangeditor-next-shared/rollup-config": "workspace:^",
-    "postcss-merge-rules": "^7.0.6",
-    "postcss-discard-duplicates": "^7.0.1"
+    "postcss-merge-rules": "^9.0.4",
+    "postcss-discard-duplicates": "^9.0.3"
   }
 }

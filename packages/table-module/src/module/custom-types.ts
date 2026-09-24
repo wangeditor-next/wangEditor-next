@@ -45,13 +45,13 @@ export type TableElement = {
   scrollWidth?: number
   height?: number // 用于设置 resize-bar 高度
   resizingIndex?: number // 用于标记 resize-bar index
-  isResizing?: boolean | null //  用于设置 index resize-bar 的 highlight 属性
+  isResizing?: boolean //  用于设置 index resize-bar 的 highlight 属性
   isHoverCellBorder?: boolean // 用于设置 index resize-bar 的 visible 属性
   columnWidths?: number[]
 
   /** row resize */
   resizingRowIndex?: number // 用于标记正在调整的行索引
-  isResizingRow?: boolean | null // 用于设置行 resize-bar 的 highlight 属性
+  isResizingRow?: boolean // 用于设置行 resize-bar 的 highlight 属性
   isHoverRowBorder?: boolean // 用于设置行 resize-bar 的 visible 属性
   rowHeights?: number[] // 实际 DOM 行高快照（仅用于行拖拽热区与 UI 对齐）
 }

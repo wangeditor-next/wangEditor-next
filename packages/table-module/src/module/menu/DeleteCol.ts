@@ -186,7 +186,7 @@ class DeleteCol implements IButtonMenu {
         // 删除对应列的宽度
         adjustColumnWidths.splice(tdIndex, 1)
 
-        Transforms.setNodes(editor, { columnWidths: adjustColumnWidths } as TableElement, {
+        Transforms.setNodes(editor, { columnWidths: adjustColumnWidths }, {
           at: tablePath,
         })
       }

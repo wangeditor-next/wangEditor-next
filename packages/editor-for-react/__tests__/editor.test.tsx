@@ -1,6 +1,6 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
-import { act } from 'react-dom/test-utils'
+import { act } from 'react'
+import { createRoot } from 'react-dom/client'
 
 import Editor from '../src/components/Editor'
 
@@ -74,8 +74,10 @@ describe('editor-for-react onChange behavior', () => {
     const container = document.createElement('div')
 
     document.body.appendChild(container)
+    const root = createRoot(container)
+
     await act(async () => {
-      ReactDOM.render(
+      root.render(
         React.createElement(Editor as any, {
           value: '<p>123</p>',
           onCreated,
@@ -94,7 +96,7 @@ describe('editor-for-react onChange behavior', () => {
     expect(onChange).toHaveBeenCalledTimes(0)
 
     await act(async () => {
-      ReactDOM.unmountComponentAtNode(container)
+      root.unmount()
     })
   })
 
@@ -103,8 +105,10 @@ describe('editor-for-react onChange behavior', () => {
     const container = document.createElement('div')
 
     document.body.appendChild(container)
+    const root = createRoot(container)
+
     await act(async () => {
-      ReactDOM.render(
+      root.render(
         React.createElement(Editor as any, {
           value: '<p>123</p>',
           onChange,
@@ -127,7 +131,7 @@ describe('editor-for-react onChange behavior', () => {
     expect(onChange.mock.calls[0][0]).toBe(editor)
 
     await act(async () => {
-      ReactDOM.unmountComponentAtNode(container)
+      root.unmount()
     })
   })
 
@@ -136,8 +140,10 @@ describe('editor-for-react onChange behavior', () => {
     const container = document.createElement('div')
 
     document.body.appendChild(container)
+    const root = createRoot(container)
+
     await act(async () => {
-      ReactDOM.render(
+      root.render(
         React.createElement(Editor as any, {
           value: '<p>123</p>',
           onChange,
@@ -152,7 +158,7 @@ describe('editor-for-react onChange behavior', () => {
     onChange.mockClear()
 
     await act(async () => {
-      ReactDOM.render(
+      root.render(
         React.createElement(Editor as any, {
           value: '<p>789</p>',
           onChange,
@@ -171,7 +177,7 @@ describe('editor-for-react onChange behavior', () => {
     expect(onChange).toHaveBeenCalledTimes(0)
 
     await act(async () => {
-      ReactDOM.unmountComponentAtNode(container)
+      root.unmount()
     })
   })
 
@@ -180,8 +186,10 @@ describe('editor-for-react onChange behavior', () => {
     const container = document.createElement('div')
 
     document.body.appendChild(container)
+    const root = createRoot(container)
+
     await act(async () => {
-      ReactDOM.render(
+      root.render(
         React.createElement(Editor as any, {
           value: '<p>123</p>',
           onChange,
@@ -200,7 +208,7 @@ describe('editor-for-react onChange behavior', () => {
     expect(container.querySelector('[data-w-e-loading-overlay="true"]')?.textContent).toBe('Uploading...')
 
     await act(async () => {
-      ReactDOM.render(
+      root.render(
         React.createElement(Editor as any, {
           value: '<p>123</p>',
           onChange,
@@ -218,7 +226,7 @@ describe('editor-for-react onChange behavior', () => {
     expect(container.querySelector('[data-w-e-loading-overlay="true"]')).toBeNull()
 
     await act(async () => {
-      ReactDOM.unmountComponentAtNode(container)
+      root.unmount()
     })
   })
 
@@ -227,8 +235,10 @@ describe('editor-for-react onChange behavior', () => {
     const container = document.createElement('div')
 
     document.body.appendChild(container)
+    const root = createRoot(container)
+
     await act(async () => {
-      ReactDOM.render(
+      root.render(
         React.createElement(Editor as any, {
           value: '<p>123</p>',
           onChange,
@@ -256,7 +266,7 @@ describe('editor-for-react onChange behavior', () => {
     expect(selector.querySelector('[data-w-e-loading-overlay="true"]')?.textContent).toBe('Uploading...')
 
     await act(async () => {
-      ReactDOM.unmountComponentAtNode(container)
+      root.unmount()
     })
   })
 })

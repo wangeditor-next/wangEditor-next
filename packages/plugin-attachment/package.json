@@ -42,7 +42,7 @@
   "peerDependencies": {
     "@wangeditor-next/editor": "workspace:^",
     "dom7": "^3.0.0 || ^4.0.0",
-    "snabbdom": "^3.6.0"
+    "snabbdom": "^3.6.4"
   },
   "devDependencies": {
     "@wangeditor-next-shared/rollup-config": "workspace:^"
