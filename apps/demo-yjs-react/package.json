@@ -32,7 +32,9 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^5.2.0",
+    "@unocss/vite": "^66.10.5",
     "autoprefixer": "^10.6.1",
+    "unocss": "^66.10.5",
     "vite": "^7.3.6"
   }
 }
