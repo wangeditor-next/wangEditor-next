@@ -16,8 +16,9 @@ const errors = []
 for (const packageDir of packageDirs) {
   const packagePath = path.join(packagesDir, packageDir, 'package.json')
   const rollupConfigPath = path.join(packagesDir, packageDir, 'rollup.config.js')
+  const tsdownConfigPath = path.join(packagesDir, packageDir, 'tsdown.config.js')
 
-  if (!fs.existsSync(packagePath) || !fs.existsSync(rollupConfigPath)) {
+  if (!fs.existsSync(packagePath) || (!fs.existsSync(rollupConfigPath) && !fs.existsSync(tsdownConfigPath))) {
     continue
   }
 
@@ -30,10 +31,15 @@ for (const packageDir of packageDirs) {
     continue
   }
 
-  const configUrl = pathToFileURL(rollupConfigPath).href
+  const configUrl = pathToFileURL(fs.existsSync(rollupConfigPath) ? rollupConfigPath : tsdownConfigPath).href
   const { default: rollupConfigs } = await import(configUrl)
   const configs = Array.isArray(rollupConfigs) ? rollupConfigs : [rollupConfigs]
-  const umdConfigs = configs.filter(config => config.output?.format === 'umd')
+  const umdConfigs = configs.filter(config => {
+    if (config.output?.format === 'umd') {
+      return true
+    }
+    return config.format === 'umd'
+  })
 
   if (umdConfigs.length === 0) {
     errors.push(`${pkg.name}: no UMD output found`)
@@ -49,7 +55,7 @@ for (const packageDir of packageDirs) {
     }
 
     for (const config of umdConfigs) {
-      const actualGlobal = config.output.globals?.[dependency]
+      const actualGlobal = config.output?.globals?.[dependency] || config.outputOptions?.globals?.[dependency]
 
       if (actualGlobal !== expectedGlobal) {
         errors.push(
