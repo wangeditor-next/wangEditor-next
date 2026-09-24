@@ -25,8 +25,7 @@
     "react-dom": "^19.3.0",
     "y-protocols": "^1.0.7",
     "y-websocket": "^2.0.4",
-    "yjs": "^13.6.33",
-    "vite-plugin-windicss": "^1.9.4"
+    "yjs": "^13.6.33"
   },
   "devDependencies": {
     "@types/randomcolor": "^0",
@@ -34,7 +33,6 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^5.2.0",
     "autoprefixer": "^10.6.1",
-    "vite": "^7.3.6",
-    "windicss": "^3.5.1"
+    "vite": "^7.3.6"
   }
 }

@@ -147,19 +147,7 @@
     "turbo": "^2.11.3",
     "typescript": "5.9.3",
     "vitest": "^4.1.11",
-    "vue-eslint-parser": "^10.4.1",
-    "@babel/helper-function-name": "^7.22.5",
-    "@babel/helper-hoist-variables": "^7.22.5",
-    "@babel/helper-split-export-declaration": "^7.22.6",
-    "@babel/plugin-proposal-class-properties": "^7.10.4",
-    "@babel/plugin-proposal-object-rest-spread": "^7.11.0",
-    "@types/minimatch": "^5.1.2",
-    "babel-core": "^7.0.0-bridge.0",
-    "jest-environment-jsdom": "^29.0.0",
-    "rollup-plugin-copy": "^3.4.0",
-    "rollup-plugin-delete": "^2.0.0",
-    "rollup-plugin-generate-html-template": "^1.7.0",
-    "rollup-plugin-serve": "^1.1.0"
+    "vue-eslint-parser": "^10.4.1"
   },
   "commitlint": {
     "extends": [
