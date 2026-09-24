@@ -53,13 +53,13 @@
     "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
   },
   "dependencies": {
-    "y-protocols": "^1.0.5"
+    "y-protocols": "^1.0.7"
   },
   "peerDependencies": {
     "@wangeditor-next/editor": "workspace:^",
     "@wangeditor-next/yjs": "workspace:^",
     "vue": ">=3.5.18",
-    "slate": "^0.124.0",
-    "yjs": "^13.5.29"
+    "slate": "^0.126.2",
+    "yjs": "^13.6.33"
   }
 }

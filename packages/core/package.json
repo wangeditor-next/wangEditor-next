@@ -56,8 +56,8 @@
     "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
   },
   "peerDependencies": {
-    "@uppy/core": "^2.1.1 || ^5.0.0",
-    "@uppy/xhr-upload": "^2.0.3 || ^5.0.0",
+    "@uppy/core": "^6.0.0",
+    "@uppy/xhr-upload": "^6.0.0",
     "dom7": "^3.0.0 || ^4.0.0",
     "is-hotkey": "^0.2.0",
     "lodash.camelcase": "^4.3.0",
@@ -67,20 +67,20 @@
     "lodash.throttle": "^4.1.1",
     "lodash.toarray": "^4.4.0",
     "nanoid": "^5.0.0",
-    "slate": "^0.124.0",
-    "snabbdom": "^3.6.0"
+    "slate": "^0.126.2",
+    "snabbdom": "^3.6.4"
   },
   "dependencies": {
     "@types/event-emitter": "^0.3.3",
     "event-emitter": "^0.3.5",
     "html-void-elements": "^3.0.0",
-    "i18next": "^23.0.0",
+    "i18next": "^26.4.2",
     "scroll-into-view-if-needed": "^3.0.0",
     "slate-history": "^0.115.0"
   },
   "devDependencies": {
-    "@uppy/core": "^2.1.1",
-    "@uppy/xhr-upload": "^2.0.3",
+    "@uppy/core": "^6.0.1",
+    "@uppy/xhr-upload": "^6.0.0",
     "@types/is-hotkey": "^0.1.2",
     "@wangeditor-next-shared/rollup-config": "workspace:^"
   }

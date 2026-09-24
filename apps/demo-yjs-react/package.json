@@ -21,20 +21,20 @@
     "@wangeditor-next/yjs-for-react": "workspace:*",
     "clsx": "^1.1.1",
     "randomcolor": "^0.6.2",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "vite-plugin-windicss": "^1.9.4",
-    "y-protocols": "^1.0.6",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "y-protocols": "^1.0.7",
     "y-websocket": "^2.0.4",
-    "yjs": "^13.6.19"
+    "yjs": "^13.6.33",
+    "vite-plugin-windicss": "^1.9.4"
   },
   "devDependencies": {
     "@types/randomcolor": "^0",
-    "@types/react": "^17.0.34",
-    "@types/react-dom": "^17.0.11",
-    "@vitejs/plugin-react": "^4.3.4",
-    "autoprefixer": "^10.4.0",
-    "vite": "^6.4.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "autoprefixer": "^10.6.1",
+    "vite": "^7.3.6",
     "windicss": "^3.5.1"
   }
 }
