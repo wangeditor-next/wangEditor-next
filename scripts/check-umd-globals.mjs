@@ -3,7 +3,7 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 // eslint-disable-next-line import/extensions
-import { INTERNAL_UMD_GLOBALS } from '../shared/rollup-config/index.js'
+import { INTERNAL_UMD_GLOBALS } from '../shared/tsdown-config/index.js'
 
 const packagesDir = path.resolve('packages')
 const packageDirs = fs
@@ -15,10 +15,9 @@ const errors = []
 
 for (const packageDir of packageDirs) {
   const packagePath = path.join(packagesDir, packageDir, 'package.json')
-  const rollupConfigPath = path.join(packagesDir, packageDir, 'rollup.config.js')
   const tsdownConfigPath = path.join(packagesDir, packageDir, 'tsdown.config.js')
 
-  if (!fs.existsSync(packagePath) || (!fs.existsSync(rollupConfigPath) && !fs.existsSync(tsdownConfigPath))) {
+  if (!fs.existsSync(packagePath) || !fs.existsSync(tsdownConfigPath)) {
     continue
   }
 
@@ -31,14 +30,11 @@ for (const packageDir of packageDirs) {
     continue
   }
 
-  const configUrl = pathToFileURL(fs.existsSync(rollupConfigPath) ? rollupConfigPath : tsdownConfigPath).href
-  const { default: rollupConfigs } = await import(configUrl)
-  const configs = Array.isArray(rollupConfigs) ? rollupConfigs : [rollupConfigs]
+  const configUrl = pathToFileURL(tsdownConfigPath).href
+  const { default: tsdownConfigs } = await import(configUrl)
+  const configs = Array.isArray(tsdownConfigs) ? tsdownConfigs : [tsdownConfigs]
   const umdConfigs = configs.filter(config => {
-    if (config.output?.format === 'umd') {
-      return true
-    }
-    return config.format === 'umd'
+    return config.format === 'umd' || config.format?.includes('umd')
   })
 
   if (umdConfigs.length === 0) {
@@ -55,7 +51,10 @@ for (const packageDir of packageDirs) {
     }
 
     for (const config of umdConfigs) {
-      const actualGlobal = config.output?.globals?.[dependency] || config.outputOptions?.globals?.[dependency]
+      const output = typeof config.outputOptions === 'function'
+        ? await config.outputOptions({}, 'umd')
+        : config.outputOptions
+      const actualGlobal = output?.globals?.[dependency]
 
       if (actualGlobal !== expectedGlobal) {
         errors.push(

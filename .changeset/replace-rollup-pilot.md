@@ -1,6 +1,23 @@
 ---
+'@wangeditor-next/basic-modules': patch
 '@wangeditor-next/code-highlight': patch
+'@wangeditor-next/core': patch
+'@wangeditor-next/editor': patch
+'@wangeditor-next/editor-for-react': patch
+'@wangeditor-next/list-module': patch
+'@wangeditor-next/plugin-attachment': patch
 '@wangeditor-next/plugin-ctrl-enter': patch
+'@wangeditor-next/plugin-float-image': patch
+'@wangeditor-next/plugin-formula': patch
+'@wangeditor-next/plugin-link-card': patch
+'@wangeditor-next/plugin-markdown': patch
+'@wangeditor-next/plugin-mention': patch
+'@wangeditor-next/table-module': patch
+'@wangeditor-next/upload-image-module': patch
+'@wangeditor-next/video-module': patch
+'@wangeditor-next/yjs': patch
+'@wangeditor-next/yjs-for-react': patch
+'@wangeditor-next/yjs-for-vue': patch
 ---
 
-Replace the Rollup build for the code-highlight and ctrl-enter packages with tsdown/Rolldown while preserving their ESM, UMD, CSS, and declaration entrypoints.
+Replace the remaining package Rollup builds with tsdown/Rolldown while preserving ESM, UMD, CSS, multi-entry, and declaration entrypoints.

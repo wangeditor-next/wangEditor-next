@@ -8,15 +8,19 @@ import discardDuplicates from 'postcss-discard-duplicates'
 import mergeRules from 'postcss-merge-rules'
 import postcss from 'rollup-plugin-postcss'
 
-const INTERNAL_UMD_GLOBALS = {
+export const INTERNAL_UMD_GLOBALS = {
   '@wangeditor-next/basic-modules': 'WangEditorBasicModules',
   '@wangeditor-next/code-highlight': 'WangEditorCodeHighLight',
   '@wangeditor-next/core': 'WangEditorCore',
+  '@wangeditor-next/core/upload': 'WangEditorCoreUpload',
   '@wangeditor-next/editor': 'wangEditor',
   '@wangeditor-next/list-module': 'WangEditorListModule',
   '@wangeditor-next/table-module': 'WangEditorTableModule',
   '@wangeditor-next/upload-image-module': 'WangEditorUploadImageModule',
   '@wangeditor-next/video-module': 'WangEditorVideoModule',
+  '@wangeditor-next/yjs': 'WangEditorYjsModule',
+  '@wangeditor-next/yjs-for-react': 'WangEditorYjsForReact',
+  '@wangeditor-next/yjs-for-vue': 'WangEditorYjsForVue',
 }
 
 const EXTERNAL_UMD_GLOBALS = {
@@ -31,8 +35,12 @@ const EXTERNAL_UMD_GLOBALS = {
   'lodash.throttle': 'throttle',
   'lodash.toarray': 'toArray',
   nanoid: 'nanoid',
+  katex: 'katex',
+  react: 'React',
+  'react-dom': 'ReactDOM',
   slate: 'slate',
   snabbdom: 'snabbdom',
+  vue: 'Vue',
   yjs: 'Y',
 }
 
@@ -51,7 +59,10 @@ export function createTsdownConfig({
   name,
   packageDir = process.cwd(),
   entry = 'src/index.ts',
+  outputName = 'index',
   css = false,
+  cleanupExtraCss = false,
+  umdGlobals = {},
 }) {
   const packageJson = JSON.parse(fs.readFileSync(path.join(packageDir, 'package.json'), 'utf8'))
   const peerDependencies = Object.keys(packageJson.peerDependencies || {})
@@ -60,9 +71,14 @@ export function createTsdownConfig({
   const noExternal = dependencies.map(
     dependency => new RegExp(`^${dependency.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:/|$)`)
   )
-  const globals = Object.fromEntries(
-    peerDependencies.map(dependency => [dependency, toGlobalName(dependency)])
-  )
+  const globals = {
+    ...INTERNAL_UMD_GLOBALS,
+    ...EXTERNAL_UMD_GLOBALS,
+    ...Object.fromEntries(
+      peerDependencies.map(dependency => [dependency, toGlobalName(dependency)])
+    ),
+    ...umdGlobals,
+  }
 
   const plugins = [
     babel({
@@ -86,10 +102,12 @@ export function createTsdownConfig({
         ]
       : []),
   ]
+  const cssOptions = css ? true : false
 
   const common = {
     cwd: packageDir,
-    entry: { index: entry },
+    name,
+    entry: { [outputName]: entry },
     platform: 'browser',
     // Rolldown accepts ES2015+ targets. The repository already excludes IE 11
     // from browserslist, so this is the closest supported target to the old
@@ -103,24 +121,19 @@ export function createTsdownConfig({
       [...external].some(dependency => id === dependency || id.startsWith(`${dependency}/`)),
     noExternal,
     plugins,
-    outputOptions: { globals },
+    css: cssOptions,
+    onSuccess: cleanupExtraCss ? 'node ../../scripts/cleanup-tsdown-css.mjs' : undefined,
+    outputOptions: (options, format) => ({
+      ...options,
+      entryFileNames: format === 'umd' ? `${outputName}.js` : options.entryFileNames,
+      globals,
+    }),
   }
 
-  return [
-    {
-      ...common,
-      format: 'esm',
-      dts: true,
-      outExtensions: () => ({ js: '.mjs', dts: '.d.ts' }),
-    },
-    {
-      ...common,
-      format: 'umd',
-      dts: false,
-      outputOptions: {
-        entryFileNames: 'index.js',
-        globals,
-      },
-    },
-  ]
+  return {
+    ...common,
+    format: ['esm', 'umd'],
+    dts: { eager: true },
+    outExtensions: () => ({ js: '.mjs', dts: '.d.ts' }),
+  }
 }

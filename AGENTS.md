@@ -28,7 +28,7 @@
 │  ├─ editor-for-react/       # React 适配层
 │  └─ yjs*                    # 协同编辑相关
 ├─ apps/                      # 示例与应用层工作区
-├─ shared/rollup-config/      # 共享构建配置
+├─ shared/tsdown-config/      # 共享构建配置
 ├─ tests/                     # 测试基础设施与 e2e
 │  └─ e2e/                    # Playwright E2E
 ├─ docs/                      # 开发/测试/发布文档
