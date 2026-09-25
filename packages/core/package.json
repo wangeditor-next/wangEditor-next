@@ -48,7 +48,7 @@
     "test-c": "vitest run --coverage",
     "dev": "cross-env NODE_ENV=development tsdown -c tsdown.config.js",
     "dev-watch": "cross-env NODE_ENV=development tsdown -c tsdown.config.js -w",
-    "build": "cross-env NODE_ENV=production tsdown -c tsdown.config.js -F WangEditorCore && cross-env NODE_ENV=production tsdown -c tsdown.config.js -F WangEditorCoreUpload --no-clean",
+    "build": "cross-env NODE_ENV=production tsdown -c tsdown.config.js -F WangEditorCore && cross-env NODE_ENV=production tsdown -c tsdown.config.js -F WangEditorCoreUpload --no-clean && node ../../scripts/cleanup-tsdown-css.mjs",
     "dev-size-stats": "cross-env NODE_ENV=development:size_stats tsdown -c tsdown.config.js --report",
     "size-stats": "cross-env NODE_ENV=production:size_stats tsdown -c tsdown.config.js --report"
   },

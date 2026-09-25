@@ -13,7 +13,6 @@ export default [
     entry: 'src/core.ts',
     outputName: 'core',
     css: true,
-    cleanupExtraCss: true,
   }),
   createTsdownConfig({
     name: 'wangEditorUpload',
@@ -25,6 +24,5 @@ export default [
     name: 'wangEditor',
     packageDir,
     css: true,
-    cleanupExtraCss: true,
   }),
 ]

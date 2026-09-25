@@ -61,7 +61,6 @@ export function createTsdownConfig({
   entry = 'src/index.ts',
   outputName = 'index',
   css = false,
-  cleanupExtraCss = false,
   umdGlobals = {},
 }) {
   const packageJson = JSON.parse(fs.readFileSync(path.join(packageDir, 'package.json'), 'utf8'))
@@ -122,7 +121,6 @@ export function createTsdownConfig({
     noExternal,
     plugins,
     css: cssOptions,
-    onSuccess: cleanupExtraCss ? 'node ../../scripts/cleanup-tsdown-css.mjs' : undefined,
     outputOptions: (options, format) => ({
       ...options,
       entryFileNames: format === 'umd' ? `${outputName}.js` : options.entryFileNames,
