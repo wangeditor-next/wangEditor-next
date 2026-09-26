@@ -38,6 +38,9 @@ const EXTERNAL_UMD_GLOBALS = {
   katex: 'katex',
   react: 'React',
   'react-dom': 'ReactDOM',
+  'use-sync-external-store': 'useSyncExternalStore',
+  'use-sync-external-store/shim': 'useSyncExternalStoreShim',
+  'use-sync-external-store/shim/with-selector': 'useSyncExternalStoreShimWithSelector',
   slate: 'slate',
   snabbdom: 'snabbdom',
   vue: 'Vue',
@@ -67,6 +70,9 @@ export function createTsdownConfig({
   const peerDependencies = Object.keys(packageJson.peerDependencies || {})
   const dependencies = Object.keys(packageJson.dependencies || {})
   const external = new Set(peerDependencies)
+
+  external.add('use-sync-external-store')
+
   const noExternal = dependencies.map(
     dependency => new RegExp(`^${dependency.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:/|$)`)
   )
