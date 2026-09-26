@@ -7,6 +7,10 @@ import cssnano from 'cssnano'
 import discardDuplicates from 'postcss-discard-duplicates'
 import mergeRules from 'postcss-merge-rules'
 import postcss from 'rollup-plugin-postcss'
+import { visualizer } from 'rollup-plugin-visualizer'
+
+// eslint-disable-next-line import/extensions
+import { reactShimPeerImport } from './react-shim-peer-import.js'
 
 export const INTERNAL_UMD_GLOBALS = {
   '@wangeditor-next/basic-modules': 'WangEditorBasicModules',
@@ -44,7 +48,9 @@ const EXTERNAL_UMD_GLOBALS = {
   yjs: 'Y',
 }
 
-const isProduction = process.env.NODE_ENV === 'production'
+const environment = process.env.NODE_ENV || 'production'
+const isProduction = environment.startsWith('production')
+const isSizeStats = environment.includes('size_stats')
 const extensions = ['.js', '.jsx', '.ts', '.tsx']
 
 function toGlobalName(id) {
@@ -67,6 +73,7 @@ export function createTsdownConfig({
   const peerDependencies = Object.keys(packageJson.peerDependencies || {})
   const dependencies = Object.keys(packageJson.dependencies || {})
   const external = new Set(peerDependencies)
+
   const noExternal = dependencies.map(
     dependency => new RegExp(`^${dependency.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:/|$)`)
   )
@@ -80,6 +87,7 @@ export function createTsdownConfig({
   }
 
   const plugins = [
+    reactShimPeerImport(),
     babel({
       rootMode: 'upward',
       babelHelpers: 'runtime',
@@ -101,6 +109,18 @@ export function createTsdownConfig({
         ]
       : []),
   ]
+
+  if (isSizeStats) {
+    plugins.push(
+      visualizer({
+        filename: path.join(
+          packageDir,
+          outputName === 'index' ? 'stats.html' : `stats-${outputName}.html`
+        ),
+        gzipSize: true,
+      })
+    )
+  }
   const cssOptions = css ? true : false
 
   const common = {

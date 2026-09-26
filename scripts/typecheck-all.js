@@ -10,6 +10,23 @@ const ignoredDirs = new Set(['node_modules', 'dist', 'lib', 'coverage', '.turbo'
 const typecheckCacheDir = path.join(rootDir, '.turbo', 'typecheck')
 const disableIncremental = process.env.TYPECHECK_NO_INCREMENTAL === '1'
 
+function runPnpm(args) {
+  const pnpmPath = process.env.npm_execpath
+  const result = spawnSync(
+    pnpmPath ? process.execPath : 'pnpm',
+    pnpmPath ? [pnpmPath, ...args] : args,
+    {
+      cwd: rootDir,
+      stdio: 'inherit',
+    }
+  )
+
+  if (result.error) {
+    console.error(result.error)
+  }
+  return result
+}
+
 function collectTsconfigFiles(startDir) {
   const result = []
 
@@ -57,10 +74,7 @@ function runTypecheck(tsconfigPath) {
 
     process.stdout.write(`[typecheck] ${relativePath} (package script)\n`)
 
-    const res = spawnSync('pnpm', ['--dir', packageRelativePath, 'run', 'typecheck'], {
-      cwd: rootDir,
-      stdio: 'inherit',
-    })
+    const res = runPnpm(['--dir', packageRelativePath, 'run', 'typecheck'])
 
     if (res.status !== 0) {
       process.exit(res.status ?? 1)
@@ -84,10 +98,7 @@ function runTypecheck(tsconfigPath) {
 
   args.push('-p', relativePath)
 
-  const res = spawnSync('pnpm', args, {
-    cwd: rootDir,
-    stdio: 'inherit',
-  })
+  const res = runPnpm(args)
 
   if (res.status !== 0) {
     process.exit(res.status ?? 1)
