@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { runInNewContext } from 'node:vm'
 
@@ -9,9 +9,12 @@ it('loads the browser UMD bundle with only the documented peer globals', () => {
     React,
     WangEditorYjsModule: {},
     wangEditor: {},
-    Slate: {},
+    slate: {},
   }
-  const bundle = readFileSync(resolve(process.cwd(), 'dist/index.js'), 'utf8')
+  const packageDir = existsSync(resolve(process.cwd(), 'dist/index.js'))
+    ? process.cwd()
+    : resolve(process.cwd(), 'packages/yjs-for-react')
+  const bundle = readFileSync(resolve(packageDir, 'dist/index.js'), 'utf8')
 
   runInNewContext(bundle, context)
   const exports = (
