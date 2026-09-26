@@ -12,13 +12,13 @@
     "collaborative"
   ],
   "license": "MIT",
-  "types": "dist/yjs/src/index.d.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "unpkg": "dist/index.js",
   "exports": {
     ".": {
-      "types": "./dist/yjs/src/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     }
@@ -40,11 +40,11 @@
   "scripts": {
     "test": "vitest run",
     "test-c": "vitest run --coverage",
-    "dev": "cross-env NODE_ENV=development rollup -c rollup.config.js",
-    "dev-watch": "cross-env NODE_ENV=development rollup -c rollup.config.js -w",
-    "build": "cross-env NODE_ENV=production rollup -c rollup.config.js",
-    "dev-size-stats": "cross-env NODE_ENV=development:size_stats rollup -c rollup.config.js",
-    "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
+    "dev": "cross-env NODE_ENV=development tsdown -c tsdown.config.js",
+    "dev-watch": "cross-env NODE_ENV=development tsdown -c tsdown.config.js -w",
+    "build": "cross-env NODE_ENV=production tsdown -c tsdown.config.js",
+    "dev-size-stats": "cross-env NODE_ENV=development:size_stats tsdown -c tsdown.config.js --report",
+    "size-stats": "cross-env NODE_ENV=production:size_stats tsdown -c tsdown.config.js --report"
   },
   "peerDependencies": {
     "@wangeditor-next/core": "workspace:^",
@@ -58,7 +58,6 @@
     "y-protocols": "^1.0.5"
   },
   "devDependencies": {
-    "@wangeditor-next-shared/rollup-config": "workspace:^",
     "slate": "^0.124.0",
     "typescript": "^5.0.0",
     "yjs": "^13.5.29"

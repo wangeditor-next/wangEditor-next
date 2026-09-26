@@ -1,7 +1,0 @@
-{
-  "name": "@wangeditor-next-shared/rollup-config",
-  "version": "0.0.2",
-  "private": true,
-  "main": "index.js",
-  "type": "module"
-}

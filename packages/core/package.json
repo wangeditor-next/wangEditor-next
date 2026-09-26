@@ -6,11 +6,11 @@
   "type": "module",
   "homepage": "https://github.com/wangeditor-next/wangEditor-next#readme",
   "license": "MIT",
-  "types": "dist/core/src/index.d.ts",
+  "types": "dist/index.d.ts",
   "typesVersions": {
     "*": {
       "upload": [
-        "dist/core/src/upload.d.ts"
+        "dist/upload.d.ts"
       ]
     }
   },
@@ -18,12 +18,12 @@
   "module": "dist/index.mjs",
   "exports": {
     ".": {
-      "types": "./dist/core/src/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
     "./upload": {
-      "types": "./dist/core/src/upload.d.ts",
+      "types": "./dist/upload.d.ts",
       "import": "./dist/upload.mjs",
       "require": "./dist/upload.js"
     },
@@ -46,11 +46,11 @@
   "scripts": {
     "test": "vitest run",
     "test-c": "vitest run --coverage",
-    "dev": "cross-env NODE_ENV=development rollup -c rollup.config.js",
-    "dev-watch": "cross-env NODE_ENV=development rollup -c rollup.config.js -w",
-    "build": "cross-env NODE_ENV=production rollup -c rollup.config.js",
-    "dev-size-stats": "cross-env NODE_ENV=development:size_stats rollup -c rollup.config.js",
-    "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
+    "dev": "cross-env NODE_ENV=development tsdown -c tsdown.config.js",
+    "dev-watch": "cross-env NODE_ENV=development tsdown -c tsdown.config.js -w",
+    "build": "cross-env NODE_ENV=production tsdown -c tsdown.config.js -F WangEditorCore && cross-env NODE_ENV=production tsdown -c tsdown.config.js -F WangEditorCoreUpload --no-clean && node ../../scripts/cleanup-tsdown-css.mjs",
+    "dev-size-stats": "cross-env NODE_ENV=development:size_stats tsdown -c tsdown.config.js --report",
+    "size-stats": "cross-env NODE_ENV=production:size_stats tsdown -c tsdown.config.js --report"
   },
   "bugs": {
     "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
@@ -81,7 +81,6 @@
   "devDependencies": {
     "@uppy/core": "^2.1.1",
     "@uppy/xhr-upload": "^2.0.3",
-    "@types/is-hotkey": "^0.1.2",
-    "@wangeditor-next-shared/rollup-config": "workspace:^"
+    "@types/is-hotkey": "^0.1.2"
   }
 }

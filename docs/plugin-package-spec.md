@@ -29,7 +29,7 @@ packages/plugin-xxx/
 │  ├─ module.test.ts
 │  └─ ...
 ├─ package.json
-├─ rollup.config.js
+├─ tsdown.config.js
 ├─ tsconfig.json
 ├─ README.md
 ├─ README-en.md
@@ -48,7 +48,7 @@ packages/plugin-xxx/
   - `build`
   - `dev-size-stats`
   - `size-stats`
-- `devDependencies` 至少包含 `@wangeditor-next-shared/rollup-config`
+- 构建配置统一复用 `shared/tsdown-config`；不需要在包内重复声明根目录构建工具。
 - `peerDependencies` 仅声明运行时必须由宿主提供的依赖（通常至少有 `@wangeditor-next/editor`，按需加 `dom7`、`snabbdom`）
 
 ## 4. 源码模块规范

@@ -6,7 +6,7 @@
   "type": "module",
   "homepage": "https://github.com/wangeditor-next/wangEditor-next#readme",
   "license": "MIT",
-  "types": "dist/yjs-for-react/src/index.d.ts",
+  "types": "dist/index.d.ts",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "unpkg": "dist/index.js",
@@ -19,7 +19,7 @@
   ],
   "exports": {
     ".": {
-      "types": "./dist/yjs-for-react/src/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     }
@@ -40,15 +40,14 @@
   "scripts": {
     "test": "vitest run",
     "test-c": "vitest run --coverage",
-    "dev": "cross-env NODE_ENV=development rollup -c rollup.config.js",
-    "dev-watch": "cross-env NODE_ENV=development rollup -c rollup.config.js -w",
-    "build": "cross-env NODE_ENV=production rollup -c rollup.config.js",
-    "dev-size-stats": "cross-env NODE_ENV=development:size_stats rollup -c rollup.config.js",
-    "size-stats": "cross-env NODE_ENV=production:size_stats rollup -c rollup.config.js"
+    "dev": "cross-env NODE_ENV=development tsdown -c tsdown.config.js",
+    "dev-watch": "cross-env NODE_ENV=development tsdown -c tsdown.config.js -w",
+    "build": "cross-env NODE_ENV=production tsdown -c tsdown.config.js",
+    "dev-size-stats": "cross-env NODE_ENV=development:size_stats tsdown -c tsdown.config.js --report",
+    "size-stats": "cross-env NODE_ENV=production:size_stats tsdown -c tsdown.config.js --report"
   },
   "devDependencies": {
-    "@types/use-sync-external-store": "^0.0.6",
-    "@wangeditor-next-shared/rollup-config": "workspace:^"
+    "@types/use-sync-external-store": "^0.0.6"
   },
   "bugs": {
     "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
