@@ -14,6 +14,7 @@ export default defineConfig({
   webServer: [
     {
       command: 'pnpm --filter @wangeditor-next/demo-yjs-react run dev:server',
+      env: { HOST: '127.0.0.1' },
       url: 'http://127.0.0.1:1234',
       reuseExistingServer: true,
       timeout: 30_000,

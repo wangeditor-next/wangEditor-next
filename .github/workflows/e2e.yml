@@ -25,6 +25,7 @@ on:
       - 'babel.config.json'
       - 'package.json'
       - 'playwright.config.ts'
+      - 'playwright.yjs.config.ts'
   pull_request:
     branches:
       - master
@@ -73,3 +74,7 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BUILD: '1'
         run: pnpm e2e
+
+      # Keep the Yjs collaboration fixtures covered after package builds.
+      - name: Run Yjs collaboration E2E tests
+        run: pnpm e2e:yjs
