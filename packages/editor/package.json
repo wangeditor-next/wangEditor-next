@@ -67,8 +67,8 @@
     "dev": "cross-env NODE_ENV=development tsdown -c tsdown.config.js",
     "dev-watch": "cross-env NODE_ENV=development tsdown -c tsdown.config.js -w",
     "build": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=8192 tsdown -c tsdown.config.js -F wangEditorCore && cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=8192 tsdown -c tsdown.config.js -F wangEditorUpload --no-clean && cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=8192 tsdown -c tsdown.config.js -F wangEditor --no-clean && node ../../scripts/cleanup-tsdown-css.mjs",
-    "dev-size-stats": "cross-env NODE_ENV=development:size_stats tsdown -c tsdown.config.js --report",
-    "size-stats": "cross-env NODE_ENV=production:size_stats tsdown -c tsdown.config.js --report"
+    "dev-size-stats": "cross-env NODE_OPTIONS=--max-old-space-size=8192 NODE_ENV=development:size_stats tsdown -c tsdown.config.js --report",
+    "size-stats": "cross-env NODE_OPTIONS=--max-old-space-size=8192 NODE_ENV=production:size_stats tsdown -c tsdown.config.js --report"
   },
   "bugs": {
     "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
