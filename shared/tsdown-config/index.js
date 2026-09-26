@@ -8,6 +8,9 @@ import discardDuplicates from 'postcss-discard-duplicates'
 import mergeRules from 'postcss-merge-rules'
 import postcss from 'rollup-plugin-postcss'
 
+// eslint-disable-next-line import/extensions
+import { reactShimPeerImport } from './react-shim-peer-import.js'
+
 export const INTERNAL_UMD_GLOBALS = {
   '@wangeditor-next/basic-modules': 'WangEditorBasicModules',
   '@wangeditor-next/code-highlight': 'WangEditorCodeHighLight',
@@ -38,9 +41,6 @@ const EXTERNAL_UMD_GLOBALS = {
   katex: 'katex',
   react: 'React',
   'react-dom': 'ReactDOM',
-  'use-sync-external-store': 'useSyncExternalStore',
-  'use-sync-external-store/shim': 'useSyncExternalStoreShim',
-  'use-sync-external-store/shim/with-selector': 'useSyncExternalStoreShimWithSelector',
   slate: 'slate',
   snabbdom: 'snabbdom',
   vue: 'Vue',
@@ -71,8 +71,6 @@ export function createTsdownConfig({
   const dependencies = Object.keys(packageJson.dependencies || {})
   const external = new Set(peerDependencies)
 
-  external.add('use-sync-external-store')
-
   const noExternal = dependencies.map(
     dependency => new RegExp(`^${dependency.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:/|$)`)
   )
@@ -86,6 +84,7 @@ export function createTsdownConfig({
   }
 
   const plugins = [
+    reactShimPeerImport(),
     babel({
       rootMode: 'upward',
       babelHelpers: 'runtime',
