@@ -1,5 +1,15 @@
 # @wangeditor-next/plugin-formula
 
+## 6.4.3
+
+### Patch Changes
+
+- 0835b1a: Replace the remaining package Rollup builds with tsdown/Rolldown while preserving ESM, UMD, CSS, multi-entry, and declaration entrypoints.
+- Updated dependencies [a60cb9f]
+- Updated dependencies [89843da]
+- Updated dependencies [0835b1a]
+  - @wangeditor-next/editor@6.4.3
+
 ## 6.4.2
 
 ### Patch Changes
