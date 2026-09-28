@@ -80,9 +80,9 @@ describe('image helper', () => {
     expect(images.length).toBe(1)
   })
 
-  it('insert image should preserve active marks for trailing text', async () => {
+  it.each(['inline', 'class'] as const)('insert image preserves trailing text marks in %s mode', async textStyleMode => {
     editor = createEditor({
-      config: baseEditorConfig,
+      config: { ...baseEditorConfig, textStyleMode },
       content: [
         {
           type: 'paragraph',
@@ -105,6 +105,19 @@ describe('image helper', () => {
 
     expect(editor.getMarks()?.fontFamily).toBe('微软雅黑')
     expect(editor.getMarks()?.fontSize).toBe('14px')
+    editor.insertText('after image')
+    const trailingText = editor.children[0].children.slice(-1)[0]
+
+    expect(trailingText).toMatchObject({
+      text: 'after image',
+      fontFamily: '微软雅黑',
+      fontSize: '14px',
+    })
+    const html = editor.getHtml()
+
+    editor.setHtml(html)
+    expect(editor.getHtml()).toBe(html)
+    expect(editor.children[0].children.slice(-1)[0]).toMatchObject(trailingText)
   })
 
   it('update image node', async () => {
