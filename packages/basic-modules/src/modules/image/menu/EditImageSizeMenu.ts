@@ -11,11 +11,12 @@ import {
   IModalMenu,
   t,
 } from '@wangeditor-next/core'
-import { Node as SlateNode, Transforms } from 'slate'
+import { Node as SlateNode } from 'slate'
 
 import $, { Dom7Array, DOMElement } from '../../../utils/dom'
 import { genRandomStr } from '../../../utils/util'
 import { ImageElement } from '../custom-types'
+import { updateImageSize } from '../resize'
 
 /**
  * 生成唯一的 DOM ID
@@ -108,44 +109,8 @@ class EditorImageSizeMenu implements IModalMenu {
         const rawWidth = $content.find(`#${widthInputId}`).val().trim()
         const rawHeight = $content.find(`#${heightInputId}`).val().trim()
 
-        const isPercentage = (value: string) => /^\d+(\.\d+)?%$/.test(value) // 检查是否为合法的百分比字符串
-        const isNumeric = (value: string) => /^\d+(\.\d+)?$/.test(value) // 检查是否为合法的数字
-        const isPixelValue = (value: string) => /^\d+(\.\d+)?px$/.test(value) // 检查是否为合法的 px 值
-
-        let width = 'auto'
-        let height = 'auto'
-
-        if (isPercentage(rawWidth)) {
-          width = rawWidth
-        } else if (isNumeric(rawWidth)) {
-          width = `${parseInt(rawWidth, 10)}px`
-        } else if (isPixelValue(rawWidth)) {
-          width = rawWidth
-        }
-
-        if (isPercentage(rawHeight)) {
-          height = rawHeight
-        } else if (isNumeric(rawHeight)) {
-          height = `${parseInt(rawHeight, 10)}px`
-        } else if (isPixelValue(rawHeight)) {
-          height = rawHeight
-        }
-
-        const { style = {} } = imageNode as ImageElement
-
         editor.restoreSelection()
-        const props: Partial<ImageElement> = {
-          ...style,
-          style: {
-            width,
-            height,
-          },
-        }
-
-        // 修改尺寸
-        Transforms.setNodes(editor, props, {
-          match: n => DomEditor.checkNodeType(n, 'image'),
-        })
+        if (!updateImageSize(editor, imageNode, rawWidth, rawHeight, 'modal')) { return }
         editor.hidePanelOrModal() // 隐藏 modal
       })
 

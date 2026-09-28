@@ -47,7 +47,7 @@ jobs:
 
       # 安装 pnpm
       - name: Install pnpm
-        uses: pnpm/action-setup@v6.0.10
+        uses: pnpm/action-setup@v6.1.0
         with:
           version: 9.15.0
 
@@ -88,9 +88,17 @@ jobs:
         run: |
           set -euo pipefail
 
-          release_subject="$(git log -1 --format=%s)"
           release_subject_pattern='^chore\(release\): publish (a new )?release version'
           release_subject_pattern+='( \(#[0-9]+\))?$'
+          editor_version="$(node -p "require('./packages/editor/package.json').version")"
+          editor_release_tag="@wangeditor-next/editor@${editor_version}"
+          release_subject="$(git log -1 --format=%s)"
+          if ! git show-ref --tags --verify --quiet "refs/tags/${editor_release_tag}" && \
+            git log -20 --format=%s | grep -Eq "${release_subject_pattern}"; then
+            # A merge commit may hide the Changesets release commit in either
+            # parent history. Only retry while the editor package tag is absent.
+            release_subject='chore(release): publish a new release version'
+          fi
           changeset_file=''
           requires_release=false
 
@@ -135,7 +143,7 @@ jobs:
           fi
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v6.0.10
+        uses: pnpm/action-setup@v6.1.0
         with:
           version: 9.15.0
 

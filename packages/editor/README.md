@@ -57,5 +57,26 @@ const { editor, toolbar } = factory.create({
 import { createUploader } from '@wangeditor-next/editor/upload'
 ```
 
+## 图片尺寸单位和校验
+
+可通过 `imageResize` 统一配置编辑器内置的图片缩放入口。设置 `resizeUnit: 'px'` 后，修改尺寸、快捷尺寸和拖拽缩放都会使用 px：
+
+```ts
+const editorConfig: Partial<IEditorConfig> = {
+  imageResize: {
+    resizeUnit: 'px',
+    resizeOptions: [
+      { label: '200px', value: '200px' },
+    ],
+    checkImageSize({ width, height, source }) {
+      if (Number.parseFloat(width) > 1200) return '图片宽度不能超过 1200px'
+      return true
+    },
+  },
+}
+```
+
+不配置 `imageResize` 时保持历史行为。HTML 导入仍按原有解析规则处理，避免导入导出回环丢失尺寸信息。
+
 交流
 - [提交问题和建议](https://github.com/wangeditor-next/wangEditor-next/issues)

@@ -134,6 +134,32 @@ interface IInsertImageConfig extends IImageMenuBaseConfig {
 interface IEditImageConfig extends IImageMenuBaseConfig {
     onUpdatedImage?: (imageNode: ImageElement | null) => void;
 }
+
+export type ImageResizeUnit = 'px' | '%'
+export type ImageResizeSource = 'modal' | 'preset' | 'drag'
+
+export interface IImageResizeCheckPayload {
+  width: string
+  height: string
+  rawWidth: string
+  rawHeight: string
+  source: ImageResizeSource
+}
+
+export interface IImageResizeOption {
+  label: string
+  value: string
+}
+
+export interface IImageResizeConfig {
+  /** Resize unit for editor-owned image resize actions. Omit to preserve legacy behavior. */
+  resizeUnit?: ImageResizeUnit
+  /** Values for the built-in 30%/50%/100% preset buttons, in their existing order. */
+  resizeOptions?: IImageResizeOption[]
+  /** Validate normalized image dimensions before they are written to the document. */
+  checkImageSize?: (payload: IImageResizeCheckPayload) => boolean | undefined | string
+}
+
 interface IEmotionConfig {
   emotions: string[];
 }
@@ -317,6 +343,9 @@ export interface IEditorConfig {
   autoFocus: boolean
   decorate?: (nodeEntry: NodeEntry) => Range[]
   maxLength?: number
+
+  // 图片尺寸配置；不配置时保持历史行为
+  imageResize?: IImageResizeConfig
 
   // 各个 menu 的配置汇总，可以通过 key 获取单个 menu 的配置
   MENU_CONF?: IMenuConfigUpdate

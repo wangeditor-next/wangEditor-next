@@ -6,6 +6,7 @@ const buildCommands = [
   ['--filter', '@wangeditor-next/core', 'build'],
   ['--filter', '@wangeditor-next/editor', 'build'],
   ['--filter', '@wangeditor-next/editor-for-react', 'build'],
+  ['--filter', '@wangeditor-next/editor-for-vue', 'build'],
   ['--filter', '@wangeditor-next/yjs', 'build'],
   ['--filter', '@wangeditor-next/yjs-for-react', 'build'],
   ['--filter', '@wangeditor-next/yjs-for-vue', 'build'],
@@ -15,10 +16,20 @@ const buildCommands = [
 ]
 
 function run(args) {
-  const result = spawnSync('pnpm', args, {
-    env: process.env,
-    stdio: 'inherit',
-  })
+  // Invoke pnpm's JS entrypoint directly; Windows cannot spawn pnpm.cmd without a shell.
+  const pnpmPath = process.env.npm_execpath
+  const result = spawnSync(
+    pnpmPath ? process.execPath : 'pnpm',
+    pnpmPath ? [pnpmPath, ...args] : args,
+    {
+      env: process.env,
+      stdio: 'inherit',
+    }
+  )
+
+  if (result.error) {
+    console.error(result.error)
+  }
 
   if (result.status !== 0) {
     process.exit(result.status ?? 1)

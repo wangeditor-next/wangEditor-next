@@ -58,6 +58,27 @@ describe('link - parse html', () => {
     })
   })
 
+  it('should restore an image link anchor to an image node', () => {
+    const $link = $('<a href="https://example.com/image" target="_blank"></a>')
+    const children = [
+      {
+        type: 'image',
+        src: 'https://example.com/image.png',
+        href: 'https://example.com/image',
+        children: [{ text: '' }],
+      },
+    ]
+
+    const res = parseHtmlConf.parseElemHtml($link[0], children, editor)
+
+    expect(res).toEqual({
+      type: 'image',
+      src: 'https://example.com/image.png',
+      href: 'https://example.com/image',
+      children: [{ text: '' }],
+    })
+  })
+
   it('should normalize href formatting whitespace from imported html', () => {
     const $link = $('<a href=" \nhttps://localhost/a b\t\r " target="_blank">hello</a>')
     const children = [{ text: 'hello' }]

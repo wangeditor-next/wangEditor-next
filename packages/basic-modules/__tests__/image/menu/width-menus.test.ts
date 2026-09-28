@@ -99,4 +99,50 @@ describe('image width menus', () => {
     expect(image3.style.width).toBe('100%')
     expect(image3.style.height).toBe('')
   })
+
+  it('uses the configured resize unit for preset widths', () => {
+    editor = createEditor({ config: { imageResize: { resizeUnit: 'px' } } })
+    startLocation = Editor.start(editor, [])
+    editor.select(startLocation)
+    editor.insertNode({
+      type: 'image',
+      src,
+      alt,
+      href,
+      style: { width: '100px', height: '80px' },
+      children: [{ text: '' }],
+    })
+    editor.select({ path: [0, 1, 0], offset: 0 })
+
+    width30Menu.exec(editor, '')
+    const image = editor.getElemsByTypePrefix('image')[0]
+
+    expect(image.style.width).toBe('30px')
+    expect(image.style.width).not.toContain('%')
+  })
+
+  it('uses configured values and labels for preset widths', () => {
+    editor = createEditor({
+      config: {
+        imageResize: {
+          resizeOptions: [{ label: '200px', value: '200px' }],
+        },
+      },
+    })
+    startLocation = Editor.start(editor, [])
+    editor.select(startLocation)
+    editor.insertNode({
+      type: 'image',
+      src,
+      style: { width: '100px', height: '80px' },
+      children: [{ text: '' }],
+    })
+    editor.select({ path: [0, 1, 0], offset: 0 })
+
+    expect(width30Menu.getTitle(editor)).toBe('200px')
+    width30Menu.exec(editor, '')
+    const image = editor.getElemsByTypePrefix('image')[0]
+
+    expect(image.style.width).toBe('200px')
+  })
 })

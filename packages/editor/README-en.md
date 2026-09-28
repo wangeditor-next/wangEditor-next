@@ -59,4 +59,25 @@ const { editor, toolbar } = factory.create({
 import { createUploader } from '@wangeditor-next/editor/upload'
 ```
 
+## Image resize units and validation
+
+Use `imageResize` to configure all built-in image resize actions. With `resizeUnit: 'px'`, the size dialog, preset buttons, and drag resizing all use pixels:
+
+```ts
+const editorConfig: Partial<IEditorConfig> = {
+  imageResize: {
+    resizeUnit: 'px',
+    resizeOptions: [
+      { label: '200px', value: '200px' },
+    ],
+    checkImageSize({ width, height, source }) {
+      if (Number.parseFloat(width) > 1200) return 'Image width cannot exceed 1200px'
+      return true
+    },
+  },
+}
+```
+
+Leaving `imageResize` unset preserves the historical behavior. HTML import keeps its existing parsing rules so size information remains round-trip compatible.
+
 You can [commit an issue](https://github.com/wangeditor-next/wangEditor-next/issues) if you have any question.

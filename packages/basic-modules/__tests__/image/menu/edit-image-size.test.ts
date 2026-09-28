@@ -130,6 +130,96 @@ describe('edit image size menu', () => {
     expect(spy).toHaveBeenCalled()
   })
 
+  it('uses imageResize unit and validation before updating the image', () => {
+    const checkImageSize = vi.fn(() => true)
+    const sizeMenu = new EditImageSize()
+
+    editor = createEditor({ config: { imageResize: { resizeUnit: 'px', checkImageSize } } })
+
+    const imageElem = {
+      type: 'image',
+      src,
+      alt,
+      href,
+      style: { width: '100px', height: '80px' },
+      children: [{ text: '' }],
+    }
+
+    editor.select(Editor.start(editor, []))
+    editor.insertNode(imageElem)
+    editor.select({ path: [0, 1, 0], offset: 0 })
+
+    const hideSpy = vi.spyOn(editor, 'hidePanelOrModal')
+    const alertSpy = vi.spyOn(editor, 'alert')
+    const elem = sizeMenu.getModalContentElem(editor)
+
+    document.body.appendChild(elem)
+
+    const widthInput = document.getElementById((sizeMenu as any).widthInputId) as HTMLInputElement
+    const heightInput = document.getElementById((sizeMenu as any).heightInputId) as HTMLInputElement
+    const button = document.getElementById((sizeMenu as any).buttonId) as HTMLButtonElement
+
+    widthInput.value = '100px'
+    heightInput.value = '30px'
+
+    fireEvent.click(button)
+
+    expect(checkImageSize).toHaveBeenCalledWith({
+      width: '100px',
+      height: '30px',
+      rawWidth: '100px',
+      rawHeight: '30px',
+      source: 'modal',
+    })
+    expect(alertSpy).not.toHaveBeenCalled()
+    expect(hideSpy).toHaveBeenCalled()
+
+    const image = editor.getElemsByTypePrefix('image')[0]
+
+    expect(image.style.width).toBe('100px')
+    expect(image.style.height).toBe('30px')
+  })
+
+  it('rejects non-px input without changing the image', () => {
+    const sizeMenu = new EditImageSize()
+
+    editor = createEditor({ config: { imageResize: { resizeUnit: 'px' } } })
+
+    const imageElem = {
+      type: 'image',
+      src,
+      alt,
+      href,
+      style: { width: '100px', height: '80px' },
+      children: [{ text: '' }],
+    }
+
+    editor.select(Editor.start(editor, []))
+    editor.insertNode(imageElem)
+    editor.select({ path: [0, 1, 0], offset: 0 })
+
+    const hideSpy = vi.spyOn(editor, 'hidePanelOrModal')
+    const alertSpy = vi.spyOn(editor, 'alert')
+    const elem = sizeMenu.getModalContentElem(editor)
+
+    document.body.appendChild(elem)
+
+    const widthInput = document.getElementById((sizeMenu as any).widthInputId) as HTMLInputElement
+    const heightInput = document.getElementById((sizeMenu as any).heightInputId) as HTMLInputElement
+    const button = document.getElementById((sizeMenu as any).buttonId) as HTMLButtonElement
+
+    widthInput.value = '100%'
+    heightInput.value = '30%'
+    fireEvent.click(button)
+
+    expect(alertSpy).toHaveBeenCalledWith('图片宽高只能使用 px 单位', 'error')
+    expect(hideSpy).not.toHaveBeenCalled()
+    const image = editor.getElemsByTypePrefix('image')[0]
+
+    expect(image.style.width).toBe('100px')
+    expect(image.style.height).toBe('80px')
+  })
+
   it('focus input asynchronously', async () => {
     const imageElem = {
       type: 'image',

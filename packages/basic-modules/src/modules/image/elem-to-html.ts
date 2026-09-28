@@ -15,6 +15,8 @@ function imageToHtml(elemNode: Element, _childrenHtml: string, editor?: IDomEdit
   const { width: styleWidth = '', height: styleHeight = '' } = style
   const mode = getTextStyleMode(editor)
 
+  let imageHtml = ''
+
   if (mode === 'class') {
     // class 模式下不输出 inline style
     const exportedWidth = width || styleWidth
@@ -22,14 +24,16 @@ function imageToHtml(elemNode: Element, _childrenHtml: string, editor?: IDomEdit
     const widthData = styleWidth ? ` data-w-e-style-width="${styleWidth}"` : ''
     const heightData = styleHeight ? ` data-w-e-style-height="${styleHeight}"` : ''
 
-    return `<img src="${src}" alt="${alt}" data-href="${href}" width="${exportedWidth}" height="${exportedHeight}"${widthData}${heightData}/>`
+    imageHtml = `<img src="${src}" alt="${alt}" data-href="${href}" width="${exportedWidth}" height="${exportedHeight}"${widthData}${heightData}/>`
+  } else {
+    let styleStr = ''
+
+    if (styleWidth) { styleStr += `width: ${styleWidth};` }
+    if (styleHeight) { styleStr += `height: ${styleHeight};` }
+    imageHtml = `<img src="${src}" alt="${alt}" data-href="${href}" width="${width}" height="${height}" style="${styleStr}"/>`
   }
 
-  let styleStr = ''
-
-  if (styleWidth) { styleStr += `width: ${styleWidth};` }
-  if (styleHeight) { styleStr += `height: ${styleHeight};` }
-  return `<img src="${src}" alt="${alt}" data-href="${href}" width="${width}" height="${height}" style="${styleStr}"/>`
+  return href ? `<a href="${href}" target="_blank">${imageHtml}</a>` : imageHtml
 }
 
 export const imageToHtmlConf = {

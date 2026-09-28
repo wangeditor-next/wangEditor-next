@@ -220,7 +220,14 @@ function renderImage(elemNode: SlateElement, children: VNode[] | null, editor: I
   if (height) { imageStyle.height = '100%' }
 
   // 【注意】void node 中，renderElem 不用处理 children 。core 会统一处理。
-  const vnode = <img style={imageStyle} src={src} alt={alt} data-href={href} />
+  const imageVnode = <img style={imageStyle} src={src} alt={alt} data-href={href} />
+  const vnode = href ? (
+    <a href={href} target="_blank">
+      {imageVnode}
+    </a>
+  ) : (
+    imageVnode
+  )
 
   const isDisabled = editor.isDisabled()
 

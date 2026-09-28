@@ -6,7 +6,7 @@
     "packages/custom-types.d.ts",
     "pnpm-lock.yaml",
     "pnpm-workspace.yaml",
-    "shared/rollup-config/**",
+    "shared/tsdown-config/**",
     "tsconfig.json"
   ],
   "tasks": {
@@ -14,7 +14,7 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "src/**",
-        "rollup.config.js",
+        "tsdown.config.js",
         "vite.config.ts",
         "tsconfig.json",
         "package.json"
@@ -30,7 +30,7 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "src/**",
-        "rollup.config.js",
+        "tsdown.config.js",
         "vite.config.ts",
         "tsconfig.json",
         "package.json"

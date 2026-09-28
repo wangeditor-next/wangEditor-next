@@ -47,9 +47,12 @@ describe('image render elem', () => {
 
     const imageVnode = containerVnode.children[0] as any
 
-    expect(imageVnode.sel).toBe('img')
-    expect(imageVnode.data.src).toBe(src)
-    expect(imageVnode.data['data-href']).toBe(href)
+    expect(imageVnode.sel).toBe('a')
+    expect(imageVnode.data.href).toBe(href)
+    expect(imageVnode.data.target).toBe('_blank')
+    expect(imageVnode.children[0].sel).toBe('img')
+    expect(imageVnode.children[0].data.src).toBe(src)
+    expect(imageVnode.children[0].data['data-href']).toBe(href)
   })
 
   it('render image - selected image', () => {

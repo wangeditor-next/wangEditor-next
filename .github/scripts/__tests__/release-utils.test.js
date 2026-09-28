@@ -99,6 +99,11 @@ if [ "$1" = "rev-parse" ] && [ "$2" = "HEAD" ]; then
   exit 0
 fi
 
+if [ "$1" = "rev-parse" ]; then
+  printf '%s\\n' 'fatal: ambiguous argument' >&2
+  exit 1
+fi
+
 if [ "$1" = "ls-remote" ]; then
   exit 0
 fi
@@ -143,8 +148,95 @@ exit 1
     )
 
     assert.equal(result.status, 0, result.stderr)
+    assert.doesNotMatch(result.stderr, /ambiguous argument/)
     assert.match(fs.readFileSync(ghLog, 'utf8'), new RegExp(`--target ${'a'.repeat(40)}`))
     assert.doesNotMatch(fs.readFileSync(ghLog, 'utf8'), new RegExp(`${'b'.repeat(40)}`))
+    assert.match(fs.readFileSync(outputPath, 'utf8'), /editor_published=true/)
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true })
+  }
+})
+
+test('recovers when release creation returns a transient error after creating the release', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wangeditor-release-test-'))
+  const temporaryBin = path.join(tempDir, 'bin')
+  const fakeGit = path.join(temporaryBin, 'git')
+  const fakeGh = path.join(temporaryBin, 'gh')
+  const ghLog = path.join(tempDir, 'gh.log')
+  const releaseState = path.join(tempDir, 'release-created')
+  const outputPath = path.join(tempDir, 'github-output')
+  const scriptPath = path.resolve(__dirname, '../create-consolidated-release.js')
+  const rootDir = path.resolve(__dirname, '../../..')
+
+  fs.mkdirSync(temporaryBin)
+  fs.writeFileSync(
+    fakeGit,
+    `#!/bin/sh
+if [ "$1" = "rev-parse" ] && [ "$2" = "HEAD" ]; then
+  printf '%s\\n' '${'a'.repeat(40)}'
+  exit 0
+fi
+
+if [ "$1" = "ls-remote" ]; then
+  exit 0
+fi
+
+exit 1
+`
+  )
+  fs.writeFileSync(
+    fakeGh,
+    `#!/bin/sh
+if [ "$1" = "release" ] && [ "$2" = "view" ]; then
+  if [ -f "\${FAKE_RELEASE_STATE}" ]; then exit 0; fi
+  echo 'release not found' >&2
+  exit 1
+fi
+
+if [ "$1" = "release" ] && [ "$2" = "create" ]; then
+  printf '%s\\n' "$*" >> "\${FAKE_GH_LOG}"
+  touch "\${FAKE_RELEASE_STATE}"
+  echo 'HTTP 502: Server Error' >&2
+  exit 1
+fi
+
+if [ "$1" = "release" ] && [ "$2" = "edit" ]; then
+  printf '%s\\n' "$*" >> "\${FAKE_GH_LOG}"
+  exit 0
+fi
+
+exit 1
+`
+  )
+  fs.chmodSync(fakeGit, 0o755)
+  fs.chmodSync(fakeGh, 0o755)
+
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [scriptPath, JSON.stringify([{ name: '@wangeditor-next/editor', version: editorVersion }])],
+      {
+        cwd: rootDir,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          FAKE_GH_LOG: ghLog,
+          FAKE_RELEASE_STATE: releaseState,
+          GITHUB_OUTPUT: outputPath,
+          RELEASE_CREATE_RETRY_DELAY_MS: '1',
+          PATH: `${temporaryBin}:${process.env.PATH}`,
+        },
+      }
+    )
+
+    assert.equal(
+      result.status,
+      0,
+      `${result.stderr}\n${result.stdout}\n${fs.existsSync(ghLog) ? fs.readFileSync(ghLog, 'utf8') : 'missing gh log'}`
+    )
+    const ghOutput = fs.readFileSync(ghLog, 'utf8')
+    assert.equal((ghOutput.match(/release create/g) || []).length, 1)
+    assert.match(ghOutput, /release edit/)
     assert.match(fs.readFileSync(outputPath, 'utf8'), /editor_published=true/)
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true })

@@ -1,5 +1,23 @@
 # Change Log
 
+## 6.4.3
+
+### Patch Changes
+
+- 0835b1a: Replace the remaining package Rollup builds with tsdown/Rolldown while preserving ESM, UMD, CSS, multi-entry, and declaration entrypoints.
+- Updated dependencies [0835b1a]
+  - @wangeditor-next/basic-modules@6.4.3
+  - @wangeditor-next/core@6.4.3
+
+## 6.4.2
+
+### Patch Changes
+
+- Updated dependencies [838813c]
+- Updated dependencies [12f4986]
+  - @wangeditor-next/basic-modules@6.4.2
+  - @wangeditor-next/core@6.4.2
+
 ## 6.4.1
 
 ### Patch Changes

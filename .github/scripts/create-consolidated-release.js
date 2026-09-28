@@ -10,6 +10,27 @@ const path = require('path')
 const { getEditorRelease, parsePublishedPackages, writeGitHubOutput } = require('./release-utils')
 
 const GIT_TIMEOUT_MS = 60_000
+const RELEASE_CREATE_MAX_ATTEMPTS = 3
+const RELEASE_CREATE_RETRY_DELAY_MS = 5_000
+
+function getPositiveIntegerEnv(name, fallback) {
+  const value = process.env[name]
+  if (value == null || value === '') return fallback
+
+  const parsed = Number(value)
+  if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+    throw new Error(`${name} must be a positive integer`)
+  }
+
+  return parsed
+}
+
+function sleepSync(milliseconds) {
+  if (milliseconds <= 0) return
+
+  const sharedState = new Int32Array(new SharedArrayBuffer(4))
+  Atomics.wait(sharedState, 0, 0, milliseconds)
+}
 
 const publishedPackages = parsePublishedPackages(process.argv[2] || process.env.PUBLISHED_PACKAGES)
 
@@ -41,7 +62,13 @@ const target = git(['rev-parse', 'HEAD'])
 
 function resolveLocalTag(tagName) {
   try {
-    return git(['rev-parse', `${tagName}^{}`])
+    // A missing local product tag is expected before the first release.
+    // Suppress git's diagnostic so it is not mistaken for the release failure.
+    return execFileSync('git', ['rev-parse', `${tagName}^{}`], {
+      encoding: 'utf8',
+      timeout: GIT_TIMEOUT_MS,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim()
   } catch {
     return null
   }
@@ -245,18 +272,93 @@ if (editorPkg.version.includes('-')) {
   releaseArgs.push('--prerelease')
 }
 
-if (releaseExists(tag)) {
-  execFileSync('gh', ['release', 'edit', tag, ...releaseArgs], { stdio: 'inherit' })
+const releaseCreateMaxAttempts = getPositiveIntegerEnv(
+  'RELEASE_CREATE_MAX_ATTEMPTS',
+  RELEASE_CREATE_MAX_ATTEMPTS
+)
+const releaseCreateRetryDelayMs = getPositiveIntegerEnv(
+  'RELEASE_CREATE_RETRY_DELAY_MS',
+  RELEASE_CREATE_RETRY_DELAY_MS
+)
+
+function isTransientGitHubError(error) {
+  const message = `${error.stdout || ''}\n${error.stderr || ''}`
+
+  return (
+    /\bHTTP (?:408|425|429|500|502|503|504)\b/i.test(message) ||
+    /timed out|timeout|connection reset|connection refused|temporarily unavailable|network/i.test(
+      message
+    )
+  )
+}
+
+function runGh(args) {
+  try {
+    return execFileSync('gh', args, {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+  } catch (error) {
+    if (error.stdout) process.stdout.write(error.stdout)
+    if (error.stderr) process.stderr.write(error.stderr)
+    throw error
+  }
+}
+
+function editRelease() {
+  runGh(['release', 'edit', tag, ...releaseArgs])
   console.log(`\nProduct GitHub release updated: ${tag}`)
-} else {
+}
+
+function createRelease() {
   const createArgs = ['release', 'create', tag]
   if (!existingTagTarget) {
     createArgs.push('--target', target)
   }
   createArgs.push(...releaseArgs)
 
-  execFileSync('gh', createArgs, { stdio: 'inherit' })
+  runGh(createArgs)
   console.log(`\nProduct GitHub release created: ${tag}`)
+}
+
+if (releaseExists(tag)) {
+  editRelease()
+} else {
+  let completed = false
+
+  for (let attempt = 1; attempt <= releaseCreateMaxAttempts; attempt += 1) {
+    try {
+      createRelease()
+      completed = true
+      break
+    } catch (error) {
+      if (!isTransientGitHubError(error) || attempt === releaseCreateMaxAttempts) {
+        throw error
+      }
+
+      console.warn(
+        `GitHub Release ${tag} creation failed with a transient error; ` +
+          `retrying (${attempt}/${releaseCreateMaxAttempts})`
+      )
+      sleepSync(releaseCreateRetryDelayMs)
+
+      // The request may have succeeded on GitHub even when the client saw a
+      // transient 5xx. Edit the existing release instead of creating a duplicate.
+      try {
+        if (releaseExists(tag)) {
+          editRelease()
+          completed = true
+          break
+        }
+      } catch (probeError) {
+        if (!isTransientGitHubError(probeError)) throw probeError
+      }
+    }
+  }
+
+  if (!completed) {
+    throw new Error(`GitHub Release ${tag} was not created`)
+  }
 }
 
 writeGitHubOutput({ editor_published: 'true', tag, version: editorPkg.version })

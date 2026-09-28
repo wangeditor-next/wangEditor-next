@@ -1,5 +1,22 @@
 # Change Log
 
+## 6.4.3
+
+### Patch Changes
+
+- 0835b1a: Replace the remaining package Rollup builds with tsdown/Rolldown while preserving ESM, UMD, CSS, multi-entry, and declaration entrypoints.
+- Updated dependencies [0835b1a]
+  - @wangeditor-next/core@6.4.3
+
+## 6.4.2
+
+### Patch Changes
+
+- 838813c: Render and export linked images as semantic anchors while preserving image-node round trips, including images inside table cells.
+- 12f4986: Add a unified `imageResize` configuration for image resize units and validation across editor resize actions.
+- Updated dependencies [12f4986]
+  - @wangeditor-next/core@6.4.2
+
 ## 6.4.1
 
 ### Patch Changes

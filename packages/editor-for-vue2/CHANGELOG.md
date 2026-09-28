@@ -1,5 +1,21 @@
 # @wangeditor-next/editor-for-vue2
 
+## 6.4.3
+
+### Patch Changes
+
+- Updated dependencies [a60cb9f]
+- Updated dependencies [89843da]
+- Updated dependencies [0835b1a]
+  - @wangeditor-next/editor@6.4.3
+
+## 6.4.2
+
+### Patch Changes
+
+- Updated dependencies [12f4986]
+  - @wangeditor-next/editor@6.4.2
+
 ## 6.4.1
 
 ### Patch Changes

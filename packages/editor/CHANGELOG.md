@@ -1,5 +1,36 @@
 # Change Log
 
+## 6.4.3
+
+### Patch Changes
+
+- a60cb9f: Give development and watch builds the heap needed by the editor's multi-entry tsdown configuration.
+- 89843da: Give tsdown size-stat builds the same heap limit as production builds so the multi-entry report completes reliably.
+- 0835b1a: Replace the remaining package Rollup builds with tsdown/Rolldown while preserving ESM, UMD, CSS, multi-entry, and declaration entrypoints.
+- Updated dependencies [0835b1a]
+  - @wangeditor-next/basic-modules@6.4.3
+  - @wangeditor-next/code-highlight@6.4.3
+  - @wangeditor-next/core@6.4.3
+  - @wangeditor-next/list-module@6.4.3
+  - @wangeditor-next/table-module@6.4.3
+  - @wangeditor-next/upload-image-module@6.4.3
+  - @wangeditor-next/video-module@6.4.3
+
+## 6.4.2
+
+### Patch Changes
+
+- 12f4986: Add a unified `imageResize` configuration for image resize units and validation across editor resize actions.
+- Updated dependencies [838813c]
+- Updated dependencies [12f4986]
+  - @wangeditor-next/basic-modules@6.4.2
+  - @wangeditor-next/core@6.4.2
+  - @wangeditor-next/code-highlight@6.4.2
+  - @wangeditor-next/list-module@6.4.2
+  - @wangeditor-next/table-module@6.4.2
+  - @wangeditor-next/upload-image-module@6.4.2
+  - @wangeditor-next/video-module@6.4.2
+
 ## 6.4.1
 
 ### Patch Changes
