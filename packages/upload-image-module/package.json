@@ -44,8 +44,8 @@
     "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
   },
   "peerDependencies": {
-    "@uppy/core": "^6.0.0",
-    "@uppy/xhr-upload": "^6.0.0",
+    "@uppy/core": "^2.0.3 || ^5.0.0",
+    "@uppy/xhr-upload": "^2.0.3 || ^5.0.0",
     "@wangeditor-next/basic-modules": "workspace:^",
     "@wangeditor-next/core": "workspace:^",
     "dom7": "^3.0.0 || ^4.0.0",

@@ -533,20 +533,20 @@ importers:
         specifier: ^0.1.2
         version: 0.1.10
       '@uppy/core':
-        specifier: ^6.0.1
-        version: 6.0.2
+        specifier: ^5.0.0
+        version: 5.2.0
       '@uppy/xhr-upload':
-        specifier: ^6.0.0
-        version: 6.0.0(@uppy/core@6.0.2)
+        specifier: ^5.0.0
+        version: 5.2.0(@uppy/core@5.2.0)
 
   packages/editor:
     dependencies:
       '@uppy/core':
-        specifier: ^6.0.1
-        version: 6.0.2
+        specifier: ^5.0.0
+        version: 5.2.0
       '@uppy/xhr-upload':
-        specifier: ^6.0.0
-        version: 6.0.0(@uppy/core@6.0.2)
+        specifier: ^5.0.0
+        version: 5.2.0(@uppy/core@5.2.0)
       '@wangeditor-next/basic-modules':
         specifier: workspace:^
         version: link:../basic-modules
@@ -808,11 +808,11 @@ importers:
   packages/upload-image-module:
     dependencies:
       '@uppy/core':
-        specifier: ^6.0.0
-        version: 6.0.2
+        specifier: ^2.0.3 || ^5.0.0
+        version: 5.2.0
       '@uppy/xhr-upload':
-        specifier: ^6.0.0
-        version: 6.0.0(@uppy/core@6.0.2)
+        specifier: ^2.0.3 || ^5.0.0
+        version: 5.2.0(@uppy/core@5.2.0)
       '@wangeditor-next/basic-modules':
         specifier: workspace:^
         version: link:../basic-modules
@@ -835,11 +835,11 @@ importers:
   packages/video-module:
     dependencies:
       '@uppy/core':
-        specifier: ^6.0.0
-        version: 6.0.2
+        specifier: ^2.1.4 || ^5.0.0
+        version: 5.2.0
       '@uppy/xhr-upload':
-        specifier: ^6.0.0
-        version: 6.0.0(@uppy/core@6.0.2)
+        specifier: ^2.0.7 || ^5.0.0
+        version: 5.2.0(@uppy/core@5.2.0)
       '@wangeditor-next/core':
         specifier: workspace:^
         version: link:../core
@@ -2539,9 +2539,8 @@ packages:
     resolution: {integrity: sha512-HqmEUIGRJ5fSXchkVgR5F7qn48bDBzv0kWj/Kfu5e6uci4UlEeng4331LnBkWffb++Ei3FOVLxo8JJWMFBDMeQ==}
     engines: {node: '>= 10'}
 
-  '@transloadit/prettier-bytes@2.0.0':
-    resolution: {integrity: sha512-GYzxSL3y9XlhwamBLkHT1y2jFrRsHkZZ1jNctn8NeMNyTtIbMK1Qf0f1koHkDdW+MwOUowCmpm8zP6ZpQ36G5w==}
-    engines: {node: '>=22'}
+  '@transloadit/prettier-bytes@0.3.5':
+    resolution: {integrity: sha512-xF4A3d/ZyX2LJWeQZREZQw+qFX4TGQ8bGVP97OLRt6sPO6T0TNHBFTuRHOJh7RNmYOBmQ9MHxpolD9bXihpuVA==}
 
   '@turbo/darwin-64@2.11.3':
     resolution: {integrity: sha512-D4EIKTgPpxFQL5aZNbNqy57XOiRldM+mwP1ME9ZLM4DJoV3oNK7GKyQWVusz1umjiFNmLvunNGw7Jq4RUyYL3A==}
@@ -2786,13 +2785,24 @@ packages:
     peerDependencies:
       vite: 7.3.6
 
-  '@uppy/core@6.0.2':
-    resolution: {integrity: sha512-SIhNEwjm4owIihc394TudwrSBTfoo6x2QpJv56Pk9zlvPvBdEXnycLvxqFQP3rYjuY4pJxneU71Zs0N36xTwYw==}
-
-  '@uppy/xhr-upload@6.0.0':
-    resolution: {integrity: sha512-r1EV5LUoMCQjeQVkc+qupCXA5wn8vRV7m3iB5K7z/4nkSj7lEt4Hk0fkudeQ/h4sF9wi3SqAM1x2Syhbt6Ar8A==}
+  '@uppy/companion-client@5.1.1':
+    resolution: {integrity: sha512-DzrOWTbIZHvtgAFXBMYHk2wD27NjpBSVhY2tEiEIUhPd2CxbFRZjHM/N3HOt3VwZEAP471QWFLlJRWPcIY3A2Q==}
     peerDependencies:
-      '@uppy/core': ^6.0.0
+      '@uppy/core': ^5.1.1
+
+  '@uppy/core@5.2.0':
+    resolution: {integrity: sha512-uvfNyz4cnaplt7LYJmEZHuqOuav0tKp4a9WKJIaH6iIj7XiqYvS2J5SEByexAlUFlzefOAyjzj4Ja2dd/8aMrw==}
+
+  '@uppy/store-default@5.0.0':
+    resolution: {integrity: sha512-hQtCSQ1yGiaval/wVYUWquYGDJ+bpQ7e4FhUUAsRQz1x1K+o7NBtjfp63O9I4Ks1WRoKunpkarZ+as09l02cPw==}
+
+  '@uppy/utils@7.2.0':
+    resolution: {integrity: sha512-6lC246qszMv6bTyl/+QyHwrudgeguWkA94ME1wHn+a6uRAvmtAEaUManIfGqTJfoKvWAiCJqdJPl5xRJjhAloQ==}
+
+  '@uppy/xhr-upload@5.2.0':
+    resolution: {integrity: sha512-3LV/X5Of6BINnKplP+CwUJ0a4/7cRFfzxwGyXnW+uCrNQHoo09dttcz3begWHejGvzenQHuUnMO3Fxyc71Pryg==}
+    peerDependencies:
+      '@uppy/core': ^5.2.0
 
   '@vitejs/plugin-react@5.2.0':
     resolution: {integrity: sha512-YmKkfhOAi3wsB1PhJq5Scj3GXMn3WvtQ/JC0xoopuHoXSdmtdStOpFrYaT1kie2YgFBcIe64ROzMYRjCrYOdYw==}
@@ -3256,9 +3266,6 @@ packages:
   ci-info@3.9.0:
     resolution: {integrity: sha512-NIxF55hv4nSqQswkAeiOi1r83xy8JldOFDTWiug55KBu9Jnblncd2U6ViHmYgHf01TPZS77NJBhBMKdWj9HQMQ==}
     engines: {node: '>=8'}
-
-  classnames@2.5.1:
-    resolution: {integrity: sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==}
 
   cli-cursor@3.1.0:
     resolution: {integrity: sha512-I/zHAwsKf9FqGoXM4WWRACob9+SNukZTd94DWF57E4toouRulbCxcUh6RKUEOQlYTHJnzkPMySvPNaaSLNfLZw==}
@@ -5060,11 +5067,6 @@ packages:
     engines: {node: ^18 || >=20}
     hasBin: true
 
-  nanoid@6.0.1:
-    resolution: {integrity: sha512-3wVS3i51pE2pi1k5FFL/95BGfVS0kSsvDVuGXHOtxox/TywUmtgq+3qiTOTbs9J7KfHaXPiN171k/A6dBnaXFw==}
-    engines: {node: ^22 || ^24 || >=26}
-    hasBin: true
-
   napi-macros@2.0.0:
     resolution: {integrity: sha512-A0xLykHtARfueITVDernsAWdtIMbOJgKgcluwENp3AlsKN/PloyO10HtmoqnFAQAcxPkgZN7wdfPfEd0zNGxbg==}
 
@@ -5254,10 +5256,6 @@ packages:
     resolution: {integrity: sha512-RwFpb72c/BhQLEXIZ5K2e+AhgNVmIejGlTgiB9MzZ0e93GRvqZ7uSi0dvRF7/XIXDeNkra2fNHBxTyPDGySpjQ==}
     engines: {node: '>=8'}
 
-  p-queue@9.3.3:
-    resolution: {integrity: sha512-NXAOdnEe5FsZJfT4oK84lE1Y5cFFdWlRuOo5tww8DyNMxyRXwn39fIkUtNLKppcPC+UYU/bXujNCUGDv01y7CA==}
-    engines: {node: '>=20'}
-
   p-retry@6.2.1:
     resolution: {integrity: sha512-hEt02O4hUct5wtwg4H4KcWgDdm+l1bOaEy/hWzd8xtXB9BqxTWBBhb+2ImAtH4Cv4rPjV76xN3Zumqk3k3AhhQ==}
     engines: {node: '>=16.17'}
@@ -5265,10 +5263,6 @@ packages:
   p-timeout@3.2.0:
     resolution: {integrity: sha512-rhIwUycgwwKcP9yTOOFK/AKsAopjjCakVqLHePO3CC6Mir1Z99xT+R63jZxAT5lFZLa2inS5h+ZS2GvR99/FBg==}
     engines: {node: '>=8'}
-
-  p-timeout@7.0.2:
-    resolution: {integrity: sha512-prbX4Z3YszrFNgH+MW5Zoeq3baXrMtP/MQnFeET90UB/GtGcGDQ5Usg9OCy6ETjTTntOw1SL2z9fMPUppN3Guw==}
-    engines: {node: '>=20'}
 
   p-try@2.2.0:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}
@@ -8659,7 +8653,7 @@ snapshots:
 
   '@tootallnate/once@2.0.1': {}
 
-  '@transloadit/prettier-bytes@2.0.0': {}
+  '@transloadit/prettier-bytes@0.3.5': {}
 
   '@turbo/darwin-64@2.11.3':
     optional: true
@@ -9003,21 +8997,36 @@ snapshots:
       - ocache
       - srvx
 
-  '@uppy/core@6.0.2':
+  '@uppy/companion-client@5.1.1(@uppy/core@5.2.0)':
     dependencies:
-      '@transloadit/prettier-bytes': 2.0.0
-      classnames: 2.5.1
+      '@uppy/core': 5.2.0
+      '@uppy/utils': 7.2.0
+      namespace-emitter: 2.0.1
+      p-retry: 6.2.1
+
+  '@uppy/core@5.2.0':
+    dependencies:
+      '@transloadit/prettier-bytes': 0.3.5
+      '@uppy/store-default': 5.0.0
+      '@uppy/utils': 7.2.0
       lodash: 4.18.1
       mime-match: 1.0.2
       namespace-emitter: 2.0.1
-      nanoid: 6.0.1
-      p-queue: 9.3.3
-      p-retry: 6.2.1
+      nanoid: 5.1.16
       preact: 10.27.3
 
-  '@uppy/xhr-upload@6.0.0(@uppy/core@6.0.2)':
+  '@uppy/store-default@5.0.0': {}
+
+  '@uppy/utils@7.2.0':
     dependencies:
-      '@uppy/core': 6.0.2
+      lodash: 4.18.1
+      preact: 10.27.3
+
+  '@uppy/xhr-upload@5.2.0(@uppy/core@5.2.0)':
+    dependencies:
+      '@uppy/companion-client': 5.1.1(@uppy/core@5.2.0)
+      '@uppy/core': 5.2.0
+      '@uppy/utils': 7.2.0
 
   '@vitejs/plugin-react@5.2.0(vite@7.3.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.9.1)(terser@5.44.1)(yaml@2.8.3))':
     dependencies:
@@ -9609,8 +9618,6 @@ snapshots:
       readdirp: 5.1.1
 
   ci-info@3.9.0: {}
-
-  classnames@2.5.1: {}
 
   cli-cursor@3.1.0:
     dependencies:
@@ -11589,8 +11596,6 @@ snapshots:
 
   nanoid@5.1.16: {}
 
-  nanoid@6.0.1: {}
-
   napi-macros@2.0.0:
     optional: true
 
@@ -11825,11 +11830,6 @@ snapshots:
       eventemitter3: 4.0.7
       p-timeout: 3.2.0
 
-  p-queue@9.3.3:
-    dependencies:
-      eventemitter3: 5.0.4
-      p-timeout: 7.0.2
-
   p-retry@6.2.1:
     dependencies:
       '@types/retry': 0.12.2
@@ -11839,8 +11839,6 @@ snapshots:
   p-timeout@3.2.0:
     dependencies:
       p-finally: 1.0.0
-
-  p-timeout@7.0.2: {}
 
   p-try@2.2.0: {}
 
