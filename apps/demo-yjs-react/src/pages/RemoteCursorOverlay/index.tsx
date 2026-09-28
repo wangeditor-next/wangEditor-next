@@ -27,7 +27,6 @@ Boot.registerPlugin(withYHistory())
 export const RemoteCursorsOverlayPage = () => {
   // editor 实例
   const [editor, setEditor] = useState<IDomEditor | null>(null)
-  const [html, setHtml] = useState('<p><br></p>')
 
   // 工具栏配置
   const toolbarConfig: Partial<IToolbarConfig> = {}
@@ -35,6 +34,7 @@ export const RemoteCursorsOverlayPage = () => {
   // 编辑器配置
   const editorConfig: Partial<IEditorConfig> = {
     placeholder: '请输入内容...',
+    readOnly: true,
   }
 
   useEffect(() => {
@@ -42,10 +42,18 @@ export const RemoteCursorsOverlayPage = () => {
       return
     }
 
+    const connectWhenSynced = (synced: boolean) => {
+      if (!synced || YjsEditor.connected(editor)) {return}
+      YjsEditor.connect(editor)
+      editor.enable()
+    }
+
+    wsProvider.on('sync', connectWhenSynced)
+    if (wsProvider.synced) {connectWhenSynced(true)}
     wsProvider.connect()
-    YjsEditor.connect(editor)
 
     return () => {
+      wsProvider.off('sync', connectWhenSynced)
       if (YjsEditor.connected(editor)) {
         YjsEditor.disconnect(editor)
       }
@@ -77,9 +85,8 @@ export const RemoteCursorsOverlayPage = () => {
         <RemoteCursorOverlay>
           <Editor
             defaultConfig={editorConfig}
-            value={html}
+            defaultHtml="<p><br></p>"
             onCreated={setEditor}
-            onChange={innerEditor => setHtml(innerEditor.getHtml())}
             mode="default"
             style={{ height: '500px', width: '100%', overflowY: 'hidden' }}
           />

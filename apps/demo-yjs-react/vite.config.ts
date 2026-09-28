@@ -8,10 +8,10 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: env.VITE_YJS_DEMO_BASE_PATH || '/',
-    plugins: [react({ fastRefresh: false }), UnoCSS()],
+    plugins: [react(), UnoCSS()],
     server: { open: false },
     resolve: {
-      dedupe: ['slate', 'yjs', 'y-protocols'],
+      dedupe: ['react', 'react-dom', 'slate', 'yjs', 'y-protocols'],
     },
   }
 })

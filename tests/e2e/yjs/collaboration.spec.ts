@@ -38,7 +38,12 @@ async function openPair(browser: Browser, urls: string[], room: string): Promise
 
   const editors = pages.map(page => page.locator('[contenteditable="true"]').first())
 
-  await Promise.all(editors.map(editor => editor.waitFor({ state: 'visible' })))
+  try {
+    await Promise.all(editors.map(editor => editor.waitFor({ state: 'visible', timeout: 10_000 })))
+  } catch (error) {
+    await Promise.all(contexts.map(context => context.close()))
+    throw new Error(`${String(error)}\nBrowser errors: ${errors.join('\n')}`)
+  }
 
   return { contexts, editors, errors, pages }
 }
