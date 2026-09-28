@@ -1,54 +1,64 @@
-<template>
-  <div ref="box" style="height: 100%" />
-</template>
-
 <script lang="ts">
 import { createEditor, IDomEditor, IEditorConfig, SlateDescendant } from '@wangeditor-next/editor'
-import { defineComponent, onMounted, PropType, ref, shallowRef, toRaw, watch } from 'vue'
+import type {
+  ComponentOptionsMixin,
+  ComputedOptions,
+  DefineComponent,
+  MethodOptions,
+  Ref,
+} from 'vue'
+import { defineComponent, h, onMounted, PropType, ref, shallowRef, toRaw, watch } from 'vue'
 
 import { genErrorInfo } from '../utils/create-info'
 
 type AlertType = 'success' | 'info' | 'warning' | 'error'
 
-export default defineComponent({
-  props: {
-    /** 编辑器模式 */
-    mode: {
-      type: String,
-      default: 'default',
-    },
-    /** 编辑器默认内容 */
-    defaultContent: {
-      type: Array as PropType<SlateDescendant[]>,
-      default: () => [],
-    },
-    defaultHtml: {
-      type: String,
-      default: '',
-    },
-    /** 编辑器默认配置 */
-    defaultConfig: {
-      type: Object as PropType<Partial<IEditorConfig>>,
-      default: () => ({}),
-    },
-    /* 自定义 v-model */
-    modelValue: {
-      type: String,
-      default: '',
-    },
+const componentProps = {
+  /** 编辑器模式 */
+  mode: {
+    type: String,
+    default: 'default',
   },
+  /** 编辑器默认内容 */
+  defaultContent: {
+    type: Array as PropType<SlateDescendant[]>,
+    default: () => [],
+  },
+  defaultHtml: {
+    type: String,
+    default: '',
+  },
+  /** 编辑器默认配置 */
+  defaultConfig: {
+    type: Object as PropType<Partial<IEditorConfig>>,
+    default: () => ({}),
+  },
+  /* 自定义 v-model */
+  modelValue: {
+    type: String,
+    default: '',
+  },
+}
 
-  emits: {
-    'update:modelValue': (_val: string) => true,
-    onCreated: (_editor: IDomEditor) => true,
-    onChange: (_editor: IDomEditor) => true,
-    onDestroyed: (_editor: IDomEditor) => true,
-    onMaxLength: (_editor: IDomEditor) => true,
-    onFocus: (_editor: IDomEditor) => true,
-    onBlur: (_editor: IDomEditor) => true,
-    customAlert: (_info: string, _type: AlertType) => true,
-    customPaste: (_editor: IDomEditor, _event: ClipboardEvent, _cb: (v: boolean) => void) => true,
+const emits = {
+  'update:modelValue': (_val: string) => true,
+  onCreated: (_editor: IDomEditor) => true,
+  onChange: (_editor: IDomEditor) => true,
+  onDestroyed: (_editor: IDomEditor) => true,
+  onMaxLength: (_editor: IDomEditor) => true,
+  onFocus: (_editor: IDomEditor) => true,
+  onBlur: (_editor: IDomEditor) => true,
+  customAlert: (_info: string, _type: AlertType) => true,
+  customPaste: (_editor: IDomEditor, _event: ClipboardEvent, _cb: (v: boolean) => void) => true,
+}
+
+export default defineComponent({
+  // Keep the published runtime compatible with Vue 3.0 (including its render helpers).
+  render() {
+    return h('div', { ref: 'box', style: { height: '100%' } })
   },
+  props: componentProps,
+  emits,
   setup(props, context) {
     const box = ref(null) // 编辑器容器
 
@@ -192,5 +202,14 @@ export default defineComponent({
       box,
     }
   },
-})
+}) as DefineComponent<
+  typeof componentProps,
+  { box: Ref<HTMLElement | null> },
+  {},
+  ComputedOptions,
+  MethodOptions,
+  ComponentOptionsMixin,
+  ComponentOptionsMixin,
+  typeof emits
+>
 </script>
