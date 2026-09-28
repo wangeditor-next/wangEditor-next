@@ -3,6 +3,6 @@
  * @author wangfupeng
  */
 
-import DOMElement = globalThis.Element
+type DOMElement = globalThis.Element
 
 export { DOMElement }

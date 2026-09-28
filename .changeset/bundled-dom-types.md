@@ -4,4 +4,4 @@
 '@wangeditor-next/editor-for-react': patch
 ---
 
-Keep Babel runtime transforms away from declaration files so bundled DOM aliases and React component signatures remain intact. Validate published declarations for unresolved names during builds.
+Preserve DOM aliases with explicit type/value declarations and keep Babel runtime transforms away from declaration files so React component signatures remain intact. Validate published declarations for unresolved names during builds.
