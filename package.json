@@ -52,7 +52,8 @@
     "check:release-group": "node scripts/check-release-package-group.js",
     "check:umd-globals": "cross-env NODE_ENV=production node scripts/check-umd-globals.mjs",
     "check:published-types": "node scripts/check-published-types.js",
-    "check:published-entrypoints": "node scripts/check-published-entrypoints.js && tsc --noEmit -p tests/fixtures/published-package-consumer/tsconfig.json"
+    "check:published-entrypoints": "node scripts/check-published-entrypoints.js && tsc --noEmit -p tests/fixtures/published-package-consumer/tsconfig.json",
+    "test:peer-compat": "vitest run --config vitest.peer-compat.config.mts --maxWorkers=2 && node scripts/check-vue-peer-types.js && playwright test --config playwright.peer-compat.config.ts"
   },
   "workspaces": [
     "apps/*",
@@ -139,7 +140,15 @@
     "turbo": "2.11.3",
     "typescript": "5.9.3",
     "vitest": "^4.1.11",
-    "vue-eslint-parser": "^10.4.1"
+    "vue-eslint-parser": "^10.4.1",
+    "slate-legacy": "npm:slate@0.124.0",
+    "yjs-legacy": "npm:yjs@13.5.29",
+    "snabbdom-legacy": "npm:snabbdom@3.6.0",
+    "vue-legacy": "npm:vue@3.0.5",
+    "react-legacy": "npm:react@17.0.2",
+    "react-dom-legacy": "npm:react-dom@17.0.2",
+    "uppy-core-legacy": "npm:@uppy/core@2.1.1",
+    "uppy-xhr-legacy": "npm:@uppy/xhr-upload@2.0.3"
   },
   "commitlint": {
     "extends": [

@@ -79,6 +79,12 @@ jobs:
       - name: Check editor package size budget
         run: pnpm run check:editor:pack-size
 
+      - name: Verify legacy and current consumer peers
+        if: matrix.node-version == '22.13.0'
+        run: |
+          pnpm exec playwright install --with-deps chromium
+          pnpm test:peer-compat
+
       # 在 master 上顺带产出覆盖率，避免额外 workflow 重复跑一轮
       - name: Unit test with coverage
         if: matrix.node-version == '22.13.0' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_name == 'master'))

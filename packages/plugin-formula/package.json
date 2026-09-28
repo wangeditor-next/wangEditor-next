@@ -45,7 +45,7 @@
   "peerDependencies": {
     "@wangeditor-next/editor": "workspace:^",
     "katex": "^0.16.0",
-    "snabbdom": "^3.6.4"
+    "snabbdom": "^3.6.0"
   },
   "dependencies": {
     "dom7": "^4.0.0",

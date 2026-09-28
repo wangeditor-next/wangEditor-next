@@ -164,12 +164,24 @@ importers:
       prettier:
         specifier: ^3.9.9
         version: 3.9.9
+      react-dom-legacy:
+        specifier: npm:react-dom@17.0.2
+        version: react-dom@17.0.2(react@19.3.0)
+      react-legacy:
+        specifier: npm:react@17.0.2
+        version: react@17.0.2
       rollup-plugin-postcss:
         specifier: ^4.0.0
         version: 4.0.2(postcss@8.5.28)
       rollup-plugin-visualizer:
         specifier: ^6.0.5
         version: 6.0.11(rolldown@1.0.0-beta.59(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(rollup@4.62.4)
+      slate-legacy:
+        specifier: npm:slate@0.124.0
+        version: slate@0.124.0
+      snabbdom-legacy:
+        specifier: npm:snabbdom@3.6.0
+        version: snabbdom@3.6.0
       tsdown:
         specifier: 0.19.0
         version: 0.19.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(synckit@0.11.13)(typescript@5.9.3)
@@ -182,12 +194,24 @@ importers:
       typescript:
         specifier: 5.9.3
         version: 5.9.3
+      uppy-core-legacy:
+        specifier: npm:@uppy/core@2.1.1
+        version: '@uppy/core@2.1.1'
+      uppy-xhr-legacy:
+        specifier: npm:@uppy/xhr-upload@2.0.3
+        version: '@uppy/xhr-upload@2.0.3(@uppy/core@5.2.0)'
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@types/node@24.10.1)(@vitest/coverage-v8@4.1.11)(jsdom@20.0.3)(vite@7.3.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.9.1)(terser@5.44.1)(yaml@2.8.3))
       vue-eslint-parser:
         specifier: ^10.4.1
         version: 10.4.1(eslint@9.39.4(jiti@2.6.1))
+      vue-legacy:
+        specifier: npm:vue@3.0.5
+        version: vue@3.0.5
+      yjs-legacy:
+        specifier: npm:yjs@13.5.29
+        version: yjs@13.5.29
 
   apps/demo-html:
     dependencies:
@@ -440,13 +464,13 @@ importers:
         specifier: ^4.1.1
         version: 4.1.1
       nanoid:
-        specifier: ^5.1.16
+        specifier: ^5.0.0
         version: 5.1.16
       slate:
-        specifier: ^0.126.2
+        specifier: ^0.124.0 || ^0.126.2
         version: 0.126.2
       snabbdom:
-        specifier: ^3.6.4
+        specifier: ^3.6.0
         version: 3.6.4
     devDependencies:
       '@types/is-url':
@@ -465,10 +489,10 @@ importers:
         specifier: ^1.23.0
         version: 1.30.0
       slate:
-        specifier: ^0.126.2
+        specifier: ^0.124.0 || ^0.126.2
         version: 0.126.2
       snabbdom:
-        specifier: ^3.6.4
+        specifier: ^3.6.0
         version: 3.6.4
     devDependencies:
       '@types/prismjs':
@@ -514,19 +538,19 @@ importers:
         specifier: ^4.4.0
         version: 4.4.0
       nanoid:
-        specifier: ^5.1.16
+        specifier: ^5.0.0
         version: 5.1.16
       scroll-into-view-if-needed:
         specifier: ^3.0.0
         version: 3.1.0
       slate:
-        specifier: ^0.126.2
+        specifier: ^0.124.0 || ^0.126.2
         version: 0.126.2
       slate-history:
         specifier: ^0.115.0
         version: 0.115.0(slate@0.126.2)
       snabbdom:
-        specifier: ^3.6.4
+        specifier: ^3.6.0
         version: 3.6.4
     devDependencies:
       '@types/is-hotkey':
@@ -684,10 +708,10 @@ importers:
         specifier: ^3.0.0 || ^4.0.0
         version: 4.0.6
       slate:
-        specifier: ^0.126.2
+        specifier: ^0.124.0 || ^0.126.2
         version: 0.126.2
       snabbdom:
-        specifier: ^3.6.4
+        specifier: ^3.6.0
         version: 3.6.4
 
   packages/plugin-attachment:
@@ -699,7 +723,7 @@ importers:
         specifier: ^3.0.0 || ^4.0.0
         version: 4.0.6
       snabbdom:
-        specifier: ^3.6.4
+        specifier: ^3.6.0
         version: 3.6.4
 
   packages/plugin-ctrl-enter:
@@ -717,10 +741,10 @@ importers:
         specifier: ^3.0.0 || ^4.0.0
         version: 4.0.6
       slate:
-        specifier: ^0.126.2
+        specifier: ^0.124.0 || ^0.126.2
         version: 0.126.2
       snabbdom:
-        specifier: ^3.6.4
+        specifier: ^3.6.0
         version: 3.6.4
 
   packages/plugin-formula:
@@ -735,7 +759,7 @@ importers:
         specifier: ^5.1.16
         version: 5.1.16
       snabbdom:
-        specifier: ^3.6.4
+        specifier: ^3.6.0
         version: 3.6.4
     devDependencies:
       katex:
@@ -751,10 +775,10 @@ importers:
         specifier: ^3.0.0 || ^4.0.0
         version: 4.0.6
       slate:
-        specifier: ^0.126.2
+        specifier: ^0.124.0 || ^0.126.2
         version: 0.126.2
       snabbdom:
-        specifier: ^3.6.4
+        specifier: ^3.6.0
         version: 3.6.4
 
   packages/plugin-markdown:
@@ -766,10 +790,10 @@ importers:
         specifier: ^3.0.0 || ^4.0.0
         version: 4.0.6
       slate:
-        specifier: ^0.126.2
+        specifier: ^0.124.0 || ^0.126.2
         version: 0.126.2
       snabbdom:
-        specifier: ^3.6.4
+        specifier: ^3.6.0
         version: 3.6.4
 
   packages/plugin-mention:
@@ -778,7 +802,7 @@ importers:
         specifier: workspace:^
         version: link:../editor
       snabbdom:
-        specifier: ^3.6.4
+        specifier: ^3.6.0
         version: 3.6.4
 
   packages/table-module:
@@ -796,13 +820,13 @@ importers:
         specifier: ^4.1.1
         version: 4.1.1
       nanoid:
-        specifier: ^5.1.16
+        specifier: ^5.0.0
         version: 5.1.16
       slate:
-        specifier: ^0.126.2
+        specifier: ^0.124.0 || ^0.126.2
         version: 0.126.2
       snabbdom:
-        specifier: ^3.6.4
+        specifier: ^3.6.0
         version: 3.6.4
 
   packages/upload-image-module:
@@ -826,10 +850,10 @@ importers:
         specifier: ^4.5.0
         version: 4.5.0
       slate:
-        specifier: ^0.126.2
+        specifier: ^0.124.0 || ^0.126.2
         version: 0.126.2
       snabbdom:
-        specifier: ^3.6.4
+        specifier: ^3.6.0
         version: 3.6.4
 
   packages/video-module:
@@ -847,13 +871,13 @@ importers:
         specifier: ^3.0.0 || ^4.0.0
         version: 4.0.6
       nanoid:
-        specifier: ^5.1.16
+        specifier: ^5.0.0
         version: 5.1.16
       slate:
-        specifier: ^0.126.2
+        specifier: ^0.124.0 || ^0.126.2
         version: 0.126.2
       snabbdom:
-        specifier: ^3.6.4
+        specifier: ^3.6.0
         version: 3.6.4
 
   packages/yjs:
@@ -887,7 +911,7 @@ importers:
         specifier: '>=17.0.2'
         version: 17.0.2
       slate:
-        specifier: ^0.126.2
+        specifier: ^0.124.0 || ^0.126.2
         version: 0.126.2
       use-sync-external-store:
         specifier: ^1.2.0
@@ -896,7 +920,7 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(yjs@13.6.33)
       yjs:
-        specifier: ^13.6.33
+        specifier: ^13.5.29
         version: 13.6.33
     devDependencies:
       '@types/use-sync-external-store':
@@ -912,7 +936,7 @@ importers:
         specifier: workspace:^
         version: link:../yjs
       slate:
-        specifier: ^0.126.2
+        specifier: ^0.124.0 || ^0.126.2
         version: 0.126.2
       vue:
         specifier: '>=3.5.18'
@@ -921,7 +945,7 @@ importers:
         specifier: ^1.0.7
         version: 1.0.7(yjs@13.6.33)
       yjs:
-        specifier: ^13.6.33
+        specifier: ^13.5.29
         version: 13.6.33
 
   shared/tsdown-config: {}
@@ -2539,6 +2563,9 @@ packages:
     resolution: {integrity: sha512-HqmEUIGRJ5fSXchkVgR5F7qn48bDBzv0kWj/Kfu5e6uci4UlEeng4331LnBkWffb++Ei3FOVLxo8JJWMFBDMeQ==}
     engines: {node: '>= 10'}
 
+  '@transloadit/prettier-bytes@0.0.7':
+    resolution: {integrity: sha512-VeJbUb0wEKbcwaSlj5n+LscBl9IPgLPkHVGBkh00cztv6X4L/TJXK58LzFuBKX7/GAfiGhIwH67YTLTlzvIzBA==}
+
   '@transloadit/prettier-bytes@0.3.5':
     resolution: {integrity: sha512-xF4A3d/ZyX2LJWeQZREZQw+qFX4TGQ8bGVP97OLRt6sPO6T0TNHBFTuRHOJh7RNmYOBmQ9MHxpolD9bXihpuVA==}
 
@@ -2785,19 +2812,36 @@ packages:
     peerDependencies:
       vite: 7.3.6
 
+  '@uppy/companion-client@2.2.2':
+    resolution: {integrity: sha512-5mTp2iq97/mYSisMaBtFRry6PTgZA6SIL7LePteOV5x0/DxKfrZW3DEiQERJmYpHzy7k8johpm2gHnEKto56Og==}
+
   '@uppy/companion-client@5.1.1':
     resolution: {integrity: sha512-DzrOWTbIZHvtgAFXBMYHk2wD27NjpBSVhY2tEiEIUhPd2CxbFRZjHM/N3HOt3VwZEAP471QWFLlJRWPcIY3A2Q==}
     peerDependencies:
       '@uppy/core': ^5.1.1
 
+  '@uppy/core@2.1.1':
+    resolution: {integrity: sha512-dFlcy6+05zwsJk1KNeUKVWUyAfhOVwNpnPLaR1NX9Qsjv7KlYfUNRVW3uCCmIpd/EZsX44+haiqGrhLcYDAcxA==}
+
   '@uppy/core@5.2.0':
     resolution: {integrity: sha512-uvfNyz4cnaplt7LYJmEZHuqOuav0tKp4a9WKJIaH6iIj7XiqYvS2J5SEByexAlUFlzefOAyjzj4Ja2dd/8aMrw==}
+
+  '@uppy/store-default@2.1.1':
+    resolution: {integrity: sha512-xnpTxvot2SeAwGwbvmJ899ASk5tYXhmZzD/aCFsXePh/v8rNvR2pKlcQUH7cF/y4baUGq3FHO/daKCok/mpKqQ==}
 
   '@uppy/store-default@5.0.0':
     resolution: {integrity: sha512-hQtCSQ1yGiaval/wVYUWquYGDJ+bpQ7e4FhUUAsRQz1x1K+o7NBtjfp63O9I4Ks1WRoKunpkarZ+as09l02cPw==}
 
+  '@uppy/utils@4.1.3':
+    resolution: {integrity: sha512-nTuMvwWYobnJcytDO3t+D6IkVq/Qs4Xv3vyoEZ+Iaf8gegZP+rEyoaFT2CK5XLRMienPyqRqNbIfRuFaOWSIFw==}
+
   '@uppy/utils@7.2.0':
     resolution: {integrity: sha512-6lC246qszMv6bTyl/+QyHwrudgeguWkA94ME1wHn+a6uRAvmtAEaUManIfGqTJfoKvWAiCJqdJPl5xRJjhAloQ==}
+
+  '@uppy/xhr-upload@2.0.3':
+    resolution: {integrity: sha512-odIzJzRQSg5vFcHmcjCq+NzdAAa+7VpXGRBSebKXx53FTkGKaHhzTD9yc3Uwz25mG4sVKseTVz75+buywS/2qQ==}
+    peerDependencies:
+      '@uppy/core': ^2.0.0
 
   '@uppy/xhr-upload@5.2.0':
     resolution: {integrity: sha512-3LV/X5Of6BINnKplP+CwUJ0a4/7cRFfzxwGyXnW+uCrNQHoo09dttcz3begWHejGvzenQHuUnMO3Fxyc71Pryg==}
@@ -2871,11 +2915,17 @@ packages:
   '@volar/typescript@2.4.28':
     resolution: {integrity: sha512-Ja6yvWrbis2QtN4ClAKreeUZPVYMARDYZl9LMEv1iQ1QdepB6wn0jTRxA9MftYmYa4DQ4k/DaSZpFPUfxl8giw==}
 
+  '@vue/compiler-core@3.0.5':
+    resolution: {integrity: sha512-iFXwk2gmU/GGwN4hpBwDWWMLvpkIejf/AybcFtlQ5V1ur+5jwfBaV0Y1RXoR6ePfBPJixtKZ3PmN+M+HgMAtfQ==}
+
   '@vue/compiler-core@3.5.24':
     resolution: {integrity: sha512-eDl5H57AOpNakGNAkFDH+y7kTqrQpJkZFXhWZQGyx/5Wh7B1uQYvcWkvZi11BDhscPgj8N7XV3oRwiPnx1Vrig==}
 
   '@vue/compiler-core@3.5.43':
     resolution: {integrity: sha512-zdiLhnbe1QQqgDT8xZMpNmyqZ3qlI+/Q/FHQco57Kwl/b05HhCzN6eVGN9QU9rbga4CrS0H5SYY8VGHZCt/1Hg==}
+
+  '@vue/compiler-dom@3.0.5':
+    resolution: {integrity: sha512-HSOSe2XSPuCkp20h4+HXSiPH9qkhz6YbW9z9ZtL5vef2T2PMugH7/osIFVSrRZP/Ul5twFZ7MIRlp8tPX6e4/g==}
 
   '@vue/compiler-dom@3.5.24':
     resolution: {integrity: sha512-1QHGAvs53gXkWdd3ZMGYuvQFXHW4ksKWPG8HP8/2BscrbZ0brw183q2oNWjMrSWImYLHxHrx1ItBQr50I/q2zw==}
@@ -2901,17 +2951,26 @@ packages:
   '@vue/language-core@3.3.11':
     resolution: {integrity: sha512-QJmpliwAVpC/OxubIByPAhNzsQPRc8/gxlN2qnVzVfIMjMDz/9RnXRFoetjz5yEgXVXyp4LqhXq3V53PjmNzFw==}
 
+  '@vue/reactivity@3.0.5':
+    resolution: {integrity: sha512-3xodUE3sEIJgS7ntwUbopIpzzvi7vDAOjVamfb2l+v1FUg0jpd3gf62N2wggJw3fxBMr+QvyxpD+dBoxLsmAjw==}
+
   '@vue/reactivity@3.5.24':
     resolution: {integrity: sha512-BM8kBhtlkkbnyl4q+HiF5R5BL0ycDPfihowulm02q3WYp2vxgPcJuZO866qa/0u3idbMntKEtVNuAUp5bw4teg==}
 
   '@vue/reactivity@3.5.43':
     resolution: {integrity: sha512-G/c9GyOZNI2jVaaS6OX1EF1SSFSv7H0ERqNTl4+DTFMlZmB5eVAB53aLQNam/7NL2NPtaDD7RdVrzf8uJzMuOA==}
 
+  '@vue/runtime-core@3.0.5':
+    resolution: {integrity: sha512-Cnyi2NqREwOLcTEsIi1DQX1hHtkVj4eGm4hBG7HhokS05DqpK4/80jG6PCCnCH9rIJDB2FqtaODX397210plXg==}
+
   '@vue/runtime-core@3.5.24':
     resolution: {integrity: sha512-RYP/byyKDgNIqfX/gNb2PB55dJmM97jc9wyF3jK7QUInYKypK2exmZMNwnjueWwGceEkP6NChd3D2ZVEp9undQ==}
 
   '@vue/runtime-core@3.5.43':
     resolution: {integrity: sha512-hU6U6VnVhBGQDpvlnnDlIB8ZGJBiOcgk2lh/0InltHiz3D8oSkluvuvY+do1G2H3+udeKFsmaBlgVYP7gXQzEw==}
+
+  '@vue/runtime-dom@3.0.5':
+    resolution: {integrity: sha512-iilX1KySeIzHHtErT6Y44db1rhWK5tAI0CiJIPr+SJoZ2jbjoOSE6ff/jfIQakchbm1d6jq6VtRVnp5xYdOXKA==}
 
   '@vue/runtime-dom@3.5.24':
     resolution: {integrity: sha512-Z8ANhr/i0XIluonHVjbUkjvn+CyrxbXRIxR7wn7+X7xlcb7dJsfITZbkVOeJZdP8VZwfrWRsWdShH6pngMxRjw==}
@@ -2926,6 +2985,9 @@ packages:
 
   '@vue/server-renderer@3.5.43':
     resolution: {integrity: sha512-l2Ygjv9NehV94PSBxNWsAHC0j/eIIKbn92mBuWXAPGLnn6HfJ6MH5ubsd+Nk0YoZ5FRuxWI1P2VSoh+dbPQhCQ==}
+
+  '@vue/shared@3.0.5':
+    resolution: {integrity: sha512-gYsNoGkWejBxNO6SNRjOh/xKeZ0H0V+TFzaPzODfBjkAIb0aQgBuixC1brandC/CDJy1wYPwSoYrXpvul7m6yw==}
 
   '@vue/shared@3.5.24':
     resolution: {integrity: sha512-9cwHL2EsJBdi8NY22pngYYWzkTDhld6fAD6jlaeloNGciNSJL6bLpbxVgXl96X00Jtc6YWQv96YA/0sxex/k1A==}
@@ -3559,6 +3621,9 @@ packages:
   cssstyle@2.3.0:
     resolution: {integrity: sha512-AZL67abkUzIuvcHqk7c09cezpGNcxUxU4Ioi/05xHk4DQeTkWmGYftIE6ctU6AEt+Gn4n1lDStOtj7FKycP71A==}
     engines: {node: '>=8'}
+
+  csstype@2.6.21:
+    resolution: {integrity: sha512-Z1PhmomIfypOpoMjRQB70jfvy/wxT50qW08YXO5lMIJkrdq4yOTR+AW7FqutScmB9NkLwxo+jU+kZLbofZZq/w==}
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
@@ -5845,6 +5910,11 @@ packages:
   randomcolor@0.6.2:
     resolution: {integrity: sha512-Mn6TbyYpFgwFuQ8KJKqf3bqqY9O1y37/0jgSK/61PUxV4QfIMv0+K2ioq8DfOjkBslcjwSzRfIDEXfzA9aCx7A==}
 
+  react-dom@17.0.2:
+    resolution: {integrity: sha512-s4h96KtLDUQlsENhMn1ar8t2bEa+q/YAtj8pPPdIjPDGBDIVNsrD9aXNWqspUe6AzKCIG0C1HZZLqLV7qpOBGA==}
+    peerDependencies:
+      react: 17.0.2
+
   react-dom@19.3.0:
     resolution: {integrity: sha512-JDk8dgif51OjFoDE70+OT9ICyYr+69HlmihNwp1+Nsfbna3t5sIiCa9ZJktDmQ4/1b/rn26hIAR2uYXDMr5r0Q==}
     peerDependencies:
@@ -6075,6 +6145,9 @@ packages:
     resolution: {integrity: sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA==}
     engines: {node: '>=v12.22.7'}
 
+  scheduler@0.20.2:
+    resolution: {integrity: sha512-2eWfGgAqqWFGqtdMmcL5zCMK1U8KlXv8SQFGglL3CEtd0aDVDWgeF/YoCmvln55m5zSk3J/20hTaSBeSObsQDQ==}
+
   scheduler@0.28.0:
     resolution: {integrity: sha512-juorfCmIkIw8tT+p5BXSm6PJjQF/ycEYmKyzURCIt/RaZIhL+PulbQ9Yu2z1HdOJDdqDTlxA1+xKBmHXJsczAw==}
 
@@ -6166,6 +6239,9 @@ packages:
     peerDependencies:
       slate: '>=0.114.3'
 
+  slate@0.124.0:
+    resolution: {integrity: sha512-yhtJ0MSV+Z63UTaZtGZDp1goO9XZb5VGER9bmwX+38yJUb7nijPkYEcxD5mpezsSLqL6NedUb4wyvoZa+HDWuQ==}
+
   slate@0.126.2:
     resolution: {integrity: sha512-38C8GU9awiEbroZm+DzXEFUWKptb1QV9xcgcUjseas4PtqQdBnEPITocosYzFHXEVrlkafjZEv8KH8pjhe0esQ==}
 
@@ -6180,6 +6256,10 @@ packages:
   slice-ansi@8.0.0:
     resolution: {integrity: sha512-stxByr12oeeOyY2BlviTNQlYV5xOj47GirPr4yA1hE9JCtxfQN0+tVbkxwCtYDQWhEKWFHsEK48ORg5jrouCAg==}
     engines: {node: '>=20'}
+
+  snabbdom@3.6.0:
+    resolution: {integrity: sha512-JFEKcxO7fSDZdREbFSdUqh/ozRYhSbJq2yJt4QMkIykOy7z/+r0nHF8olX1q+J9YkaaNw/bftzcBhFdIKcygWw==}
+    engines: {node: '>=12.17.0'}
 
   snabbdom@3.6.4:
     resolution: {integrity: sha512-VmxEfuw1/Y/eFj5VtMhYnukExpYiPkNzoo3+N3qwAOUDMl8wXgbli5ebR+j0knE3lZ/0eYskLxNcX64uy10N9w==}
@@ -6748,6 +6828,9 @@ packages:
     resolution: {integrity: sha512-4gCtFXaAA3zYZdTp5s4Hl2sozuySsgz4jy1EnpBHNfpMa9dK1ZCG7viqBPCwXtmgc8nHqUsAu3G4gtmXkkY3Sw==}
     deprecated: Vue 2 has reached EOL and is no longer actively maintained. See https://v2.vuejs.org/eol/ for more details.
 
+  vue@3.0.5:
+    resolution: {integrity: sha512-TfaprOmtsAfhQau7WsomXZ8d9op/dkQLNIq8qPV3A0Vxs6GR5E+c1rfJS1SDkXRQj+dFyfnec7+U0Be1huiScg==}
+
   vue@3.5.24:
     resolution: {integrity: sha512-uTHDOpVQTMjcGgrqFPSb8iO2m1DUvo+WbGqoXQz8Y1CeBYQ0FXf2z1gLRaBtHjlRz7zZUBHxjVB5VTLzYkvftg==}
     peerDependencies:
@@ -6917,6 +7000,9 @@ packages:
   yargs@17.7.2:
     resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
     engines: {node: '>=12'}
+
+  yjs@13.5.29:
+    resolution: {integrity: sha512-Wtx1jLM+LbUUJsN9NJLYgANh1MEI1QAFyLLTHymEwpKwWtLg9hRvucX7YGQ4GHLT6MIIdWt66B5Wu4dkZriEKw==}
 
   yjs@13.6.33:
     resolution: {integrity: sha512-q/UYvr1gOk4XII+Cu1CW2dINjYqJJFifTzogEaIARznrvX7uOlHsdTEXcnOBMuIsrCGEEKdNxi74kyMLZlKVfw==}
@@ -8648,6 +8734,8 @@ snapshots:
 
   '@tootallnate/once@2.0.1': {}
 
+  '@transloadit/prettier-bytes@0.0.7': {}
+
   '@transloadit/prettier-bytes@0.3.5': {}
 
   '@turbo/darwin-64@2.11.3':
@@ -8992,12 +9080,28 @@ snapshots:
       - ocache
       - srvx
 
+  '@uppy/companion-client@2.2.2':
+    dependencies:
+      '@uppy/utils': 4.1.3
+      namespace-emitter: 2.0.1
+
   '@uppy/companion-client@5.1.1(@uppy/core@5.2.0)':
     dependencies:
       '@uppy/core': 5.2.0
       '@uppy/utils': 7.2.0
       namespace-emitter: 2.0.1
       p-retry: 6.2.1
+
+  '@uppy/core@2.1.1':
+    dependencies:
+      '@transloadit/prettier-bytes': 0.0.7
+      '@uppy/store-default': 2.1.1
+      '@uppy/utils': 4.1.3
+      lodash.throttle: 4.1.1
+      mime-match: 1.0.2
+      namespace-emitter: 2.0.1
+      nanoid: 3.3.19
+      preact: 10.27.3
 
   '@uppy/core@5.2.0':
     dependencies:
@@ -9010,12 +9114,25 @@ snapshots:
       nanoid: 5.1.16
       preact: 10.27.3
 
+  '@uppy/store-default@2.1.1': {}
+
   '@uppy/store-default@5.0.0': {}
+
+  '@uppy/utils@4.1.3':
+    dependencies:
+      lodash.throttle: 4.1.1
 
   '@uppy/utils@7.2.0':
     dependencies:
       lodash: 4.18.1
       preact: 10.27.3
+
+  '@uppy/xhr-upload@2.0.3(@uppy/core@5.2.0)':
+    dependencies:
+      '@uppy/companion-client': 2.2.2
+      '@uppy/core': 5.2.0
+      '@uppy/utils': 4.1.3
+      nanoid: 3.3.19
 
   '@uppy/xhr-upload@5.2.0(@uppy/core@5.2.0)':
     dependencies:
@@ -9119,6 +9236,14 @@ snapshots:
       path-browserify: 1.0.1
       vscode-uri: 3.1.0
 
+  '@vue/compiler-core@3.0.5':
+    dependencies:
+      '@babel/parser': 7.29.8
+      '@babel/types': 7.29.8
+      '@vue/shared': 3.0.5
+      estree-walker: 2.0.2
+      source-map: 0.6.1
+
   '@vue/compiler-core@3.5.24':
     dependencies:
       '@babel/parser': 7.29.3
@@ -9134,6 +9259,11 @@ snapshots:
       entities: 7.0.1
       estree-walker: 2.0.2
       source-map-js: 1.2.1
+
+  '@vue/compiler-dom@3.0.5':
+    dependencies:
+      '@vue/compiler-core': 3.0.5
+      '@vue/shared': 3.0.5
 
   '@vue/compiler-dom@3.5.24':
     dependencies:
@@ -9197,6 +9327,10 @@ snapshots:
       path-browserify: 1.0.1
       picomatch: 4.0.4
 
+  '@vue/reactivity@3.0.5':
+    dependencies:
+      '@vue/shared': 3.0.5
+
   '@vue/reactivity@3.5.24':
     dependencies:
       '@vue/shared': 3.5.24
@@ -9204,6 +9338,11 @@ snapshots:
   '@vue/reactivity@3.5.43':
     dependencies:
       '@vue/shared': 3.5.43
+
+  '@vue/runtime-core@3.0.5':
+    dependencies:
+      '@vue/reactivity': 3.0.5
+      '@vue/shared': 3.0.5
 
   '@vue/runtime-core@3.5.24':
     dependencies:
@@ -9214,6 +9353,12 @@ snapshots:
     dependencies:
       '@vue/reactivity': 3.5.43
       '@vue/shared': 3.5.43
+
+  '@vue/runtime-dom@3.0.5':
+    dependencies:
+      '@vue/runtime-core': 3.0.5
+      '@vue/shared': 3.0.5
+      csstype: 2.6.21
 
   '@vue/runtime-dom@3.5.24':
     dependencies:
@@ -9240,6 +9385,8 @@ snapshots:
       '@vue/compiler-ssr': 3.5.43
       '@vue/runtime-dom': 3.5.43
       '@vue/shared': 3.5.43
+
+  '@vue/shared@3.0.5': {}
 
   '@vue/shared@3.5.24': {}
 
@@ -9950,6 +10097,8 @@ snapshots:
   cssstyle@2.3.0:
     dependencies:
       cssom: 0.3.8
+
+  csstype@2.6.21: {}
 
   csstype@3.2.3: {}
 
@@ -12371,6 +12520,13 @@ snapshots:
 
   randomcolor@0.6.2: {}
 
+  react-dom@17.0.2(react@19.3.0):
+    dependencies:
+      loose-envify: 1.4.0
+      object-assign: 4.1.1
+      react: 19.3.0
+      scheduler: 0.20.2
+
   react-dom@19.3.0(react@19.3.0):
     dependencies:
       react: 19.3.0
@@ -12676,6 +12832,11 @@ snapshots:
     dependencies:
       xmlchars: 2.2.0
 
+  scheduler@0.20.2:
+    dependencies:
+      loose-envify: 1.4.0
+      object-assign: 4.1.1
+
   scheduler@0.28.0: {}
 
   scroll-into-view-if-needed@3.1.0:
@@ -12764,6 +12925,8 @@ snapshots:
     dependencies:
       slate: 0.126.2
 
+  slate@0.124.0: {}
+
   slate@0.126.2: {}
 
   slice-ansi@5.0.0:
@@ -12780,6 +12943,8 @@ snapshots:
     dependencies:
       ansi-styles: 6.2.3
       is-fullwidth-code-point: 5.1.0
+
+  snabbdom@3.6.0: {}
 
   snabbdom@3.6.4: {}
 
@@ -13348,6 +13513,12 @@ snapshots:
       '@vue/compiler-sfc': 2.7.16
       csstype: 3.2.3
 
+  vue@3.0.5:
+    dependencies:
+      '@vue/compiler-dom': 3.0.5
+      '@vue/runtime-dom': 3.0.5
+      '@vue/shared': 3.0.5
+
   vue@3.5.24(typescript@5.9.3):
     dependencies:
       '@vue/compiler-dom': 3.5.24
@@ -13516,6 +13687,10 @@ snapshots:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
+
+  yjs@13.5.29:
+    dependencies:
+      lib0: 0.2.114
 
   yjs@13.6.33:
     dependencies:

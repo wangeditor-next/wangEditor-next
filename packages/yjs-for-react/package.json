@@ -60,7 +60,7 @@
     "@wangeditor-next/editor": "workspace:^",
     "@wangeditor-next/yjs": "workspace:^",
     "react": ">=17.0.2",
-    "slate": "^0.126.2",
-    "yjs": "^13.6.33"
+    "slate": "^0.124.0 || ^0.126.2",
+    "yjs": "^13.5.29"
   }
 }

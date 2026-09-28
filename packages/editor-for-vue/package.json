@@ -43,7 +43,7 @@
   },
   "peerDependencies": {
     "@wangeditor-next/editor": "workspace:^",
-    "vue": "^3.5.43"
+    "vue": "^3.0.5"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",
