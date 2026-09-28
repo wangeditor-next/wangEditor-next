@@ -88,15 +88,17 @@ jobs:
         run: |
           set -euo pipefail
 
-          release_subject="$(git log -1 --format=%s)"
-          parent_count="$(git show -s --format='%P' HEAD | wc -w | tr -d ' ')"
-          if [ "${parent_count}" -gt 1 ]; then
-            # A merged Changesets PR leaves the release commit as the second
-            # parent, while the merge commit itself has a generic subject.
-            release_subject="$(git log -1 --format=%s HEAD^2)"
-          fi
           release_subject_pattern='^chore\(release\): publish (a new )?release version'
           release_subject_pattern+='( \(#[0-9]+\))?$'
+          editor_version="$(node -p "require('./packages/editor/package.json').version")"
+          editor_release_tag="@wangeditor-next/editor@${editor_version}"
+          release_subject="$(git log -1 --format=%s)"
+          if ! git show-ref --tags --verify --quiet "refs/tags/${editor_release_tag}" && \
+            git log -20 --format=%s | grep -Eq "${release_subject_pattern}"; then
+            # A merge commit may hide the Changesets release commit in either
+            # parent history. Only retry while the editor package tag is absent.
+            release_subject='chore(release): publish a new release version'
+          fi
           changeset_file=''
           requires_release=false
 
