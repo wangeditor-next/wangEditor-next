@@ -1,26 +1,26 @@
 ---
-'@wangeditor-next/basic-modules': major
-'@wangeditor-next/code-highlight': major
-'@wangeditor-next/core': major
-'@wangeditor-next/editor': major
-'@wangeditor-next/editor-for-react': major
-'@wangeditor-next/editor-for-vue': major
-'@wangeditor-next/editor-for-vue2': major
-'@wangeditor-next/list-module': major
-'@wangeditor-next/plugin-attachment': major
-'@wangeditor-next/plugin-float-image': major
-'@wangeditor-next/plugin-formula': major
-'@wangeditor-next/plugin-link-card': major
-'@wangeditor-next/plugin-markdown': major
-'@wangeditor-next/plugin-mention': major
-'@wangeditor-next/table-module': major
-'@wangeditor-next/upload-image-module': major
-'@wangeditor-next/video-module': major
-'@wangeditor-next/yjs': major
-'@wangeditor-next/yjs-for-react': major
-'@wangeditor-next/yjs-for-vue': major
+'@wangeditor-next/basic-modules': minor
+'@wangeditor-next/code-highlight': minor
+'@wangeditor-next/core': minor
+'@wangeditor-next/editor': minor
+'@wangeditor-next/editor-for-react': minor
+'@wangeditor-next/editor-for-vue': minor
+'@wangeditor-next/editor-for-vue2': minor
+'@wangeditor-next/list-module': minor
+'@wangeditor-next/plugin-attachment': minor
+'@wangeditor-next/plugin-float-image': minor
+'@wangeditor-next/plugin-formula': minor
+'@wangeditor-next/plugin-link-card': minor
+'@wangeditor-next/plugin-markdown': minor
+'@wangeditor-next/plugin-mention': minor
+'@wangeditor-next/table-module': minor
+'@wangeditor-next/upload-image-module': minor
+'@wangeditor-next/video-module': minor
+'@wangeditor-next/yjs': minor
+'@wangeditor-next/yjs-for-react': minor
+'@wangeditor-next/yjs-for-vue': minor
 ---
 
-Modernize the workspace toolchain and runtime integrations: upgrade Vite, Vitest, TypeScript, React, Vue, Slate, Uppy, Yjs, i18next, and related tooling; migrate the Yjs demos from WindiCSS to UnoCSS; and apply the compatibility fixes required by the newer Slate and Vitest releases.
+Modernize the workspace toolchain and expand Slate support to ^0.124.0 || ^0.126.2 while retaining the existing Vue, React, Uppy, Yjs and Snabbdom consumer peer ranges. Keep the release in the 6.x product line without a content-schema migration.
 
-This is a major release: modular consumers must use Slate ^0.126.2, Uppy core/xhr-upload ^6.0.0, and Snabbdom ^3.6.4. Vue 3 adapter consumers must use Vue ^3.5.43; Yjs adapter consumers must use Yjs ^13.6.33. React adapters retain their >=17.0.2 peer range, with demos and tests now using React 19. Upgrade all official packages together. See docs/dependency-modernization.md for migration and rollback guidance.
+The Vue adapter keeps Vue 3.0-compatible runtime helpers and declarations, and table resize flags retain their nullable public types. Uppy 6 and i18next 26 are deferred; the full editor continues to use Uppy 5 and i18next 23. Development tooling and collaboration demos use the newer Vite, Vitest, TypeScript, React, Vue, Yjs, y-websocket and UnoCSS integrations. See docs/dependency-modernization.md for supported versions, validation and rollback.

@@ -7,4 +7,4 @@
 '@wangeditor-next/plugin-formula': patch
 ---
 
-Require Nano ID 5.1.16 or newer to include fixes for invalid-size denial of service and integer overflow. Keep the existing no-argument ID generation API.
+Bundle and resolve Nano ID 5.1.16 or newer to include fixes for invalid-size denial of service and integer overflow. Retain the existing ^5.0.0 modular peer contract and no-argument ID generation API; modular consumers should update their installed Nano ID to the patched version.
