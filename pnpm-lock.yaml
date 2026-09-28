@@ -314,6 +314,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.3.0
         version: 19.3.0(@types/react@19.3.0)
+      '@unocss/reset':
+        specifier: ^66.10.5
+        version: 66.10.5
       '@unocss/vite':
         specifier: ^66.10.5
         version: 66.10.5(cac@7.0.0)(srvx@1.0.5)(vite@7.3.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.9.1)(terser@5.44.1)(yaml@2.8.3))
@@ -391,6 +394,9 @@ importers:
       '@types/randomcolor':
         specifier: ^0.5.9
         version: 0.5.9
+      '@unocss/reset':
+        specifier: ^66.10.5
+        version: 66.10.5
       '@unocss/vite':
         specifier: ^66.10.5
         version: 66.10.5(cac@7.0.0)(srvx@1.0.5)(vite@7.3.6(@types/node@24.10.1)(jiti@2.6.1)(less@4.9.1)(terser@5.44.1)(yaml@2.8.3))
@@ -2745,6 +2751,9 @@ packages:
 
   '@unocss/preset-wind@66.10.5':
     resolution: {integrity: sha512-K2vnt3ri39kbToG5x4j56kB9pTLLsJuPZfQbWcEAnwOq8ojW5g80dCxetW3Rqukou/u2NnAJmAKm93aG0RZFIQ==}
+
+  '@unocss/reset@66.10.5':
+    resolution: {integrity: sha512-AElCFeXaK+3a8LX1obMSmhYhhlRKDXXVngn0Kse7XwxHOItQqpncTU6ZKUeNNGmeoE0Vwc6MfrLw6eGE7EEpgw==}
 
   '@unocss/rollup@66.10.5':
     resolution: {integrity: sha512-Ii1srTmJ1kF3yHdt1vdIiYID4cAeaxooSQJ1LIWLxy0Xr2/QVXKlcxp9KdXti8nfrmPcx3oWYDa92sEHVxIpgQ==}
@@ -8934,6 +8943,8 @@ snapshots:
     dependencies:
       '@unocss/core': 66.10.5
       '@unocss/preset-wind3': 66.10.5
+
+  '@unocss/reset@66.10.5': {}
 
   '@unocss/rollup@66.10.5(rolldown@1.0.0-beta.59(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0))(rollup@4.62.4)':
     dependencies:

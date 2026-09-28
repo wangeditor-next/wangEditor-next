@@ -127,6 +127,11 @@ for (const [label, urls] of [
     try {
       expect((await expectConverged(editors)).trim()).toBe('')
 
+      for (const page of pages) {
+        await expect(page.locator('body')).toHaveCSS('margin', '0px')
+        await expect(page.locator('[contenteditable="true"]').first()).toHaveCSS('box-sizing', 'border-box')
+      }
+
       await typeAtEnd(editors[0], 'FIRST')
       await expect(editors[1]).toHaveText('FIRST')
       await typeAtEnd(editors[1], 'SECOND')
