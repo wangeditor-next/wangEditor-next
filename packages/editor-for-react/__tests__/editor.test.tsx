@@ -68,6 +68,61 @@ describe('editor-for-react onChange behavior', () => {
     document.body.innerHTML = ''
   })
 
+  it('preserves defaultHtml and editor-owned updates when value is omitted', async () => {
+    const container = document.createElement('div')
+    const onChange = vi.fn()
+
+    document.body.appendChild(container)
+    const root = createRoot(container)
+
+    try {
+      await act(async () => {
+        root.render(React.createElement(Editor, { defaultHtml: '<p>initial</p>', onChange }))
+      })
+      await flushPromises()
+      const editor = createEditor.mock.results[0].value
+
+      expect(editor.getHtml()).toBe('<p>initial</p>')
+      expect(editor.setHtml).not.toHaveBeenCalled()
+      editor.setHtmlForTest('<p>collaborative update</p>')
+      editor.emitChangeForTest()
+      await act(async () => {
+        root.render(React.createElement(Editor, { defaultHtml: '<p>new default</p>', onChange }))
+      })
+      await flushPromises()
+
+      expect(editor.getHtml()).toBe('<p>collaborative update</p>')
+      expect(editor.setHtml).not.toHaveBeenCalled()
+      expect(onChange).toHaveBeenCalledWith(editor)
+    } finally {
+      await act(async () => root.unmount())
+    }
+  })
+
+  it('still clears the editor when a controlled value becomes an empty string', async () => {
+    const container = document.createElement('div')
+
+    document.body.appendChild(container)
+    const root = createRoot(container)
+
+    try {
+      await act(async () => {
+        root.render(React.createElement(Editor, { value: '<p>initial</p>' }))
+      })
+      await flushPromises()
+      await act(async () => {
+        root.render(React.createElement(Editor, { value: '' }))
+      })
+      await flushPromises()
+      const editor = createEditor.mock.results[0].value
+
+      expect(editor.setHtml).toHaveBeenCalledWith('')
+      expect(editor.getHtml()).toBe('')
+    } finally {
+      await act(async () => root.unmount())
+    }
+  })
+
   it('does not trigger onChange during initial mount when html is unchanged', async () => {
     const onChange = vi.fn()
     const onCreated = vi.fn()
@@ -85,7 +140,6 @@ describe('editor-for-react onChange behavior', () => {
           defaultConfig: {},
           mode: 'default',
         }),
-        container,
       )
     })
 
@@ -115,7 +169,6 @@ describe('editor-for-react onChange behavior', () => {
           defaultConfig: {},
           mode: 'default',
         }),
-        container,
       )
     })
     await flushPromises()
@@ -150,7 +203,6 @@ describe('editor-for-react onChange behavior', () => {
           defaultConfig: {},
           mode: 'default',
         }),
-        container,
       )
     })
     await flushPromises()
@@ -165,7 +217,6 @@ describe('editor-for-react onChange behavior', () => {
           defaultConfig: {},
           mode: 'default',
         }),
-        container,
       )
     })
     await flushPromises()
@@ -198,7 +249,6 @@ describe('editor-for-react onChange behavior', () => {
           loading: true,
           loadingText: 'Uploading...',
         }),
-        container,
       )
     })
     await flushPromises()
@@ -216,7 +266,6 @@ describe('editor-for-react onChange behavior', () => {
           mode: 'default',
           loading: false,
         }),
-        container,
       )
     })
     await flushPromises()
@@ -249,7 +298,6 @@ describe('editor-for-react onChange behavior', () => {
           className: 'custom-editor',
           style: { height: '360px', overflowY: 'hidden' },
         }),
-        container,
       )
     })
     await flushPromises()
