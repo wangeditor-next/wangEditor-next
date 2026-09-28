@@ -89,6 +89,12 @@ jobs:
           set -euo pipefail
 
           release_subject="$(git log -1 --format=%s)"
+          parent_count="$(git show -s --format='%P' HEAD | wc -w | tr -d ' ')"
+          if [ "${parent_count}" -gt 1 ]; then
+            # A merged Changesets PR leaves the release commit as the second
+            # parent, while the merge commit itself has a generic subject.
+            release_subject="$(git log -1 --format=%s HEAD^2)"
+          fi
           release_subject_pattern='^chore\(release\): publish (a new )?release version'
           release_subject_pattern+='( \(#[0-9]+\))?$'
           changeset_file=''
