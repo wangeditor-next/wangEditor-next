@@ -91,7 +91,9 @@ export function createTsdownConfig({
     babel({
       rootMode: 'upward',
       babelHelpers: 'runtime',
-      exclude: 'node_modules/**',
+      // The DTS plugin also loads declarations through this pipeline. Babel
+      // would erase their aliases and declared component functions.
+      exclude: ['node_modules/**', '**/*.d.ts'],
       include: 'src/**',
       extensions,
     }),
