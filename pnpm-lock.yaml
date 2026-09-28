@@ -341,6 +341,10 @@ importers:
       yjs:
         specifier: ^13.6.33
         version: 13.6.33
+    devDependencies:
+      y-websocket:
+        specifier: ^3.0.0
+        version: 3.0.0(yjs@13.6.33)
 
   apps/demo-yjs-vue3:
     dependencies:
