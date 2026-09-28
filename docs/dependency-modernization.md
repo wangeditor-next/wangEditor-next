@@ -17,6 +17,8 @@ migration already shipped in 6.4.3 and is retained here.
 
 The full editor bundles its upload dependencies. Applications importing individual packages must
 satisfy their declared peers. Existing public ESM, UMD, CSS and declaration entrypoints are retained.
+Packages declaring Nano ID now require `^5.1.16` to include its invalid-size and integer-overflow
+security fixes. Align this peer in applications using the modular packages.
 The editor's upload adapter and callbacks remain available; applications that use Uppy-specific
 APIs must account for Uppy breaking changes. Custom upload adapters remain supported.
 
@@ -31,6 +33,9 @@ APIs must account for Uppy breaking changes. Custom upload adapters remain suppo
   Replace imports from `y-websocket/bin/utils` with `@y/websocket-server/utils` in custom demo servers.
 - UnoCSS replaces WindiCSS in both collaboration demos. Import `@unocss/reset/tailwind.css`
   before generated utility CSS and application styles to retain the preflight baseline.
+- Collaboration demo names use Faker 10's `person` API and its English locale entrypoint.
+  The minimum version is `10.5.0`, which includes the `helpers.fake` security fix and supports
+  the repository's existing Node versions.
 
 ## Validation and rollback
 
