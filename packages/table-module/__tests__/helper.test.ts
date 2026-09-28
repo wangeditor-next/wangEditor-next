@@ -2,8 +2,9 @@ import * as core from '@wangeditor-next/core'
 import * as slate from 'slate'
 
 import createEditor from '../../../tests/utils/create-editor'
+import flushPromises from '../../../tests/utils/flush-promises'
 import { TableElement } from '../src/module/custom-types'
-import { isCellInFirstRow } from '../src/module/helpers'
+import { isCellInFirstRow, setTableNodeProps } from '../src/module/helpers'
 
 function setEditorSelection(
   editor: core.IDomEditor,
@@ -96,6 +97,21 @@ describe('isCellInFirstRow', () => {
   beforeEach(() => {
     editor = createEditor({ content })
     setEditorSelection(editor)
+  })
+
+  it('accepts legacy nullable resize flags and unsets them through Slate', async () => {
+    setTableNodeProps(editor, editor.children[1] as TableElement, {
+      isResizing: true,
+      isResizingRow: true,
+    })
+    expect((editor.children[1] as TableElement).isResizing).toBe(true)
+    await flushPromises()
+    setTableNodeProps(editor, editor.children[1] as TableElement, {
+      isResizing: null,
+      isResizingRow: null,
+    })
+    expect(editor.children[1]).not.toHaveProperty('isResizing')
+    expect(editor.children[1]).not.toHaveProperty('isResizingRow')
   })
 
   it('should correctly identify cells in the first row', () => {

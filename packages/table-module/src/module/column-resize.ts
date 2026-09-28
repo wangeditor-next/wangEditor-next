@@ -118,7 +118,7 @@ export function observerTableResize(
         const rowHeights = getTableRowHeights(table)
 
         // 当非拖动引起的宽度变化，需要调整 columnWidths
-        Transforms.setNodes(
+        Transforms.setNodes<TableElement>(
           editor,
           {
             scrollWidth: contentRect.width,
@@ -324,7 +324,7 @@ const onMouseMove = throttle((event: Event) => {
   }
 
   // 应用新的列宽度
-  Transforms.setNodes(editorWhenMouseDown, nextTableProps as TableElement, {
+  Transforms.setNodes<TableElement>(editorWhenMouseDown, nextTableProps, {
     at: tablePath,
   })
 }, 100)
