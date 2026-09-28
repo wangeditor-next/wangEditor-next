@@ -16,7 +16,18 @@ function formatBytes(bytes) {
 }
 
 function run() {
-  const output = execFileSync('npm', ['pack', '--json'], {
+  // Windows cannot exec npm.cmd directly without a shell. Use npm's JS entrypoint
+  // next to the Node executable, retaining argument boundaries for paths with spaces.
+  const npmCli = path.join(
+    path.dirname(process.execPath),
+    'node_modules',
+    'npm',
+    'bin',
+    'npm-cli.js'
+  )
+  const command = process.platform === 'win32' ? process.execPath : 'npm'
+  const args = process.platform === 'win32' ? [npmCli, 'pack', '--json'] : ['pack', '--json']
+  const output = execFileSync(command, args, {
     cwd: editorDir,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -54,21 +65,17 @@ function run() {
         },
       },
       null,
-      2,
-    ),
+      2
+    )
   )
 
   const failedReasons = []
 
   if (summary.tarball > MAX_TARBALL_SIZE) {
-    failedReasons.push(
-      `tarball size ${summary.tarball} exceeds limit ${MAX_TARBALL_SIZE}`,
-    )
+    failedReasons.push(`tarball size ${summary.tarball} exceeds limit ${MAX_TARBALL_SIZE}`)
   }
   if (summary.unpacked > MAX_UNPACKED_SIZE) {
-    failedReasons.push(
-      `unpacked size ${summary.unpacked} exceeds limit ${MAX_UNPACKED_SIZE}`,
-    )
+    failedReasons.push(`unpacked size ${summary.unpacked} exceeds limit ${MAX_UNPACKED_SIZE}`)
   }
   if (summary.mapBytes > MAX_MAP_SIZE) {
     failedReasons.push(`.map bytes ${summary.mapBytes} exceeds limit ${MAX_MAP_SIZE}`)
