@@ -1,5 +1,22 @@
 # @wangeditor-next/editor-for-react
 
+## 6.5.0
+
+### Minor Changes
+
+- 527fcba: Modernize the workspace toolchain and expand Slate support to ^0.124.0 || ^0.126.2 while retaining the existing Vue, React, Uppy, Yjs and Snabbdom consumer peer ranges. Keep the release in the 6.x product line without a content-schema migration.
+
+  The Vue adapter keeps Vue 3.0-compatible runtime helpers and declarations, and table resize flags retain their nullable public types. Uppy 6 and i18next 26 are deferred; the full editor continues to use Uppy 5 and i18next 23. Development tooling and collaboration demos use the newer Vite, Vitest, TypeScript, React, Vue, Yjs, y-websocket and UnoCSS integrations. See docs/dependency-modernization.md for supported versions, validation and rollback.
+
+### Patch Changes
+
+- 0421701: Preserve DOM aliases with explicit type/value declarations and keep Babel runtime transforms away from declaration files so React component signatures remain intact. Validate published declarations for unresolved names during builds.
+- c94a9fe: Preserve editor-owned content when `value` is omitted. `defaultHtml` and collaborative updates no longer trigger an implicit `setHtml('')`; explicitly passing `value=""` still clears a controlled editor. The React Yjs demos now let Yjs own the document instead of feeding HTML back through a controlled value.
+- Updated dependencies [0421701]
+- Updated dependencies [527fcba]
+- Updated dependencies [80d52cb]
+  - @wangeditor-next/editor@6.5.0
+
 ## 6.4.3
 
 ### Patch Changes
