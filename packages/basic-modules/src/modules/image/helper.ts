@@ -124,6 +124,11 @@ export async function insertImageNode(
 
   // 插入图片
   Transforms.insertNodes(editor, image)
+  // Continue typing in the trailing text, rather than inside the image's void child.
+  // Move before restoring marks, since a selection change clears Slate's pending marks.
+  if (DomEditor.getSelectedNodeByType(editor, 'image')) {
+    Transforms.move(editor, { distance: 1 })
+  }
 
   // Slate/Plate style: restore marks for subsequent typing instead of mutating existing text nodes.
   Object.keys(marksForTrailingText).forEach(key => {

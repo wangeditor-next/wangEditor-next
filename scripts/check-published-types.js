@@ -2,6 +2,7 @@
 
 const fs = require('node:fs')
 const path = require('node:path')
+const ts = require('typescript')
 
 const rootDir = path.resolve(__dirname, '..')
 const packageDir = path.join(rootDir, 'packages')
@@ -58,6 +59,36 @@ declarationFiles.forEach(filePath => {
     }
   })
 })
+
+// Check our declarations without skipLibCheck: the consumer smoke test cannot
+// detect dangling names in .d.ts files when library checking is disabled.
+// Use the project's classic resolution for this check; the separate consumer
+// fixture covers NodeNext package entrypoint resolution.
+const program = ts.createProgram(declarationFiles, {
+  noEmit: true,
+  skipLibCheck: false,
+  strict: true,
+  target: ts.ScriptTarget.ES2022,
+  module: ts.ModuleKind.ESNext,
+  moduleResolution: ts.ModuleResolutionKind.Node10,
+  esModuleInterop: true,
+})
+const publishedFiles = new Set(declarationFiles.map(file => path.resolve(file)))
+const diagnostics = ts
+  .getPreEmitDiagnostics(program)
+  .filter(
+    diagnostic => diagnostic.file && publishedFiles.has(path.resolve(diagnostic.file.fileName))
+  )
+
+if (diagnostics.length > 0) {
+  failures.push(
+    ts.formatDiagnosticsWithColorAndContext(diagnostics, {
+      getCanonicalFileName: file => file,
+      getCurrentDirectory: () => rootDir,
+      getNewLine: () => '\n',
+    })
+  )
+}
 
 if (failures.length > 0) {
   console.error('Published declaration check failed:')

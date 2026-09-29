@@ -49,6 +49,6 @@
   },
   "dependencies": {
     "dom7": "^4.0.0",
-    "nanoid": "^5.0.0"
+    "nanoid": "^5.1.16"
   }
 }

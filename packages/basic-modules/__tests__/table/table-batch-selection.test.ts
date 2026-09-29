@@ -170,6 +170,10 @@ const createEditorWithoutTableSelection = () => {
 }
 
 describe('Basic Modules - Table Batch Selection Integration', () => {
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('Color Menus', () => {
     describe('ColorMenu with table selection', () => {
       test('should apply color to table selection', () => {

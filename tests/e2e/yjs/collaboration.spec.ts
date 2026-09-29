@@ -38,7 +38,12 @@ async function openPair(browser: Browser, urls: string[], room: string): Promise
 
   const editors = pages.map(page => page.locator('[contenteditable="true"]').first())
 
-  await Promise.all(editors.map(editor => editor.waitFor({ state: 'visible' })))
+  try {
+    await Promise.all(editors.map(editor => editor.waitFor({ state: 'visible', timeout: 10_000 })))
+  } catch (error) {
+    await Promise.all(contexts.map(context => context.close()))
+    throw new Error(`${String(error)}\nBrowser errors: ${errors.join('\n')}`)
+  }
 
   return { contexts, editors, errors, pages }
 }
@@ -126,6 +131,11 @@ for (const [label, urls] of [
 
     try {
       expect((await expectConverged(editors)).trim()).toBe('')
+
+      for (const page of pages) {
+        await expect(page.locator('body')).toHaveCSS('margin', '0px')
+        await expect(page.locator('[contenteditable="true"]').first()).toHaveCSS('box-sizing', 'border-box')
+      }
 
       await typeAtEnd(editors[0], 'FIRST')
       await expect(editors[1]).toHaveText('FIRST')

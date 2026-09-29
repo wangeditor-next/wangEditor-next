@@ -272,7 +272,7 @@ class InsertCol implements IButtonMenu {
           adjustColumnWidths[tdIndex + 1] = remainingWidth
         }
 
-        Transforms.setNodes(editor, { columnWidths: adjustColumnWidths } as TableElement, {
+        Transforms.setNodes<TableElement>(editor, { columnWidths: adjustColumnWidths }, {
           at: tablePath,
         })
       }

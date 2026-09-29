@@ -32,7 +32,7 @@ interface ICustomDomEditor extends IDomEditor {
 
 function EditorComponent(props: Partial<IProps>) {
   const {
-    defaultContent = [], onCreated, defaultHtml = '', value = '', onChange, defaultConfig = {}, mode = 'default', style = {}, className,
+    defaultContent = [], onCreated, defaultHtml = '', value, onChange, defaultConfig = {}, mode = 'default', style = {}, className,
     loading = false, loadingText = 'Loading...',
   } = props
   const ref = useRef<HTMLDivElement | null>(null)
@@ -96,6 +96,7 @@ function EditorComponent(props: Partial<IProps>) {
   // value 变化，重置 HTML
   useEffect(() => {
     if (editor == null) { return }
+    if (value === undefined) { return } // 未传 value 时，内容由编辑器（或 Yjs）管理
 
     if (value === latestHtmlRef.current) { return } // 如果和当前 html 值相等，则忽略
 
@@ -126,7 +127,7 @@ function EditorComponent(props: Partial<IProps>) {
         onDestroyed: handleDestroyed,
       },
       content: defaultContent,
-      html: defaultHtml || value,
+      html: defaultHtml || value || '',
       mode,
     })as ICustomDomEditor
 

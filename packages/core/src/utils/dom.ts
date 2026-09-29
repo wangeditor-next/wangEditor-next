@@ -40,16 +40,23 @@ import { toString } from './util'
 
 // ------------------------------- 分割线，以下内容参考 slate-react dom.ts -------------------------------
 
-// COMPAT: This is required to prevent TypeScript aliases from doing some very
-// weird things for Slate's types with the same name as globals. (2019/11/27)
-// https://github.com/microsoft/TypeScript/issues/35002
-import DOMNode = globalThis.Node
-import DOMComment = globalThis.Comment
-import DOMElement = globalThis.Element
-import DOMText = globalThis.Text
-import DOMRange = globalThis.Range
-import DOMSelection = globalThis.Selection
-import DOMStaticRange = globalThis.StaticRange
+// Explicit type and value aliases survive declaration bundling and avoid
+// collisions with Slate's Node, Element, Text and Range types.
+type DOMNode = globalThis.Node
+type DOMComment = globalThis.Comment
+type DOMElement = globalThis.Element
+type DOMText = globalThis.Text
+type DOMRange = globalThis.Range
+type DOMSelection = globalThis.Selection
+type DOMStaticRange = globalThis.StaticRange
+
+const DOMNode = globalThis.Node
+const DOMComment = globalThis.Comment
+const DOMElement = globalThis.Element
+const DOMText = globalThis.Text
+const DOMRange = globalThis.Range
+const DOMSelection = globalThis.Selection
+const DOMStaticRange = globalThis.StaticRange
 
 export type { Dom7Array } from 'dom7'
 

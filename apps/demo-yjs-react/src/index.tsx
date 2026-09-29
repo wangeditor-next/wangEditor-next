@@ -1,16 +1,15 @@
-import 'virtual:windi.css'
-import 'virtual:windi-devtools'
+import '@unocss/reset/tailwind.css'
+import 'virtual:uno.css'
 
 import React, { lazy, StrictMode, Suspense } from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot } from 'react-dom/client'
 
 const RemoteCursorsOverlayPage = lazy(() => import('./pages/RemoteCursorOverlay'))
 
-ReactDOM.render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Suspense fallback={<div data-testid="yjs-demo-loading">Loading...</div>}>
       <RemoteCursorsOverlayPage />
     </Suspense>
-  </StrictMode>,
-  document.getElementById('root')
+  </StrictMode>
 )

@@ -91,12 +91,12 @@
     "lodash.foreach": "^4.5.0",
     "lodash.throttle": "^4.1.1",
     "lodash.toarray": "^4.4.0",
-    "nanoid": "^5.0.0",
-    "slate": "^0.124.0",
-    "snabbdom": "^3.6.0"
+    "nanoid": "^5.1.16",
+    "slate": "^0.126.2",
+    "snabbdom": "^3.6.4"
   },
   "devDependencies": {
-    "postcss-merge-rules": "^7.0.6",
-    "postcss-discard-duplicates": "^7.0.1"
+    "postcss-merge-rules": "^9.0.4",
+    "postcss-discard-duplicates": "^9.0.3"
   }
 }

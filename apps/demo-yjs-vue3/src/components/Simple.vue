@@ -61,6 +61,7 @@ export default defineComponent({
     const toolbarConfig: Partial<IToolbarConfig> = {}
     const editorConfig: Partial<IEditorConfig> = {
       placeholder: '请输入内容...',
+      readOnly: true,
     }
     const editorRef = shallowRef()
 
@@ -89,15 +90,21 @@ export default defineComponent({
 
     // -------- Y.js <-> Editor --------------------------
     watchEffect(() => {
-      onWatcherCleanup(() => {
-        if (editorRef.value && YjsEditor.connected(editorRef.value)) {
-          YjsEditor.disconnect(editorRef.value)
-        }
-      })
+      const editor = editorRef.value
 
-      if (editorRef.value) {
-        YjsEditor.connect(editorRef.value)
+      if (!editor) {return}
+      const connectWhenSynced = (synced: boolean) => {
+        if (!synced || YjsEditor.connected(editor)) {return}
+        YjsEditor.connect(editor)
+        editor.enable()
       }
+
+      wsProvider.on('sync', connectWhenSynced)
+      if (wsProvider.synced) {connectWhenSynced(true)}
+      onWatcherCleanup(() => {
+        wsProvider.off('sync', connectWhenSynced)
+        if (YjsEditor.connected(editor)) {YjsEditor.disconnect(editor)}
+      })
     })
     // -------- Y.js <-> Editor --------------------------
 

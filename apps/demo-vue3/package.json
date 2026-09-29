@@ -12,12 +12,12 @@
   "dependencies": {
     "@wangeditor-next/editor": "workspace:*",
     "@wangeditor-next/editor-for-vue": "workspace:*",
-    "vue": "^3.2.0"
+    "vue": "^3.5.43"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.4",
-    "typescript": "5.2.2",
-    "vite": "^6.4.3",
-    "vue-tsc": "^2.2.12"
+    "@vitejs/plugin-vue": "^6.0.9",
+    "typescript": "5.9.3",
+    "vite": "^7.3.6",
+    "vue-tsc": "^3.3.11"
   }
 }

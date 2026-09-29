@@ -1,11 +1,8 @@
-import { faker } from '@faker-js/faker'
+import { faker } from '@faker-js/faker/locale/en'
 import randomColor from 'randomcolor'
 
 import { CursorData } from './types'
 
-const {
-  name: { firstName, lastName },
-} = faker
 const DEFAULT_COLLABORATION_ROOM = 'wangeditor-next-yjs'
 const DEMO_ROOM_STORAGE_KEY = 'wangeditor-next-yjs-demo-room'
 
@@ -25,7 +22,7 @@ export function randomCursorData(): CursorData {
       alpha: 1,
       format: 'hex',
     }),
-    name: `${firstName()} ${lastName()}`,
+    name: `${faker.person.firstName()} ${faker.person.lastName()}`,
   }
 }
 
