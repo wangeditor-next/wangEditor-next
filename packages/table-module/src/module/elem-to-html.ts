@@ -84,7 +84,7 @@ function tableToHtml(elemNode: Element, childrenHtml: string, editor?: IDomEdito
   const { columnWidths, caption, height = 'auto' } = tableNode
   const cols = columnWidths
     ?.map(colWidth => {
-      return `<col width=${colWidth}></col>`
+      return `<col width=${colWidth}>`
     })
     .join('')
 

@@ -950,8 +950,9 @@ describe('table - parse html', () => {
 
     expect(parsedTable.width).toBe('100%')
     expect(exported).toContain('width="100%"')
-    expect(exported).toContain('<col width=120></col>')
-    expect(exported).toContain('<col width=180></col>')
+    expect(exported).toContain('<col width=120>')
+    expect(exported).toContain('<col width=180>')
+    expect(exported).not.toContain('</col>')
   })
 
   it('table width 100% should keep round-trip from slate -> html -> slate', () => {

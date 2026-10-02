@@ -223,7 +223,8 @@ describe('create editor and toolbar', () => {
     expect(exportedHtml).toContain('style="width: auto;table-layout: fixed;')
     expect(roundTripHtml).toContain('style="width: auto;table-layout: fixed;')
     expect(exportedHtml).not.toContain('height:NaN')
-    expect(exportedHtml).toContain('<colgroup contentEditable="false"><col width=120></col><col width=80></col></colgroup>')
+    expect(exportedHtml).toContain('<colgroup contentEditable="false"><col width=120><col width=80></colgroup>')
+    expect(exportedHtml).not.toContain('</col>')
   })
 
   test('getHtml exports explicit table width by default for imported colgroup widths', () => {
@@ -241,7 +242,8 @@ describe('create editor and toolbar', () => {
     const exportedHtml = editor.getHtml()
 
     expect(exportedHtml).toContain('style="width: 200px;table-layout: fixed;')
-    expect(exportedHtml).toContain('<colgroup contentEditable="false"><col width=120></col><col width=80></col></colgroup>')
+    expect(exportedHtml).toContain('<colgroup contentEditable="false"><col width=120><col width=80></colgroup>')
+    expect(exportedHtml).not.toContain('</col>')
   })
 
   test('getHtml exports table height with a valid css unit', () => {

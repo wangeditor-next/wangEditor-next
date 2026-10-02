@@ -151,7 +151,7 @@ describe('TableModule module', () => {
       const res = tableToHtmlConf.elemToHtml(element, '<tr><td>123</td><td>456</td></tr>')
 
       expect(res).toBe(
-        '<table style="width: 200px;table-layout: fixed;height:auto"><colgroup contentEditable="false"><col width=120></col><col width=80></col></colgroup><tbody><tr><td>123</td><td>456</td></tr></tbody></table>',
+        '<table style="width: 200px;table-layout: fixed;height:auto"><colgroup contentEditable="false"><col width=120><col width=80></colgroup><tbody><tr><td>123</td><td>456</td></tr></tbody></table>',
       )
     })
 
@@ -165,7 +165,7 @@ describe('TableModule module', () => {
       const res = tableToHtmlConf.elemToHtml(element, '<tr><td>123</td><td>456</td></tr>')
 
       expect(res).toBe(
-        '<table style="width: 100%;table-layout: fixed;height:auto"><colgroup contentEditable="false"><col width=120></col><col width=80></col></colgroup><tbody><tr><td>123</td><td>456</td></tr></tbody></table>',
+        '<table style="width: 100%;table-layout: fixed;height:auto"><colgroup contentEditable="false"><col width=120><col width=80></colgroup><tbody><tr><td>123</td><td>456</td></tr></tbody></table>',
       )
     })
 
