@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.5.1
+
+### Patch Changes
+
+- 4c89f4b: Fix table HTML serialization so void `col` elements are emitted without invalid closing tags.
+  - @wangeditor-next/core@6.5.1
+
 ## 6.5.0
 
 ### Minor Changes

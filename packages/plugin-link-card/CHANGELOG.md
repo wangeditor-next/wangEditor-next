@@ -1,5 +1,11 @@
 # @wangeditor-next/plugin-link-card
 
+## 6.5.1
+
+### Patch Changes
+
+- @wangeditor-next/editor@6.5.1
+
 ## 6.5.0
 
 ### Minor Changes
