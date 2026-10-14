@@ -594,7 +594,15 @@ export const withContent = <T extends Editor>(editor: T) => {
     // 删除当前内容
     e.enable()
     EDITOR_TO_SELECTION.delete(e)
-    e.focus()
+    // Replacing content in a blurred editor must not focus the DOM editor. On
+    // mobile browsers that transient focus is enough to open the soft keyboard
+    // even though the editor is blurred again below. A Slate selection is
+    // sufficient for the transforms used while rebuilding the content.
+    if (isEditorFocused) {
+      e.focus()
+    } else {
+      Transforms.select(e, Editor.start(e, []))
+    }
     // 需要标准的{anchor:xxx, focus: xxxx} 否则无法通过slate history的检查
     // 使用 e.select([]) e.selectAll() 生成的location不是标准的{anchor: xxxx, focus: xxx}形式
     // https://github.com/wangeditor-team/wangeditor/issues/4754
