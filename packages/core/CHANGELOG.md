@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.5.1
+
+### Patch Changes
+
+- 390a68f: Avoid focusing a blurred editor while replacing its HTML content, preventing mobile browsers from opening the soft keyboard during programmatic updates.
+
 ## 6.5.0
 
 ### Minor Changes
