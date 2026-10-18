@@ -551,6 +551,28 @@ describe('editor content API', () => {
       expect(editor.getHtml()).toBe(newHtml)
     })
 
+    it('setHtml keeps the focused editor path', () => {
+      const editor = createEditor({ html: '<div>hello</div>' })
+      const focusSpy = vi.spyOn(editor, 'focus').mockImplementation(() => {})
+
+      vi.spyOn(editor, 'isFocused').mockReturnValue(true)
+
+      editor.setHtml('<div>world</div>')
+
+      expect(focusSpy).toHaveBeenCalledTimes(1)
+      expect(editor.getHtml()).toBe('<div>world</div>')
+    })
+
+    it('setHtml initializes an externally emptied editor before selecting its start', () => {
+      const editor = createEditor({ autoFocus: false })
+
+      editor.children = []
+
+      expect(() => editor.setHtml('<div>world</div>')).not.toThrow()
+      expect(editor.getHtml()).toBe('<div>world</div>')
+      expect(editor.isFocused()).toBe(false)
+    })
+
     it('setHtml blur', () => {
       const editor = createEditor({
         html: '<div>hello</div>',
@@ -560,11 +582,13 @@ describe('editor content API', () => {
       expect(editor.isFocused()).toBe(false)
 
       const newHtml = '<div>world</div>'
+      const focusSpy = vi.spyOn(editor, 'focus')
 
       editor.setHtml(newHtml)
 
       expect(editor.getHtml()).toBe(newHtml)
       expect(editor.isFocused()).toBe(false)
+      expect(focusSpy).not.toHaveBeenCalled()
     })
 
     it('setHtml disabled', () => {
