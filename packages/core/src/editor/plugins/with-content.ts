@@ -594,6 +594,9 @@ export const withContent = <T extends Editor>(editor: T) => {
     // 删除当前内容
     e.enable()
     EDITOR_TO_SELECTION.delete(e)
+    // Initialize an empty document before deriving its start point. This also
+    // keeps setHtml safe for an editor whose children were cleared externally.
+    e.clear()
     // Replacing content in a blurred editor must not focus the DOM editor. On
     // mobile browsers that transient focus is enough to open the soft keyboard
     // even though the editor is blurred again below. A Slate selection is
@@ -606,7 +609,6 @@ export const withContent = <T extends Editor>(editor: T) => {
     // 需要标准的{anchor:xxx, focus: xxxx} 否则无法通过slate history的检查
     // 使用 e.select([]) e.selectAll() 生成的location不是标准的{anchor: xxxx, focus: xxx}形式
     // https://github.com/wangeditor-team/wangeditor/issues/4754
-    e.clear()
     // 设置新内容
     const newContent = htmlToContent(e, html == null ? '' : html)
 

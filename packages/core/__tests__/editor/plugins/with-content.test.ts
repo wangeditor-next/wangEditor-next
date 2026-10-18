@@ -563,6 +563,16 @@ describe('editor content API', () => {
       expect(editor.getHtml()).toBe('<div>world</div>')
     })
 
+    it('setHtml initializes an externally emptied editor before selecting its start', () => {
+      const editor = createEditor({ autoFocus: false })
+
+      editor.children = []
+
+      expect(() => editor.setHtml('<div>world</div>')).not.toThrow()
+      expect(editor.getHtml()).toBe('<div>world</div>')
+      expect(editor.isFocused()).toBe(false)
+    })
+
     it('setHtml blur', () => {
       const editor = createEditor({
         html: '<div>hello</div>',
