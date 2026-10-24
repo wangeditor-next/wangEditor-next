@@ -805,6 +805,19 @@ importers:
         specifier: ^3.6.0
         version: 3.6.4
 
+  packages/plugin-style-presets:
+    dependencies:
+      '@wangeditor-next/editor':
+        specifier: '>=6.0.0'
+        version: link:../editor
+      snabbdom:
+        specifier: ^3.6.0
+        version: 3.6.3
+    devDependencies:
+      '@wangeditor-next-shared/rollup-config':
+        specifier: workspace:^
+        version: link:../../shared/rollup-config
+
   packages/table-module:
     dependencies:
       '@wangeditor-next/core':
