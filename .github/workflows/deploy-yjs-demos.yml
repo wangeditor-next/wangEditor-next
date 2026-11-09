@@ -61,7 +61,7 @@ jobs:
 
       - name: Install pnpm
         if: steps.config.outputs.publish_enabled == 'true'
-        uses: pnpm/action-setup@v6.1.0
+        uses: pnpm/action-setup@v6.1.1
         with:
           version: 9.15.0
 
