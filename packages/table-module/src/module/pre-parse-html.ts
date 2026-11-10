@@ -191,23 +191,39 @@ function preParse(tableElem: DOMElement): DOMElement {
     return tableElem
   }
 
-  // 没有 <tbody> 则直接返回
-  const $tbody = $table.find('tbody')
+  // Only unwrap direct tbody children. Using `$table.find('tr')` here also
+  // collects rows from nested tables and turns them into siblings of the
+  // outer table, which silently corrupts pasted Word content.
+  const tableElement = $table[0] as HTMLTableElement
+  const directTbodies = Array.from(tableElement.children).filter(child => {
+    return child.tagName.toLowerCase() === 'tbody'
+  })
 
-  if ($tbody.length === 0) {
+  if (directTbodies.length === 0) {
     return tableElem
   }
 
   // 去掉 <tbody> ，把 <tr> 移动到 <table> 下面
-  const $tr = $table.find('tr')
+  const directRows = directTbodies.flatMap(tbody => {
+    return Array.from(tbody.children).filter(child => child.tagName.toLowerCase() === 'tr')
+  })
 
-  $table.append($tr)
-  $tbody.remove()
+  directRows.forEach(row => $table.append(row))
+  directTbodies.forEach(tbody => tbody.remove())
 
-  const $cells = $table.find('td, th')
+  // Process cells from the direct rows only. Descendant cells belong to a
+  // nested table and must stay inside that nested structure for the parser's
+  // explicit fallback policy to handle them.
+  const cells = directRows.flatMap(row => {
+    return Array.from(row.children).filter(child => {
+      const tag = child.tagName.toLowerCase()
 
-  for (let i = 0; i < $cells.length; i += 1) {
-    const cell = $cells[i]
+      return tag === 'td' || tag === 'th'
+    })
+  })
+
+  for (let i = 0; i < cells.length; i += 1) {
+    const cell = cells[i]
     const $cell = $(cell)
 
     // 设置 width 属性为 auto

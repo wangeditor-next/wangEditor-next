@@ -96,6 +96,19 @@ describe('table - pre parse html', () => {
     )
   })
 
+  it('should not flatten rows from nested tables (#961)', () => {
+    const $table = $(
+      '<table><tbody><tr><td>outer<table><tbody><tr><td>inner</td></tr></tbody></table></td></tr></tbody></table>'
+    )
+
+    const res = preParseTableHtmlConf.preParseHtml($table[0])
+    const rows = Array.from($(res).children('tr'))
+
+    expect(rows).toHaveLength(1)
+    expect($(rows[0]).children('td')).toHaveLength(1)
+    expect($(rows[0]).find('table tr')).toHaveLength(1)
+  })
+
   it('should infer column widths for imported fixed-layout auto-width table', () => {
     const $table = $(
       [
