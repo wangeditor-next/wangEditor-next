@@ -96,6 +96,39 @@ describe('table - pre parse html', () => {
     )
   })
 
+  it('should not flatten rows from nested tables (#961)', () => {
+    const $table = $(
+      '<table><tbody><tr><td>outer<table><tbody><tr><td>inner</td></tr></tbody></table></td></tr></tbody></table>'
+    )
+
+    const res = preParseTableHtmlConf.preParseHtml($table[0])
+    const rows = Array.from($(res).children('tr'))
+
+    expect(rows).toHaveLength(1)
+    expect($(rows[0]).children('td')).toHaveLength(1)
+    expect($(rows[0]).find('table tr')).toHaveLength(1)
+  })
+
+  it('should flatten direct thead, tbody, and tfoot rows in source order', () => {
+    const $table = $(
+      '<table><thead><tr><td>head</td></tr></thead><tbody><tr><td>body</td></tr></tbody><tfoot><tr><td>foot</td></tr></tfoot></table>'
+    )
+
+    const res = preParseTableHtmlConf.preParseHtml($table[0])
+    const rows = Array.from($(res).children('tr'))
+
+    expect(rows.map(row => $(row).text())).toEqual(['head', 'body', 'foot'])
+    expect($(res).children('thead, tbody, tfoot')).toHaveLength(0)
+  })
+
+  it('should leave a thead-only table unchanged', () => {
+    const $table = $('<table><thead><tr><td>head</td></tr></thead></table>')
+
+    const res = preParseTableHtmlConf.preParseHtml($table[0])
+
+    expect(res.outerHTML).toBe('<table><thead><tr><td>head</td></tr></thead></table>')
+  })
+
   it('should infer column widths for imported fixed-layout auto-width table', () => {
     const $table = $(
       [
@@ -194,6 +227,48 @@ describe('table - pre parse html', () => {
       expect(cols.length).toBe(2)
       expect($(cols[0]).attr('width')).toBe('80')
       expect($(cols[1]).attr('width')).toBe('120')
+    } finally {
+      boundingClientRectSpy.mockRestore()
+    }
+  })
+
+  it('should ignore nested table cell widths when inferring outer columns', () => {
+    const $table = $(
+      [
+        '<table style="width:auto;table-layout: fixed;">',
+        '<tbody><tr>',
+        '<td data-measure-width="120">outer<table><tbody><tr><td style="width:999px">inner</td></tr></tbody></table></td>',
+        '<td data-measure-width="360">second</td>',
+        '</tr></tbody></table>',
+      ].join('')
+    )
+
+    const boundingClientRectSpy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        const widthAttr = this.getAttribute('data-measure-width')
+        const width = widthAttr ? parseInt(widthAttr, 10) : 0
+
+        return {
+          x: 0,
+          y: 0,
+          top: 0,
+          left: 0,
+          right: width,
+          bottom: 20,
+          width,
+          height: 20,
+          toJSON() {
+            return {}
+          },
+        } as DOMRect
+      })
+
+    try {
+      const res = preParseTableHtmlConf.preParseHtml($table[0])
+      const cols = $(res).children('colgroup').find('col')
+
+      expect(Array.from(cols).map(col => $(col).attr('width'))).toEqual(['120', '360'])
     } finally {
       boundingClientRectSpy.mockRestore()
     }
@@ -322,7 +397,7 @@ describe('table - parse html', () => {
     } as any
     const rows = Array.from($table.find('tr')).map(row => {
       const cells = Array.from(row.children).map(cell =>
-        parseCellHtmlConf.parseElemHtml(cell as HTMLTableCellElement, [], stubEditor)
+        parseCellHtmlConf.parseElemHtml(cell as HTMLTableCellElement, [], stubEditor),
       )
 
       return parseRowHtmlConf.parseElemHtml(row as HTMLTableRowElement, cells, stubEditor)
@@ -422,7 +497,7 @@ describe('table - parse html', () => {
     } as any
     const rows = Array.from($table.find('tr')).map(row => {
       const cells = Array.from(row.children).map(cell =>
-        parseCellHtmlConf.parseElemHtml(cell as HTMLTableCellElement, [], stubEditor),
+        parseCellHtmlConf.parseElemHtml(cell as HTMLTableCellElement, [], stubEditor)
       )
 
       return parseRowHtmlConf.parseElemHtml(row as HTMLTableRowElement, cells, stubEditor)

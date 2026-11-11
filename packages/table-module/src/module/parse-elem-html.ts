@@ -4,7 +4,7 @@
  */
 
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
-import { Descendant, Text } from 'slate'
+import { Descendant, Element as SlateElement, Text } from 'slate'
 
 import $, { DOMElement, getStyleValue, getTagName } from '../utils/dom'
 import { TableCellElement, TableElement, TableRowElement } from './custom-types'
@@ -88,6 +88,19 @@ function getTableWidthPixelBase($table: ReturnType<typeof $>): number {
   return parseCssPixelSize(rawWidth, 0)
 }
 
+function getFallbackText(node: Descendant): string {
+  if (Text.isText(node)) {
+    return node.text
+  }
+
+  const caption =
+    SlateElement.isElement(node) && node.type === 'table' && 'caption' in node
+      ? String((node as SlateElement & { caption?: string }).caption || '')
+      : ''
+
+  return `${caption}${node.children.map(child => getFallbackText(child)).join('')}`
+}
+
 function parseCellHtml(
   elem: DOMElement,
   children: Descendant[],
@@ -96,14 +109,25 @@ function parseCellHtml(
   const $elem = $(elem)
   const cellText = $elem.text().replace(/\s+/gm, ' ').trim()
 
-  children = children.filter(child => {
+  // Unsupported block descendants (for example a nested table) are
+  // deliberately degraded to their text content. Filtering them outright
+  // loses pasted content, while keeping the node would violate the table
+  // cell schema. Preserve the original child order while applying that
+  // explicit fallback.
+  children = children.flatMap<Descendant>(child => {
     if (Text.isText(child)) {
-      return true
+      return [child]
     }
     if (editor.isInline(child)) {
-      return true
+      return [child]
     }
-    return isSupportedTableCellBlock(editor, child)
+    if (isSupportedTableCellBlock(editor, child)) {
+      return [child]
+    }
+
+    const fallbackText = getFallbackText(child)
+
+    return fallbackText ? [{ text: fallbackText }] : []
   })
 
   // 无 children ，则用纯文本

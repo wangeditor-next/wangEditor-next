@@ -96,6 +96,35 @@ describe('table rich cell content', () => {
     ])
   })
 
+  it('keeps nested table paste content in the outer cell without flattening rows (#961)', () => {
+    const editor = createEditor({
+      html: '<table><tbody><tr><td>outer<table><tbody><tr><td>inner</td></tr></tbody></table></td></tr></tbody></table>',
+    })
+    const table = editor.children[0] as any
+
+    expect(table.children).toHaveLength(1)
+    expect(Node.string(table.children[0].children[0])).toBe('outerinner')
+    expect(editor.getText()).toBe('outerinner')
+  })
+
+  it('keeps nested table captions when degrading unsupported cell blocks to text', () => {
+    const editor = createEditor({
+      html: [
+        '<table><tbody><tr><td>outer',
+        '<table><caption>inner caption</caption><tbody><tr><td>inner</td></tr></tbody></table>',
+        '</td></tr></tbody></table>',
+      ].join(''),
+    })
+
+    expect(Node.string(getFirstCell(editor))).toBe('outerinner captioninner')
+
+    const output = editor.getHtml()
+
+    expect(output).toContain('inner caption')
+    editor.setHtml(output)
+    expect(Node.string(getFirstCell(editor))).toBe('outerinner captioninner')
+  })
+
   it('preserves video and code blocks through table-cell HTML round-trip', () => {
     const editor = createEditor({ html: MEDIA_CELL_HTML })
     const cell = getFirstCell(editor)

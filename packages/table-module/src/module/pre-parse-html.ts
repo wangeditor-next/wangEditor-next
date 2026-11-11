@@ -6,10 +6,13 @@
 import $, { DOMElement, getTagName } from '../utils/dom'
 
 function hasExplicitColgroupWidths($table: ReturnType<typeof $>): boolean {
-  const colgroupElements = $table.find('colgroup')
+  const table = $table[0] as HTMLTableElement
+  const colgroupElements = Array.from(table.children).filter(child => {
+    return child.tagName.toLowerCase() === 'colgroup'
+  })
 
   for (let i = 0; i < colgroupElements.length; i += 1) {
-    const colgroup = colgroupElements[i] as HTMLTableColElement
+    const colgroup = colgroupElements[i]
 
     for (let j = 0; j < colgroup.children.length; j += 1) {
       const col = colgroup.children[j] as HTMLTableColElement
@@ -29,10 +32,20 @@ function hasExplicitColgroupWidths($table: ReturnType<typeof $>): boolean {
 }
 
 function hasExplicitCellWidths($table: ReturnType<typeof $>): boolean {
-  const $cells = $table.find('td, th')
+  const table = $table[0] as HTMLTableElement
+  const rows = Array.from(table.children).filter(child => {
+    return child.tagName.toLowerCase() === 'tr'
+  })
+  const cells = rows.flatMap(row => {
+    return Array.from(row.children).filter(child => {
+      const tag = child.tagName.toLowerCase()
 
-  for (let i = 0; i < $cells.length; i += 1) {
-    const cell = $cells[i] as HTMLTableCellElement
+      return tag === 'td' || tag === 'th'
+    })
+  })
+
+  for (let i = 0; i < cells.length; i += 1) {
+    const cell = cells[i] as HTMLTableCellElement
     const widthAttr = (cell.getAttribute('width') || '').trim().toLowerCase()
     const styleWidth = (cell.style.width || '').trim().toLowerCase()
 
@@ -88,7 +101,9 @@ function measureColumnWidthsFromLayout(tableElem: HTMLTableElement): number[] {
   document.body.appendChild(sandbox)
 
   try {
-    const firstRow = tableClone.querySelector('tr')
+    const firstRow = Array.from(tableClone.children).find(child => {
+      return child.tagName.toLowerCase() === 'tr'
+    }) as HTMLTableRowElement | undefined
 
     if (!firstRow) {
       return []
@@ -134,7 +149,9 @@ function applyMeasuredColumnWidths(tableElem: HTMLTableElement, columnWidths: nu
     return
   }
 
-  const existingColgroup = tableElem.querySelector('colgroup')
+  const existingColgroup = Array.from(tableElem.children).find(child => {
+    return child.tagName.toLowerCase() === 'colgroup'
+  })
 
   if (existingColgroup) {
     existingColgroup.remove()
@@ -150,7 +167,9 @@ function applyMeasuredColumnWidths(tableElem: HTMLTableElement, columnWidths: nu
     colgroupElem.appendChild(colElem)
   })
 
-  const firstRow = tableElem.querySelector('tr')
+  const firstRow = Array.from(tableElem.children).find(child => {
+    return child.tagName.toLowerCase() === 'tr'
+  })
 
   if (firstRow) {
     tableElem.insertBefore(colgroupElem, firstRow)
@@ -191,23 +210,47 @@ function preParse(tableElem: DOMElement): DOMElement {
     return tableElem
   }
 
-  // 没有 <tbody> 则直接返回
-  const $tbody = $table.find('tbody')
+  // Only unwrap direct row sections. Using `$table.find('tr')` here also
+  // collects rows from nested tables and turns them into siblings of the
+  // outer table, which silently corrupts pasted Word content.
+  const tableElement = $table[0] as HTMLTableElement
+  const directSections = Array.from(tableElement.children).filter(child => {
+    const tag = child.tagName.toLowerCase()
 
-  if ($tbody.length === 0) {
+    return tag === 'thead' || tag === 'tbody' || tag === 'tfoot'
+  })
+  const hasDirectTbody = directSections.some(section => {
+    return section.tagName.toLowerCase() === 'tbody'
+  })
+
+  // Preserve the historical behavior for tables without a tbody (for
+  // example a thead-only table), while processing all direct row sections
+  // when a tbody is present. Nested tables are intentionally excluded.
+  if (!hasDirectTbody) {
     return tableElem
   }
 
   // 去掉 <tbody> ，把 <tr> 移动到 <table> 下面
-  const $tr = $table.find('tr')
+  const directRows = directSections.flatMap(section => {
+    return Array.from(section.children).filter(child => child.tagName.toLowerCase() === 'tr')
+  })
 
-  $table.append($tr)
-  $tbody.remove()
+  directRows.forEach(row => $table.append(row))
+  directSections.forEach(section => section.remove())
 
-  const $cells = $table.find('td, th')
+  // Process cells from the direct rows only. Descendant cells belong to a
+  // nested table and must stay inside that nested structure for the parser's
+  // explicit fallback policy to handle them.
+  const cells = directRows.flatMap(row => {
+    return Array.from(row.children).filter(child => {
+      const tag = child.tagName.toLowerCase()
 
-  for (let i = 0; i < $cells.length; i += 1) {
-    const cell = $cells[i]
+      return tag === 'td' || tag === 'th'
+    })
+  })
+
+  for (let i = 0; i < cells.length; i += 1) {
+    const cell = cells[i]
     const $cell = $(cell)
 
     // 设置 width 属性为 auto
