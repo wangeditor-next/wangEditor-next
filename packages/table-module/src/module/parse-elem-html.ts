@@ -4,7 +4,7 @@
  */
 
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
-import { Descendant, Node, Text } from 'slate'
+import { Descendant, Element as SlateElement, Text } from 'slate'
 
 import $, { DOMElement, getStyleValue, getTagName } from '../utils/dom'
 import { TableCellElement, TableElement, TableRowElement } from './custom-types'
@@ -88,6 +88,19 @@ function getTableWidthPixelBase($table: ReturnType<typeof $>): number {
   return parseCssPixelSize(rawWidth, 0)
 }
 
+function getFallbackText(node: Descendant): string {
+  if (Text.isText(node)) {
+    return node.text
+  }
+
+  const caption =
+    SlateElement.isElement(node) && node.type === 'table' && 'caption' in node
+      ? String((node as SlateElement & { caption?: string }).caption || '')
+      : ''
+
+  return `${caption}${node.children.map(child => getFallbackText(child)).join('')}`
+}
+
 function parseCellHtml(
   elem: DOMElement,
   children: Descendant[],
@@ -101,7 +114,7 @@ function parseCellHtml(
   // loses pasted content, while keeping the node would violate the table
   // cell schema. Preserve the original child order while applying that
   // explicit fallback.
-  children = children.flatMap(child => {
+  children = children.flatMap<Descendant>(child => {
     if (Text.isText(child)) {
       return [child]
     }
@@ -112,7 +125,7 @@ function parseCellHtml(
       return [child]
     }
 
-    const fallbackText = Node.string(child)
+    const fallbackText = getFallbackText(child)
 
     return fallbackText ? [{ text: fallbackText }] : []
   })
