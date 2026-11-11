@@ -39,11 +39,11 @@ class UploadImage implements IButtonMenu {
   }
 
   exec(editor: IDomEditor, _value: string | boolean) {
-    const { allowedFileTypes = [], customBrowseAndUpload } = this.getMenuConfig(editor)
+    const { allowedFileTypes = [], customBrowseAndUpload, insertAsBlock } = this.getMenuConfig(editor)
 
     // 自定义选择图片，并上传，如图床
     if (customBrowseAndUpload) {
-      customBrowseAndUpload((src, alt, href) => insertImageNode(editor, src, alt, href))
+      customBrowseAndUpload((src, alt, href) => insertImageNode(editor, src, alt, href, { block: !!insertAsBlock }))
       return
     }
 

@@ -169,3 +169,62 @@ describe('image helper', () => {
     expect(isInsertImageMenuDisabled(editor)).toBeFalsy()
   })
 })
+
+describe('image helper - block insertion', () => {
+  const src = 'https://example.com/a.png'
+
+  function imageParagraphs(editor: any) {
+    return editor.children.map((n: any) => ({
+      type: n.type,
+      images: n.children.filter((c: any) => c.type === 'image').length,
+    }))
+  }
+
+  it('inserts inline by default, keeping images in the same paragraph', async () => {
+    const editor: any = createEditor()
+
+    editor.select(Editor.start(editor, []))
+    await insertImageNode(editor, src)
+    await insertImageNode(editor, src)
+
+    expect(imageParagraphs(editor)).toEqual([{ type: 'paragraph', images: 2 }])
+  })
+
+  it('puts each image in its own paragraph when block is true', async () => {
+    const editor: any = createEditor()
+
+    editor.select(Editor.start(editor, []))
+    await insertImageNode(editor, src, '', '', { block: true })
+    await insertImageNode(editor, src, '', '', { block: true })
+    await insertImageNode(editor, src, '', '', { block: true })
+
+    expect(imageParagraphs(editor)).toEqual([
+      { type: 'paragraph', images: 1 },
+      { type: 'paragraph', images: 1 },
+      { type: 'paragraph', images: 1 },
+    ])
+    // 光标停留在最后一张图片所在段落之后，可继续输入
+    expect(editor.selection.anchor.path[0]).toBe(2)
+  })
+
+  it('starts a new paragraph after non-empty text', async () => {
+    const editor: any = createEditor({ content: [{ type: 'paragraph', children: [{ text: 'hello' }] }] })
+
+    editor.select(Editor.end(editor, []))
+    await insertImageNode(editor, src, '', '', { block: true })
+
+    expect(editor.children).toHaveLength(2)
+    expect(editor.children[0].children[0].text).toBe('hello')
+    expect(imageParagraphs(editor)[1]).toEqual({ type: 'paragraph', images: 1 })
+  })
+
+  it('falls back to inline insertion outside plain paragraphs (e.g. list items)', async () => {
+    const editor: any = createEditor({ content: [{ type: 'list-item', children: [{ text: 'item' }] }] })
+
+    editor.select(Editor.end(editor, []))
+    await insertImageNode(editor, src, '', '', { block: true })
+
+    expect(editor.children).toHaveLength(1)
+    expect(imageParagraphs(editor)).toEqual([{ type: 'list-item', images: 1 }])
+  })
+})

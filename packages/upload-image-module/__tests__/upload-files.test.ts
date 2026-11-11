@@ -43,6 +43,36 @@ describe('Upload image menu upload files util', () => {
     expect(uploadAdapter).not.toBeCalled()
   })
 
+  test('uploadImages inserts each image in its own paragraph when insertAsBlock is true', async () => {
+    const customUpload = vi.fn(async (file: File, insertFn: any) => {
+      await insertFn(`https://example.com/${file.name}`, file.name, '')
+    })
+    const editor = createEditor({
+      config: { MENU_CONF: { uploadImage: { customUpload, insertAsBlock: true } } },
+    })
+
+    editor.select({ path: [0, 0], offset: 0 })
+    await uploadImages(editor, [mockFile('a.jpg'), mockFile('b.jpg')] as unknown as FileList)
+
+    const images = editor.children.map((n: any) => n.children.filter((c: any) => c.type === 'image'))
+
+    expect(images.map((list: any[]) => list.length)).toEqual([1, 1])
+  })
+
+  test('uploadImages keeps images inline by default', async () => {
+    const customUpload = vi.fn(async (file: File, insertFn: any) => {
+      await insertFn(`https://example.com/${file.name}`, file.name, '')
+    })
+    const editor = createEditor({
+      config: { MENU_CONF: { uploadImage: { customUpload } } },
+    })
+
+    editor.select({ path: [0, 0], offset: 0 })
+    await uploadImages(editor, [mockFile('a.jpg'), mockFile('b.jpg')] as unknown as FileList)
+
+    expect(editor.children).toHaveLength(1)
+  })
+
   test('uploadImages should insert image with base64 string if file size less than base64LimitSize config', async () => {
     const fn = vi.fn()
     const editor = createEditor({
@@ -170,6 +200,7 @@ describe('Upload image menu upload files util', () => {
       'https://img.test/a.png',
       'a',
       'https://link.test/a',
+      { block: false },
     )
     expect(showProgressBar).toHaveBeenCalledWith(55)
     expect(onProgress).toHaveBeenCalledWith(55)
@@ -214,6 +245,7 @@ describe('Upload image menu upload files util', () => {
       'https://img.test/custom.png',
       'custom-alt',
       'https://custom.link',
+      { block: false },
     )
     expect(onSuccess).toHaveBeenCalledTimes(1)
   })

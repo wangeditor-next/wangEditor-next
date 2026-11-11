@@ -54,6 +54,9 @@ export function genUploadImageConfig(): IUploadImageConfig {
     // 小于 xxx 就插入 base64
     base64LimitSize: 0,
 
+    // 是否让每张上传的图片独占一行（默认 false，保持 inline 插入）
+    insertAsBlock: false,
+
     // 自定义选择，并上传图片，如：图床 （用户配置）
     // customBrowseAndUpload: insertFn => {},
   }

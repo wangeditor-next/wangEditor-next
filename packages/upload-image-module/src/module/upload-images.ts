@@ -16,6 +16,15 @@ const EDITOR_TO_UPLOADER_MAP = new WeakMap<IDomEditor, IUploader>()
 function getMenuConfig(editor: IDomEditor) {
   return editor.getMenuConfig('uploadImage')
 }
+
+/**
+ * 插入图片，是否独占一行由 uploadImage.insertAsBlock 决定
+ */
+function insertImage(editor: IDomEditor, src: string, alt?: string, href?: string) {
+  const { insertAsBlock } = getMenuConfig(editor)
+
+  return insertImageNode(editor, src, alt, href, { block: !!insertAsBlock })
+}
 /**
  * 获取 uploader 实例（并通过 editor 缓存）
  * @param editor editor
@@ -38,7 +47,7 @@ function getUploader(editor: IDomEditor): IUploader {
 
     if (customInsert) {
       // 用户自定义插入图片，此时 res 格式可能不符合预期
-      customInsert(res, (src, alt, href) => insertImageNode(editor, src, alt, href))
+      customInsert(res, (src, alt, href) => insertImage(editor, src, alt, href))
       // success 回调
       onSuccess(file, res)
       return
@@ -58,13 +67,13 @@ function getUploader(editor: IDomEditor): IUploader {
         const { url = '', alt = '', href = '' } = item
         // 使用 basic-module 的 insertImageNode 方法插入图片，其中有用户配置的校验和 callback
 
-        insertImageNode(editor, url, alt, href)
+        insertImage(editor, url, alt, href)
       })
     } else {
       // 返回的对象
       const { url = '', alt = '', href = '' } = data
 
-      insertImageNode(editor, url, alt, href)
+      insertImage(editor, url, alt, href)
     }
 
     // success 回调
@@ -113,7 +122,7 @@ async function insertBase64(editor: IDomEditor, file: File) {
       const src = result.toString()
       const href = src.indexOf('data:image') === 0 ? '' : src // base64 格式则不设置 href
 
-      insertImageNode(editor, src, file.name, href)
+      insertImage(editor, src, file.name, href)
 
       resolve('ok')
     }
@@ -161,7 +170,7 @@ export default async function (editor: IDomEditor, files: FileList | null) {
       await insertBase64(editor, file)
     } else if (customUpload) {
       // 自定义上传
-      await customUpload(file, (src, alt, href) => insertImageNode(editor, src, alt, href), editor)
+      await customUpload(file, (src, alt, href) => insertImage(editor, src, alt, href), editor)
     } else {
       // 默认上传
       uploadFileList.push(file)
