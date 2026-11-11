@@ -125,6 +125,37 @@ describe('table rich cell content', () => {
     expect(Node.string(getFirstCell(editor))).toBe('outerinner captioninner')
   })
 
+  it('keeps table-only setHtml output stable without inventing a trailing paragraph (#876)', () => {
+    const editor = createEditor({
+      html: '<table><tbody><tr><td><p>内容</p></td></tr></tbody></table>',
+    })
+    const firstOutput = editor.getHtml()
+
+    editor.setHtml(firstOutput)
+
+    expect(editor.getHtml()).toBe(firstOutput)
+  })
+
+  it.each(['inline', 'class'])('keeps table HTML round-trip stable in %s style mode (#876)', mode => {
+    const editor = createEditor({
+      config: { textStyleMode: mode },
+      html: [
+        '<table><tbody><tr>',
+        '<td style="background-color: rgb(255, 255, 0);"><p>one<br>two</p></td>',
+        '</tr></tbody></table>',
+      ].join(''),
+    })
+    const firstOutput = editor.getHtml()
+
+    editor.setHtml(firstOutput)
+    const secondOutput = editor.getHtml()
+    const reparsedEditor = createEditor({ config: { textStyleMode: mode }, html: firstOutput })
+
+    expect(secondOutput).toBe(firstOutput)
+    expect(reparsedEditor.getHtml()).toBe(firstOutput)
+    expect(reparsedEditor.getText()).toBe('one\ntwo')
+  })
+
   it('preserves video and code blocks through table-cell HTML round-trip', () => {
     const editor = createEditor({ html: MEDIA_CELL_HTML })
     const cell = getFirstCell(editor)

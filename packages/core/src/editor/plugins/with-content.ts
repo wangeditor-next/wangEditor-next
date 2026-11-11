@@ -614,6 +614,25 @@ export const withContent = <T extends Editor>(editor: T) => {
 
     Transforms.insertFragment(e, newContent)
 
+    // The table module inserts a trailing empty paragraph while normalizing a
+    // table that is the last top-level node. Keep the source shape when
+    // setHtml is used for a table-only document; otherwise
+    // setHtml(getHtml()) adds a paragraph on every pass and the HTML output
+    // cannot reach a stable fixed point. An explicit trailing paragraph in
+    // the source remains part of `newContent` and is preserved.
+    const lastSourceNode = newContent[newContent.length - 1]
+    const lastEditorNode = e.children[e.children.length - 1]
+
+    if (
+      Element.isElement(lastSourceNode) &&
+      lastSourceNode.type === 'table' &&
+      Element.isElement(lastEditorNode) &&
+      lastEditorNode.type === 'paragraph' &&
+      Node.string(lastEditorNode) === ''
+    ) {
+      Transforms.removeNodes(e, { at: [e.children.length - 1] })
+    }
+
     // 恢复编辑器状态和选区
     if (!isEditorFocused) {
       e.deselect()
