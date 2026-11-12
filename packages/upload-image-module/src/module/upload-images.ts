@@ -17,14 +17,33 @@ function getMenuConfig(editor: IDomEditor) {
   return editor.getMenuConfig('uploadImage')
 }
 
-/**
- * 插入图片，是否独占一行由 uploadImage.insertAsBlock 决定
- */
-function insertImage(editor: IDomEditor, src: string, alt?: string, href?: string) {
-  const { insertAsBlock } = getMenuConfig(editor)
+// 存储 editor 的图片插入队列，保证异步校验（checkImage / parseImageSrc）下仍按调用顺序插入
+const EDITOR_TO_INSERT_QUEUE_MAP = new WeakMap<IDomEditor, Promise<unknown>>()
 
-  return insertImageNode(editor, src, alt, href, { block: !!insertAsBlock })
+/**
+ * 插入图片，是否独占一行由 uploadImage.insertAsBlock 决定。
+ * 同一个 editor 的插入会串行执行，避免后一张图片的异步钩子先完成而导致顺序错乱
+ */
+export function insertImage(editor: IDomEditor, src: string, alt?: string, href?: string) {
+  const { insertAsBlock } = getMenuConfig(editor)
+  const run = () => insertImageNode(editor, src, alt, href, { block: !!insertAsBlock })
+  const prev = EDITOR_TO_INSERT_QUEUE_MAP.get(editor)
+  // 队列空闲时立即执行；否则排在上一次插入之后
+  const task = prev ? prev.then(run) : run()
+  // 队列本身不受单次插入失败影响，完成后若无后续插入则清空
+  const tail: Promise<unknown> = task
+    .catch(() => undefined)
+    .then(() => {
+      if (EDITOR_TO_INSERT_QUEUE_MAP.get(editor) === tail) {
+        EDITOR_TO_INSERT_QUEUE_MAP.delete(editor)
+      }
+    })
+
+  EDITOR_TO_INSERT_QUEUE_MAP.set(editor, tail)
+
+  return task
 }
+
 /**
  * 获取 uploader 实例（并通过 editor 缓存）
  * @param editor editor

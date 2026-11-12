@@ -1,13 +1,14 @@
 import { IDomEditor } from '../../../packages/editor/src'
 import createEditor from '../../../tests/utils/create-editor'
 import UploadImageMenu from '../src/module/menu/UploadImageMenu'
-import uploadImages from '../src/module/upload-images'
+import uploadImages, { insertImage } from '../src/module/upload-images'
 
 let baseEditor: IDomEditor
 let menu: UploadImageMenu
 
 vi.mock('../src/module/upload-images', () => ({
   default: vi.fn(),
+  insertImage: vi.fn(),
 }))
 
 describe('Upload image menu', () => {
@@ -46,6 +47,17 @@ describe('Upload image menu', () => {
 
     menu.exec(editor, 'test.jpg')
     expect(viFn).toBeCalled()
+  })
+
+  test('UploadImageMenu customBrowseAndUpload insert callback goes through the serialized insertImage', () => {
+    const viFn = vi.fn()
+    const editor = createEditor({
+      config: { MENU_CONF: { uploadImage: { customBrowseAndUpload: viFn } } },
+    })
+
+    menu.exec(editor, 'test.jpg')
+    viFn.mock.calls[0][0]('https://a.test/a.png', 'a', 'https://a.test')
+    expect(insertImage).toBeCalledWith(editor, 'https://a.test/a.png', 'a', 'https://a.test')
   })
 
   test('UploadImageMenu invoke exec should insert hidden input element to body', () => {
