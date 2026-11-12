@@ -1,5 +1,13 @@
 # Change Log
 
+## 6.5.2
+
+### Patch Changes
+
+- d20b8f4: Preserve nested table paste structure and degrade unsupported nested cell blocks without losing their text.
+- Updated dependencies [3d19733]
+  - @wangeditor-next/core@6.5.2
+
 ## 6.5.1
 
 ### Patch Changes

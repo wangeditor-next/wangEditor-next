@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.5.2
+
+### Patch Changes
+
+- 3d19733: Keep table-only setHtml(getHtml()) output stable across repeated HTML round-trips.
+
 ## 6.5.1
 
 ### Patch Changes
