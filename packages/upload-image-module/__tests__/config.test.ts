@@ -41,3 +41,9 @@ describe('Upload image default config', () => {
     expect(genUploadImageConfig().base64LimitSize).toBe(0)
   })
 })
+
+describe('Upload image insertAsBlock config', () => {
+  test('insertAsBlock is false in default config', () => {
+    expect(genUploadImageConfig().insertAsBlock).toBe(false)
+  })
+})

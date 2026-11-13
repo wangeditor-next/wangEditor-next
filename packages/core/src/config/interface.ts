@@ -196,6 +196,8 @@ export type IUploadVideoConfig = IUploadConfig
 export type IUploadImageConfig = IUploadConfig & {
   // base64 限制（单位 kb） - 小于 xxx 就插入 base64 格式
   base64LimitSize: number
+  // 是否让每张上传的图片独占一行（默认 false，保持 inline 插入）
+  insertAsBlock?: boolean
 }
 
 interface ICodeLangConfig {

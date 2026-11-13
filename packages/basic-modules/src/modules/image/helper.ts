@@ -5,7 +5,7 @@
 
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
 import {
-  Editor, Element, Range, Transforms,
+  Editor, Element, Path, Range, Transforms,
 } from 'slate'
 
 import { replaceSymbols } from '../../utils/util'
@@ -78,11 +78,47 @@ async function parseSrc(menuKey: string, editor: IDomEditor, src: string): Promi
   return src
 }
 
+export interface InsertImageNodeOptions {
+  /**
+   * 是否让图片独占一行（默认 false，即在光标处以 inline 方式插入）。
+   * 仅当光标位于普通段落中时生效；其他位置（标题、列表等）仍按 inline 插入。
+   */
+  block?: boolean
+}
+
+/**
+ * 以独占一行的方式插入图片：光标所在段落为空则直接使用该段落，否则在其后新建一个段落。
+ * @returns 是否已处理（光标不在普通段落中时返回 false，由调用方按 inline 插入）
+ */
+function insertImageInOwnParagraph(editor: IDomEditor, image: ImageElement): boolean {
+  const entry = Editor.above(editor, {
+    match: n => Element.isElement(n) && Editor.isBlock(editor, n),
+    mode: 'lowest',
+  })
+
+  if (entry == null) { return false }
+  const [block, path] = entry
+
+  if (DomEditor.getNodeType(block) !== 'paragraph') { return false }
+
+  if (Editor.isEmpty(editor, block as Element)) {
+    Transforms.insertNodes(editor, image)
+  } else {
+    Transforms.insertNodes(
+      editor,
+      { type: 'paragraph', children: [{ text: '' }, image, { text: '' }] } as Element,
+      { at: Path.next(path), select: true },
+    )
+  }
+  return true
+}
+
 export async function insertImageNode(
   editor: IDomEditor,
   src: string,
   alt = '',
   href = '',
+  options: InsertImageNodeOptions = {},
 ) {
   const res = await check('insertImage', editor, src, alt, href)
 
@@ -123,7 +159,9 @@ export async function insertImageNode(
   if (isInsertImageMenuDisabled(editor)) { return }
 
   // 插入图片
-  Transforms.insertNodes(editor, image)
+  if (!(options.block && insertImageInOwnParagraph(editor, image))) {
+    Transforms.insertNodes(editor, image)
+  }
   // Continue typing in the trailing text, rather than inside the image's void child.
   // Move before restoring marks, since a selection change clears Slate's pending marks.
   if (DomEditor.getSelectedNodeByType(editor, 'image')) {

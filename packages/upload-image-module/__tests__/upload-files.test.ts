@@ -3,7 +3,7 @@ import * as uploadCore from '@wangeditor-next/core/upload'
 import { afterEach } from 'vitest'
 
 import createEditor from '../../../tests/utils/create-editor'
-import uploadImages from '../src/module/upload-images'
+import uploadImages, { insertImage } from '../src/module/upload-images'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -41,6 +41,103 @@ describe('Upload image menu upload files util', () => {
 
     expect(fn).toBeCalled()
     expect(uploadAdapter).not.toBeCalled()
+  })
+
+  test('uploadImages inserts each image in its own paragraph when insertAsBlock is true', async () => {
+    const customUpload = vi.fn(async (file: File, insertFn: any) => {
+      await insertFn(`https://example.com/${file.name}`, file.name, '')
+    })
+    const editor = createEditor({
+      config: { MENU_CONF: { uploadImage: { customUpload, insertAsBlock: true } } },
+    })
+
+    editor.select({ path: [0, 0], offset: 0 })
+    await uploadImages(editor, [mockFile('a.jpg'), mockFile('b.jpg')] as unknown as FileList)
+
+    const images = editor.children.map((n: any) => n.children.filter((c: any) => c.type === 'image'))
+
+    expect(images.map((list: any[]) => list.length)).toEqual([1, 1])
+  })
+
+  test('insertImage keeps call order when parseImageSrc resolves in reverse order', async () => {
+    const delays: Record<string, number> = { 'a.png': 30, 'b.png': 10, 'c.png': 0 }
+    const parseImageSrc = vi.fn(
+      (src: string) => new Promise<string>(resolve => {
+        setTimeout(() => resolve(src), delays[src.split('/').pop() as string])
+      }),
+    )
+    const editor = createEditor({
+      config: {
+        MENU_CONF: {
+          insertImage: { parseImageSrc },
+          uploadImage: { insertAsBlock: true },
+        },
+      },
+    })
+
+    editor.select({ path: [0, 0], offset: 0 })
+    // 不 await，模拟 customBrowseAndUpload / 多文件响应连续触发
+    const tasks = ['a.png', 'b.png', 'c.png'].map(name => insertImage(editor, `https://example.com/${name}`, name))
+
+    await Promise.all(tasks)
+
+    const srcs = editor.children.map((n: any) => n.children.find((c: any) => c.type === 'image')?.src)
+
+    expect(srcs).toEqual([
+      'https://example.com/a.png',
+      'https://example.com/b.png',
+      'https://example.com/c.png',
+    ])
+  })
+
+  test('insertAsBlock result round-trips through getHtml and setHtml', async () => {
+    const editor = createEditor({
+      config: { MENU_CONF: { uploadImage: { insertAsBlock: true } } },
+    })
+
+    editor.select({ path: [0, 0], offset: 0 })
+    await insertImage(editor, 'https://example.com/a.png', 'a')
+    await insertImage(editor, 'https://example.com/b.png', 'b')
+
+    const html = editor.getHtml()
+
+    expect(html.match(/<p>/g)).toHaveLength(2)
+    expect(html.match(/<img /g)).toHaveLength(2)
+
+    editor.setHtml(html)
+    expect(editor.getHtml()).toBe(html)
+    expect(editor.children).toHaveLength(2)
+  })
+
+  test('insertImage queue keeps working after an insertion fails', async () => {
+    const parseImageSrc = vi.fn()
+      .mockRejectedValueOnce(new Error('boom'))
+      .mockImplementation(async (src: string) => src)
+    const editor = createEditor({
+      config: { MENU_CONF: { insertImage: { parseImageSrc } } },
+    })
+
+    editor.select({ path: [0, 0], offset: 0 })
+    const failed = insertImage(editor, 'https://example.com/a.png', 'a')
+    const ok = insertImage(editor, 'https://example.com/b.png', 'b')
+
+    await expect(failed).rejects.toThrow('boom')
+    await ok
+    expect(JSON.stringify(editor.children)).toContain('https://example.com/b.png')
+  })
+
+  test('uploadImages keeps images inline by default', async () => {
+    const customUpload = vi.fn(async (file: File, insertFn: any) => {
+      await insertFn(`https://example.com/${file.name}`, file.name, '')
+    })
+    const editor = createEditor({
+      config: { MENU_CONF: { uploadImage: { customUpload } } },
+    })
+
+    editor.select({ path: [0, 0], offset: 0 })
+    await uploadImages(editor, [mockFile('a.jpg'), mockFile('b.jpg')] as unknown as FileList)
+
+    expect(editor.children).toHaveLength(1)
   })
 
   test('uploadImages should insert image with base64 string if file size less than base64LimitSize config', async () => {
@@ -170,6 +267,7 @@ describe('Upload image menu upload files util', () => {
       'https://img.test/a.png',
       'a',
       'https://link.test/a',
+      { block: false },
     )
     expect(showProgressBar).toHaveBeenCalledWith(55)
     expect(onProgress).toHaveBeenCalledWith(55)
@@ -214,6 +312,7 @@ describe('Upload image menu upload files util', () => {
       'https://img.test/custom.png',
       'custom-alt',
       'https://custom.link',
+      { block: false },
     )
     expect(onSuccess).toHaveBeenCalledTimes(1)
   })

@@ -3,14 +3,14 @@
  * @author wangfupeng
  */
 
-import { insertImageNode, isInsertImageMenuDisabled } from '@wangeditor-next/basic-modules'
+import { isInsertImageMenuDisabled } from '@wangeditor-next/basic-modules'
 import {
   IButtonMenu, IDomEditor, t,
 } from '@wangeditor-next/core'
 
 import { UPLOAD_IMAGE_SVG } from '../../constants/svg'
 import $ from '../../utils/dom'
-import uploadImages from '../upload-images'
+import uploadImages, { insertImage } from '../upload-images'
 
 class UploadImage implements IButtonMenu {
   readonly title = t('uploadImgModule.uploadImage')
@@ -43,7 +43,7 @@ class UploadImage implements IButtonMenu {
 
     // 自定义选择图片，并上传，如图床
     if (customBrowseAndUpload) {
-      customBrowseAndUpload((src, alt, href) => insertImageNode(editor, src, alt, href))
+      customBrowseAndUpload((src, alt, href) => insertImage(editor, src, alt, href))
       return
     }
 
