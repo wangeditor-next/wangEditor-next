@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>上传图片：逐段落与 inline 对照</title>
+    <link href="./css/editor.css" rel="stylesheet" />
+    <link href="../dist/css/style.css" rel="stylesheet" />
+    <style>
+      body {
+        max-width: 960px;
+        margin: 24px auto;
+        padding: 0 16px;
+        font-family: sans-serif;
+      }
+      nav,
+      .actions {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        margin: 16px 0;
+      }
+      #exported-html {
+        width: 100%;
+        min-height: 160px;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>上传图片：逐段落与 inline 对照</h1>
+    <nav aria-label="示例模式">
+      <a href="./upload-image-block.html">每张图片独立段落</a>
+      <a href="./upload-image-block.html?inline=1">默认 inline</a>
+      <a href="./index.html">所有示例</a>
+    </nav>
+    <p id="current-mode"></p>
+    <p>点击工具栏的上传图片按钮，选择多张较小图片。本示例在浏览器读取图片，不发送上传请求。</p>
+    <p>可先将光标移到空段落、非空段落、列表或表格单元格，再比较插入位置。</p>
+
+    <div id="editor-toolbar" class="editor-toolbar"></div>
+    <div id="editor-text-area" class="editor-text-area"></div>
+
+    <div class="actions">
+      <button id="check-roundtrip" type="button">检查 HTML 回环</button>
+      <span id="upload-status" role="status">尚未选择图片</span>
+    </div>
+    <p id="roundtrip-result" role="status"></p>
+    <label for="exported-html">当前导出 HTML</label>
+    <textarea id="exported-html" readonly></textarea>
+
+    <script src="../dist/index.js"></script>
+    <script>
+      const E = window.wangEditor
+      const inline = new URLSearchParams(location.search).get('inline') === '1'
+      const uploadStatus = document.getElementById('upload-status')
+      const roundtripButton = document.getElementById('check-roundtrip')
+      const roundtripResult = document.getElementById('roundtrip-result')
+      const htmlOutput = document.getElementById('exported-html')
+      let pendingUploads = 0
+      let lastRoundtripHtml = null
+
+      function readImage(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader()
+
+          reader.onload = () => resolve(String(reader.result))
+          reader.onerror = () => reject(reader.error || new Error('无法读取图片'))
+          reader.readAsDataURL(file)
+        })
+      }
+
+      const uploadImageConfig = {
+        async customUpload(file, insertFn) {
+          pendingUploads += 1
+          roundtripButton.disabled = true
+          uploadStatus.textContent = `正在读取 ${file.name}`
+
+          try {
+            const src = await readImage(file)
+
+            await insertFn(src, file.name, '')
+            uploadStatus.textContent = `已插入 ${file.name}`
+          } catch (error) {
+            uploadStatus.textContent = `插入失败：${error.message}`
+          } finally {
+            pendingUploads -= 1
+            roundtripButton.disabled = pendingUploads > 0
+          }
+        },
+      }
+
+      // inline 对照不设置此选项，直接使用默认值 false。
+      if (!inline) {
+        uploadImageConfig.insertAsBlock = true
+      }
+      document.getElementById('current-mode').textContent = inline
+        ? '当前模式：默认 inline（未设置 insertAsBlock）'
+        : '当前模式：每张图片独立段落（insertAsBlock: true）'
+
+      const editor = E.createEditor({
+        selector: '#editor-text-area',
+        html: '<p>在这个非空段落中试试上传图片。</p><p><br></p>',
+        config: {
+          MENU_CONF: { uploadImage: uploadImageConfig },
+          onChange(currentEditor) {
+            const html = currentEditor.getHtml()
+
+            htmlOutput.value = html
+            if (html !== lastRoundtripHtml) {
+              roundtripResult.textContent = ''
+            }
+          },
+        },
+      })
+      const toolbar = E.createToolbar({
+        editor,
+        selector: '#editor-toolbar',
+        config: { toolbarKeys: ['uploadImage', 'bulletedList', 'insertTable', 'undo', 'redo'] },
+      })
+
+      htmlOutput.value = editor.getHtml()
+      window.wangEditorExampleBridge = { editor, toolbar }
+
+      roundtripButton.addEventListener('click', () => {
+        const htmlBefore = editor.getHtml()
+
+        editor.setHtml(htmlBefore)
+
+        const htmlAfter = editor.getHtml()
+
+        lastRoundtripHtml = htmlAfter
+        htmlOutput.value = htmlAfter
+        roundtripResult.textContent =
+          htmlAfter === htmlBefore
+            ? 'HTML 回环一致；请同时检查回读后的图片和段落布局。'
+            : 'HTML 回环发生变化，请比较导出内容与编辑器布局。'
+      })
+    </script>
+  </body>
+</html>

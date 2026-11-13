@@ -101,7 +101,7 @@ function insertImageInOwnParagraph(editor: IDomEditor, image: ImageElement): boo
 
   if (DomEditor.getNodeType(block) !== 'paragraph') { return false }
 
-  if (Editor.isEmpty(editor, block as Element)) {
+  if (DomEditor.isEmptyPath(editor, path)) {
     Transforms.insertNodes(editor, image)
   } else {
     Transforms.insertNodes(
