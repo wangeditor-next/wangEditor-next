@@ -9,7 +9,7 @@ import {
 } from 'slate'
 
 import { replaceSymbols } from '../../utils/util'
-import { ImageElement, ImageStyle } from './custom-types'
+import { ImageElement, ImageLoading, ImageStyle } from './custom-types'
 
 /**
  * 判断菜单是否要 disabled
@@ -39,6 +39,20 @@ export function isInsertImageMenuDisabled(editor: IDomEditor): boolean {
 
   if (match) { return true }
   return false
+}
+
+/**
+ * 规范化 <img> 的 loading 属性值，仅保留浏览器支持的 lazy / eager
+ * @param value loading 属性值或配置值
+ * @returns 合法的 loading 值，否则返回 undefined
+ */
+export function normalizeImageLoading(value: unknown): ImageLoading | undefined {
+  if (typeof value !== 'string') { return undefined }
+
+  const loading = value.trim().toLowerCase()
+
+  if (loading === 'lazy' || loading === 'eager') { return loading }
+  return undefined
 }
 
 async function check(
@@ -125,6 +139,7 @@ export async function insertImageNode(
   if (!res) { return } // 检查失败，终止操作
 
   const parsedSrc = await parseSrc('insertImage', editor, src)
+  const loading = normalizeImageLoading(editor.getMenuConfig('insertImage').loading)
 
   // 新建一个 image node
   const image: ImageElement = {
@@ -132,6 +147,7 @@ export async function insertImageNode(
     src: replaceSymbols(parsedSrc),
     href,
     alt,
+    ...(loading ? { loading } : {}),
     style: {},
     children: [{ text: '' }], // 【注意】void node 需要一个空 text 作为 children
   }

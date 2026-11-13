@@ -10,6 +10,7 @@ import createEditor from '../../../../tests/utils/create-editor'
 import {
   insertImageNode,
   isInsertImageMenuDisabled,
+  normalizeImageLoading,
   updateImageNode,
 } from '../../src/modules/image/helper'
 
@@ -315,5 +316,76 @@ describe('image helper - block insertion', () => {
 
     expect(editor.children).toHaveLength(1)
     expect(imageParagraphs(editor)).toEqual([{ type: 'list-item', images: 1 }])
+  })
+})
+
+describe('image helper - loading', () => {
+  const src = 'https://example.com/a.png'
+
+  function createLoadingEditor(loading?: unknown) {
+    const editor: any = createEditor({
+      config: { MENU_CONF: { insertImage: loading === undefined ? {} : { loading } } } as any,
+    })
+
+    editor.select(Editor.start(editor, []))
+    return editor
+  }
+
+  it('normalizes loading values', () => {
+    expect(normalizeImageLoading('lazy')).toBe('lazy')
+    expect(normalizeImageLoading(' EAGER ')).toBe('eager')
+    expect(normalizeImageLoading('auto')).toBeUndefined()
+    expect(normalizeImageLoading('')).toBeUndefined()
+    expect(normalizeImageLoading(null)).toBeUndefined()
+    expect(normalizeImageLoading(true)).toBeUndefined()
+  })
+
+  it('does not set loading on inserted images by default', async () => {
+    const editor = createLoadingEditor()
+
+    await insertImageNode(editor, src)
+
+    const [image] = editor.getElemsByTypePrefix('image')
+
+    expect(image).not.toHaveProperty('loading')
+    expect(editor.getHtml()).not.toContain('loading=')
+  })
+
+  it('applies insertImage.loading to inserted images', async () => {
+    const onInsertedImage = vi.fn()
+    const editor: any = createEditor({
+      config: { MENU_CONF: { insertImage: { loading: 'lazy', onInsertedImage } } } as any,
+    })
+
+    editor.select(Editor.start(editor, []))
+    await insertImageNode(editor, src)
+
+    const [image] = editor.getElemsByTypePrefix('image')
+
+    expect(image.loading).toBe('lazy')
+    expect(onInsertedImage).toHaveBeenCalledWith(expect.objectContaining({ loading: 'lazy' }))
+    expect(editor.getHtml()).toContain(`<img src="${src}" alt="" data-href="" width="" height="" style="" loading="lazy"/>`)
+  })
+
+  it('ignores unsupported insertImage.loading values', async () => {
+    const editor = createLoadingEditor('auto')
+
+    await insertImageNode(editor, src)
+
+    const [image] = editor.getElemsByTypePrefix('image')
+
+    expect(image).not.toHaveProperty('loading')
+  })
+
+  it('keeps loading when the image is updated', async () => {
+    const editor = createLoadingEditor('lazy')
+
+    await insertImageNode(editor, src)
+    editor.select({ path: [0, 1, 0], offset: 0 })
+    await updateImageNode(editor, 'https://example.com/b.png', 'b', '', {})
+
+    const [image] = editor.getElemsByTypePrefix('image')
+
+    expect(image).toMatchObject({ src: 'https://example.com/b.png', loading: 'lazy' })
   })
 })

@@ -80,4 +80,38 @@ describe('image render elem', () => {
     expect(containerVnode.data.className.indexOf('w-e-selected-image-container')).toBeGreaterThan(0)
     expect(containerVnode.children.length).toBe(5) // image + 4 个拖拽触手
   })
+
+  it('render image - passes loading attribute to img', () => {
+    const elem = {
+      type: 'image',
+      src: 'https://www.wangeditor.com/imgs/logo.png',
+      alt: 'logo',
+      loading: 'lazy',
+      style: {},
+      children: [{ text: '' }],
+    }
+
+    const containerVnode = renderImageConf.renderElem(elem, null, editor) as any
+    const imageVnode = containerVnode.children[0]
+
+    expect(imageVnode.sel).toBe('img')
+    expect(imageVnode.data.loading).toBe('lazy')
+  })
+
+  it('render image - omits loading attribute when not set or unsupported', () => {
+    const elem = {
+      type: 'image',
+      src: 'https://www.wangeditor.com/imgs/logo.png',
+      alt: 'logo',
+      style: {},
+      children: [{ text: '' }],
+    }
+    const invalidElem = { ...elem, loading: 'auto' }
+
+    const containerVnode = renderImageConf.renderElem(elem, null, editor) as any
+    const invalidContainerVnode = renderImageConf.renderElem(invalidElem, null, editor) as any
+
+    expect(containerVnode.children[0].data).not.toHaveProperty('loading')
+    expect(invalidContainerVnode.children[0].data).not.toHaveProperty('loading')
+  })
 })

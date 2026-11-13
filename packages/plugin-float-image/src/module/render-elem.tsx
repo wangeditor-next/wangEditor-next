@@ -11,6 +11,7 @@ import throttle from 'lodash.throttle'
 import { jsx, VNode } from 'snabbdom'
 
 import $$, { Dom7Array } from '../utils/dom'
+import { normalizeImageLoading } from '../utils/loading'
 import { ImageElement } from './custom-types'
 
 interface IImageSize {
@@ -226,9 +227,10 @@ function renderResizeContainer(
 
 function renderImage(elemNode: SlateElement, children: VNode[] | null, editor: IDomEditor): VNode {
   const {
-    src, alt = '', href = '', style = {},
+    src, alt = '', href = '', loading, style = {},
   } = elemNode as ImageElement
   const { width = '', height = '', float } = style
+  const normalizedLoading = normalizeImageLoading(loading)
   const selected = DomEditor.isNodeSelected(editor, elemNode) // 图片是否选中
 
   const imageStyle: any = {}
@@ -238,7 +240,9 @@ function renderImage(elemNode: SlateElement, children: VNode[] | null, editor: I
   if (float) { imageStyle.float = float }
 
   // 【注意】void node 中，renderElem 不用处理 children 。core 会统一处理。
-  const vnode = <img style={imageStyle} src={src} alt={alt} data-href={href}/>
+  const vnode = (
+    <img style={imageStyle} src={src} alt={alt} data-href={href} {...(normalizedLoading ? { loading: normalizedLoading } : {})}/>
+  )
 
   const isDisabled = editor.isDisabled()
 

@@ -59,6 +59,23 @@ describe('Upload image menu upload files util', () => {
     expect(images.map((list: any[]) => list.length)).toEqual([1, 1])
   })
 
+  test('uploadImages applies insertImage.loading to uploaded images', async () => {
+    const customUpload = vi.fn(async (file: File, insertFn: any) => {
+      await insertFn(`https://example.com/${file.name}`, file.name, '')
+    })
+    const editor = createEditor({
+      config: { MENU_CONF: { uploadImage: { customUpload }, insertImage: { loading: 'lazy' } } },
+    })
+
+    editor.select({ path: [0, 0], offset: 0 })
+    await uploadImages(editor, [mockFile('a.jpg')] as unknown as FileList)
+
+    const [image] = editor.getElemsByTypePrefix('image') as any[]
+
+    expect(image.loading).toBe('lazy')
+    expect(editor.getHtml()).toContain('loading="lazy"')
+  })
+
   test('insertImage keeps call order when parseImageSrc resolves in reverse order', async () => {
     const delays: Record<string, number> = { 'a.png': 30, 'b.png': 10, 'c.png': 0 }
     const parseImageSrc = vi.fn(
@@ -88,6 +105,23 @@ describe('Upload image menu upload files util', () => {
       'https://example.com/b.png',
       'https://example.com/c.png',
     ])
+  })
+
+  test('uploaded images use MENU_CONF.insertImage.loading', async () => {
+    const customUpload = vi.fn(async (file: File, insertFn: any) => {
+      await insertFn(`https://example.com/${file.name}`, file.name, '')
+    })
+    const editor = createEditor({
+      config: { MENU_CONF: { insertImage: { loading: 'lazy' }, uploadImage: { customUpload } } },
+    })
+
+    editor.select({ path: [0, 0], offset: 0 })
+    await uploadImages(editor, [mockFile('a.jpg')] as unknown as FileList)
+
+    const [image] = editor.getElemsByTypePrefix('image') as any[]
+
+    expect(image).toMatchObject({ src: 'https://example.com/a.jpg', loading: 'lazy' })
+    expect(editor.getHtml()).toContain('loading="lazy"')
   })
 
   test('insertAsBlock result round-trips through getHtml and setHtml', async () => {
