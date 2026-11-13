@@ -110,7 +110,10 @@ class EditorImageSizeMenu implements IModalMenu {
         const rawHeight = $content.find(`#${heightInputId}`).val().trim()
 
         editor.restoreSelection()
-        if (!updateImageSize(editor, imageNode, rawWidth, rawHeight, 'modal')) { return }
+        const selectedImageNode = this.getSelectedImageNode(editor)
+
+        if (selectedImageNode == null) { return }
+        if (!updateImageSize(editor, selectedImageNode, rawWidth, rawHeight, 'modal')) { return }
         editor.hidePanelOrModal() // 隐藏 modal
       })
 
