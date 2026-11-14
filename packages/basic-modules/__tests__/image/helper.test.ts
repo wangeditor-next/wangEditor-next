@@ -218,6 +218,95 @@ describe('image helper - block insertion', () => {
     expect(imageParagraphs(editor)[1]).toEqual({ type: 'paragraph', images: 1 })
   })
 
+  it.each([
+    {
+      name: 'text before and after the empty paragraph',
+      texts: ['before', '', 'after'],
+      selectedIndex: 1,
+      expectedImageCounts: [0, 1, 1, 0],
+    },
+    {
+      name: 'two empty paragraphs',
+      texts: ['', ''],
+      selectedIndex: 1,
+      expectedImageCounts: [0, 1, 1],
+    },
+  ])(
+    'reuses the selected empty paragraph with $name',
+    async ({ texts, selectedIndex, expectedImageCounts }) => {
+      const editor: any = createEditor({
+        content: texts.map(text => ({ type: 'paragraph', children: [{ text }] })),
+      })
+
+      editor.select({ path: [selectedIndex, 0], offset: 0 })
+      await insertImageNode(editor, src, 'first', '', { block: true })
+      await insertImageNode(editor, src, 'second', '', { block: true })
+
+      expect(imageParagraphs(editor).map((paragraph: any) => paragraph.images)).toEqual(
+        expectedImageCounts
+      )
+      expect(editor.children[selectedIndex].children[1]).toMatchObject({ type: 'image', alt: 'first' })
+      expect(editor.children[selectedIndex + 1].children[1]).toMatchObject({
+        type: 'image', alt: 'second',
+      })
+      expect(editor.children[0].children[0].text).toBe(texts[0])
+      if (texts.includes('after')) {
+        expect(editor.children[editor.children.length - 1].children[0].text).toBe('after')
+      }
+      const html = editor.getHtml()
+
+      editor.setHtml(html)
+      expect(editor.getHtml()).toBe(html)
+    }
+  )
+
+  it('reuses an empty paragraph inside a rich table cell', async () => {
+    const editor: any = createEditor({
+      html: '<table><tbody><tr><td><p>cell text</p><p><br></p></td></tr></tbody></table>',
+    })
+    const cell = () => editor.children[0].children[0].children[0]
+
+    editor.select({ path: [0, 0, 0, 1, 0], offset: 0 })
+    await insertImageNode(editor, src, 'first', '', { block: true })
+    await insertImageNode(editor, src, 'second', '', { block: true })
+
+    expect(cell().children).toHaveLength(3)
+    expect(cell().children[0].children[0].text).toBe('cell text')
+    expect(imageParagraphs(cell()).map((paragraph: any) => paragraph.images)).toEqual([0, 1, 1])
+    expect(cell().children[1].children[1]).toMatchObject({ type: 'image', alt: 'first' })
+    expect(cell().children[2].children[1]).toMatchObject({ type: 'image', alt: 'second' })
+    const html = editor.getHtml()
+
+    editor.setHtml(html)
+    expect(editor.getHtml()).toBe(html)
+    expect(cell().children).toHaveLength(3)
+  })
+
+  it('keeps an existing image-only paragraph separate from the next image', async () => {
+    const editor: any = createEditor({
+      content: [
+        {
+          type: 'paragraph',
+          children: [
+            { text: '' },
+            { type: 'image', src, alt: 'existing', href: '', style: {}, children: [{ text: '' }] },
+            { text: '' },
+          ],
+        },
+      ],
+    })
+
+    editor.select(Editor.end(editor, []))
+    await insertImageNode(editor, src, 'next', '', { block: true })
+
+    expect(imageParagraphs(editor)).toEqual([
+      { type: 'paragraph', images: 1 },
+      { type: 'paragraph', images: 1 },
+    ])
+    expect(editor.children[0].children[1].alt).toBe('existing')
+    expect(editor.children[1].children[1].alt).toBe('next')
+  })
+
   it('falls back to inline insertion outside plain paragraphs (e.g. list items)', async () => {
     const editor: any = createEditor({ content: [{ type: 'list-item', children: [{ text: 'item' }] }] })
 
