@@ -1,5 +1,20 @@
 # Change Log
 
+## 6.6.0
+
+### Minor Changes
+
+- e64ae80: Add opt-in `MENU_CONF.uploadImage.insertAsBlock` so each uploaded image is inserted in its own paragraph instead of flowing inline next to the previous one. The default stays inline; `insertImageNode` accepts a new `{ block }` option for custom integrations.
+
+### Patch Changes
+
+- Updated dependencies [33dd177]
+- Updated dependencies [e8de811]
+- Updated dependencies [e0de777]
+- Updated dependencies [e64ae80]
+  - @wangeditor-next/basic-modules@6.6.0
+  - @wangeditor-next/core@6.6.0
+
 ## 6.5.2
 
 ### Patch Changes
