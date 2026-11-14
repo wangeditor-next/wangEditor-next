@@ -1,5 +1,11 @@
 # Change Log
 
+## 6.6.1
+
+### Patch Changes
+
+- 3475c5b: Keep the Snabbdom JSX factory in published ESM and UMD builds. Fix `jsx is not defined` when rendering images with the float-image plugin or using the affected modules independently.
+
 ## 6.6.0
 
 ### Minor Changes
