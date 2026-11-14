@@ -15,7 +15,12 @@
         "runtime": "classic"
       }
     ],
-    "@babel/preset-typescript"
+    [
+      "@babel/preset-typescript",
+      {
+        "jsxPragma": "jsx"
+      }
+    ]
   ],
   "plugins": [
     [

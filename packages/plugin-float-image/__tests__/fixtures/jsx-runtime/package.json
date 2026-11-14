@@ -1,0 +1,8 @@
+{
+  "name": "wangeditor-jsx-runtime-fixture",
+  "private": true,
+  "type": "module",
+  "peerDependencies": {
+    "snabbdom": "^3.6.4"
+  }
+}
