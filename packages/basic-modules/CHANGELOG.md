@@ -1,5 +1,20 @@
 # Change Log
 
+## 6.6.0
+
+### Minor Changes
+
+- e8de811: Support native image lazy loading. Image elements now keep the `<img loading="lazy|eager">` attribute through `setHtml`/paste parsing, editor rendering and `getHtml`, and the new opt-in `MENU_CONF.insertImage.loading` option sets it on newly inserted and uploaded images. Unsupported values are ignored and nothing changes when the option is not set.
+- e64ae80: Add opt-in `MENU_CONF.uploadImage.insertAsBlock` so each uploaded image is inserted in its own paragraph instead of flowing inline next to the previous one. The default stays inline; `insertImageNode` accepts a new `{ block }` option for custom integrations.
+
+### Patch Changes
+
+- 33dd177: Resize the currently selected image when reusing the image size dialog.
+- e0de777: Fix block image insertion leaving an extra empty paragraph in documents with multiple paragraphs or rich table cells. Reuse the selected empty paragraph while keeping existing image paragraphs separate.
+- Updated dependencies [e8de811]
+- Updated dependencies [e64ae80]
+  - @wangeditor-next/core@6.6.0
+
 ## 6.5.2
 
 ### Patch Changes
