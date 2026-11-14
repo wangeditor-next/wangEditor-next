@@ -7,12 +7,15 @@ import { getTextStyleMode, IDomEditor } from '@wangeditor-next/core'
 import { Element } from 'slate'
 
 import { ImageElement } from './custom-types'
+import { normalizeImageLoading } from './helper'
 
 function imageToHtml(elemNode: Element, _childrenHtml: string, editor?: IDomEditor): string {
   const {
-    src, alt = '', href = '', width = '', height = '', style = {},
+    src, alt = '', href = '', width = '', height = '', loading, style = {},
   } = elemNode as ImageElement
   const { width: styleWidth = '', height: styleHeight = '' } = style
+  const normalizedLoading = normalizeImageLoading(loading)
+  const loadingAttr = normalizedLoading ? ` loading="${normalizedLoading}"` : ''
   const mode = getTextStyleMode(editor)
 
   let imageHtml = ''
@@ -24,13 +27,13 @@ function imageToHtml(elemNode: Element, _childrenHtml: string, editor?: IDomEdit
     const widthData = styleWidth ? ` data-w-e-style-width="${styleWidth}"` : ''
     const heightData = styleHeight ? ` data-w-e-style-height="${styleHeight}"` : ''
 
-    imageHtml = `<img src="${src}" alt="${alt}" data-href="${href}" width="${exportedWidth}" height="${exportedHeight}"${widthData}${heightData}/>`
+    imageHtml = `<img src="${src}" alt="${alt}" data-href="${href}" width="${exportedWidth}" height="${exportedHeight}"${widthData}${heightData}${loadingAttr}/>`
   } else {
     let styleStr = ''
 
     if (styleWidth) { styleStr += `width: ${styleWidth};` }
     if (styleHeight) { styleStr += `height: ${styleHeight};` }
-    imageHtml = `<img src="${src}" alt="${alt}" data-href="${href}" width="${width}" height="${height}" style="${styleStr}"/>`
+    imageHtml = `<img src="${src}" alt="${alt}" data-href="${href}" width="${width}" height="${height}" style="${styleStr}"${loadingAttr}/>`
   }
 
   return href ? `<a href="${href}" target="_blank">${imageHtml}</a>` : imageHtml

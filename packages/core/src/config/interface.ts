@@ -21,6 +21,7 @@ type ImageElement = {
   href?: string
   width?: string
   height?: string
+  loading?: 'lazy' | 'eager'
   style?: { width?: string; height?: string }
   children: EmptyText[]
 }
@@ -129,6 +130,8 @@ interface IImageMenuBaseConfig {
 
 interface IInsertImageConfig extends IImageMenuBaseConfig {
     onInsertedImage?: (imageNode: ImageElement | null) => void;
+    // 新插入图片（含上传图片）的 <img loading> 属性，不设置则不输出该属性
+    loading?: 'lazy' | 'eager';
 }
 
 interface IEditImageConfig extends IImageMenuBaseConfig {

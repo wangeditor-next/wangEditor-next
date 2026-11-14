@@ -5,6 +5,7 @@
 
 import { getTextStyleMode, IDomEditor, SlateElement } from '@wangeditor-next/editor'
 
+import { normalizeImageLoading } from '../utils/loading'
 import { ImageElement } from './custom-types'
 
 function getFloatClass(float: string): string {
@@ -20,10 +21,12 @@ function getFloatClass(float: string): string {
 // 生成 html 的函数
 function imageToHtml(elem: SlateElement, _childrenHtml: string, editor?: IDomEditor): string {
   const {
-    src, alt = '', href = '', style = {},
+    src, alt = '', href = '', loading, style = {},
   } = elem as ImageElement
   const { width = '', height = '', float = '' } = style
   const mode = getTextStyleMode(editor)
+  const normalizedLoading = normalizeImageLoading(loading)
+  const loadingAttr = normalizedLoading ? ` loading="${normalizedLoading}"` : ''
 
   if (mode === 'class') {
     const widthData = width ? ` data-w-e-style-width="${width}"` : ''
@@ -32,7 +35,7 @@ function imageToHtml(elem: SlateElement, _childrenHtml: string, editor?: IDomEdi
     const floatClass = getFloatClass(float)
     const classAttr = floatClass ? ` class="${floatClass}"` : ''
 
-    return `<img src="${src}" alt="${alt}" data-href="${href}" width="${width}" height="${height}"${classAttr}${widthData}${heightData}${floatData}/>`
+    return `<img src="${src}" alt="${alt}" data-href="${href}" width="${width}" height="${height}"${classAttr}${widthData}${heightData}${floatData}${loadingAttr}/>`
   }
 
   let styleStr = ''
@@ -40,7 +43,7 @@ function imageToHtml(elem: SlateElement, _childrenHtml: string, editor?: IDomEdi
   if (width) { styleStr += `width: ${width};` }
   if (height) { styleStr += `height: ${height};` }
   if (float) { styleStr += `float: ${float};` }
-  return `<img src="${src}" alt="${alt}" data-href="${href}" style="${styleStr}"/>`
+  return `<img src="${src}" alt="${alt}" data-href="${href}" style="${styleStr}"${loadingAttr}/>`
 }
 
 // 配置

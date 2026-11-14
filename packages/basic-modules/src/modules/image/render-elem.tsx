@@ -11,6 +11,7 @@ import { jsx, VNode } from 'snabbdom'
 
 import $, { Dom7Array } from '../../utils/dom'
 import { ImageElement } from './custom-types'
+import { normalizeImageLoading } from './helper'
 
 interface IImageSize {
   width?: string
@@ -209,9 +210,10 @@ function renderResizeContainer(
 
 function renderImage(elemNode: SlateElement, children: VNode[] | null, editor: IDomEditor): VNode {
   const {
-    src, alt = '', href = '', style = {},
+    src, alt = '', href = '', loading, style = {},
   } = elemNode as ImageElement
   const { width = '', height = '' } = style
+  const normalizedLoading = normalizeImageLoading(loading)
   const selected = DomEditor.isNodeSelected(editor, elemNode) // 图片是否选中
 
   const imageStyle: any = { maxWidth: '100%' }
@@ -220,7 +222,9 @@ function renderImage(elemNode: SlateElement, children: VNode[] | null, editor: I
   if (height) { imageStyle.height = '100%' }
 
   // 【注意】void node 中，renderElem 不用处理 children 。core 会统一处理。
-  const imageVnode = <img style={imageStyle} src={src} alt={alt} data-href={href} />
+  const imageVnode = (
+    <img style={imageStyle} src={src} alt={alt} data-href={href} {...(normalizedLoading ? { loading: normalizedLoading } : {})} />
+  )
   const vnode = href ? (
     <a href={href} target="_blank">
       {imageVnode}

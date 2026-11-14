@@ -8,6 +8,7 @@ import { Descendant } from 'slate'
 
 import $, { DOMElement, getStyleValue } from '../../utils/dom'
 import { ImageElement } from './custom-types'
+import { normalizeImageLoading } from './helper'
 
 function parseHtml(elem: DOMElement, _children: Descendant[], _editor: IDomEditor): ImageElement {
   const $elem = $(elem)
@@ -16,6 +17,7 @@ function parseHtml(elem: DOMElement, _children: Descendant[], _editor: IDomEdito
   const heightAttr = $elem.attr('height') || ''
   const styleWidth = getStyleValue($elem, 'width') || $elem.attr('data-w-e-style-width') || widthAttr
   const styleHeight = getStyleValue($elem, 'height') || $elem.attr('data-w-e-style-height') || heightAttr
+  const loading = normalizeImageLoading($elem.attr('loading'))
 
   href = decodeURIComponent(href) // 兼容 V4
 
@@ -30,6 +32,7 @@ function parseHtml(elem: DOMElement, _children: Descendant[], _editor: IDomEdito
     },
     width: widthAttr,
     height: heightAttr,
+    ...(loading ? { loading } : {}),
     children: [{ text: '' }], // void node 有一个空白 text
   }
 }

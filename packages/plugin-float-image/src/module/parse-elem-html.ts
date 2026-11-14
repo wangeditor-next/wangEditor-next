@@ -6,6 +6,7 @@
 import { IDomEditor, SlateDescendant } from '@wangeditor-next/editor'
 
 import $, { Dom7Array, DOMElement, getStyleValue } from '../utils/dom'
+import { normalizeImageLoading } from '../utils/loading'
 import { ImageElement } from './custom-types'
 
 function getFloatValue($elem: Dom7Array): string {
@@ -35,6 +36,7 @@ function parseHtml(elem: DOMElement, _children: SlateDescendant[], _editor: IDom
   const styleWidth = getStyleValue($elem, 'width') || $elem.attr('data-w-e-style-width') || widthAttr
   const styleHeight = getStyleValue($elem, 'height') || $elem.attr('data-w-e-style-height') || heightAttr
   const styleFloat = getFloatValue($elem)
+  const loading = normalizeImageLoading($elem.attr('loading'))
 
   href = decodeURIComponent(href) // 兼容 V4
 
@@ -50,6 +52,7 @@ function parseHtml(elem: DOMElement, _children: SlateDescendant[], _editor: IDom
     },
     width: widthAttr,
     height: heightAttr,
+    ...(loading ? { loading } : {}),
     children: [{ text: '' }], // void node 有一个空白 text
   }
 }

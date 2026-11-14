@@ -8,6 +8,9 @@ type EmptyText = {
   text: ''
 }
 
+// 原生图片懒加载策略，对应 <img loading="..."> 属性
+export type ImageLoading = 'lazy' | 'eager'
+
 export type ImageStyle = {
   width?: string
   height?: string
@@ -22,6 +25,7 @@ export type ImageElement = {
   href?: string
   width?: string
   height?: string
+  loading?: ImageLoading
   style?: ImageStyle
   children: EmptyText[]
 }
