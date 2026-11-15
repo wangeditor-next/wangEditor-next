@@ -76,12 +76,15 @@ export function normalizeVideoAttributes(value: unknown): VideoAttributes {
 export function parseVideoAttributes(videoElem?: DOMElement): VideoAttributes {
   if (videoElem == null) { return {} }
 
+  // preload="" 等同于 auto，与未设置 preload 不同
+  const preload = videoElem.getAttribute('preload')
+
   return normalizeVideoAttributes({
     autoplay: videoElem.hasAttribute('autoplay'),
     loop: videoElem.hasAttribute('loop'),
     muted: videoElem.hasAttribute('muted'),
     playsInline: videoElem.hasAttribute('playsinline'),
-    preload: videoElem.getAttribute('preload'),
+    preload: preload === '' ? 'auto' : preload,
     controlsList: videoElem.getAttribute('controlslist'),
     disablePictureInPicture: videoElem.hasAttribute('disablepictureinpicture'),
   })

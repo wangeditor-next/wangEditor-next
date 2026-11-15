@@ -169,6 +169,15 @@ describe('video - parse html', () => {
     expect(video).not.toHaveProperty('controlsList')
   })
 
+  it('treats an empty preload attribute as auto', () => {
+    const $container = $(
+      '<figure data-w-e-type="video" data-w-e-is-void><video src="xxx.mp4" preload></video></figure>',
+    )
+    const video = parseHtmlConf.parseElemHtml($container[0], [], editor)
+
+    expect(video).toMatchObject({ preload: 'auto' })
+  })
+
   it.each([
     ['style', 'style="text-align: right;"'],
     ['data', 'data-w-e-text-align="right"'],

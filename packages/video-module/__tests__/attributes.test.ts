@@ -70,6 +70,8 @@ describe('video attributes helpers', () => {
     })
     expect(parseVideoAttributes($('<video controls></video>')[0])).toEqual({})
     expect(parseVideoAttributes(undefined)).toEqual({})
+    expect(parseVideoAttributes($('<video preload></video>')[0])).toEqual({ preload: 'auto' })
+    expect(parseVideoAttributes($('<video preload=""></video>')[0])).toEqual({ preload: 'auto' })
   })
 
   it('generates attribute html in a stable order', () => {
