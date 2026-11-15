@@ -16,7 +16,21 @@ export type videoStyle = {
 
 export type VideoAlign = 'left' | 'center' | 'right'
 
-export type VideoElement = {
+export type VideoPreload = 'none' | 'metadata' | 'auto'
+
+// <video> 播放相关属性，仅作用于 <video> 形式（不含 <iframe> 第三方视频）
+export type VideoAttributes = {
+  autoplay?: boolean
+  loop?: boolean
+  muted?: boolean
+  playsInline?: boolean
+  preload?: VideoPreload
+  // 以空格分隔的 controlslist token，如 'nodownload nofullscreen'
+  controlsList?: string
+  disablePictureInPicture?: boolean
+}
+
+export type VideoElement = VideoAttributes & {
   type: 'video'
   key?: string
   src: string

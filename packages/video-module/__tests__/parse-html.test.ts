@@ -134,6 +134,41 @@ describe('video - parse html', () => {
     })
   })
 
+  it('video playback attributes', () => {
+    const videoHtml = '<video poster="xxx.png" controls autoplay loop muted playsinline preload="METADATA" controlslist="nodownload foo nofullscreen" disablepictureinpicture><source src="xxx.mp4"/></video>'
+    const $container = $(
+      `<figure data-w-e-type="video" data-w-e-is-void data-w-e-align="center">${videoHtml}</figure>`,
+    )
+
+    expect(parseHtmlConf.parseElemHtml($container[0], [], editor)).toEqual({
+      type: 'video',
+      src: 'xxx.mp4',
+      poster: 'xxx.png',
+      width: 'auto',
+      height: 'auto',
+      style: {},
+      align: 'center',
+      autoplay: true,
+      loop: true,
+      muted: true,
+      playsInline: true,
+      preload: 'metadata',
+      controlsList: 'nodownload nofullscreen',
+      disablePictureInPicture: true,
+      children: [{ text: '' }],
+    })
+  })
+
+  it('ignores unsupported playback attribute values', () => {
+    const $container = $(
+      '<figure data-w-e-type="video" data-w-e-is-void><video src="xxx.mp4" preload="lazy" controlslist="foo"></video></figure>',
+    )
+    const video = parseHtmlConf.parseElemHtml($container[0], [], editor)
+
+    expect(video).not.toHaveProperty('preload')
+    expect(video).not.toHaveProperty('controlsList')
+  })
+
   it.each([
     ['style', 'style="text-align: right;"'],
     ['data', 'data-w-e-text-align="right"'],

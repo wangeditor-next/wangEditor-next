@@ -71,6 +71,61 @@ describe('videoModule module', () => {
       expect(res).not.toContain('style=')
     })
 
+    test('videoToHtmlConf elemToHtml outputs video playback attributes', () => {
+      const element = {
+        type: 'video',
+        src: 'test.mp4',
+        poster: 'xxx.png',
+        autoplay: true,
+        loop: true,
+        muted: true,
+        playsInline: true,
+        preload: 'none',
+        controlsList: 'nodownload',
+        disablePictureInPicture: true,
+        children: [],
+      }
+      const attrs = ' autoplay loop muted playsinline preload="none" controlslist="nodownload" disablepictureinpicture'
+
+      expect(videoToHtmlConf.elemToHtml(element, '')).toContain(
+        `<video poster="xxx.png" controls="true" width="auto" height="auto" style="display: block; max-width: 100%;"${attrs}><source src="test.mp4" type="video/mp4"/></video>`,
+      )
+
+      const mockEditor = {
+        getConfig() {
+          return { textStyleMode: 'class' }
+        },
+      } as any
+
+      expect(videoToHtmlConf.elemToHtml(element, '', mockEditor)).toContain(
+        `<video poster="xxx.png" controls="true" width="auto" height="auto"${attrs}><source src="test.mp4" type="video/mp4"/></video>`,
+      )
+    })
+
+    test('videoToHtmlConf elemToHtml skips invalid playback attributes and iframe videos', () => {
+      const res = videoToHtmlConf.elemToHtml({
+        type: 'video',
+        src: 'test.mp4',
+        autoplay: 'yes',
+        preload: '" onerror="alert(1)',
+        controlsList: 'foo',
+        children: [],
+      }, '')
+
+      expect(res).toContain('<video poster="" controls="true" width="auto" height="auto" style="display: block; max-width: 100%;"><source')
+
+      const iframeRes = videoToHtmlConf.elemToHtml({
+        type: 'video',
+        src: '<iframe src="test.mp4"></iframe>',
+        autoplay: true,
+        controlsList: 'nodownload',
+        children: [],
+      }, '')
+
+      expect(iframeRes).not.toContain('autoplay')
+      expect(iframeRes).not.toContain('controlslist')
+    })
+
     test('videoToHtmlConf migrates legacy textAlign to media alignment', () => {
       const element = {
         type: 'video',

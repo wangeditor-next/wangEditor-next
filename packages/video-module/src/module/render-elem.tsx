@@ -10,6 +10,7 @@ import { h, jsx, VNode } from 'snabbdom'
 
 import { genSizeStyledIframeHtml } from '../utils/dom'
 import { getVideoAlign, getVideoAlignClass } from './alignment'
+import { genEditorVideoAttrs } from './attributes'
 import { VideoElement } from './custom-types'
 
 function renderVideo(elemNode: Element, children: VNode[] | null, editor: IDomEditor): VNode {
@@ -20,6 +21,7 @@ function renderVideo(elemNode: Element, children: VNode[] | null, editor: IDomEd
     width = 'auto',
     height = 'auto',
     style = {},
+    muted,
   } = elemNode as VideoElement
   const align = getVideoAlign(elemNode)
   const containerClassName = [
@@ -48,8 +50,17 @@ function renderVideo(elemNode: Element, children: VNode[] | null, editor: IDomEd
     )
   } else {
     // 其他，mp4 格式
+    // 编辑区内不自动播放（不渲染 autoplay），其他属性与导出的 HTML 保持一致
+    // muted 需要通过 DOM property 设置才会生效
     const videoVnode = (
-      <video key={key} poster={poster} controls style={style}>
+      <video
+        key={key}
+        poster={poster}
+        controls
+        muted={muted === true}
+        attrs={genEditorVideoAttrs(elemNode)}
+        style={style}
+      >
         <source src={src} type="video/mp4" />
         {'Sorry, your browser doesn\'t support embedded videos.\n 抱歉，浏览器不支持 video 视频'}
       </video>
