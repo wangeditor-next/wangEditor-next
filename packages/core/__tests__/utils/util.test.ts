@@ -37,6 +37,13 @@ describe('utils', () => {
     expect(res).toBe('&lt;p&gt;hello &nbsp;world&lt;/p&gt;')
   })
 
+  it('escapes ampersands before generating nbsp entities', () => {
+    const html = '&lt; &amp;  world'
+    const res = replaceHtmlSpecialSymbols(html)
+
+    expect(res).toBe('&amp;lt; &amp;amp; &nbsp;world')
+  })
+
   it('replace html symbol', () => {
     const html = '&lt;p&gt;hello &nbsp;world&lt;/p&gt;'
     const res = deReplaceHtmlSpecialSymbols(html)

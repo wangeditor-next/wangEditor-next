@@ -11,7 +11,6 @@ import { PRE_PARSE_HTML_CONF_LIST, TEXT_TAGS } from '../index'
 import {
   getTagName, isDOMComment, isDOMElement, isDOMText,
 } from '../utils/dom'
-import { deReplaceHtmlSpecialSymbols } from '../utils/util'
 import { replaceSpace160 } from './helper'
 import parseCommonElemHtml from './parse-common-elem-html'
 import parseTextElemHtml, { parseTextElemHtmlToStyle } from './parse-text-elem-html'
@@ -24,7 +23,6 @@ function normalizeTextNodeContent(text: string, childNode: Node): string {
     text = text.replace(/[\r\n\t]+/g, '')
   }
 
-  text = deReplaceHtmlSpecialSymbols(text)
   text = replaceSpace160(text)
 
   return text
