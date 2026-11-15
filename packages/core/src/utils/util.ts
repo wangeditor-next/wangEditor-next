@@ -62,6 +62,8 @@ export function addQueryToUrl(url: string, data: object): string {
 export function replaceHtmlSpecialSymbols(str: string) {
   return (
     str
+      // 先转义原始 `&`，再生成用于保留连续空格的 `&nbsp;`，避免字面量实体被解析。
+      .replace(/&/g, '&amp;')
       /**
        * 遇到两个空格时才替换，一个空格不替换
        * 两个英文单词之间有一个空格，就不用替换，否则无法默认换行 issue #4403

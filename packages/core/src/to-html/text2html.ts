@@ -29,7 +29,8 @@ function textToHtml(textNode: Text, editor: IDomEditor, _options: INodeToHtmlOpt
     textHtml = textHtml.replace(/\n\r|\r\n|\r|\n/g, '<br>')
   }
 
-  // 在 <pre> 内部，&nbsp; 替换为空格
+  // 在 <pre> 内部，仅将此处生成的 `&nbsp;` 替换为空格。原始文本中的
+  // `&nbsp;` 已先转义为 `&amp;nbsp;`，不会被误处理。
   if (hasPre) {
     textHtml = textHtml.replace(/&nbsp;/g, ' ')
   }
