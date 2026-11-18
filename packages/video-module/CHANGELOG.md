@@ -1,5 +1,17 @@
 # Change Log
 
+## 6.7.0
+
+### Minor Changes
+
+- f4df904: Support more `<video>` attributes. Video elements now keep `autoplay`, `loop`, `muted`, `playsinline`, `preload`, `controlslist` and `disablepictureinpicture` through `setHtml`/paste parsing, editor rendering and `getHtml`, and the new opt-in `MENU_CONF.insertVideo.attributes` option sets them on newly inserted and uploaded videos. Unsupported values are ignored, the editor does not autoplay videos while editing, and nothing changes when the option is not set.
+
+### Patch Changes
+
+- ac88009: 修复视频复制到外部编辑器时丢失 `autoplay` 和 `muted` 属性的问题。
+- Updated dependencies [f4df904]
+  - @wangeditor-next/core@6.7.0
+
 ## 6.6.2
 
 ### Patch Changes

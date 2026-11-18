@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.7.0
+
+### Patch Changes
+
+- Updated dependencies [f4df904]
+  - @wangeditor-next/core@6.7.0
+
 ## 6.6.2
 
 ### Patch Changes
