@@ -113,6 +113,81 @@ describe('Video module helper', () => {
       expect(fn).toBeCalled()
     })
 
+    test('it should apply insertVideo.attributes to inserted videos', async () => {
+      vi.restoreAllMocks()
+      const onInsertedVideo = vi.fn()
+      const editor = createEditor({
+        config: {
+          MENU_CONF: {
+            insertVideo: {
+              onInsertedVideo,
+              attributes: {
+                muted: true,
+                playsInline: true,
+                preload: 'Metadata',
+                controlsList: 'nodownload foo',
+                disablePictureInPicture: true,
+                loop: false,
+              },
+            },
+          },
+        },
+      })
+
+      editor.select(editor.start([]))
+      await insertVideo(editor, 'https://example.com/a.mp4', 'poster.png')
+      await flushPromises()
+
+      const video = editor.getElemsByTypePrefix('video')[0] as any
+      const expected = {
+        muted: true,
+        playsInline: true,
+        preload: 'metadata',
+        controlsList: 'nodownload',
+        disablePictureInPicture: true,
+      }
+
+      expect(video).toEqual(expect.objectContaining(expected))
+      expect(video).not.toHaveProperty('loop')
+      expect(onInsertedVideo).toBeCalledWith(expect.objectContaining(expected))
+      expect(editor.getHtml()).toContain(
+        ' muted playsinline preload="metadata" controlslist="nodownload" disablepictureinpicture>',
+      )
+    })
+
+    test('it should not add playback attributes by default or to iframe videos', async () => {
+      vi.restoreAllMocks()
+      const editor = createEditor({
+        config: {
+          MENU_CONF: {
+            insertVideo: {
+              attributes: { autoplay: true, muted: true },
+            },
+          },
+        },
+      })
+      const defaultEditor = createEditor()
+
+      editor.select(editor.start([]))
+      defaultEditor.select(defaultEditor.start([]))
+      await insertVideo(editor, '<iframe src="https://example.com/embed"></iframe>')
+      await insertVideo(defaultEditor, 'https://example.com/a.mp4')
+      await flushPromises()
+
+      const iframeVideo = editor.getElemsByTypePrefix('video')[0] as any
+      const defaultVideo = defaultEditor.getElemsByTypePrefix('video')[0] as any
+
+      expect(iframeVideo).not.toHaveProperty('autoplay')
+      expect(iframeVideo).not.toHaveProperty('muted')
+      const attributeKeys = [
+        'autoplay', 'loop', 'muted', 'playsInline', 'preload', 'controlsList', 'disablePictureInPicture',
+      ]
+
+      attributeKeys.forEach(key => {
+        expect(defaultVideo).not.toHaveProperty(key)
+      })
+    })
+
     test('it should parse iframe if give iframe element', async () => {
       const fn = vi.fn()
 
@@ -299,6 +374,34 @@ describe('Video module helper', () => {
       await uploadVideos(editor, [new File(['test123'], 'foo.jpg')] as unknown as FileList)
 
       expect(fn).toBeCalled()
+    })
+
+    test('it should apply insertVideo.attributes to uploaded videos', async () => {
+      vi.restoreAllMocks()
+      const editor = createEditor({
+        config: {
+          MENU_CONF: {
+            insertVideo: {
+              attributes: { controlsList: 'nodownload', disablePictureInPicture: true },
+            },
+            uploadVideo: {
+              customUpload: (_file: File, insertFn: (src: string, poster?: string) => void) => {
+                insertFn('https://example.com/uploaded.mp4')
+              },
+            },
+          },
+        },
+      })
+
+      editor.select(editor.start([]))
+      await uploadVideos(editor, [new File(['123'], 'uploaded.mp4')] as unknown as FileList)
+      await flushPromises()
+
+      expect(editor.getElemsByTypePrefix('video')[0]).toEqual(expect.objectContaining({
+        src: 'https://example.com/uploaded.mp4',
+        controlsList: 'nodownload',
+        disablePictureInPicture: true,
+      }))
     })
 
     test('it should invoke customInsert callback if upload successfully', async () => {

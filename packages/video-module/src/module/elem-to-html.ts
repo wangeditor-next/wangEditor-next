@@ -8,6 +8,7 @@ import { Element } from 'slate'
 
 import { genSizeStyledIframeHtml } from '../utils/dom'
 import { getVideoAlign, getVideoAlignClass, getVideoJustifyContent } from './alignment'
+import { genVideoAttributesHtml } from './attributes'
 import { VideoElement } from './custom-types'
 
 function videoToHtml(elemNode: Element, _childrenHtml?: string, editor?: IDomEditor): string {
@@ -34,18 +35,19 @@ function videoToHtml(elemNode: Element, _childrenHtml?: string, editor?: IDomEdi
   } else {
     // 其他，mp4 等 url 格式
     const { width: styleWidth = '', height: styleHeight = '' } = style
+    const attributesHtml = genVideoAttributesHtml(elemNode)
 
     if (mode === 'class') {
       const widthData = styleWidth ? ` data-w-e-style-width="${styleWidth}"` : ''
       const heightData = styleHeight ? ` data-w-e-style-height="${styleHeight}"` : ''
 
-      res += `<video poster="${poster}" controls="true" width="${width}" height="${height}"${widthData}${heightData}><source src="${src}" type="video/mp4"/></video>`
+      res += `<video poster="${poster}" controls="true" width="${width}" height="${height}"${widthData}${heightData}${attributesHtml}><source src="${src}" type="video/mp4"/></video>`
     } else {
       let styleStr = 'display: block; max-width: 100%;'
 
       if (styleWidth) { styleStr += ` width: ${styleWidth};` }
       if (styleHeight) { styleStr += ` height: ${styleHeight};` }
-      res += `<video poster="${poster}" controls="true" width="${width}" height="${height}" style="${styleStr}"><source src="${src}" type="video/mp4"/></video>`
+      res += `<video poster="${poster}" controls="true" width="${width}" height="${height}" style="${styleStr}"${attributesHtml}><source src="${src}" type="video/mp4"/></video>`
     }
   }
   res += '\n</figure>'

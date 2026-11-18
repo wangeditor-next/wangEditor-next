@@ -7,6 +7,7 @@ import { DomEditor, IDomEditor } from '@wangeditor-next/core'
 import { Transforms } from 'slate'
 
 import { replaceSymbols } from '../../utils/util'
+import { normalizeVideoAttributes } from '../attributes'
 import { VideoElement } from '../custom-types'
 
 /**
@@ -30,7 +31,9 @@ export default async function (
   editor.restoreSelection()
 
   // 校验
-  const { onInsertedVideo, checkVideo, parseVideoSrc } = editor.getMenuConfig('insertVideo')
+  const {
+    onInsertedVideo, checkVideo, parseVideoSrc, attributes,
+  } = editor.getMenuConfig('insertVideo')
   const checkRes = await checkVideo(src, poster)
 
   if (typeof checkRes === 'string') {
@@ -45,8 +48,9 @@ export default async function (
 
   // 转换 src
   let parsedSrc = await parseVideoSrc(src)
+  const isIframe = parsedSrc.trim().indexOf('<iframe ') === 0
 
-  if (parsedSrc.trim().indexOf('<iframe ') !== 0) {
+  if (!isIframe) {
     parsedSrc = replaceSymbols(parsedSrc)
   }
 
@@ -56,6 +60,8 @@ export default async function (
     src: parsedSrc,
     poster,
     align: 'center',
+    // <video> 属性仅对 mp4 等 url 形式生效，<iframe> 第三方视频不支持
+    ...(isIframe ? {} : normalizeVideoAttributes(attributes)),
     children: [{ text: '' }],
     style: {
       width,

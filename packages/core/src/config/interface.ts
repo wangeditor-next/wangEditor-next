@@ -26,7 +26,17 @@ type ImageElement = {
   children: EmptyText[]
 }
 
-type VideoElement = {
+type VideoAttributes = {
+  autoplay?: boolean
+  loop?: boolean
+  muted?: boolean
+  playsInline?: boolean
+  preload?: 'none' | 'metadata' | 'auto'
+  controlsList?: string
+  disablePictureInPicture?: boolean
+}
+
+type VideoElement = VideoAttributes & {
   type: 'video'
   key?: string
   src: string
@@ -192,6 +202,8 @@ interface IInsertVideoConfig {
   onInsertedVideo: (videoNode: VideoElement) => NodeEntry | Range;
   checkVideo: (src:string, poster:string)=> string | boolean | undefined
   parseVideoSrc: (url: string) => string
+  // 新插入视频（含上传视频）的 <video> 属性，如 autoplay muted controlslist，不设置则不输出
+  attributes?: VideoAttributes
 }
 
 export type IUploadVideoConfig = IUploadConfig

@@ -9,7 +9,10 @@ import { Descendant } from 'slate'
 import $, { Dom7Array, DOMElement } from '../utils/dom'
 import { styleStringToObject } from '../utils/util'
 import { normalizeVideoAlign } from './alignment'
-import { VideoAlign, VideoElement, videoStyle } from './custom-types'
+import { parseVideoAttributes } from './attributes'
+import {
+  VideoAlign, VideoAttributes, VideoElement, videoStyle,
+} from './custom-types'
 
 function genVideoElem(
   src: string,
@@ -18,6 +21,7 @@ function genVideoElem(
   height = 'auto',
   style: videoStyle = {},
   align: VideoAlign = 'center',
+  attributes: VideoAttributes = {},
 ): VideoElement {
   return {
     type: 'video',
@@ -28,6 +32,7 @@ function genVideoElem(
     style,
     children: [{ text: '' }], // void 元素有一个空 text
     align,
+    ...attributes,
   }
 }
 
@@ -129,7 +134,9 @@ function parseHtml(elem: DOMElement, _children: Descendant[], _editor: IDomEdito
   if (!style.width && videoStyleWidth) { style.width = videoStyleWidth }
   if (!style.height && videoStyleHeight) { style.height = videoStyleHeight }
   align = getVideoAlign($elem)
-  return genVideoElem(src, poster, width, height, style, align)
+  const attributes = parseVideoAttributes($video[0])
+
+  return genVideoElem(src, poster, width, height, style, align, attributes)
 }
 
 export const parseHtmlConf = {
