@@ -10,6 +10,11 @@ const VIDEO_PRELOADS: VideoPreload[] = ['none', 'metadata', 'auto']
 // controlslist tokens supported by browsers
 const VIDEO_CONTROLS_LIST_TOKENS = ['nodownload', 'nofullscreen', 'noremoteplayback', 'noplaybackrate']
 
+// These markers keep playback intent in the editable DOM without enabling
+// autoplay or relying on a DOM-only muted property during clipboard cloning.
+export const VIDEO_CLIPBOARD_AUTOPLAY_MARKER = 'data-w-e-video-autoplay'
+export const VIDEO_CLIPBOARD_MUTED_MARKER = 'data-w-e-video-muted'
+
 /**
  * 规范化 <video preload> 属性值，仅保留 none / metadata / auto
  * @param value preload 属性值或配置值
@@ -113,16 +118,18 @@ export function genVideoAttributesHtml(value: unknown): string {
 
 /**
  * 生成编辑区内 <video> 的 attrs。
- * 编辑时不自动播放，因此不包含 autoplay；muted 需通过 DOM property 设置，不在此处
+ * 编辑时不自动播放；autoplay 和 muted 使用内部 marker，复制到外部时再还原为真实属性。
  * @param value video node
  */
 export function genEditorVideoAttrs(value: unknown): Record<string, string | boolean> {
   const {
-    loop, playsInline, preload, controlsList, disablePictureInPicture,
+    autoplay, loop, muted, playsInline, preload, controlsList, disablePictureInPicture,
   } = normalizeVideoAttributes(value)
   const attrs: Record<string, string | boolean> = {}
 
+  if (autoplay) { attrs[VIDEO_CLIPBOARD_AUTOPLAY_MARKER] = 'true' }
   if (loop) { attrs.loop = true }
+  if (muted) { attrs[VIDEO_CLIPBOARD_MUTED_MARKER] = 'true' }
   if (playsInline) { attrs.playsinline = true }
   if (preload) { attrs.preload = preload }
   if (controlsList) { attrs.controlslist = controlsList }
