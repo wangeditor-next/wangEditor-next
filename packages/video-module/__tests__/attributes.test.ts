@@ -92,7 +92,7 @@ describe('video attributes helpers', () => {
     expect(genVideoAttributesHtml({})).toBe('')
   })
 
-  it('generates editor attrs without autoplay and muted', () => {
+  it('generates editor attrs without activating autoplay or muted', () => {
     expect(
       genEditorVideoAttrs({
         autoplay: true,
@@ -104,7 +104,9 @@ describe('video attributes helpers', () => {
         disablePictureInPicture: true,
       }),
     ).toEqual({
+      'data-w-e-video-autoplay': 'true',
       loop: true,
+      'data-w-e-video-muted': 'true',
       playsinline: true,
       preload: 'auto',
       controlslist: 'nodownload',

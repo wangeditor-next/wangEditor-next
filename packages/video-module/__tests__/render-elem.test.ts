@@ -50,7 +50,9 @@ describe('video module - render elem', () => {
     expect(video.sel).toBe('video')
     expect(video.data?.muted).toBe(true)
     expect(video.data?.attrs).toEqual({
+      'data-w-e-video-autoplay': 'true',
       loop: true,
+      'data-w-e-video-muted': 'true',
       playsinline: true,
       preload: 'metadata',
       controlslist: 'nodownload nofullscreen',
