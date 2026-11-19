@@ -2487,6 +2487,179 @@ test('regression #929: block video keeps explicit media alignment under CSS rese
   expect(exportedHtml).toContain('justify-content: flex-start')
 })
 
+test('video can be resized by dragging the selected video draggers', async ({ page }) => {
+  await page.goto('/examples/default-mode.html')
+  await page.getByTestId('btn-create').click()
+  await expect(getEditable(page)).toBeVisible()
+
+  await page.evaluate(() => {
+    const editor = (window as any).wangEditorExampleBridge.editor
+
+    editor.setHtml(
+      [
+        '<figure data-w-e-type="video" data-w-e-is-void data-w-e-align="left">',
+        '<video width="400" height="200" style="width: 400px; height: 200px;">',
+        '<source src="data:video/mp4;base64," type="video/mp4"/>',
+        '</video>',
+        '</figure>',
+        '<p><br></p>',
+      ].join(''),
+    )
+  })
+
+  const figure = page.locator('[data-testid="editor-textarea"] .w-e-video')
+  const video = figure.locator('video')
+  const dragger = figure.locator('.w-e-video-dragger.right-bottom')
+  const sizeTip = figure.locator('.w-e-video-size-tip')
+  const readVideoStyle = () =>
+    page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge.editor
+
+      return editor.getElemsByTypePrefix('video')[0]?.style
+    })
+
+  await expect(video).toBeVisible()
+  await page.evaluate(() => {
+    const editor = (window as any).wangEditorExampleBridge.editor
+
+    editor.select(editor.end([]))
+  })
+  await expect(dragger).toHaveCount(0)
+
+  const videoHandle = await video.elementHandle()
+
+  await video.click()
+  await expect(figure.locator('.w-e-video-dragger')).toHaveCount(4)
+  await expect(sizeTip).toBeHidden()
+
+  const box = await dragger.boundingBox()
+
+  if (!box) {
+    throw new Error('video dragger not found')
+  }
+
+  const startX = box.x + box.width / 2
+  const startY = box.y + box.height / 2
+
+  await page.mouse.move(startX, startY)
+  await page.mouse.down()
+  await page.mouse.move(startX + 50, startY, { steps: 5 })
+  await page.mouse.move(startX + 100, startY, { steps: 5 })
+  await expect(sizeTip).toBeVisible()
+  await expect(sizeTip).toHaveText('500 × 250')
+  await page.mouse.up()
+
+  await expect.poll(readVideoStyle).toEqual({ width: '500px', height: '250px' })
+  await expect(sizeTip).toBeHidden()
+
+  const videoBox = await video.boundingBox()
+
+  expect(Math.round(videoBox?.width || 0)).toBe(500)
+  expect(Math.round(videoBox?.height || 0)).toBe(250)
+  // selecting and resizing the video keeps the same <video> element
+  expect(await videoHandle?.evaluate(elem => elem.isConnected)).toBe(true)
+
+  const html = await page.evaluate(() => (window as any).wangEditorExampleBridge.editor.getHtml())
+
+  expect(html).toContain('style="display: block; max-width: 100%; width: 500px; height: 250px;"')
+})
+
+test('iframe video can be shrunk while dragging over the iframe', async ({ page }) => {
+  await page.goto('/examples/default-mode.html')
+  await page.getByTestId('btn-create').click()
+  await expect(getEditable(page)).toBeVisible()
+
+  await page.evaluate(() => {
+    const editor = (window as any).wangEditorExampleBridge.editor
+
+    editor.setHtml(
+      [
+        '<figure data-w-e-type="video" data-w-e-is-void data-w-e-align="left">',
+        '<iframe src="about:blank" width="400" height="200" style="width: 400px; height: 200px;"></iframe>',
+        '</figure>',
+        '<p><br></p>',
+      ].join(''),
+    )
+    editor.select({ path: [0, 0], offset: 0 })
+  })
+
+  const figure = page.locator('[data-testid="editor-textarea"] .w-e-video')
+  const iframe = figure.locator('iframe')
+  const dragger = figure.locator('.w-e-video-dragger.left-top')
+
+  await expect(iframe).toBeVisible()
+  await expect(dragger).toBeVisible()
+
+  const box = await dragger.boundingBox()
+
+  if (!box) {
+    throw new Error('video dragger not found')
+  }
+
+  const startX = box.x + box.width / 2
+  const startY = box.y + box.height / 2
+
+  // dragging the left-top dragger to the right moves the mouse over the iframe
+  await page.mouse.move(startX, startY)
+  await page.mouse.down()
+  await page.mouse.move(startX + 100, startY + 20, { steps: 10 })
+  await page.mouse.up()
+
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const editor = (window as any).wangEditorExampleBridge.editor
+
+        return editor.getElemsByTypePrefix('video')[0]?.style
+      }),
+    )
+    .toEqual({ width: '300px', height: '150px' })
+
+  const iframeBox = await iframe.boundingBox()
+
+  expect(Math.round(iframeBox?.width || 0)).toBe(300)
+  expect(Math.round(iframeBox?.height || 0)).toBe(150)
+  expect(await iframe.evaluate(elem => (elem as HTMLElement).style.pointerEvents)).toBe('')
+})
+
+test('video keeps percentage widths relative to the editor', async ({ page }) => {
+  await page.goto('/examples/default-mode.html')
+  await page.getByTestId('btn-create').click()
+  await expect(getEditable(page)).toBeVisible()
+
+  await page.evaluate(() => {
+    const editor = (window as any).wangEditorExampleBridge.editor
+
+    editor.setHtml(
+      [
+        '<figure data-w-e-type="video" data-w-e-is-void data-w-e-align="center">',
+        '<video style="width: 50%;">',
+        '<source src="data:video/mp4;base64," type="video/mp4"/>',
+        '</video>',
+        '</figure>',
+        '<p><br></p>',
+      ].join(''),
+    )
+  })
+
+  const figure = page.locator('[data-testid="editor-textarea"] .w-e-video')
+  const video = figure.locator('video')
+
+  await expect(video).toBeVisible()
+
+  const layout = await page.evaluate(() => {
+    const container = document.querySelector('[data-testid="editor-textarea"] .w-e-video') as HTMLElement
+    const media = container.querySelector('video') as HTMLElement
+
+    return {
+      containerWidth: container.clientWidth,
+      mediaWidth: media.getBoundingClientRect().width,
+    }
+  })
+
+  expect(Math.abs(layout.mediaWidth - layout.containerWidth / 2)).toBeLessThanOrEqual(1)
+})
+
 test('regression #988: editable content keeps its structural styles under host resets', async ({
   page,
 }) => {

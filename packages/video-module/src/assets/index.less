@@ -36,3 +36,76 @@
 .w-e-video-align-right {
   justify-content: flex-end;
 }
+
+// 拖拽，修改视频尺寸
+.w-e-text-container [data-slate-editor] {
+  .w-e-video-resize-container {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+    position: relative;
+
+    > video,
+    .w-e-video-iframe > iframe {
+      display: block;
+      max-width: 100%;
+    }
+
+    .w-e-video-iframe {
+      height: 100%;
+    }
+  }
+
+  .w-e-selected-video-resize-container {
+    box-shadow: 0 0 0 1px @textarea-selected-border-color;
+
+    .w-e-video-dragger {
+      background-color: @textarea-handler-bg-color;
+      height: 7px;
+      position: absolute;
+      width: 7px;
+      z-index: 1;
+    }
+    .left-top {
+      cursor: nwse-resize;
+      left: 0;
+      top: 0;
+    }
+    .right-top {
+      cursor: nesw-resize;
+      right: 0;
+      top: 0;
+    }
+    .left-bottom {
+      bottom: 0;
+      cursor: nesw-resize;
+      left: 0;
+    }
+    .right-bottom {
+      bottom: 0;
+      cursor: nwse-resize;
+      right: 0;
+    }
+
+    // 拖拽时实时显示宽高
+    .w-e-video-size-tip {
+      background-color: rgba(0, 0, 0, 0.6);
+      border-radius: 3px;
+      color: #fff;
+      display: none;
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 0 6px;
+      pointer-events: none;
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      white-space: nowrap;
+      z-index: 1;
+    }
+  }
+
+  .w-e-video-resizing .w-e-video-size-tip {
+    display: block;
+  }
+}
