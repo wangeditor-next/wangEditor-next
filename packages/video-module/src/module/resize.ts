@@ -3,7 +3,7 @@
  */
 
 import { DomEditor, IDomEditor } from '@wangeditor-next/core'
-import { Element as SlateElement, Transforms } from 'slate'
+import { Element as SlateElement, Node, Transforms } from 'slate'
 
 import { getVideoAlign } from './alignment'
 import { VideoElement, videoStyle } from './custom-types'
@@ -74,6 +74,8 @@ export function calcVideoResizeSize(
   const minWidth = Math.max(VIDEO_MIN_RESIZE_SIZE, VIDEO_MIN_RESIZE_SIZE / ratio)
   let width = originalWidth + gap
 
+  // 最大宽度小于最小宽度时，无法同时满足两个限制，忽略本次拖拽
+  if (maxWidth > 0 && maxWidth < minWidth) { return null }
   if (maxWidth > 0) { width = Math.min(width, maxWidth) }
   width = Math.max(width, minWidth)
 
@@ -160,6 +162,12 @@ export function genVideoResizeMousedownHandler(editor: IDomEditor, elemNode: Sla
       } catch (_error) {
         return
       }
+
+      // 拖拽期间节点可能已被删除，此时 path 上可能是其他节点，不能写入
+      if (!Node.has(editor, path)) { return }
+      const current = Node.get(editor, path) as SlateElement
+
+      if (!SlateElement.isElement(current) || current.type !== elemNode.type) { return }
 
       const { style = {} } = elemNode as VideoElement
       const props: Partial<VideoElement> = {

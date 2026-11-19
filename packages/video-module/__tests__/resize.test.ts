@@ -130,6 +130,8 @@ describe('video resize helpers', () => {
       height: 700,
     })
     expect(calcVideoResizeSize({ width: 0, height: 200 }, 10, 600)).toBeNull()
+    // the min width cannot exceed the max width
+    expect(calcVideoResizeSize({ width: 20, height: 10 }, 10, 20)).toBeNull()
   })
 })
 
@@ -302,5 +304,21 @@ describe('video resize mousedown handler', () => {
 
     expect(() => releaseMouse()).not.toThrow()
     expect(editor.getElemsByTypePrefix('video')).toHaveLength(0)
+  })
+
+  it('does not touch another node that now occupies the old path', () => {
+    const editor = createEditorWithVideo()
+    const elemNode = editor.children[0]
+    const { container, rightDragger } = createResizeDom()
+
+    genVideoResizeMousedownHandler(editor, elemNode)(
+      createMousedownEvent(rightDragger, container, 100),
+    )
+    moveMouse(150)
+    editor.removeNodes({ at: [0] })
+    releaseMouse()
+
+    expect(editor.children).toHaveLength(1)
+    expect(editor.children[0]).toEqual({ type: 'paragraph', children: [{ text: '' }] })
   })
 })
