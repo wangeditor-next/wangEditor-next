@@ -30,8 +30,8 @@
 - [ ] `tests/e2e`：补 `setHtml` 关键回归场景
   目标：覆盖空字符串、table 后跟 paragraph、含样式文本、含 list 的回填结果。
 
-- [ ] `packages/core/__tests__/text-area/event-handlers/`：补 `customPaste` 返回 `true` 的分支
-  目标：现在只测了拦截默认粘贴，缺少继续默认粘贴的路径。
+- [x] `packages/core/__tests__/text-area/event-handlers/paste.test.ts`：覆盖 `customPaste` 返回 `true` 的分支
+  已验证回调收到编辑器和粘贴事件，默认纯文本粘贴使用原始剪贴板数据插入一次。
 
 - [ ] `packages/core/__tests__/text-area/event-handlers/`：补更完整的 selection 边界
   目标：覆盖 void 节点前后、table 前后、空 block 内的移动/删除行为。

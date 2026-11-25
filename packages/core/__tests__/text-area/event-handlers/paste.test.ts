@@ -49,6 +49,29 @@ describe('handleOnPaste', () => {
     EDITOR_TO_CAN_PASTE.delete(editor)
   })
 
+  it('continues default plain text paste when customPaste returns true', () => {
+    const customPaste = vi.fn(() => true)
+    const editor = {
+      getConfig: () => ({ readOnly: false, customPaste }),
+      insertData: vi.fn(),
+    } as any
+    const event = {
+      target: {},
+      preventDefault: vi.fn(),
+      clipboardData: createClipboardData(),
+    } as any
+
+    vi.spyOn(helpers, 'hasEditableTarget').mockReturnValue(true)
+
+    handleOnPaste(event, {} as any, editor)
+
+    expect(customPaste).toHaveBeenCalledExactlyOnceWith(editor, event)
+    expect(event.preventDefault).toHaveBeenCalled()
+    expect(editor.insertData).toHaveBeenCalledOnce()
+    expect(editor.insertData.mock.calls[0][0]).toBe(event.clipboardData)
+    EDITOR_TO_CAN_PASTE.delete(editor)
+  })
+
   it('pastes plain text by insertData', () => {
     const editor = {
       getConfig: () => ({ readOnly: false }),
