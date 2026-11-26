@@ -117,8 +117,9 @@ export function observerTableResize(
 
         const rowHeights = getTableRowHeights(table)
 
-        // 当非拖动引起的宽度变化，需要调整 columnWidths
-        Transforms.setNodes<TableElement>(
+        // Layout is derived from content. Keep the size in the document while
+        // leaving the user's edit as the next undoable action.
+        const updateSize = () => Transforms.setNodes<TableElement>(
           editor,
           {
             scrollWidth: contentRect.width,
@@ -127,6 +128,12 @@ export function observerTableResize(
           } as TableElement,
           { at: tablePath },
         )
+
+        if (editor.withoutSavingHistory) {
+          editor.withoutSavingHistory(updateSize)
+        } else {
+          updateSize()
+        }
       })
 
       observer.observe(table)

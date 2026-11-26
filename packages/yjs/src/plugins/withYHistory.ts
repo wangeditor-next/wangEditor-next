@@ -12,6 +12,7 @@ export type YHistoryEditor = YjsEditor & {
   undoManager: Y.UndoManager
 
   withoutSavingOrigin: unknown
+  withoutSavingHistory?: (fn: () => void) => void
 
   undo: () => void
   redo: () => void
@@ -69,7 +70,11 @@ export function withYHistory(options: WithYHistoryOptions = {}) {
     e.undoManager = undoManager
     e.withoutSavingOrigin = withoutSavingOrigin
 
-    const { onChange, isLocalOrigin } = e
+    const { onChange, isLocalOrigin, withoutSavingHistory } = e
+
+    e.withoutSavingHistory = fn => YHistoryEditor.withoutSaving(e, () => {
+      if (withoutSavingHistory) { withoutSavingHistory(fn) } else { fn() }
+    })
 
     e.onChange = () => {
       onChange()

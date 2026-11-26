@@ -105,8 +105,11 @@ export const YjsEditor = {
     const prev = YjsEditor.origin(editor)
 
     ORIGIN.set(editor, origin)
-    fn()
-    ORIGIN.set(editor, prev)
+    try {
+      fn()
+    } finally {
+      ORIGIN.set(editor, prev)
+    }
   },
 
   storePosition(editor: YjsEditor, key: string, point: Point): void {
