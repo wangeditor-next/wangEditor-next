@@ -74,69 +74,80 @@ function selectOffsets(
 }
 
 describe('yjs collaboration', () => {
-  it('syncs automatic table dimensions without consuming either client’s undo or redo', async () => {
-    const callbacks = new WeakMap<Element, ResizeObserverCallback>()
+  it.each(['network peers', 'two views', 'two views with a shared history origin'])(
+    'syncs automatic table dimensions without consuming undo or redo for %s', async topology => {
+      const callbacks = new WeakMap<Element, ResizeObserverCallback>()
 
-    vi.stubGlobal('ResizeObserver', class {
-      constructor(private callback: ResizeObserverCallback) {}
-      observe(el: Element) { callbacks.set(el, this.callback) }
-      disconnect() {}
-    })
-    const docs = [new Y.Doc(), new Y.Doc()]
-    const editors = docs.map(() => createEditor({ html: '<table><tr><td>A</td></tr></table><p>R</p>' }))
+      vi.stubGlobal('ResizeObserver', class {
+        constructor(private callback: ResizeObserverCallback) {}
+        observe(el: Element) { callbacks.set(el, this.callback) }
+        disconnect() {}
+      })
+      const firstDoc = new Y.Doc()
+      const docs = [firstDoc, topology === 'network peers' ? new Y.Doc() : firstDoc]
+      const editors = docs.map(() => createEditor({ html: '<table><tr><td>A</td></tr></table><p>R</p>' }))
 
-    docs[0].get('content', Y.XmlText).applyDelta(slateNodesToInsertDelta(editors[0].children))
-    Y.applyUpdate(docs[1], Y.encodeStateAsUpdate(docs[0]))
-    connectDocuments(docs[0], docs[1])
-    const [first, second] = editors.map((editor, i) => {
-      const result = withYHistory()(withYjs(docs[i].get('content', Y.XmlText))(editor))
+      docs[0].get('content', Y.XmlText).applyDelta(slateNodesToInsertDelta(editors[0].children))
+      if (docs[0] !== docs[1]) {
+        Y.applyUpdate(docs[1], Y.encodeStateAsUpdate(docs[0]))
+        connectDocuments(docs[0], docs[1])
+      }
+      const options = topology === 'two views with a shared history origin'
+        ? { withoutSavingOrigin: Symbol('shared application origin') }
+        : {}
+      const [first, second] = editors.map((editor, i) => {
+        const binding = withYjs(docs[i].get('content', Y.XmlText), { localOrigin: Symbol('client') })
+        const result = withYHistory(options)(binding(editor))
 
-      YjsEditor.connect(result)
-      return result
-    })
-    const measure = (height: number) => {
-      const table = first.getEditableContainer().querySelector('table')!
+        YjsEditor.connect(result)
+        return result
+      })
+      const measure = (height: number) => {
+        const table = first.getEditableContainer().querySelector('table')!
 
-      callbacks.get(table)!([{ contentRect: { width: 90, height } } as ResizeObserverEntry], {} as ResizeObserver)
-    }
+        callbacks.get(table)!([{ contentRect: { width: 90, height } } as ResizeObserverEntry], {} as ResizeObserver)
+      }
 
-    try {
-      const aborted = new Error('measurement failed')
+      try {
+        const aborted = new Error('measurement failed')
 
-      expect(() => first.withoutSavingHistory!(() => { throw aborted })).toThrow(aborted)
-      expect(YjsEditor.origin(first)).toBe(first.localOrigin)
-      second.select(second.end([1]))
-      second.insertText('emote')
-      await flushPromises()
-      first.select(first.end([0, 0, 0]))
-      first.insertText('B')
-      await flushPromises()
-      first.undoManager.stopCapturing()
-      const sizes = [first, second].map(e => e.undoManager.undoStack.length)
+        expect(() => first.withoutSavingHistory!(() => { throw aborted })).toThrow(aborted)
+        expect(YjsEditor.origin(first)).toBe(first.localOrigin)
+        second.select(second.end([1]))
+        second.insertText('emote')
+        await flushPromises()
+        const networkPeers = topology === 'network peers'
 
-      measure(85)
-      await flushPromises()
-      expect(second.children[0]).toMatchObject({ height: 85 })
-      expect([first, second].map(e => e.undoManager.undoStack.length)).toEqual(sizes)
-      first.undo()
-      await flushPromises()
-      expect(first.getText()).toBe('A\nRemote')
-      expect(second.getText()).toBe(first.getText())
-      measure(61)
-      await flushPromises()
-      expect(first.undoManager.redoStack).toHaveLength(1)
-      expect(second.children[0]).toMatchObject({ height: 61 })
-      first.redo()
-      await flushPromises()
-      expect(first.getText()).toBe('AB\nRemote')
-      expect(second.children).toEqual(first.children)
-    } finally {
-      YjsEditor.disconnect(first)
-      YjsEditor.disconnect(second)
-      docs.forEach(doc => doc.destroy())
-      vi.unstubAllGlobals()
-    }
-  })
+        first.select(networkPeers ? first.end([0, 0, 0]) : first.start([0, 0, 0]))
+        first.insertText('B')
+        await flushPromises()
+        first.undoManager.stopCapturing()
+        const sizes = [first, second].map(e => e.undoManager.undoStack.length)
+
+        measure(85)
+        await flushPromises()
+        expect(second.children[0]).toMatchObject({ height: 85 })
+        expect([first, second].map(e => e.undoManager.undoStack.length)).toEqual(sizes)
+        first.undo()
+        await flushPromises()
+        expect(first.getText()).toBe('A\nRemote')
+        expect(second.getText()).toBe(first.getText())
+        measure(61)
+        await flushPromises()
+        expect(first.undoManager.redoStack).toHaveLength(1)
+        expect(second.children[0]).toMatchObject({ height: 61 })
+        first.redo()
+        await flushPromises()
+        expect(first.getText()).toBe(networkPeers ? 'AB\nRemote' : 'BA\nRemote')
+        expect(second.children).toEqual(first.children)
+      } finally {
+        YjsEditor.disconnect(first)
+        YjsEditor.disconnect(second)
+        new Set(docs).forEach(doc => doc.destroy())
+        vi.unstubAllGlobals()
+      }
+    },
+  )
 
   it('preserves text order when moving a node forward in the same parent', async () => {
     const firstDoc = new Y.Doc()

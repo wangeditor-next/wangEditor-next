@@ -72,7 +72,10 @@ export function withYHistory(options: WithYHistoryOptions = {}) {
 
     const { onChange, isLocalOrigin, withoutSavingHistory } = e
 
-    e.withoutSavingHistory = fn => YHistoryEditor.withoutSaving(e, () => {
+    // Another view of the same Y.Doc must receive this editor's derived updates.
+    const derivedOrigin = Symbol('editor-derived-update')
+
+    e.withoutSavingHistory = fn => YjsEditor.withOrigin(e, derivedOrigin, () => {
       if (withoutSavingHistory) { withoutSavingHistory(fn) } else { fn() }
     })
 
@@ -82,7 +85,9 @@ export function withYHistory(options: WithYHistoryOptions = {}) {
       LAST_SELECTION.set(e, e.selection && slateRangeToRelativeRange(e.sharedRoot, e, e.selection))
     }
 
-    e.isLocalOrigin = origin => origin === e.withoutSavingOrigin || isLocalOrigin(origin)
+    e.isLocalOrigin = origin => (
+      origin === derivedOrigin || origin === e.withoutSavingOrigin || isLocalOrigin(origin)
+    )
 
     const handleStackItemAdded = ({
       stackItem,
