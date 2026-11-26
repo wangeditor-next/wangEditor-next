@@ -74,8 +74,13 @@ function selectOffsets(
 }
 
 describe('yjs collaboration', () => {
-  it.each(['network peers', 'two views', 'two views with a shared history origin'])(
-    'syncs automatic table dimensions without consuming undo or redo for %s', async topology => {
+  it.each([
+    { name: 'network peers', shared: false, options: {} },
+    { name: 'two views', shared: true, options: {} },
+    { name: 'a shared history origin', shared: true, options: { withoutSavingOrigin: Symbol() } },
+    { name: 'constructor-tracked origins', shared: true, options: { trackedOrigins: new Set([Symbol, Object]) } },
+  ])(
+    'syncs automatic table dimensions without consuming undo or redo for $name', async ({ shared, options }) => {
       const callbacks = new WeakMap<Element, ResizeObserverCallback>()
 
       vi.stubGlobal('ResizeObserver', class {
@@ -84,7 +89,7 @@ describe('yjs collaboration', () => {
         disconnect() {}
       })
       const firstDoc = new Y.Doc()
-      const docs = [firstDoc, topology === 'network peers' ? new Y.Doc() : firstDoc]
+      const docs = [firstDoc, shared ? firstDoc : new Y.Doc()]
       const editors = docs.map(() => createEditor({ html: '<table><tr><td>A</td></tr></table><p>R</p>' }))
 
       docs[0].get('content', Y.XmlText).applyDelta(slateNodesToInsertDelta(editors[0].children))
@@ -92,9 +97,6 @@ describe('yjs collaboration', () => {
         Y.applyUpdate(docs[1], Y.encodeStateAsUpdate(docs[0]))
         connectDocuments(docs[0], docs[1])
       }
-      const options = topology === 'two views with a shared history origin'
-        ? { withoutSavingOrigin: Symbol('shared application origin') }
-        : {}
       const [first, second] = editors.map((editor, i) => {
         const binding = withYjs(docs[i].get('content', Y.XmlText), { localOrigin: Symbol('client') })
         const result = withYHistory(options)(binding(editor))
@@ -116,9 +118,8 @@ describe('yjs collaboration', () => {
         second.select(second.end([1]))
         second.insertText('emote')
         await flushPromises()
-        const networkPeers = topology === 'network peers'
-
-        first.select(networkPeers ? first.end([0, 0, 0]) : first.start([0, 0, 0]))
+        first.undoManager.stopCapturing()
+        first.select(shared ? first.start([0, 0, 0]) : first.end([0, 0, 0]))
         first.insertText('B')
         await flushPromises()
         first.undoManager.stopCapturing()
@@ -138,7 +139,7 @@ describe('yjs collaboration', () => {
         expect(second.children[0]).toMatchObject({ height: 61 })
         first.redo()
         await flushPromises()
-        expect(first.getText()).toBe(networkPeers ? 'AB\nRemote' : 'BA\nRemote')
+        expect(first.getText()).toBe(shared ? 'BA\nRemote' : 'AB\nRemote')
         expect(second.children).toEqual(first.children)
       } finally {
         YjsEditor.disconnect(first)
