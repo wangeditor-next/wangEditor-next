@@ -64,7 +64,26 @@ export default defineComponent({
 
     const editorRef = shallowRef<null | IDomEditor>(null) // editor 实例，必须用 shallowRef
 
-    const curValue = ref('') // 记录 editor 当前 html 内容
+    let pendingModelValue: string | undefined
+    let lastEmitted: { html: string; content: SlateDescendant[] } | undefined
+
+    function syncModelValue(html: string) {
+      const editor = editorRef.value
+
+      if (editor == null) {
+        // 创建完成前仅保留父组件最后一次更新，空字符串也表示更新。
+        pendingModelValue = html
+        return
+      }
+
+      // Slate 内容变更会替换根节点数组，回显等于已发送的内容时可跳过序列化。
+      if (lastEmitted?.html === html && lastEmitted.content === editor.children) {
+        return
+      }
+      if (html !== editor.getHtml()) {
+        editor.setHtml(html)
+      }
+    }
 
     /**
      * 初始化编辑器
@@ -86,6 +105,13 @@ export default defineComponent({
           onCreated(editor: IDomEditor) {
             editorRef.value = editor // 记录 editor 实例
 
+            const modelValue = pendingModelValue
+
+            pendingModelValue = undefined
+            if (modelValue !== undefined) {
+              syncModelValue(modelValue)
+            }
+
             context.emit('onCreated', editor)
 
             if (props.defaultConfig.onCreated) {
@@ -97,7 +123,7 @@ export default defineComponent({
           onChange(editor: IDomEditor) {
             const editorHtml = editor.getHtml()
 
-            curValue.value = editorHtml // 记录当前内容
+            lastEmitted = { html: editorHtml, content: editor.children }
             context.emit('update:modelValue', editorHtml) // 触发 v-model 值变化
 
             context.emit('onChange', editor)
@@ -166,19 +192,6 @@ export default defineComponent({
     }
 
     /**
-     * 设置 HTML
-     * @param newHtml new html
-     */
-    function setHtml(newHtml: string) {
-      const editor = editorRef.value
-
-      if (editor == null) {
-        return
-      }
-      editor.setHtml(newHtml)
-    }
-
-    /**
      * 元素挂在后初始化编辑器
      */
     onMounted(() => {
@@ -186,17 +199,7 @@ export default defineComponent({
     })
 
     // 监听 v-model 值变化
-    watch(
-      () => props.modelValue,
-      newVal => {
-        if (newVal === curValue.value) {
-          return
-        } // 和当前内容一样，则忽略
-
-        // 重新设置 HTML
-        setHtml(newVal)
-      }
-    )
+    watch(() => props.modelValue, syncModelValue)
 
     return {
       box,
