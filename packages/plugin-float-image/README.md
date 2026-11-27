@@ -44,7 +44,7 @@ Boot.registerModule(floatImageModule)
 
 ### 配置
 
-编辑器配置
+设置 `hoverbarKeys.image.menuKeys` 会替换默认的图片悬浮菜单，以下示例保留默认项并加入浮动选项。
 
 ```ts
 import { IEditorConfig } from '@wangeditor-next/editor'
@@ -53,16 +53,18 @@ const editorConfig: Partial<IEditorConfig> = {
   hoverbarKeys: {
     // 选中图片时显示的菜单
     image: {
-      menuKeys: [ // 默认的配置可以通过 `editor.getConfig().hoverbarKeys.image` 获取
+      menuKeys: [
         'imageWidth30',
         'imageWidth50',
         'imageWidth100',
+        'editorImageSizeMenu',
         '|',               // 分割符
         'imageFloatNone',  // 清除浮动
         'imageFloatLeft',
         'imageFloatRight',
         '|',               // 分割符
         'editImage',
+        'previewImage',
         'viewImageLink',
         'deleteImage',
       ],

@@ -45,7 +45,8 @@ Boot.registerModule(floatImageModule)
 
 ### Configuration
 
-Editor config
+Setting `hoverbarKeys.image.menuKeys` replaces the default image hoverbar menu, so this example
+keeps all default items and adds the float controls.
 
 ```ts
 import { IEditorConfig } from '@wangeditor-next/editor'
@@ -54,16 +55,18 @@ const editorConfig: Partial<IEditorConfig> = {
   hoverbarKeys: {
     // Menus shown when an image is selected
     image: {
-      menuKeys: [ // Get default config by `editor.getConfig().hoverbarKeys.image`
+      menuKeys: [
         'imageWidth30',
         'imageWidth50',
         'imageWidth100',
+        'editorImageSizeMenu',
         '|',
         'imageFloatNone', // clear the float
         'imageFloatLeft',
         'imageFloatRight',
         '|',
         'editImage',
+        'previewImage',
         'viewImageLink',
         'deleteImage',
       ],
