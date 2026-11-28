@@ -18,6 +18,7 @@ import {
 
 import { isSupportedTableCellBlock, normalizeTableContent } from './helpers'
 import { TableCursor } from './table-cursor'
+import { bindTableVerticalNavigation } from './vertical-navigation'
 import { EDITOR_TO_SELECTION } from './weak-maps'
 import { withSelection } from './with-selection'
 
@@ -283,6 +284,8 @@ function withTable<T extends IDomEditor>(editor: T): T {
     transformInitialContent,
   } = editor
   const newEditor = editor
+
+  bindTableVerticalNavigation(newEditor)
 
   newEditor.transformInitialContent = content => {
     const transformed = transformInitialContent ? transformInitialContent(content) : content
