@@ -19,4 +19,16 @@ describe('link elem to html', () => {
 
     expect(html).toBe(`<a href="${url}" target="${target}">hello</a>`)
   })
+
+  it('escapes the href attribute while preserving URL percent escapes', () => {
+    const elem = {
+      type: 'link',
+      url: 'https://example.org/a%20b?x="a"&y=&copy;',
+      children: [{ text: 'docs' }],
+    }
+
+    expect(linkToHtmlConf.elemToHtml(elem, 'docs')).toBe(
+      '<a href="https://example.org/a%20b?x=&quot;a&quot;&amp;y=&amp;copy;" target="_blank">docs</a>',
+    )
+  })
 })
