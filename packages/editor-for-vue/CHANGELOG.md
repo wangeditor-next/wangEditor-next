@@ -1,5 +1,12 @@
 # @wangeditor-next/editor-for-vue
 
+## 6.7.1
+
+### Patch Changes
+
+- b249ad6: Fix Vue 3 editor model synchronization so the first external clear applies to nonempty initial content and the latest model update made during creation takes effect when the editor is ready. Skip replacing editor content when the incoming HTML already matches.
+  - @wangeditor-next/editor@6.7.1
+
 ## 6.7.0
 
 ### Patch Changes

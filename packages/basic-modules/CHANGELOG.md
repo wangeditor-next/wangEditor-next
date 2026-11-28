@@ -1,5 +1,12 @@
 # Change Log
 
+## 6.7.1
+
+### Patch Changes
+
+- e9b9ee7: Preserve ordinary link URLs containing literal HTML entities or double quotes when exporting and reloading HTML.
+  - @wangeditor-next/core@6.7.1
+
 ## 6.7.0
 
 ### Patch Changes

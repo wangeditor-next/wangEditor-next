@@ -1,5 +1,18 @@
 # Change Log
 
+## 6.7.1
+
+### Patch Changes
+
+- Updated dependencies [e9b9ee7]
+  - @wangeditor-next/basic-modules@6.7.1
+  - @wangeditor-next/code-highlight@6.7.1
+  - @wangeditor-next/core@6.7.1
+  - @wangeditor-next/list-module@6.7.1
+  - @wangeditor-next/table-module@6.7.1
+  - @wangeditor-next/upload-image-module@6.7.1
+  - @wangeditor-next/video-module@6.7.1
+
 ## 6.7.0
 
 ### Patch Changes
