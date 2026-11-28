@@ -26,7 +26,9 @@ Boot.registerModule(htmlSourceModule)
 
 ### Configuration
 
-```js
+```ts
+import { IToolbarConfig } from '@wangeditor-next/editor'
+
 // Toolbar config
 const toolbarConfig: Partial<IToolbarConfig> = {
   insertKeys: {
