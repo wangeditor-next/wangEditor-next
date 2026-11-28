@@ -1,5 +1,11 @@
 # @wangeditor-next/yjs
 
+## 6.7.1
+
+### Patch Changes
+
+- @wangeditor-next/core@6.7.1
+
 ## 6.7.0
 
 ### Patch Changes
