@@ -1,7 +1,7 @@
 # 上传图片与逐行插入
 
 `MENU_CONF.uploadImage.insertAsBlock` 用于让上传图片分别放在独立段落中。默认值为 `false`，
-连续上传的图片仍在光标处 inline 插入，可以并排显示。
+在普通段落中一次选择多张图片或接连上传时，图片都在光标处行内插入，宽度允许时可以并排显示。
 
 ## 配置
 
@@ -32,7 +32,9 @@ React 的 `Editor` 组件使用 `defaultConfig={editorConfig}`，Vue 2 / Vue 3 �
 组件使用 `:defaultConfig="editorConfig"`。同一份 `MENU_CONF` 配置适用于这些接入方式，
 应在创建编辑器前设置。
 
-## 插入位置与数据结构
+## 上传图片的插入位置
+
+开启 `insertAsBlock` 后，单张上传、多选上传和分次连续上传都遵循相同的段落规则。
 
 - 光标所在段落为空时，直接在该段落插入图片。
 - 光标所在段落非空时，在整个段落之后新建图片段落；不会在光标处拆分原有文字。
@@ -42,16 +44,22 @@ React 的 `Editor` 组件使用 `defaultConfig={editorConfig}`，Vue 2 / Vue 3 �
 - 富表格单元格中，如果光标位于一个段落内，上述规则在该单元格内生效：新图片段落仍然
   属于当前单元格，不会插到表格外。其他单元格内容按当前块类型处理。
 
-图片节点仍是 inline image，独占一行通过外围普通段落实现；不会增加新的图片节点类型、
-class 或 data 属性。导出的 HTML 类似：
+在普通段落中逐行上传时，作为块节点的是每张图片的父段落。以空段落为起点，依次调用
+`insertFn('a.png', 'a', '')` 和 `insertFn('b.png', 'b', '')` 后，默认样式模式下的
+`editor.getHtml()` 会生成以下两个段落（按段落分行）。
 
 ```html
-<p><img src="https://example.com/a.png" alt="a" /></p>
-<p><img src="https://example.com/b.png" alt="b" /></p>
+<p><img src="a.png" alt="a" data-href="" width="" height="" style=""/></p>
+<p><img src="b.png" alt="b" data-href="" width="" height="" style=""/></p>
 ```
 
-上面省略了编辑器生成的其他图片属性。展示导出内容时，应沿用原有的内容样式，避免将段落
-改成 inline 布局。
+用 `editor.setHtml()` 回读这段 HTML，每张图仍在自己的段落里。展示时应保留段落的块级布局。
+
+“插入网络图片”菜单使用独立的插入入口。即使开启上述上传配置，在同一段落的
+`A` 和 `B` 之间插入网络图片，结果仍是同一段落里的文字、行内图片、文字。
+
+若需要图片左浮动或右浮动，可使用[浮动图片插件](../packages/plugin-float-image/README.md)。
+逐行上传与图片浮动都沿用行内 `image` 节点，`editor.isInline(image)` 均为 `true`。
 
 ## 自定义上传与顺序
 

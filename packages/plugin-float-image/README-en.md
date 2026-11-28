@@ -36,6 +36,7 @@ npm i @wangeditor-next/plugin-float-image
 ```js
 import { Boot } from '@wangeditor-next/editor'
 import floatImageModule from '@wangeditor-next/plugin-float-image'
+import '@wangeditor-next/plugin-float-image/dist/css/style.css'
 
 // Register
 // You should register this before create editor, and register only once (not repeatedly).
@@ -44,25 +45,28 @@ Boot.registerModule(floatImageModule)
 
 ### Configuration
 
-Editor config
+Setting `hoverbarKeys.image.menuKeys` replaces the default image hoverbar menu, so this example
+keeps all default items and adds the float controls.
 
 ```ts
 import { IEditorConfig } from '@wangeditor-next/editor'
 
 const editorConfig: Partial<IEditorConfig> = {
   hoverbarKeys: {
-    // hover menus when selected link text
-    link: {
-      menuKeys: [ // Get default config by `editor.getConfig().hoverbarKeys.image`
+    // Menus shown when an image is selected
+    image: {
+      menuKeys: [
         'imageWidth30',
         'imageWidth50',
         'imageWidth100',
+        'editorImageSizeMenu',
         '|',
-        'imageFloatNone', // add 'Convert to float-image' menu
+        'imageFloatNone', // clear the float
         'imageFloatLeft',
         'imageFloatRight',
         '|',
         'editImage',
+        'previewImage',
         'viewImageLink',
         'deleteImage',
       ],
@@ -75,15 +79,30 @@ const editorConfig: Partial<IEditorConfig> = {
 
 Then create editor and toolbar, you will use `editorConfig`.
 
-### Render HTML
+### Editor DOM and exported HTML
 
-You will get a float-image HTML format like this
+The plugin keeps the inline Slate `image` node. In the editor, `div.w-e-image-container`
+wraps the image and carries its width and float direction. For example, place `a.png`
+between the text `before` and `after`, give it the alt text `example`, set its width to 30%
+and float it right.
+
+With the default `textStyleMode: 'inline'`, `editor.getHtml()` writes the styles on the image.
 
 ```html
-<div class="w-e-image-container" style="width: 30%;">
-  <img src="https://news-bos.cdn.bcebos.com/mvideo/log-news.png" style="width: 100%; float: right">
-</div>
+<p>before<img src="a.png" alt="example" data-href="" style="width: 30%;float: right;"/>after</p>
 ```
+
+With `textStyleMode: 'class'`, the same paragraph exports as shown below (line wrapped for readability).
+
+```html
+<p>before<img src="a.png" alt="example" data-href="" width="30%" height=""
+  class="w-e-float-image-right" data-w-e-style-width="30%" data-w-e-style-float="right"/>after</p>
+```
+
+Load the plugin stylesheet when displaying class-mode HTML to apply the float class.
+Passing either output to `editor.setHtml()` restores the inline image, its 30% width and its
+right float. To put each uploaded image in its own paragraph, see the
+[upload image configuration](../../docs/upload-image.md).
 
 ## Others
 
