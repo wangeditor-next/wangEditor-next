@@ -17,6 +17,7 @@ import {
 } from 'slate'
 
 import { isSupportedTableCellBlock, normalizeTableContent } from './helpers'
+import { withRectangularClipboard } from './rectangular-clipboard'
 import { TableCursor } from './table-cursor'
 import { EDITOR_TO_SELECTION } from './weak-maps'
 import { withSelection } from './with-selection'
@@ -607,6 +608,11 @@ function withTable<T extends IDomEditor>(editor: T): T {
    * 光标选区行为新增
    */
   withSelection(newEditor)
+
+  /**
+   * 矩形表格选区的 Copy / Cut（参与 core 内部剪贴板校验，不拦截 DOM 事件）
+   */
+  withRectangularClipboard(newEditor)
 
   /**
    * 添加获取表格批量选择的方法

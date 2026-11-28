@@ -7,6 +7,7 @@ import {
   Editor, Element, Node, Range, Transforms,
 } from 'slate'
 
+import { writeClipboardFragment } from '../../editor/clipboard'
 import { IDomEditor } from '../../editor/interface'
 import { hasEditableTarget } from '../helpers'
 import TextArea from '../TextArea'
@@ -23,7 +24,12 @@ function handleOnCut(e: Event, textarea: TextArea, editor: IDomEditor) {
   const data = event.clipboardData
 
   if (data == null) { return }
-  editor.setFragmentData(data)
+
+  const clipboardFragment = writeClipboardFragment(editor, data, 'cut')
+
+  // A writer that explicitly failed, or an internal participant that verified
+  // its own transfer and failed, must not delete the source.
+  if (clipboardFragment.cancel) { return }
 
   if (selection) {
     if (Range.isExpanded(selection)) {

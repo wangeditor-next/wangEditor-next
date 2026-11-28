@@ -38,6 +38,10 @@ export { EditorEvents } from './config/interface'
 export * from './config/style-mode'
 
 // editor 接口和 command
+// Internal Copy/Cut hooks. Only the event name and context a cross-package
+// participant needs are public; the runner stays package-internal.
+export type { IClipboardFragmentContext } from './editor/clipboard'
+export { ClipboardFragmentEvents } from './editor/clipboard'
 export * from './editor/dom-editor'
 export * from './editor/interface'
 
