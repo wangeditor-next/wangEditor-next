@@ -101,4 +101,6 @@ export interface IDomEditor extends Editor {
   undo?: () => void
   redo?: () => void
   clearHistory?: () => void
+  /** Apply derived document updates without consuming a user undo or redo step. */
+  withoutSavingHistory?: (fn: () => void) => void
 }

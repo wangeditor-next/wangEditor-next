@@ -8,10 +8,15 @@ import { YjsEditor } from './withYjs'
 const LAST_SELECTION: WeakMap<Editor, RelativeRange | null> = new WeakMap()
 const DEFAULT_WITHOUT_SAVING_ORIGIN = Symbol('slate-yjs-history-without-saving')
 
+// UndoManager also matches origins by their constructor. Keep these internal
+// writes distinct from application origins tracked via Symbol or Object.
+class DerivedUpdateOrigin {}
+
 export type YHistoryEditor = YjsEditor & {
   undoManager: Y.UndoManager
 
   withoutSavingOrigin: unknown
+  withoutSavingHistory?: (fn: () => void) => void
 
   undo: () => void
   redo: () => void
@@ -69,7 +74,14 @@ export function withYHistory(options: WithYHistoryOptions = {}) {
     e.undoManager = undoManager
     e.withoutSavingOrigin = withoutSavingOrigin
 
-    const { onChange, isLocalOrigin } = e
+    const { onChange, isLocalOrigin, withoutSavingHistory } = e
+
+    // Another view of the same Y.Doc must receive this editor's derived updates.
+    const derivedOrigin = new DerivedUpdateOrigin()
+
+    e.withoutSavingHistory = fn => YjsEditor.withOrigin(e, derivedOrigin, () => {
+      if (withoutSavingHistory) { withoutSavingHistory(fn) } else { fn() }
+    })
 
     e.onChange = () => {
       onChange()
@@ -77,7 +89,9 @@ export function withYHistory(options: WithYHistoryOptions = {}) {
       LAST_SELECTION.set(e, e.selection && slateRangeToRelativeRange(e.sharedRoot, e, e.selection))
     }
 
-    e.isLocalOrigin = origin => origin === e.withoutSavingOrigin || isLocalOrigin(origin)
+    e.isLocalOrigin = origin => (
+      origin === derivedOrigin || origin === e.withoutSavingOrigin || isLocalOrigin(origin)
+    )
 
     const handleStackItemAdded = ({
       stackItem,
