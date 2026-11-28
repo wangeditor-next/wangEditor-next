@@ -16,6 +16,7 @@ const modulePaths = [
   '@wangeditor-next/plugin-link-card',
   '@wangeditor-next/plugin-markdown',
   '@wangeditor-next/plugin-mention',
+  '@wangeditor-next/plugin-style-presets',
   '@wangeditor-next/table-module',
   '@wangeditor-next/upload-image-module',
   '@wangeditor-next/video-module',
