@@ -3,6 +3,7 @@
  * @author wangfupeng
  */
 
+import { writeClipboardFragment } from '../../editor/clipboard'
 import { IDomEditor } from '../../editor/interface'
 import { hasEditableTarget } from '../helpers'
 import TextArea from '../TextArea'
@@ -18,7 +19,13 @@ function handleOnCopy(e: Event, _textarea: TextArea, editor: IDomEditor) {
   const data = event.clipboardData
 
   if (data == null) { return }
-  editor.setFragmentData(data)
+
+  const clipboardFragment = writeClipboardFragment(editor, data, 'copy')
+
+  // Copy has no destructive side effect. Keep calling `customCopy` for legacy
+  // writers that return false; only an internal participant that verified and
+  // rejected this transfer suppresses it.
+  if (clipboardFragment.cancel && clipboardFragment.handled) { return }
 
   const { customCopy } = editor.getConfig()
 
