@@ -13,6 +13,7 @@ const modulePaths = [
   '@wangeditor-next/plugin-attachment',
   '@wangeditor-next/plugin-ctrl-enter',
   '@wangeditor-next/plugin-formula',
+  '@wangeditor-next/plugin-html-source',
   '@wangeditor-next/plugin-link-card',
   '@wangeditor-next/plugin-markdown',
   '@wangeditor-next/plugin-mention',

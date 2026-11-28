@@ -1,0 +1,45 @@
+{
+  "name": "@wangeditor-next/plugin-html-source",
+  "version": "6.7.0",
+  "description": "wangEditor next HTML source editing plugin",
+  "author": "cycleccc <2991205548@qq.com>",
+  "type": "module",
+  "homepage": "https://github.com/wangeditor-next/wangEditor-next#readme",
+  "license": "MIT",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "directories": {
+    "lib": "dist"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wangeditor-next/wangEditor-next.git"
+  },
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development tsdown -c tsdown.config.js",
+    "dev-watch": "cross-env NODE_ENV=development tsdown -c tsdown.config.js -w",
+    "build": "cross-env NODE_ENV=production tsdown -c tsdown.config.js",
+    "dev-size-stats": "cross-env NODE_ENV=development:size_stats tsdown -c tsdown.config.js --report",
+    "size-stats": "cross-env NODE_ENV=production:size_stats tsdown -c tsdown.config.js --report"
+  },
+  "bugs": {
+    "url": "https://github.com/wangeditor-next/wangEditor-next/issues"
+  },
+  "peerDependencies": {
+    "@wangeditor-next/editor": "workspace:^"
+  }
+}

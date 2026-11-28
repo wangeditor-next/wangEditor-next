@@ -766,6 +766,12 @@ importers:
         specifier: ^0.16.0
         version: 0.16.25
 
+  packages/plugin-html-source:
+    dependencies:
+      '@wangeditor-next/editor':
+        specifier: workspace:^
+        version: link:../editor
+
   packages/plugin-link-card:
     dependencies:
       '@wangeditor-next/editor':
