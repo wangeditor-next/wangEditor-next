@@ -1938,90 +1938,62 @@ test.describe('Basic Editor', () => {
   })
 
   test('regression #574: cutting batch-selected table cells should keep table shape and only clear selected cells', async ({ page }) => {
-    const pageErrors: string[] = []
+    await setEditorHtml(page, `
+      <table style="width: 100%;">
+        <tbody>
+          <tr><td>A</td><td>B</td></tr>
+          <tr><td>C</td><td>D</td></tr>
+        </tbody>
+      </table>
+    `)
+    const rows = getEditable(page).locator('table tr')
 
-    page.on('pageerror', err => {
-      pageErrors.push(err?.stack || err?.message || String(err))
+    await expect(rows.first().locator('td,th')).toHaveText(['A', 'B'])
+
+    const expectedRange = await page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge.editor
+      const { SlateEditor } = (window as any).wangEditor
+      const tableIndex = editor.children.findIndex((node: any) => node.type === 'table')
+      const range = {
+        anchor: SlateEditor.start(editor, [tableIndex, 0, 0]),
+        focus: SlateEditor.end(editor, [tableIndex, 0, 1]),
+      }
+
+      editor.select(range)
+      return range
     })
 
-    await page.evaluate(() => {
-      const editor = (window as any).wangEditorExampleBridge?.editor
-
-      if (!editor) {
-        throw new Error('editor not ready')
-      }
-
-      editor.setHtml(`
-        <table style="width: 100%;">
-          <tbody>
-            <tr><td>A</td><td>B</td></tr>
-            <tr><td>C</td><td>D</td></tr>
-          </tbody>
-        </table>
-      `)
-    })
-
-    await page.evaluate(() => {
-      const editor = (window as any).wangEditorExampleBridge?.editor
-
-      if (!editor) {
-        throw new Error('editor not ready')
-      }
-
-      const tableIndex = editor.children.findIndex((node: any) => node?.type === 'table')
-
-      if (tableIndex < 0) {
-        throw new Error('table node not found')
-      }
-
-      editor.select({
-        anchor: { path: [tableIndex, 0, 0, 0], offset: 0 },
-        focus: { path: [tableIndex, 0, 1, 0], offset: 1 },
-      })
-    })
-    await page.waitForTimeout(150)
-
-    const selectionState = await page.evaluate(() => {
-      const editor = (window as any).wangEditorExampleBridge?.editor
-
-      if (!editor) {
-        throw new Error('editor not ready')
-      }
-
-      const tableSelection = editor.getTableSelection?.() || []
+    await expect.poll(() => page.evaluate(() => {
+      const editor = (window as any).wangEditorExampleBridge.editor
+      const { DomEditor, SlateNode, SlateText } = (window as any).wangEditor
+      const selection = editor.selection
+      const dom = window.getSelection()
 
       return {
-        rows: tableSelection.length,
-        cells: tableSelection.flat().length,
+        slateRange: selection,
+        domRange: dom?.rangeCount === 1
+          ? DomEditor.toSlateRange(editor, dom, { exactMatch: false, suppressThrow: true })
+          : null,
+        textEndpoints: selection && [selection.anchor, selection.focus].map(point =>
+          SlateText.isText(SlateNode.get(editor, point.path)),
+        ),
+        selectedCells: editor.getTableSelection()?.map((row: any[]) =>
+          row.map(([[cell]]) => SlateNode.string(cell)),
+        ),
       }
+    })).toEqual({
+      slateRange: expectedRange,
+      domRange: expectedRange,
+      textEndpoints: [true, true],
+      selectedCells: [['A', 'B']],
     })
-
-    expect(selectionState.rows).toBeGreaterThanOrEqual(1)
-    expect(selectionState.cells).toBeGreaterThanOrEqual(2)
 
     await page.keyboard.press('Control+X')
-    await page.waitForTimeout(120)
 
-    const tableState = await page.evaluate(() => {
-      const rows = Array.from(document.querySelectorAll('[data-testid="editor-textarea"] table tr'))
-      const matrix = rows.map(row => {
-        const cells = Array.from(row.querySelectorAll('td,th')) as HTMLElement[]
-
-        return cells.map(cell => (cell.textContent || '').replace(/\s+/g, ''))
-      })
-
-      return {
-        rowCount: rows.length,
-        colCounts: rows.map(row => row.querySelectorAll('td,th').length),
-        matrix,
-      }
-    })
-
-    expect(pageErrors).toEqual([])
-    expect(tableState.rowCount).toBe(2)
-    expect(tableState.colCounts).toEqual([2, 2])
-    expect(tableState.matrix[0]).toEqual(['', ''])
-    expect(tableState.matrix[1]).toEqual(['C', 'D'])
+    await expect(rows).toHaveCount(2)
+    await expect(rows.nth(0).locator('td,th')).toHaveText(['', ''])
+    await expect(rows.nth(1).locator('td,th')).toHaveText(['C', 'D'])
+    expect(await page.pageErrors()).toEqual([])
   })
 
   test('pastes plain text', async ({ page }) => {
